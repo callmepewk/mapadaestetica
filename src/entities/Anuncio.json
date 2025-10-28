@@ -1,0 +1,196 @@
+{
+  "name": "Anuncio",
+  "type": "object",
+  "properties": {
+    "titulo": {
+      "type": "string",
+      "description": "T\u00edtulo do an\u00fancio"
+    },
+    "descricao": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o detalhada do servi\u00e7o"
+    },
+    "categoria": {
+      "type": "string",
+      "enum": [
+        "Depila\u00e7\u00e3o",
+        "Est\u00e9tica Facial",
+        "Est\u00e9tica Corporal",
+        "Massoterapia",
+        "Drenagem Linf\u00e1tica",
+        "Micropigmenta\u00e7\u00e3o",
+        "Design de Sobrancelhas",
+        "Extens\u00e3o de C\u00edlios",
+        "Manicure e Pedicure",
+        "Podologia",
+        "Acupuntura Est\u00e9tica",
+        "Carboxiterapia",
+        "Criolip\u00f3lise",
+        "Radiofrequ\u00eancia",
+        "Ultrassom Est\u00e9tico",
+        "Peeling",
+        "Limpeza de Pele",
+        "Tratamento de Acne",
+        "Harmoniza\u00e7\u00e3o Facial",
+        "Preenchimento",
+        "Botox",
+        "Fios de Sustenta\u00e7\u00e3o",
+        "Bichectomia",
+        "Maquiagem",
+        "Penteados",
+        "Tratamento Capilar",
+        "Beauty Pet Shop",
+        "Gastronomia Fit",
+        "Boutique Fit",
+        "Cl\u00ednicas e Policl\u00ednicas",
+        "Loca\u00e7\u00e3o e Vendas Est\u00e9tica",
+        "Outros"
+      ],
+      "description": "Categoria do servi\u00e7o"
+    },
+    "subcategoria": {
+      "type": "string",
+      "description": "Subcategoria espec\u00edfica"
+    },
+    "profissional": {
+      "type": "string",
+      "description": "Nome do profissional"
+    },
+    "telefone": {
+      "type": "string",
+      "description": "Telefone de contato"
+    },
+    "whatsapp": {
+      "type": "string",
+      "description": "WhatsApp para contato"
+    },
+    "email": {
+      "type": "string",
+      "description": "Email de contato"
+    },
+    "instagram": {
+      "type": "string",
+      "description": "Perfil do Instagram"
+    },
+    "facebook": {
+      "type": "string",
+      "description": "Perfil do Facebook"
+    },
+    "site": {
+      "type": "string",
+      "description": "Site pr\u00f3prio"
+    },
+    "endereco": {
+      "type": "string",
+      "description": "Endere\u00e7o completo"
+    },
+    "cidade": {
+      "type": "string",
+      "description": "Cidade"
+    },
+    "estado": {
+      "type": "string",
+      "description": "Estado"
+    },
+    "cep": {
+      "type": "string",
+      "description": "CEP"
+    },
+    "imagem_principal": {
+      "type": "string",
+      "description": "URL da imagem principal"
+    },
+    "imagens_galeria": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "URLs das imagens da galeria"
+    },
+    "logo": {
+      "type": "string",
+      "description": "URL do logo/foto do profissional"
+    },
+    "video_url": {
+      "type": "string",
+      "description": "URL do v\u00eddeo de apresenta\u00e7\u00e3o"
+    },
+    "horario_funcionamento": {
+      "type": "string",
+      "description": "Hor\u00e1rio de funcionamento"
+    },
+    "status_funcionamento": {
+      "type": "string",
+      "enum": [
+        "Aberto Agora",
+        "Fechado",
+        "Sempre Aberto",
+        "N/D"
+      ],
+      "default": "N/D"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pendente",
+        "ativo",
+        "em_destaque",
+        "expirado",
+        "rejeitado"
+      ],
+      "default": "pendente",
+      "description": "Status do an\u00fancio"
+    },
+    "plano": {
+      "type": "string",
+      "enum": [
+        "light",
+        "gold",
+        "vip"
+      ],
+      "default": "light",
+      "description": "Plano contratado"
+    },
+    "visualizacoes": {
+      "type": "number",
+      "default": 0,
+      "description": "N\u00famero de visualiza\u00e7\u00f5es"
+    },
+    "data_expiracao": {
+      "type": "string",
+      "format": "date",
+      "description": "Data de expira\u00e7\u00e3o do an\u00fancio"
+    },
+    "servicos_oferecidos": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string"
+          },
+          "preco": {
+            "type": "number"
+          },
+          "duracao": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Lista de servi\u00e7os oferecidos"
+    },
+    "em_destaque": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se o an\u00fancio est\u00e1 em destaque"
+    }
+  },
+  "required": [
+    "titulo",
+    "descricao",
+    "categoria",
+    "profissional",
+    "cidade",
+    "estado"
+  ]
+}

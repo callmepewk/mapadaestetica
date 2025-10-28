@@ -1,0 +1,51 @@
+{
+  "type": "object",
+  "properties": {
+    "telefone": {
+      "type": "string",
+      "description": "Telefone do usu\u00e1rio"
+    },
+    "whatsapp": {
+      "type": "string",
+      "description": "WhatsApp"
+    },
+    "cidade": {
+      "type": "string",
+      "description": "Cidade"
+    },
+    "estado": {
+      "type": "string",
+      "description": "Estado"
+    },
+    "instagram": {
+      "type": "string",
+      "description": "Instagram"
+    },
+    "facebook": {
+      "type": "string",
+      "description": "Facebook"
+    },
+    "foto_perfil": {
+      "type": "string",
+      "description": "URL da foto de perfil"
+    },
+    "plano_ativo": {
+      "type": "string",
+      "enum": [
+        "light",
+        "gold",
+        "vip"
+      ],
+      "default": "light"
+    },
+    "pontos_acumulados": {
+      "type": "number",
+      "default": 0
+    },
+    "data_adesao_plano": {
+      "type": "string",
+      "format": "date"
+    }
+  },
+  "name": "User"
+}
