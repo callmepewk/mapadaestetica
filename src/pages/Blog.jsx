@@ -1,0 +1,218 @@
+import React, { useState } from "react";
+import { base44 } from "@/api/base44Client";
+import { useQuery } from "@tanstack/react-query";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Search, Calendar, Clock, TrendingUp, Sparkles } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+
+export default function Blog() {
+  const [busca, setBusca] = useState("");
+  const [artigos, setArtigos] = useState([]);
+  const [carregando, setCarregando] = useState(false);
+
+  const buscarArtigos = async () => {
+    setCarregando(true);
+    try {
+      const resultado = await base44.integrations.Core.InvokeLLM({
+        prompt: `Busque as últimas 9 notícias e artigos sobre estética, beleza, cuidados com a pele, tratamentos estéticos, novidades do mercado de estética no Brasil.
+        
+        Para cada artigo, forneça:
+        - titulo: título atraente
+        - resumo: resumo de 2-3 linhas
+        - categoria: uma das categorias (Estética Facial, Estética Corporal, Cuidados com a Pele, Tratamentos, Tendências, Novidades)
+        - data: data atual em formato dd/MM/yyyy
+        - tempo_leitura: tempo estimado de leitura em minutos
+        - conteudo: texto completo do artigo com 3-4 parágrafos
+        
+        Retorne um array de objetos com essas informações.`,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            artigos: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  titulo: { type: "string" },
+                  resumo: { type: "string" },
+                  categoria: { type: "string" },
+                  data: { type: "string" },
+                  tempo_leitura: { type: "number" },
+                  conteudo: { type: "string" }
+                }
+              }
+            }
+          }
+        }
+      });
+      
+      setArtigos(resultado.artigos || []);
+    } catch (error) {
+      console.error("Erro ao buscar artigos:", error);
+      setArtigos([]);
+    }
+    setCarregando(false);
+  };
+
+  React.useEffect(() => {
+    buscarArtigos();
+  }, []);
+
+  const artigosFiltrados = artigos.filter(artigo =>
+    !busca || 
+    artigo.titulo?.toLowerCase().includes(busca.toLowerCase()) ||
+    artigo.resumo?.toLowerCase().includes(busca.toLowerCase())
+  );
+
+  const getCategoriaColor = (categoria) => {
+    const colors = {
+      "Estética Facial": "bg-purple-100 text-purple-800",
+      "Estética Corporal": "bg-blue-100 text-blue-800",
+      "Cuidados com a Pele": "bg-green-100 text-green-800",
+      "Tratamentos": "bg-pink-100 text-pink-800",
+      "Tendências": "bg-orange-100 text-orange-800",
+      "Novidades": "bg-red-100 text-red-800"
+    };
+    return colors[categoria] || "bg-gray-100 text-gray-800";
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12">
+      <div className="max-w-7xl mx-auto px-4">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-2 bg-pink-100 text-pink-700 px-4 py-2 rounded-full mb-4">
+            <TrendingUp className="w-4 h-4" />
+            <span className="text-sm font-medium">Atualizado diariamente</span>
+          </div>
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            Fique por Dentro do Universo da Estética
+          </h1>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Acompanhe as últimas tendências, novidades e dicas do mundo da estética e beleza
+          </p>
+        </div>
+
+        {/* Search */}
+        <div className="max-w-2xl mx-auto mb-12">
+          <div className="relative">
+            <Search className="absolute left-4 top-4 w-5 h-5 text-gray-400" />
+            <Input
+              placeholder="Buscar artigos..."
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              className="pl-12 h-14 text-lg shadow-lg border-none"
+            />
+          </div>
+        </div>
+
+        {/* Featured Section */}
+        {!carregando && artigos.length > 0 && (
+          <div className="mb-12">
+            <Card className="overflow-hidden border-none shadow-2xl bg-gradient-to-br from-pink-500 to-rose-500 text-white">
+              <CardContent className="p-8 md:p-12">
+                <Badge className="mb-4 bg-white/20 text-white border-none">
+                  <Sparkles className="w-3 h-3 mr-1" />
+                  Artigo em Destaque
+                </Badge>
+                <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                  {artigos[0].titulo}
+                </h2>
+                <p className="text-lg text-white/90 mb-6">
+                  {artigos[0].resumo}
+                </p>
+                <div className="flex items-center gap-4 text-sm text-white/80">
+                  <span className="flex items-center gap-1">
+                    <Calendar className="w-4 h-4" />
+                    {artigos[0].data}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="w-4 h-4" />
+                    {artigos[0].tempo_leitura} min de leitura
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Articles Grid */}
+        {carregando ? (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array(6).fill(0).map((_, i) => (
+              <Card key={i} className="overflow-hidden">
+                <Skeleton className="h-48 w-full" />
+                <CardContent className="p-6">
+                  <Skeleton className="h-4 w-20 mb-3" />
+                  <Skeleton className="h-6 w-full mb-2" />
+                  <Skeleton className="h-4 w-full mb-2" />
+                  <Skeleton className="h-4 w-3/4" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : artigosFiltrados.length === 0 ? (
+          <Card className="p-12 text-center">
+            <div className="text-6xl mb-4">📰</div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              Nenhum artigo encontrado
+            </h3>
+            <p className="text-gray-600">
+              Tente ajustar sua busca ou volte mais tarde para novos conteúdos
+            </p>
+          </Card>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {artigosFiltrados.map((artigo, index) => (
+              <Card
+                key={index}
+                className="overflow-hidden hover:shadow-xl transition-all duration-300 border-none cursor-pointer group"
+              >
+                <div className="h-48 bg-gradient-to-br from-pink-100 to-rose-100 flex items-center justify-center text-6xl group-hover:scale-110 transition-transform duration-300">
+                  ✨
+                </div>
+                <CardContent className="p-6">
+                  <Badge className={`mb-3 ${getCategoriaColor(artigo.categoria)}`}>
+                    {artigo.categoria}
+                  </Badge>
+                  <h3 className="font-bold text-xl mb-3 line-clamp-2 group-hover:text-pink-600 transition-colors">
+                    {artigo.titulo}
+                  </h3>
+                  <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+                    {artigo.resumo}
+                  </p>
+                  <div className="flex items-center gap-4 text-xs text-gray-500 pt-4 border-t">
+                    <span className="flex items-center gap-1">
+                      <Calendar className="w-3 h-3" />
+                      {artigo.data}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {artigo.tempo_leitura} min
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {/* Reload Button */}
+        <div className="text-center mt-12">
+          <Button
+            onClick={buscarArtigos}
+            disabled={carregando}
+            size="lg"
+            className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
+          >
+            {carregando ? "Carregando..." : "Atualizar Artigos"}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
