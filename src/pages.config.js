@@ -4,6 +4,7 @@ import DetalhesAnuncio from './pages/DetalhesAnuncio';
 import Planos from './pages/Planos';
 import Blog from './pages/Blog';
 import SobreNos from './pages/SobreNos';
+import FaleConosco from './pages/FaleConosco';
 import Layout from './Layout.jsx';
 
 
@@ -14,6 +15,7 @@ export const PAGES = {
     "Planos": Planos,
     "Blog": Blog,
     "SobreNos": SobreNos,
+    "FaleConosco": FaleConosco,
 }
 
 export const pagesConfig = {
