@@ -6,6 +6,7 @@ import Blog from './pages/Blog';
 import SobreNos from './pages/SobreNos';
 import FaleConosco from './pages/FaleConosco';
 import Perfil from './pages/Perfil';
+import CadastrarAnuncio from './pages/CadastrarAnuncio';
 import Layout from './Layout.jsx';
 
 
@@ -18,6 +19,7 @@ export const PAGES = {
     "SobreNos": SobreNos,
     "FaleConosco": FaleConosco,
     "Perfil": Perfil,
+    "CadastrarAnuncio": CadastrarAnuncio,
 }
 
 export const pagesConfig = {
