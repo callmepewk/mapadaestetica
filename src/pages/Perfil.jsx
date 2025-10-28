@@ -1,0 +1,472 @@
+import React, { useState } from "react";
+import { base44 } from "@/api/base44Client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Instagram,
+  Facebook,
+  Edit,
+  Save,
+  LogOut,
+  Trash2,
+  Eye,
+  TrendingUp,
+  Clock,
+  Star,
+  AlertCircle
+} from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+
+export default function Perfil() {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [editando, setEditando] = useState(false);
+  const [editandoSenha, setEditandoSenha] = useState(false);
+  const [senhaAtual, setSenhaAtual] = useState("");
+  const [novaSenha, setNovaSenha] = useState("");
+  const [confirmarSenha, setConfirmarSenha] = useState("");
+  const [user, setUser] = useState(null);
+  const [perfilEditado, setPerfilEditado] = useState({});
+
+  React.useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const userData = await base44.auth.me();
+        setUser(userData);
+        setPerfilEditado(userData);
+      } catch (error) {
+        navigate(createPageUrl("Inicio"));
+      }
+    };
+    fetchUser();
+  }, []);
+
+  const { data: meusAnuncios } = useQuery({
+    queryKey: ['meus-anuncios'],
+    queryFn: () => base44.entities.Anuncio.filter({ created_by: user?.email }, '-created_date'),
+    enabled: !!user,
+    initialData: [],
+  });
+
+  const updatePerfilMutation = useMutation({
+    mutationFn: async (data) => {
+      await base44.auth.updateMe(data);
+    },
+    onSuccess: async () => {
+      const userData = await base44.auth.me();
+      setUser(userData);
+      setPerfilEditado(userData);
+      setEditando(false);
+      queryClient.invalidateQueries(['user']);
+    },
+  });
+
+  const excluirContaMutation = useMutation({
+    mutationFn: async () => {
+      // Aqui você precisaria implementar a lógica de exclusão de conta
+      // Por enquanto, apenas fazemos logout
+      base44.auth.logout();
+    },
+  });
+
+  const handleSalvarPerfil = () => {
+    updatePerfilMutation.mutate(perfilEditado);
+  };
+
+  const handleSair = () => {
+    base44.auth.logout();
+  };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando perfil...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const anunciosAtivos = meusAnuncios.filter(a => a.status === 'ativo').length;
+  const anunciosPendentes = meusAnuncios.filter(a => a.status === 'pendente').length;
+  const anunciosDestaque = meusAnuncios.filter(a => a.em_destaque).length;
+  const anunciosExpirados = meusAnuncios.filter(a => a.status === 'expirado').length;
+  const totalVisualizacoes = meusAnuncios.reduce((sum, a) => sum + (a.visualizacoes || 0), 0);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
+      <div className="max-w-7xl mx-auto px-4">
+        {/* Profile Header */}
+        <Card className="border-none shadow-xl mb-8">
+          <CardContent className="p-8">
+            <div className="flex flex-col md:flex-row items-center gap-6">
+              <Avatar className="w-24 h-24 border-4 border-pink-500">
+                <AvatarImage src={user.foto_perfil} />
+                <AvatarFallback className="bg-gradient-to-br from-pink-500 to-rose-500 text-white text-3xl">
+                  {user.full_name?.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 text-center md:text-left">
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">{user.full_name}</h1>
+                <p className="text-gray-600 mb-2">{user.email}</p>
+                <Badge className="bg-gradient-to-r from-pink-500 to-rose-500 text-white">
+                  Plano {user.plano_ativo?.toUpperCase() || 'LIGHT'}
+                </Badge>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setEditando(!editando)}
+                  className="border-pink-500 text-pink-600 hover:bg-pink-50"
+                >
+                  <Edit className="w-4 h-4 mr-2" />
+                  {editando ? "Cancelar" : "Editar Perfil"}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Stats */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Statistics Cards */}
+            <div className="grid md:grid-cols-4 gap-4">
+              <Card className="border-none shadow-lg">
+                <CardContent className="p-4 text-center">
+                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <Eye className="w-6 h-6 text-green-600" />
+                  </div>
+                  <p className="text-2xl font-bold">{totalVisualizacoes}</p>
+                  <p className="text-sm text-gray-600">Visualizações</p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-none shadow-lg">
+                <CardContent className="p-4 text-center">
+                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <TrendingUp className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <p className="text-2xl font-bold">{anunciosAtivos}</p>
+                  <p className="text-sm text-gray-600">Ativos</p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-none shadow-lg">
+                <CardContent className="p-4 text-center">
+                  <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <Star className="w-6 h-6 text-yellow-600" />
+                  </div>
+                  <p className="text-2xl font-bold">{anunciosDestaque}</p>
+                  <p className="text-sm text-gray-600">Em Destaque</p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-none shadow-lg">
+                <CardContent className="p-4 text-center">
+                  <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <Clock className="w-6 h-6 text-orange-600" />
+                  </div>
+                  <p className="text-2xl font-bold">{anunciosPendentes}</p>
+                  <p className="text-sm text-gray-600">Pendentes</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Tabs */}
+            <Tabs defaultValue="anuncios" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="anuncios">Meus Anúncios</TabsTrigger>
+                <TabsTrigger value="atividades">Atividades Recentes</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="anuncios" className="space-y-4">
+                <Card className="border-none shadow-lg">
+                  <CardContent className="p-6">
+                    <h3 className="font-semibold text-lg mb-4">Resumo dos Anúncios</h3>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                        <span className="font-medium">Anúncios Ativos</span>
+                        <Badge className="bg-green-600">{anunciosAtivos}</Badge>
+                      </div>
+                      <div className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
+                        <span className="font-medium">Anúncios Pendentes</span>
+                        <Badge className="bg-yellow-600">{anunciosPendentes}</Badge>
+                      </div>
+                      <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                        <span className="font-medium">Anúncios em Destaque</span>
+                        <Badge className="bg-blue-600">{anunciosDestaque}</Badge>
+                      </div>
+                      <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                        <span className="font-medium">Anúncios Expirados</span>
+                        <Badge className="bg-gray-600">{anunciosExpirados}</Badge>
+                      </div>
+                    </div>
+                    
+                    <Button
+                      onClick={() => navigate(createPageUrl("CadastrarAnuncio"))}
+                      className="w-full mt-4 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
+                    >
+                      Criar Novo Anúncio
+                    </Button>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="atividades" className="space-y-4">
+                <Card className="border-none shadow-lg">
+                  <CardContent className="p-6">
+                    <h3 className="font-semibold text-lg mb-4">Atividades Recentes</h3>
+                    {meusAnuncios.length === 0 ? (
+                      <p className="text-gray-500 text-center py-8">
+                        Nenhuma atividade recente
+                      </p>
+                    ) : (
+                      <div className="space-y-3">
+                        {meusAnuncios.slice(0, 5).map((anuncio) => (
+                          <div
+                            key={anuncio.id}
+                            className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                            onClick={() => navigate(`${createPageUrl("DetalhesAnuncio")}?id=${anuncio.id}`)}
+                          >
+                            <div className="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                              <span className="text-xl">✨</span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium truncate">{anuncio.titulo}</p>
+                              <p className="text-sm text-gray-500">
+                                {anuncio.visualizacoes || 0} visualizações
+                              </p>
+                            </div>
+                            <Badge className={
+                              anuncio.status === 'ativo' ? 'bg-green-100 text-green-800' :
+                              anuncio.status === 'pendente' ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-gray-100 text-gray-800'
+                            }>
+                              {anuncio.status}
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
+
+          {/* Profile Settings */}
+          <div className="space-y-6">
+            <Card className="border-none shadow-lg">
+              <CardContent className="p-6">
+                <h3 className="font-semibold text-lg mb-4">Informações do Perfil</h3>
+                <div className="space-y-4">
+                  {editando ? (
+                    <>
+                      <div>
+                        <Label htmlFor="telefone">Telefone</Label>
+                        <Input
+                          id="telefone"
+                          value={perfilEditado.telefone || ""}
+                          onChange={(e) => setPerfilEditado({ ...perfilEditado, telefone: e.target.value })}
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="whatsapp">WhatsApp</Label>
+                        <Input
+                          id="whatsapp"
+                          value={perfilEditado.whatsapp || ""}
+                          onChange={(e) => setPerfilEditado({ ...perfilEditado, whatsapp: e.target.value })}
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="cidade">Cidade</Label>
+                        <Input
+                          id="cidade"
+                          value={perfilEditado.cidade || ""}
+                          onChange={(e) => setPerfilEditado({ ...perfilEditado, cidade: e.target.value })}
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="estado">Estado</Label>
+                        <Input
+                          id="estado"
+                          value={perfilEditado.estado || ""}
+                          onChange={(e) => setPerfilEditado({ ...perfilEditado, estado: e.target.value })}
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="instagram">Instagram</Label>
+                        <Input
+                          id="instagram"
+                          value={perfilEditado.instagram || ""}
+                          onChange={(e) => setPerfilEditado({ ...perfilEditado, instagram: e.target.value })}
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="facebook">Facebook</Label>
+                        <Input
+                          id="facebook"
+                          value={perfilEditado.facebook || ""}
+                          onChange={(e) => setPerfilEditado({ ...perfilEditado, facebook: e.target.value })}
+                          className="mt-1"
+                        />
+                      </div>
+                      <Button
+                        onClick={handleSalvarPerfil}
+                        disabled={updatePerfilMutation.isPending}
+                        className="w-full bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
+                      >
+                        <Save className="w-4 h-4 mr-2" />
+                        Salvar Alterações
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      {user.telefone && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <Phone className="w-4 h-4 text-gray-400" />
+                          <span>{user.telefone}</span>
+                        </div>
+                      )}
+                      {user.cidade && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <MapPin className="w-4 h-4 text-gray-400" />
+                          <span>{user.cidade}, {user.estado}</span>
+                        </div>
+                      )}
+                      {user.instagram && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <Instagram className="w-4 h-4 text-gray-400" />
+                          <a href={user.instagram} target="_blank" rel="noopener noreferrer" className="text-pink-600 hover:underline">
+                            Instagram
+                          </a>
+                        </div>
+                      )}
+                      {user.facebook && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <Facebook className="w-4 h-4 text-gray-400" />
+                          <a href={user.facebook} target="_blank" rel="noopener noreferrer" className="text-pink-600 hover:underline">
+                            Facebook
+                          </a>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Plan Info */}
+            <Card className="border-none shadow-lg bg-gradient-to-br from-pink-50 to-rose-50">
+              <CardContent className="p-6">
+                <h3 className="font-semibold text-lg mb-4">Seu Plano</h3>
+                <div className="text-center">
+                  <Badge className="mb-2 bg-gradient-to-r from-pink-500 to-rose-500 text-white text-lg px-4 py-2">
+                    {user.plano_ativo?.toUpperCase() || 'LIGHT'}
+                  </Badge>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Pontos Acumulados: <span className="font-bold">{user.pontos_acumulados || 0}</span>
+                  </p>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => navigate(createPageUrl("Planos"))}
+                  >
+                    Mudar Plano
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Actions */}
+            <Card className="border-none shadow-lg">
+              <CardContent className="p-6 space-y-3">
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="outline" className="w-full justify-start">
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Sair
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Confirmar Saída</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Tem certeza que deseja sair da sua conta?
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleSair}>
+                        Sair
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+
+                <Separator />
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" className="w-full justify-start">
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Excluir Conta
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Excluir Conta</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Esta ação não pode ser desfeita. Todos os seus dados e anúncios serão permanentemente removidos.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => excluirContaMutation.mutate()}
+                        className="bg-red-600 hover:bg-red-700"
+                      >
+                        Excluir Definitivamente
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
