@@ -63,15 +63,15 @@ export default function Layout({ children }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col">
       {/* Top Bar */}
       <div className="bg-gradient-to-r from-pink-600 via-pink-500 to-rose-500 text-white py-2 px-4">
-        <div className="max-w-7xl mx-auto flex justify-between items-center text-sm">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center text-xs sm:text-sm gap-2 sm:gap-0">
           <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4" />
-            <span>Bem-vindo ao Mapa da Estética - Encontre os melhores profissionais</span>
+            <MapPin className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+            <span className="text-center sm:text-left">Bem-vindo ao Mapa da Estética</span>
           </div>
-          <div className="hidden md:flex items-center gap-4">
+          <div className="flex items-center gap-4">
             <span>(21) 98034-3873</span>
           </div>
         </div>
@@ -79,21 +79,21 @@ export default function Layout({ children }) {
 
       {/* Main Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4">
+          <div className="flex items-center justify-between gap-4">
             {/* Logo */}
-            <Link to={createPageUrl("Inicio")} className="flex items-center gap-3 group">
+            <Link to={createPageUrl("Inicio")} className="flex items-center gap-2 sm:gap-3 group flex-shrink-0">
               <div className="relative">
-                <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-rose-500 rounded-xl flex items-center justify-center transform group-hover:scale-105 transition-transform">
-                  <MapPin className="w-7 h-7 text-white" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-pink-500 to-rose-500 rounded-xl flex items-center justify-center transform group-hover:scale-105 transition-transform">
+                  <MapPin className="w-5 h-5 sm:w-7 sm:h-7 text-white" />
                 </div>
-                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-yellow-400 rounded-full border-2 border-white"></div>
+                <div className="absolute -bottom-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-yellow-400 rounded-full border-2 border-white"></div>
               </div>
-              <div className="hidden md:block">
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">
+              <div className="hidden sm:block">
+                <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">
                   Mapa da Estética
                 </h1>
-                <p className="text-xs text-gray-500">Os melhores profissionais perto de você</p>
+                <p className="text-xs text-gray-500 hidden md:block">Os melhores profissionais perto de você</p>
               </div>
             </Link>
 
@@ -103,7 +103,7 @@ export default function Layout({ children }) {
                 <Link
                   key={item.title}
                   to={item.url}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
+                  className={`flex items-center gap-2 px-3 xl:px-4 py-2 rounded-lg transition-all duration-200 ${
                     location.pathname === item.url
                       ? "bg-pink-50 text-pink-600 font-medium"
                       : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
@@ -116,22 +116,22 @@ export default function Layout({ children }) {
             </nav>
 
             {/* Right Actions */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               {isAuthenticated ? (
                 <>
                   <Link to={createPageUrl("CadastrarAnuncio")} className="hidden md:block">
-                    <Button className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white shadow-lg hover:shadow-xl transition-all duration-200">
+                    <Button className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 text-sm">
                       <PlusCircle className="w-4 h-4 mr-2" />
-                      Cadastrar Anúncio
+                      Cadastrar
                     </Button>
                   </Link>
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <button className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 transition-colors">
-                        <Avatar className="w-10 h-10 border-2 border-pink-500">
+                        <Avatar className="w-9 h-9 sm:w-10 sm:h-10 border-2 border-pink-500">
                           <AvatarImage src={user?.foto_perfil} />
-                          <AvatarFallback className="bg-gradient-to-br from-pink-500 to-rose-500 text-white">
+                          <AvatarFallback className="bg-gradient-to-br from-pink-500 to-rose-500 text-white text-sm">
                             {user?.full_name?.charAt(0) || "U"}
                           </AvatarFallback>
                         </Avatar>
@@ -139,8 +139,8 @@ export default function Layout({ children }) {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56">
                       <div className="px-2 py-2">
-                        <p className="text-sm font-medium">{user?.full_name}</p>
-                        <p className="text-xs text-gray-500">{user?.email}</p>
+                        <p className="text-sm font-medium truncate">{user?.full_name}</p>
+                        <p className="text-xs text-gray-500 truncate">{user?.email}</p>
                       </div>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => navigate(createPageUrl("Perfil"))}>
@@ -157,10 +157,11 @@ export default function Layout({ children }) {
               ) : (
                 <Button
                   onClick={() => base44.auth.redirectToLogin(location.pathname)}
-                  className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white"
+                  className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white text-sm"
+                  size="sm"
                 >
-                  <User className="w-4 h-4 mr-2" />
-                  Entrar
+                  <User className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Entrar</span>
                 </Button>
               )}
 
@@ -208,21 +209,21 @@ export default function Layout({ children }) {
       </header>
 
       {/* Main Content */}
-      <main className="min-h-[calc(100vh-200px)]">{children}</main>
+      <main className="flex-1">{children}</main>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white mt-20">
-        <div className="max-w-7xl mx-auto px-4 py-12">
-          <div className="grid md:grid-cols-4 gap-8">
+      <footer className="bg-gray-900 text-white mt-12 sm:mt-20">
+        <div className="max-w-7xl mx-auto px-4 py-8 sm:py-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-rose-500 rounded-lg flex items-center justify-center">
                   <MapPin className="w-6 h-6" />
                 </div>
-                <h3 className="text-xl font-bold">Mapa da Estética</h3>
+                <h3 className="text-lg sm:text-xl font-bold">Mapa da Estética</h3>
               </div>
               <p className="text-gray-400 text-sm">
-                A maior plataforma de profissionais de estética do Brasil. Conectando beleza e bem-estar.
+                A maior plataforma de profissionais de estética do Brasil.
               </p>
             </div>
 
@@ -248,11 +249,11 @@ export default function Layout({ children }) {
             <div>
               <h4 className="font-semibold mb-4">Contato</h4>
               <p className="text-sm text-gray-400 mb-2">WhatsApp: (21) 98034-3873</p>
-              <p className="text-sm text-gray-400">Email: contato@mapadaestetica.com.br</p>
+              <p className="text-sm text-gray-400 break-words">Email: contato@mapadaestetica.com.br</p>
             </div>
           </div>
 
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
+          <div className="border-t border-gray-800 mt-6 sm:mt-8 pt-6 sm:pt-8 text-center text-xs sm:text-sm text-gray-400">
             <p>&copy; 2025 Mapa da Estética. Todos os direitos reservados.</p>
           </div>
         </div>
