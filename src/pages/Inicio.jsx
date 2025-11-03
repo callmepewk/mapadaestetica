@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -10,7 +11,8 @@ import {
   Sparkles,
   Clock,
   Star,
-  TrendingUp
+  TrendingUp,
+  Calculator
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +27,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import CardAnuncio from "../components/anuncios/CardAnuncio";
 import CardCategoria from "../components/home/CardCategoria";
+import TermosCondicoes from "../components/home/TermosCondicoes";
+import { CardContent } from "@/components/ui/card"; // Added CardContent import
 
 const categorias = [
   { nome: "Depilação", cor: "from-pink-500 to-rose-500", icon: "✨" },
@@ -45,6 +49,33 @@ const cidades = [
 export default function Inicio() {
   const [buscaCidade, setBuscaCidade] = useState("");
   const [buscaCategoria, setBuscaCategoria] = useState("");
+  const [mostrarTermos, setMostrarTermos] = useState(false);
+
+  useEffect(() => {
+    const termosAceitos = localStorage.getItem('termos_aceitos');
+    if (!termosAceitos) {
+      setMostrarTermos(true);
+    }
+
+    // Geolocalização
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+          );
+          const data = await response.json();
+          const cidade = data.address.city || data.address.town || data.address.village || "";
+          if (cidade) {
+            setBuscaCidade(cidade);
+          }
+        } catch (error) {
+          console.error("Erro ao obter localização:", error);
+        }
+      });
+    }
+  }, []);
 
   const { data: anunciosDestaque, isLoading } = useQuery({
     queryKey: ['anuncios-destaque'],
@@ -75,19 +106,26 @@ export default function Inicio() {
 
   return (
     <div className="min-h-screen">
+      <TermosCondicoes 
+        open={mostrarTermos} 
+        onAccept={() => setMostrarTermos(false)} 
+      />
+
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-pink-600 via-rose-500 to-pink-500 text-white py-12 sm:py-16 md:py-20 lg:py-32 overflow-hidden">
-        <div className="absolute inset-0 bg-black opacity-10"></div>
-        <div className="absolute inset-0">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-white rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob"></div>
-          <div className="absolute top-40 right-10 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-2000"></div>
-          <div className="absolute -bottom-8 left-40 w-72 h-72 bg-rose-300 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-4000"></div>
-        </div>
+      <section 
+        className="relative text-white py-12 sm:py-16 md:py-20 lg:py-32 overflow-hidden"
+        style={{
+          backgroundImage: "linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1560750588-73207b1ef5b8?w=1920&q=80')",
+          backgroundSize: "cover",
+          backgroundPosition: "center"
+        }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-[#2C2C2C]/80 via-[#2C2C2C]/70 to-[#2C2C2C]/80"></div>
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 text-center">
-          <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded-full mb-4 sm:mb-6">
+          <div className="inline-flex items-center gap-2 bg-[#F7D426]/90 text-[#2C2C2C] backdrop-blur-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded-full mb-4 sm:mb-6 font-bold">
             <Sparkles className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span className="text-xs sm:text-sm font-medium">Mais de 500+ profissionais cadastrados</span>
+            <span className="text-xs sm:text-sm">Mais de 500+ profissionais cadastrados</span>
           </div>
           
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 leading-tight px-2">
@@ -125,7 +163,7 @@ export default function Inicio() {
 
               <Button 
                 onClick={handleBuscar}
-                className="h-12 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all text-base"
+                className="h-12 bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold shadow-lg hover:shadow-xl transition-all text-base border-2 border-[#2C2C2C]"
               >
                 <Search className="w-5 h-5 mr-2" />
                 Buscar
@@ -143,12 +181,44 @@ export default function Inicio() {
                   setBuscaCidade(cidade);
                   handleBuscar();
                 }}
-                className="text-xs sm:text-sm bg-white/20 hover:bg-white/30 backdrop-blur-sm px-3 py-1 rounded-full transition-all"
+                className="text-xs sm:text-sm bg-[#F7D426]/20 hover:bg-[#F7D426]/30 backdrop-blur-sm px-3 py-1 rounded-full transition-all text-white font-medium"
               >
                 {cidade}
               </button>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Calculadora Destaque */}
+      <section className="py-8 bg-gradient-to-r from-[#F7D426] to-[#FFE066]">
+        <div className="max-w-7xl mx-auto px-4">
+          <Card className="border-none shadow-2xl bg-white/95 backdrop-blur overflow-hidden">
+            <CardContent className="p-6 md:p-8">
+              <div className="flex flex-col md:flex-row items-center gap-6">
+                <div className="w-20 h-20 bg-gradient-to-br from-[#2C2C2C] to-[#4A4A4A] rounded-2xl flex items-center justify-center flex-shrink-0">
+                  <Calculator className="w-10 h-10 text-[#F7D426]" />
+                </div>
+                <div className="flex-1 text-center md:text-left">
+                  <Badge className="mb-2 bg-[#F7D426] text-[#2C2C2C] border-none font-bold">
+                    Exclusivo Clube da Beleza
+                  </Badge>
+                  <h2 className="text-2xl md:text-3xl font-bold text-[#2C2C2C] mb-2">
+                    Calculadora de Viabilidade de Laser
+                  </h2>
+                  <p className="text-gray-600 mb-4">
+                    Desenvolvida pelo Dr. Jauru Nunes de Freitas - Descubra se o tratamento a laser é ideal para você
+                  </p>
+                </div>
+                <Link to={createPageUrl("CalculadoraLaser")} className="flex-shrink-0">
+                  <Button size="lg" className="bg-[#2C2C2C] hover:bg-[#3A3A3A] text-[#F7D426] font-bold shadow-xl">
+                    Acessar Calculadora
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </section>
 
@@ -219,30 +289,32 @@ export default function Inicio() {
       </section>
 
       {/* Recent Listings */}
-      <section className="py-12 sm:py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-8 sm:mb-12">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-pink-600" />
-              <span className="text-xs sm:text-sm font-semibold text-pink-600 uppercase tracking-wide">
-                Novidades
-              </span>
+      {anunciosRecentes.length > 0 && (
+        <section className="py-12 sm:py-16 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <div className="text-center mb-8 sm:mb-12">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-[#F7D426]" />
+                <span className="text-xs sm:text-sm font-semibold text-[#F7D426] uppercase tracking-wide">
+                  Novidades
+                </span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 px-2">
+                Todos os Dias Novos Profissionais
+              </h2>
+              <p className="text-gray-600 text-base sm:text-lg px-4">
+                Procuramos sempre indicar para você o que há de novo no mapa
+              </p>
             </div>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 px-2">
-              Todos os Dias Novos Profissionais
-            </h2>
-            <p className="text-gray-600 text-base sm:text-lg px-4">
-              Procuramos sempre indicar para você o que há de novo no mapa
-            </p>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {anunciosRecentes.map((anuncio) => (
-              <CardAnuncio key={anuncio.id} anuncio={anuncio} />
-            ))}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              {anunciosRecentes.map((anuncio) => (
+                <CardAnuncio key={anuncio.id} anuncio={anuncio} />
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Blog Section */}
       <section className="py-12 sm:py-16 bg-gradient-to-br from-pink-50 to-rose-50">

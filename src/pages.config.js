@@ -7,6 +7,7 @@ import SobreNos from './pages/SobreNos';
 import FaleConosco from './pages/FaleConosco';
 import Perfil from './pages/Perfil';
 import CadastrarAnuncio from './pages/CadastrarAnuncio';
+import CalculadoraLaser from './pages/CalculadoraLaser';
 import Layout from './Layout.jsx';
 
 
@@ -20,6 +21,7 @@ export const PAGES = {
     "FaleConosco": FaleConosco,
     "Perfil": Perfil,
     "CadastrarAnuncio": CadastrarAnuncio,
+    "CalculadoraLaser": CalculadoraLaser,
 }
 
 export const pagesConfig = {
