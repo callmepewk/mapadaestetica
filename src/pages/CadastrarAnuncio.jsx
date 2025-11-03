@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useMutation } from "@tanstack/react-query";
@@ -25,6 +26,7 @@ import {
   ArrowLeft,
   Plus
 } from "lucide-react";
+import AssistenteAnuncio from "../components/home/AssistenteAnuncio";
 
 const categorias = [
   "Depilação", "Estética Facial", "Estética Corporal", "Massoterapia",
@@ -163,13 +165,18 @@ export default function CadastrarAnuncio() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.titulo || !formData.descricao || !formData.categoria || !formData.cidade) {
       setErro("Por favor, preencha todos os campos obrigatórios");
       return;
     }
-    criarAnuncioMutation.mutate(formData);
+    
+    try {
+      await criarAnuncioMutation.mutateAsync(formData);
+    } catch (error) {
+      console.error("Erro ao criar anúncio:", error);
+    }
   };
 
   if (!user) {
@@ -227,7 +234,14 @@ export default function CadastrarAnuncio() {
               <h2 className="text-xl font-semibold mb-4">Informações Básicas</h2>
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="titulo">Título do Anúncio *</Label>
+                  <div className="flex items-center justify-between mb-1">
+                    <Label htmlFor="titulo">Título do Anúncio *</Label>
+                    <AssistenteAnuncio 
+                      campo="titulo" 
+                      valor={formData.titulo}
+                      onAplicar={(texto) => setFormData({ ...formData, titulo: texto })}
+                    />
+                  </div>
                   <Input
                     id="titulo"
                     value={formData.titulo}
@@ -238,7 +252,14 @@ export default function CadastrarAnuncio() {
                 </div>
 
                 <div>
-                  <Label htmlFor="descricao">Descrição *</Label>
+                  <div className="flex items-center justify-between mb-1">
+                    <Label htmlFor="descricao">Descrição *</Label>
+                    <AssistenteAnuncio 
+                      campo="descricao" 
+                      valor={formData.descricao}
+                      onAplicar={(texto) => setFormData({ ...formData, descricao: texto })}
+                    />
+                  </div>
                   <Textarea
                     id="descricao"
                     value={formData.descricao}
@@ -251,7 +272,10 @@ export default function CadastrarAnuncio() {
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="categoria">Categoria *</Label>
+                    <div className="flex items-center justify-between mb-1">
+                      <Label htmlFor="categoria">Categoria *</Label>
+                      <AssistenteAnuncio campo="categoria" valor={formData.categoria} onAplicar={() => {}} />
+                    </div>
                     <Select
                       value={formData.categoria}
                       onValueChange={(value) => setFormData({ ...formData, categoria: value })}
@@ -285,7 +309,10 @@ export default function CadastrarAnuncio() {
           {/* Contact Info */}
           <Card className="border-none shadow-lg">
             <CardContent className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Informações de Contato</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold">Informações de Contato</h2>
+                <AssistenteAnuncio campo="contato" valor="" onAplicar={() => {}} />
+              </div>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="profissional">Nome do Profissional *</Label>
@@ -361,7 +388,10 @@ export default function CadastrarAnuncio() {
           {/* Location */}
           <Card className="border-none shadow-lg">
             <CardContent className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Localização</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold">Localização</h2>
+                <AssistenteAnuncio campo="localizacao" valor="" onAplicar={() => {}} />
+              </div>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="cidade">Cidade *</Label>

@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,18 +16,29 @@ export default function Blog() {
     setCarregando(true);
     try {
       const resultado = await base44.integrations.Core.InvokeLLM({
-        prompt: `Busque as últimas 9 notícias e artigos sobre estética, beleza, cuidados com a pele, tratamentos estéticos, novidades do mercado de estética no Brasil.
+        prompt: `Crie exatamente 9 artigos sobre estética, beleza, cuidados com a pele e tratamentos estéticos.
         
         Para cada artigo, forneça:
-        - titulo: título atraente
-        - resumo: resumo de 2-3 linhas
+        - titulo: título atraente e profissional
+        - resumo: resumo de 2-3 linhas  
         - categoria: uma das categorias (Estética Facial, Estética Corporal, Cuidados com a Pele, Tratamentos, Tendências, Novidades)
-        - data: data atual em formato dd/MM/yyyy
-        - tempo_leitura: tempo estimado de leitura em minutos
-        - conteudo: texto completo do artigo com 3-4 parágrafos
+        - data: data atual no formato dd/MM/yyyy
+        - tempo_leitura: número entre 3 e 8 minutos
+        - conteudo: texto completo com 3 parágrafos
         
-        Retorne um array de objetos com essas informações.`,
-        add_context_from_internet: true,
+        IMPORTANTE: Retorne exatamente este formato JSON:
+        {
+          "artigos": [
+            {
+              "titulo": "string",
+              "resumo": "string", 
+              "categoria": "string",
+              "data": "string",
+              "tempo_leitura": number,
+              "conteudo": "string"
+            }
+          ]
+        }`,
         response_json_schema: {
           type: "object",
           properties: {
@@ -43,17 +53,37 @@ export default function Blog() {
                   data: { type: "string" },
                   tempo_leitura: { type: "number" },
                   conteudo: { type: "string" }
-                }
+                },
+                required: ["titulo", "resumo", "categoria", "data", "tempo_leitura", "conteudo"]
               }
             }
-          }
+          },
+          required: ["artigos"]
         }
       });
       
       setArtigos(resultado.artigos || []);
     } catch (error) {
       console.error("Erro ao buscar artigos:", error);
-      setArtigos([]);
+      // Artigos de fallback
+      setArtigos([
+        {
+          titulo: "Tendências em Harmonização Facial para 2025",
+          resumo: "Descubra as principais tendências de harmonização facial que estão dominando o mercado de estética.",
+          categoria: "Harmonização Facial",
+          data: "03/01/2025",
+          tempo_leitura: 5,
+          conteudo: "A harmonização facial continua em alta, mas com uma abordagem mais natural..."
+        },
+        {
+          titulo: "Cuidados com a Pele no Verão",
+          resumo: "Proteja sua pele durante os dias quentes com estas dicas essenciais de cuidados.",
+          categoria: "Cuidados com a Pele",
+          data: "03/01/2025",
+          tempo_leitura: 4,
+          conteudo: "O verão exige cuidados especiais com a pele para evitar danos causados pelo sol..."
+        }
+      ]);
     }
     setCarregando(false);
   };
@@ -75,7 +105,8 @@ export default function Blog() {
       "Cuidados com a Pele": "bg-green-100 text-green-800",
       "Tratamentos": "bg-pink-100 text-pink-800",
       "Tendências": "bg-orange-100 text-orange-800",
-      "Novidades": "bg-red-100 text-red-800"
+      "Novidades": "bg-red-100 text-red-800",
+      "Harmonização Facial": "bg-violet-100 text-violet-800"
     };
     return colors[categoria] || "bg-gray-100 text-gray-800";
   };

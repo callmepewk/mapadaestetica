@@ -29,7 +29,6 @@ import CardAnuncio from "../components/anuncios/CardAnuncio";
 import CardCategoria from "../components/home/CardCategoria";
 import TermosCondicoes from "../components/home/TermosCondicoes";
 import Tutorial from "../components/home/Tutorial";
-import Chatbot from "../components/home/Chatbot";
 import { CardContent } from "@/components/ui/card";
 
 const categorias = [
@@ -112,8 +111,6 @@ export default function Inicio() {
         open={mostrarTermos} 
         onAccept={() => setMostrarTermos(false)} 
       />
-
-      <Chatbot />
 
       {/* Hero Section */}
       <section 

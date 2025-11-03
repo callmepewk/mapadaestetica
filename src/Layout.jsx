@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -25,6 +26,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import Chatbot from "./components/home/Chatbot";
 
 const navigationItems = [
   { title: "Início", url: createPageUrl("Inicio"), icon: Home },
@@ -73,6 +75,8 @@ export default function Layout({ children }) {
           --accent: #FF6B35;
         }
       `}</style>
+
+      <Chatbot />
 
       {/* Top Bar */}
       <div className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] text-[#2C2C2C] py-2 px-4 shadow-sm">
