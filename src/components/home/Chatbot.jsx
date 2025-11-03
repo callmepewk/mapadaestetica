@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useMutation } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
@@ -36,6 +37,28 @@ export default function Chatbot() {
       timestamp: new Date()
     }
   ]);
+  const chatRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Check if the chat is open and the click is outside the chat window
+      // Also ensure the click is not on the floating button that opens the chat
+      if (aberto && chatRef.current && !chatRef.current.contains(event.target)) {
+        // Find the floating button element by its className or another unique identifier
+        const floatingButton = document.querySelector('.fixed.bottom-6.right-6.z-50.w-16.h-16'); // Adjust selector if needed
+        if (floatingButton && floatingButton.contains(event.target)) {
+          // If the click is on the floating button, don't close the chat
+          return;
+        }
+        setAberto(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [aberto]); // Depend on 'aberto' state
 
   const enviarMensagemMutation = useMutation({
     mutationFn: async (pergunta) => {
@@ -124,6 +147,7 @@ export default function Chatbot() {
       <AnimatePresence>
         {aberto && (
           <motion.div
+            ref={chatRef} {/* Attach the ref here */}
             initial={{ opacity: 0, y: 100, scale: 0.8 }}
             animate={{ 
               opacity: 1, 

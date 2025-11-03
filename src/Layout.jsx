@@ -31,6 +31,7 @@ import Chatbot from "./components/home/Chatbot";
 const navigationItems = [
   { title: "Início", url: createPageUrl("Inicio"), icon: Home },
   { title: "Anúncios", url: createPageUrl("Anuncios"), icon: Search },
+  { title: "Produtos", url: createPageUrl("Produtos"), icon: CreditCard }, // Added "Produtos" item
   { title: "Planos", url: createPageUrl("Planos"), icon: CreditCard },
   { title: "Blog", url: createPageUrl("Blog"), icon: Newspaper },
   { title: "Sobre Nós", url: createPageUrl("SobreNos"), icon: Info },
@@ -74,6 +75,16 @@ export default function Layout({ children }) {
           --secondary: #2C2C2C;
           --accent: #FF6B35;
         }
+        
+        body, p, span, div, input, textarea, button {
+          font-size: 14px;
+        }
+        
+        @media (min-width: 768px) {
+          body, p, span, div, input, textarea, button {
+            font-size: 16px;
+          }
+        }
       `}</style>
 
       <Chatbot />
@@ -98,7 +109,7 @@ export default function Layout({ children }) {
             {/* Logo */}
             <Link to={createPageUrl("Inicio")} className="flex items-center gap-2 sm:gap-3 group flex-shrink-0">
               <img 
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/dfd50956f_image.png" 
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe3/dfd50956f_image.png" 
                 alt="Mapa da Estética"
                 className="h-12 sm:h-14 w-auto object-contain transform group-hover:scale-105 transition-transform"
               />
@@ -224,9 +235,9 @@ export default function Layout({ children }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
             <div>
               <img 
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/dfd50956f_image.png" 
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe3/dfd50956f_image.png" 
                 alt="Mapa da Estética"
-                className="h-12 w-auto object-contain mb-4 brightness-0 invert"
+                className="h-12 w-auto object-contain mb-4" // Removed brightness-0 invert
               />
               <p className="text-gray-400 text-sm">
                 A maior plataforma de profissionais de estética do Brasil.
@@ -238,6 +249,7 @@ export default function Layout({ children }) {
               <ul className="space-y-2 text-sm text-gray-400">
                 <li><Link to={createPageUrl("Inicio")} className="hover:text-[#F7D426] transition-colors">Início</Link></li>
                 <li><Link to={createPageUrl("Anuncios")} className="hover:text-[#F7D426] transition-colors">Anúncios</Link></li>
+                <li><Link to={createPageUrl("Produtos")} className="hover:text-[#F7D426] transition-colors">Produtos</Link></li> {/* Added "Produtos" link */}
                 <li><Link to={createPageUrl("Planos")} className="hover:text-[#F7D426] transition-colors">Planos</Link></li>
                 <li><Link to={createPageUrl("Blog")} className="hover:text-[#F7D426] transition-colors">Blog</Link></li>
               </ul>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useMutation } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
@@ -21,6 +21,20 @@ export default function AssistenteAnuncio({ campo, valor, onAplicar }) {
   const [contexto, setContexto] = useState("");
   const [textoGerado, setTextoGerado] = useState("");
   const [feedback, setFeedback] = useState(null);
+  const cardRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (cardRef.current && !cardRef.current.contains(event.target) && aberto) {
+        setAberto(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [aberto]);
 
   const gerarTextoMutation = useMutation({
     mutationFn: async ({ campo, valorAtual, contextoExtra }) => {
@@ -87,7 +101,6 @@ Retorne apenas o título, sem aspas ou introdução.`;
   const handleFeedback = (tipo) => {
     setFeedback(tipo);
     if (tipo === "negativo") {
-      // Regenerar com ajuste
       setTimeout(() => {
         gerarTextoMutation.mutate({
           campo,
@@ -138,7 +151,7 @@ Retorne apenas o título, sem aspas ou introdução.`;
   };
 
   return (
-    <div className="relative">
+    <div className="relative" ref={cardRef}>
       <Button
         type="button"
         variant="ghost"
@@ -156,34 +169,33 @@ Retorne apenas o título, sem aspas ou introdução.`;
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="absolute top-full left-0 right-0 z-50 mt-2"
+            className="absolute top-full left-0 right-0 md:left-auto md:right-0 md:w-[600px] z-50 mt-2"
           >
             <Card className="border-2 border-[#F7D426] shadow-2xl">
-              <CardContent className="p-4 space-y-4">
+              <CardContent className="p-6 space-y-4">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#F7D426] to-[#FFE066] flex items-center justify-center">
-                      <Sparkles className="w-4 h-4 text-[#2C2C2C]" />
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#F7D426] to-[#FFE066] flex items-center justify-center">
+                      <Sparkles className="w-5 h-5 text-[#2C2C2C]" />
                     </div>
                     <div>
-                      <p className="font-semibold text-[#2C2C2C]">Assistente Virtual</p>
-                      <p className="text-xs text-gray-500">Estou aqui para ajudar!</p>
+                      <p className="font-semibold text-[#2C2C2C] text-base">Assistente Virtual</p>
+                      <p className="text-sm text-gray-500">Estou aqui para ajudar!</p>
                     </div>
                   </div>
                   <button
                     onClick={() => setAberto(false)}
                     className="text-gray-400 hover:text-gray-600"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-5 h-5" />
                   </button>
                 </div>
 
-                {/* Dicas */}
-                <div className="bg-[#FFF9E6] p-3 rounded-lg">
-                  <p className="text-sm font-medium text-[#2C2C2C] mb-2">💡 Dicas:</p>
-                  <ul className="space-y-1">
+                <div className="bg-[#FFF9E6] p-4 rounded-lg">
+                  <p className="font-medium text-[#2C2C2C] mb-3">💡 Dicas:</p>
+                  <ul className="space-y-2">
                     {getDicas().map((dica, index) => (
-                      <li key={index} className="text-xs text-gray-700 flex items-start gap-2">
+                      <li key={index} className="text-sm text-gray-700 flex items-start gap-2">
                         <span className="text-[#F7D426] mt-0.5">•</span>
                         <span>{dica}</span>
                       </li>
@@ -191,15 +203,14 @@ Retorne apenas o título, sem aspas ou introdução.`;
                   </ul>
                 </div>
 
-                {/* Gerador de Texto para Descrição */}
                 {(campo === "descricao" || campo === "titulo") && (
-                  <div className="space-y-3">
-                    <div className="border-t pt-3">
-                      <Badge className="mb-2 bg-[#F7D426] text-[#2C2C2C]">
-                        <Sparkles className="w-3 h-3 mr-1" />
+                  <div className="space-y-4">
+                    <div className="border-t pt-4">
+                      <Badge className="mb-3 bg-[#F7D426] text-[#2C2C2C] text-sm">
+                        <Sparkles className="w-4 h-4 mr-1" />
                         Gerador Inteligente
                       </Badge>
-                      <p className="text-xs text-gray-600 mb-3">
+                      <p className="text-sm text-gray-600 mb-3">
                         Deixe a IA criar um {campo === "descricao" ? "texto profissional" : "título atraente"} para você!
                       </p>
                       
@@ -208,7 +219,7 @@ Retorne apenas o título, sem aspas ou introdução.`;
                           placeholder="Conte mais sobre seus serviços, experiência, diferenciais... (opcional)"
                           value={contexto}
                           onChange={(e) => setContexto(e.target.value)}
-                          className="mb-2 min-h-[80px] text-sm"
+                          className="mb-3 min-h-[100px]"
                         />
                       )}
 
@@ -231,22 +242,20 @@ Retorne apenas o título, sem aspas ou introdução.`;
                       </Button>
                     </div>
 
-                    {/* Texto Gerado */}
                     {textoGerado && (
                       <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="border-t pt-3 space-y-3"
+                        className="border-t pt-4 space-y-4"
                       >
-                        <div className="bg-white p-3 rounded-lg border border-[#F7D426]">
+                        <div className="bg-white p-4 rounded-lg border-2 border-[#F7D426]">
                           <p className="text-sm text-gray-700 whitespace-pre-line">
                             {textoGerado}
                           </p>
                         </div>
 
-                        {/* Feedback */}
                         <div className="flex items-center justify-between gap-2">
-                          <p className="text-xs text-gray-600">Este texto está bom?</p>
+                          <p className="text-sm text-gray-600">Este texto está bom?</p>
                           <div className="flex gap-2">
                             <Button
                               size="sm"
@@ -254,7 +263,7 @@ Retorne apenas o título, sem aspas ou introdução.`;
                               onClick={() => handleFeedback("positivo")}
                               className={feedback === "positivo" ? "bg-green-600 hover:bg-green-700" : ""}
                             >
-                              <ThumbsUp className="w-3 h-3 mr-1" />
+                              <ThumbsUp className="w-4 h-4 mr-1" />
                               Sim
                             </Button>
                             <Button
@@ -263,7 +272,7 @@ Retorne apenas o título, sem aspas ou introdução.`;
                               onClick={() => handleFeedback("negativo")}
                               className={feedback === "negativo" ? "bg-red-600 hover:bg-red-700" : ""}
                             >
-                              <ThumbsDown className="w-3 h-3 mr-1" />
+                              <ThumbsDown className="w-4 h-4 mr-1" />
                               Gerar Outro
                             </Button>
                           </div>
