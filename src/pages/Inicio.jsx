@@ -54,7 +54,7 @@ export default function Inicio() {
 
   useEffect(() => {
     const termosAceitos = localStorage.getItem('termos_aceitos');
-    if (!termosAceitos) {
+    if (!termosAceitos || termosAceitos !== 'true') {
       setMostrarTermos(true);
     }
 

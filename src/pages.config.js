@@ -9,6 +9,7 @@ import Perfil from './pages/Perfil';
 import CadastrarAnuncio from './pages/CadastrarAnuncio';
 import CalculadoraLaser from './pages/CalculadoraLaser';
 import Produtos from './pages/Produtos';
+import MeuPlano from './pages/MeuPlano';
 import Layout from './Layout.jsx';
 
 
@@ -24,6 +25,7 @@ export const PAGES = {
     "CadastrarAnuncio": CadastrarAnuncio,
     "CalculadoraLaser": CalculadoraLaser,
     "Produtos": Produtos,
+    "MeuPlano": MeuPlano,
 }
 
 export const pagesConfig = {

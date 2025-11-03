@@ -109,7 +109,7 @@ export default function Layout({ children }) {
             {/* Logo */}
             <Link to={createPageUrl("Inicio")} className="flex items-center gap-2 sm:gap-3 group flex-shrink-0">
               <img 
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/dfd50956f_image.png" 
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe2/dfd50956f_image.png" 
                 alt="Mapa da Estética"
                 className="h-12 sm:h-14 w-auto object-contain transform group-hover:scale-105 transition-transform"
               />
@@ -165,6 +165,11 @@ export default function Layout({ children }) {
                         <User className="w-4 h-4 mr-2" />
                         Meu Perfil
                       </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate(createPageUrl("MeuPlano"))}>
+                        <CreditCard className="w-4 h-4 mr-2" />
+                        Meu Plano
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={handleLogout}>
                         <LogOut className="w-4 h-4 mr-2" />
                         Sair
@@ -235,7 +240,7 @@ export default function Layout({ children }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
             <div>
               <img 
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/dfd50956f_image.png" 
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe2/dfd50956f_image.png" 
                 alt="Mapa da Estética"
                 className="h-12 w-auto object-contain mb-4"
               />
