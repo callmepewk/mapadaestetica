@@ -28,7 +28,9 @@ import { Badge } from "@/components/ui/badge";
 import CardAnuncio from "../components/anuncios/CardAnuncio";
 import CardCategoria from "../components/home/CardCategoria";
 import TermosCondicoes from "../components/home/TermosCondicoes";
-import { CardContent } from "@/components/ui/card"; // Added CardContent import
+import Tutorial from "../components/home/Tutorial";
+import Chatbot from "../components/home/Chatbot";
+import { CardContent } from "@/components/ui/card";
 
 const categorias = [
   { nome: "Depilação", cor: "from-pink-500 to-rose-500", icon: "✨" },
@@ -110,6 +112,8 @@ export default function Inicio() {
         open={mostrarTermos} 
         onAccept={() => setMostrarTermos(false)} 
       />
+
+      <Chatbot />
 
       {/* Hero Section */}
       <section 
@@ -241,6 +245,9 @@ export default function Inicio() {
           </div>
         </div>
       </section>
+
+      {/* Tutorial Section */}
+      <Tutorial />
 
       {/* Featured Listings */}
       <section className="py-12 sm:py-16 bg-gradient-to-b from-gray-50 to-white">
