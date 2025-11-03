@@ -64,37 +64,40 @@ export default function Layout({ children }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col">
+      <style>{`
+        :root {
+          --primary: #F7D426;
+          --primary-dark: #E5C215;
+          --primary-light: #FFF9E6;
+          --secondary: #2C2C2C;
+          --accent: #FF6B35;
+        }
+      `}</style>
+
       {/* Top Bar */}
-      <div className="bg-gradient-to-r from-pink-600 via-pink-500 to-rose-500 text-white py-2 px-4">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center text-xs sm:text-sm gap-2 sm:gap-0">
+      <div className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] text-[#2C2C2C] py-2 px-4 shadow-sm">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center text-xs sm:text-sm gap-2 sm:gap-0 font-medium">
           <div className="flex items-center gap-2">
             <MapPin className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-            <span className="text-center sm:text-left">Bem-vindo ao Mapa da Estética</span>
+            <span className="text-center sm:text-left">Bem-vindo ao Mapa da Estética - Os melhores profissionais perto de você</span>
           </div>
           <div className="flex items-center gap-4">
-            <span>(21) 98034-3873</span>
+            <span className="font-semibold">(21) 98034-3873</span>
           </div>
         </div>
       </div>
 
       {/* Main Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-md">
         <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between gap-4">
             {/* Logo */}
             <Link to={createPageUrl("Inicio")} className="flex items-center gap-2 sm:gap-3 group flex-shrink-0">
-              <div className="relative">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-pink-500 to-rose-500 rounded-xl flex items-center justify-center transform group-hover:scale-105 transition-transform">
-                  <MapPin className="w-5 h-5 sm:w-7 sm:h-7 text-white" />
-                </div>
-                <div className="absolute -bottom-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-yellow-400 rounded-full border-2 border-white"></div>
-              </div>
-              <div className="hidden sm:block">
-                <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">
-                  Mapa da Estética
-                </h1>
-                <p className="text-xs text-gray-500 hidden md:block">Os melhores profissionais perto de você</p>
-              </div>
+              <img 
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/dfd50956f_image.png" 
+                alt="Mapa da Estética"
+                className="h-12 sm:h-14 w-auto object-contain transform group-hover:scale-105 transition-transform"
+              />
             </Link>
 
             {/* Desktop Navigation */}
@@ -103,10 +106,10 @@ export default function Layout({ children }) {
                 <Link
                   key={item.title}
                   to={item.url}
-                  className={`flex items-center gap-2 px-3 xl:px-4 py-2 rounded-lg transition-all duration-200 ${
+                  className={`flex items-center gap-2 px-3 xl:px-4 py-2 rounded-lg transition-all duration-200 font-medium ${
                     location.pathname === item.url
-                      ? "bg-pink-50 text-pink-600 font-medium"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                      ? "bg-[#FFF9E6] text-[#2C2C2C] border-b-2 border-[#F7D426]"
+                      : "text-gray-700 hover:bg-gray-50 hover:text-[#2C2C2C]"
                   }`}
                 >
                   <item.icon className="w-4 h-4" />
@@ -120,18 +123,18 @@ export default function Layout({ children }) {
               {isAuthenticated ? (
                 <>
                   <Link to={createPageUrl("CadastrarAnuncio")} className="hidden md:block">
-                    <Button className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 text-sm">
+                    <Button className="bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold shadow-lg hover:shadow-xl transition-all duration-200 text-sm border-2 border-[#2C2C2C]">
                       <PlusCircle className="w-4 h-4 mr-2" />
-                      Cadastrar
+                      Cadastrar Anúncio
                     </Button>
                   </Link>
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <button className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 transition-colors">
-                        <Avatar className="w-9 h-9 sm:w-10 sm:h-10 border-2 border-pink-500">
+                        <Avatar className="w-9 h-9 sm:w-10 sm:h-10 border-2 border-[#F7D426]">
                           <AvatarImage src={user?.foto_perfil} />
-                          <AvatarFallback className="bg-gradient-to-br from-pink-500 to-rose-500 text-white text-sm">
+                          <AvatarFallback className="bg-gradient-to-br from-[#F7D426] to-[#FFE066] text-[#2C2C2C] font-bold text-sm">
                             {user?.full_name?.charAt(0) || "U"}
                           </AvatarFallback>
                         </Avatar>
@@ -157,7 +160,7 @@ export default function Layout({ children }) {
               ) : (
                 <Button
                   onClick={() => base44.auth.redirectToLogin(location.pathname)}
-                  className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white text-sm"
+                  className="bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold text-sm border-2 border-[#2C2C2C]"
                   size="sm"
                 >
                   <User className="w-4 h-4 sm:mr-2" />
@@ -183,10 +186,10 @@ export default function Layout({ children }) {
                   key={item.title}
                   to={item.url}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all font-medium ${
                     location.pathname === item.url
-                      ? "bg-pink-50 text-pink-600 font-medium"
-                      : "text-gray-600 hover:bg-gray-50"
+                      ? "bg-[#FFF9E6] text-[#2C2C2C] border-l-4 border-[#F7D426]"
+                      : "text-gray-700 hover:bg-gray-50"
                   }`}
                 >
                   <item.icon className="w-5 h-5" />
@@ -197,7 +200,7 @@ export default function Layout({ children }) {
                 <Link
                   to={createPageUrl("CadastrarAnuncio")}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg bg-gradient-to-r from-pink-600 to-rose-600 text-white font-medium"
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[#F7D426] text-[#2C2C2C] font-bold border-2 border-[#2C2C2C]"
                 >
                   <PlusCircle className="w-5 h-5" />
                   <span>Cadastrar Anúncio</span>
@@ -212,49 +215,48 @@ export default function Layout({ children }) {
       <main className="flex-1">{children}</main>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white mt-12 sm:mt-20">
+      <footer className="bg-[#2C2C2C] text-white mt-12 sm:mt-20">
         <div className="max-w-7xl mx-auto px-4 py-8 sm:py-12">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
             <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-rose-500 rounded-lg flex items-center justify-center">
-                  <MapPin className="w-6 h-6" />
-                </div>
-                <h3 className="text-lg sm:text-xl font-bold">Mapa da Estética</h3>
-              </div>
+              <img 
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/dfd50956f_image.png" 
+                alt="Mapa da Estética"
+                className="h-12 w-auto object-contain mb-4 brightness-0 invert"
+              />
               <p className="text-gray-400 text-sm">
                 A maior plataforma de profissionais de estética do Brasil.
               </p>
             </div>
 
             <div>
-              <h4 className="font-semibold mb-4">Links Rápidos</h4>
+              <h4 className="font-semibold mb-4 text-[#F7D426]">Links Rápidos</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><Link to={createPageUrl("Inicio")} className="hover:text-pink-400 transition-colors">Início</Link></li>
-                <li><Link to={createPageUrl("Anuncios")} className="hover:text-pink-400 transition-colors">Anúncios</Link></li>
-                <li><Link to={createPageUrl("Planos")} className="hover:text-pink-400 transition-colors">Planos</Link></li>
-                <li><Link to={createPageUrl("Blog")} className="hover:text-pink-400 transition-colors">Blog</Link></li>
+                <li><Link to={createPageUrl("Inicio")} className="hover:text-[#F7D426] transition-colors">Início</Link></li>
+                <li><Link to={createPageUrl("Anuncios")} className="hover:text-[#F7D426] transition-colors">Anúncios</Link></li>
+                <li><Link to={createPageUrl("Planos")} className="hover:text-[#F7D426] transition-colors">Planos</Link></li>
+                <li><Link to={createPageUrl("Blog")} className="hover:text-[#F7D426] transition-colors">Blog</Link></li>
               </ul>
             </div>
 
             <div>
-              <h4 className="font-semibold mb-4">Suporte</h4>
+              <h4 className="font-semibold mb-4 text-[#F7D426]">Suporte</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><Link to={createPageUrl("FaleConosco")} className="hover:text-pink-400 transition-colors">Fale Conosco</Link></li>
-                <li><Link to={createPageUrl("SobreNos")} className="hover:text-pink-400 transition-colors">Sobre Nós</Link></li>
-                <li><a href="tel:21980343873" className="hover:text-pink-400 transition-colors">(21) 98034-3873</a></li>
+                <li><Link to={createPageUrl("FaleConosco")} className="hover:text-[#F7D426] transition-colors">Fale Conosco</Link></li>
+                <li><Link to={createPageUrl("SobreNos")} className="hover:text-[#F7D426] transition-colors">Sobre Nós</Link></li>
+                <li><a href="tel:21980343873" className="hover:text-[#F7D426] transition-colors">(21) 98034-3873</a></li>
               </ul>
             </div>
 
             <div>
-              <h4 className="font-semibold mb-4">Contato</h4>
+              <h4 className="font-semibold mb-4 text-[#F7D426]">Contato</h4>
               <p className="text-sm text-gray-400 mb-2">WhatsApp: (21) 98034-3873</p>
               <p className="text-sm text-gray-400 break-words">Email: contato@mapadaestetica.com.br</p>
             </div>
           </div>
 
-          <div className="border-t border-gray-800 mt-6 sm:mt-8 pt-6 sm:pt-8 text-center text-xs sm:text-sm text-gray-400">
-            <p>&copy; 2025 Mapa da Estética. Todos os direitos reservados.</p>
+          <div className="border-t border-gray-700 mt-6 sm:mt-8 pt-6 sm:pt-8 text-center text-xs sm:text-sm text-gray-400">
+            <p>&copy; 2025 Mapa da Estética - Clube da Beleza. Todos os direitos reservados.</p>
           </div>
         </div>
       </footer>
