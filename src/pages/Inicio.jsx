@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -185,28 +185,9 @@ export default function Inicio() {
     if (!termosAceitos || termosAceitos !== 'true') {
       setMostrarTermos(true);
     }
-
-    // Geolocalização
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(async (position) => {
-        try {
-          const { latitude, longitude } = position.coords;
-          const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
-          );
-          const data = await response.json();
-          const cidade = data.address.city || data.address.town || data.address.village || "";
-          if (cidade) {
-            setBuscaCidade(cidade);
-          }
-        } catch (error) {
-          console.error("Erro ao obter localização:", error);
-        }
-      });
-    }
   }, []);
 
-  const { data: anunciosDestaque, isLoading } = useQuery({
+  const { data: anunciosDestaque = [] } = useQuery({
     queryKey: ['anuncios-destaque'],
     queryFn: async () => {
       const anuncios = await base44.entities.Anuncio.filter(
@@ -224,16 +205,24 @@ export default function Inicio() {
         return 0;
       });
     },
+    staleTime: 5 * 60 * 1000, // 5 minutos
+    cacheTime: 10 * 60 * 1000, // 10 minutos
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
     initialData: [],
   });
 
-  const { data: anunciosRecentes } = useQuery({
+  const { data: anunciosRecentes = [] } = useQuery({
     queryKey: ['anuncios-recentes'],
     queryFn: () => base44.entities.Anuncio.filter(
       { status: 'ativo' },
       '-created_date',
       9
     ),
+    staleTime: 5 * 60 * 1000,
+    cacheTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
     initialData: [],
   });
 
@@ -390,8 +379,8 @@ export default function Inicio() {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
-            {categorias.map((categoria, index) => (
-              <CardCategoria key={index} categoria={categoria} />
+            {categorias.map((categoria) => (
+              <CardCategoria key={categoria.nome} categoria={categoria} />
             ))}
           </div>
         </div>
@@ -571,15 +560,9 @@ export default function Inicio() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {isLoading ? (
-              Array(6).fill(0).map((_, i) => (
-                <Card key={i} className="h-80 animate-pulse bg-gray-100" />
-              ))
-            ) : (
-              anunciosDestaque.map((anuncio) => (
-                <CardAnuncio key={anuncio.id} anuncio={anuncio} destaque />
-              ))
-            )}
+            {anunciosDestaque.map((anuncio) => (
+              <CardAnuncio key={anuncio.id} anuncio={anuncio} destaque />
+            ))}
           </div>
 
           <div className="text-center mt-6 sm:mt-8">

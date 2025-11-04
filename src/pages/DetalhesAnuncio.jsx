@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -52,6 +53,7 @@ export default function DetalhesAnuncio() {
     fetchUser();
   }, []);
 
+  // OTIMIZADO: Cache de 10 minutos
   const { data: anuncio, isLoading } = useQuery({
     queryKey: ['anuncio', anuncioId],
     queryFn: async () => {
@@ -59,6 +61,9 @@ export default function DetalhesAnuncio() {
       return anuncios[0];
     },
     enabled: !!anuncioId,
+    staleTime: 10 * 60 * 1000, // 10 minutos
+    cacheTime: 15 * 60 * 1000, // 15 minutos
+    refetchOnWindowFocus: false,
   });
 
   const incrementarVisualizacoesMutation = useMutation({
@@ -80,11 +85,18 @@ export default function DetalhesAnuncio() {
     }
   }, [anuncio?.id]);
 
+  // Loading otimizado
   if (isLoading || !anuncio) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-6xl mx-auto px-4">
-          <Card className="h-96 animate-pulse bg-gray-100" />
+          <div className="grid lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-6">
+              <Card className="h-96 animate-pulse bg-gray-100" />
+              <Card className="h-64 animate-pulse bg-gray-100" />
+            </div>
+            <Card className="h-96 animate-pulse bg-gray-100" />
+          </div>
         </div>
       </div>
     );

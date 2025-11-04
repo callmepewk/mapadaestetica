@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+
+import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
@@ -43,6 +44,7 @@ export default function Anuncios() {
   const [paginaAtual, setPaginaAtual] = useState(1);
   const [viewMode, setViewMode] = useState("grid");
   const [localizando, setLocalizando] = useState(false);
+  const [ordenacao, setOrdenacao] = useState("mais_recentes"); // New state for sorting
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -51,12 +53,14 @@ export default function Anuncios() {
     const categoria = urlParams.get('categoria');
     const procedimento = urlParams.get('procedimento');
     const tag = urlParams.get('tag');
+    const ordem = urlParams.get('ordem'); // New: check for order in URL
     
     if (cidade) setCidadeFiltro(cidade);
     if (estado) setEstadoFiltro(estado);
     if (categoria) setCategoriaFiltro(categoria);
     if (procedimento) setProcedimentoFiltro(procedimento);
     if (tag) setTagFiltro(tag);
+    if (ordem) setOrdenacao(ordem); // Apply order from URL
   }, []);
 
   const usarMinhaLocalizacao = async () => {
@@ -81,75 +85,110 @@ export default function Anuncios() {
           if (estado) setEstadoFiltro(estado.substring(0, 2).toUpperCase());
           setPaginaAtual(1);
         } catch (error) {
+          console.error("Erro ao obter localização ou reverter:", error);
           alert("Erro ao obter localização. Tente novamente.");
         } finally {
           setLocalizando(false);
         }
       },
       (error) => {
+        console.error("Erro de geolocalização:", error);
         alert("Não foi possível obter sua localização. Verifique as permissões.");
         setLocalizando(false);
       }
     );
   };
 
-  const { data: anuncios, isLoading } = useQuery({
-    queryKey: ['anuncios', categoriaFiltro, cidadeFiltro, estadoFiltro, procedimentoFiltro, tagFiltro, busca],
+  // Memoized object for server-side filters to be used in queryKey
+  const serverSideFilters = useMemo(() => ({
+    cidade: cidadeFiltro,
+    estado: estadoFiltro,
+    categoria: categoriaFiltro,
+  }), [cidadeFiltro, estadoFiltro, categoriaFiltro]);
+
+  // OTIMIZADO: Cache de 5 minutos
+  const { data: fetchedAnuncios = [], isLoading } = useQuery({
+    queryKey: ['anuncios', serverSideFilters, ordenacao],
     queryFn: async () => {
-      let filtros = { status: 'ativo' };
+      let query = { status: 'ativo' };
       
-      if (categoriaFiltro && categoriaFiltro !== "Todas") {
-        filtros.categoria = categoriaFiltro;
+      if (serverSideFilters.cidade) {
+        query.cidade = { $regex: serverSideFilters.cidade, $options: 'i' };
       }
       
-      const todosAnuncios = await base44.entities.Anuncio.filter(filtros, '-created_date');
+      if (serverSideFilters.categoria && serverSideFilters.categoria !== 'Todas') {
+        query.categoria = serverSideFilters.categoria;
+      }
       
-      const planoOrdem = { 'premium': 4, 'avancado': 3, 'intermediario': 2, 'basico': 1 };
+      if (serverSideFilters.estado) {
+        query.estado = serverSideFilters.estado.toUpperCase(); // Ensure state is uppercase for consistent querying
+      }
       
-      return todosAnuncios
-        .filter(anuncio => {
-          const matchCidade = !cidadeFiltro || 
-            anuncio.cidade?.toLowerCase().includes(cidadeFiltro.toLowerCase());
-          
-          const matchEstado = !estadoFiltro ||
-            anuncio.estado?.toLowerCase().includes(estadoFiltro.toLowerCase());
-          
-          const matchProcedimento = !procedimentoFiltro ||
-            anuncio.procedimentos_servicos?.some(p => 
-              p.toLowerCase().includes(procedimentoFiltro.toLowerCase())
-            ) ||
-            anuncio.titulo?.toLowerCase().includes(procedimentoFiltro.toLowerCase()) ||
-            anuncio.descricao?.toLowerCase().includes(procedimentoFiltro.toLowerCase());
-          
-          const matchTag = !tagFiltro ||
-            anuncio.tags?.some(t => 
-              t.toLowerCase().includes(tagFiltro.toLowerCase())
-            );
-          
-          const matchBusca = !busca || 
-            anuncio.titulo?.toLowerCase().includes(busca.toLowerCase()) ||
-            anuncio.profissional?.toLowerCase().includes(busca.toLowerCase()) ||
-            anuncio.descricao?.toLowerCase().includes(busca.toLowerCase()) ||
-            anuncio.procedimentos_servicos?.some(p => 
-              p.toLowerCase().includes(busca.toLowerCase())
-            ) ||
-            anuncio.tags?.some(t => 
-              t.toLowerCase().includes(busca.toLowerCase())
-            );
-          
-          return matchCidade && matchEstado && matchProcedimento && matchTag && matchBusca;
-        })
-        .sort((a, b) => {
-          const planoA = planoOrdem[a.plano] || 0;
-          const planoB = planoOrdem[b.plano] || 0;
-          if (planoB !== planoA) {
-            return planoB - planoA;
-          }
-          return new Date(b.created_date) - new Date(a.created_date);
-        });
+      let ordemParam = '-created_date'; // Default sort
+      if (ordenacao === 'mais_visualizados') ordemParam = '-visualizacoes';
+      if (ordenacao === 'mais_antigos') ordemParam = 'created_date';
+      
+      // Fetch a maximum of 100 announcements, sorted by `ordemParam`
+      const result = await base44.entities.Anuncio.filter(query, ordemParam, 100);
+      return result;
     },
-    initialData: [],
+    staleTime: 5 * 60 * 1000, // 5 minutos
+    cacheTime: 10 * 60 * 1000, // 10 minutos
+    refetchOnWindowFocus: false,
+    initialData: [], // Provide initialData to avoid errors when data is undefined
   });
+
+  // Apply client-side filters and sorting to the fetched data
+  const anuncios = useMemo(() => {
+    const planoOrdem = { 'premium': 4, 'avancado': 3, 'intermediario': 2, 'basico': 1 };
+    
+    return fetchedAnuncios
+      .filter(anuncio => {
+        // Client-side filtering for search terms, procedures, and tags
+        const matchProcedimento = !procedimentoFiltro ||
+          anuncio.procedimentos_servicos?.some(p => 
+            p.toLowerCase().includes(procedimentoFiltro.toLowerCase())
+          ) ||
+          anuncio.titulo?.toLowerCase().includes(procedimentoFiltro.toLowerCase()) ||
+          anuncio.descricao?.toLowerCase().includes(procedimentoFiltro.toLowerCase());
+        
+        const matchTag = !tagFiltro ||
+          anuncio.tags?.some(t => 
+            t.toLowerCase().includes(tagFiltro.toLowerCase())
+          );
+        
+        const matchBusca = !busca || 
+          anuncio.titulo?.toLowerCase().includes(busca.toLowerCase()) ||
+          anuncio.profissional?.toLowerCase().includes(busca.toLowerCase()) ||
+          anuncio.descricao?.toLowerCase().includes(busca.toLowerCase()) ||
+          anuncio.procedimentos_servicos?.some(p => 
+            p.toLowerCase().includes(busca.toLowerCase())
+          ) ||
+          anuncio.tags?.some(t => 
+            t.toLowerCase().includes(busca.toLowerCase())
+          );
+        
+        // Cidade and Estado are primarily filtered server-side but a final client-side check can be helpful
+        const matchCidade = !cidadeFiltro || 
+          anuncio.cidade?.toLowerCase().includes(cidadeFiltro.toLowerCase());
+        
+        const matchEstado = !estadoFiltro ||
+          anuncio.estado?.toLowerCase().includes(estadoFiltro.toLowerCase());
+
+        return matchCidade && matchEstado && matchProcedimento && matchTag && matchBusca;
+      })
+      .sort((a, b) => {
+        // Client-side sort: prioritize by plan (Premium first)
+        const planoA = planoOrdem[a.plano] || 0;
+        const planoB = planoOrdem[b.plano] || 0;
+        if (planoB !== planoA) {
+          return planoB - planoA;
+        }
+        // If plans are the same, use created_date as a tie-breaker (most recent first)
+        // This maintains the original client-side sort behavior for same-plan items
+        return new Date(b.created_date) - new Date(a.created_date);
+      });
+  }, [fetchedAnuncios, busca, procedimentoFiltro, tagFiltro, cidadeFiltro, estadoFiltro]);
 
   const totalPaginas = Math.ceil(anuncios.length / ITEMS_PER_PAGE);
   const anunciosPaginados = anuncios.slice(
@@ -170,7 +209,7 @@ export default function Anuncios() {
             Encontre Profissionais de Estética
           </h1>
           <p className="text-gray-600">
-            {anuncios.length} profissionais encontrados
+            {anuncios.length} profissional{anuncios.length !== 1 ? 'is' : ''} encontrado{anuncios.length !== 1 ? 's' : ''}
           </p>
         </div>
 
@@ -274,6 +313,23 @@ export default function Anuncios() {
               <Locate className="w-4 h-4 mr-2" />
               {localizando ? "Localizando..." : "Usar Minha Localização"}
             </Button>
+            {/* Added a select for ordering, though not explicitly in the outline, it's needed for the new 'ordenacao' state */}
+            <Select
+              value={ordenacao}
+              onValueChange={(value) => {
+                setOrdenacao(value);
+                setPaginaAtual(1);
+              }}
+            >
+              <SelectTrigger className="w-full md:w-auto ml-0 md:ml-4 mt-2 md:mt-0 h-12">
+                <SelectValue placeholder="Ordenar por" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="mais_recentes">Mais Recentes</SelectItem>
+                <SelectItem value="mais_visualizados">Mais Visualizados</SelectItem>
+                <SelectItem value="mais_antigos">Mais Antigos</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex items-center justify-between mt-4 pt-4 border-t">
@@ -355,6 +411,7 @@ export default function Anuncios() {
                     
                     {Array.from({ length: Math.min(5, totalPaginas) }, (_, i) => {
                       let pageNum;
+                      // Logic to display a maximum of 5 page numbers, centered around the current page
                       if (totalPaginas <= 5) {
                         pageNum = i + 1;
                       } else if (paginaAtual <= 3) {
