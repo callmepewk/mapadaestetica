@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -34,6 +35,7 @@ import Tutorial from "../components/home/Tutorial";
 import { CardContent } from "@/components/ui/card";
 import CalculadoraLaserSection from "../components/home/CalculadoraLaserSection";
 import SEOStats from "../components/home/SEOStats";
+import OnboardingModal from "../components/home/OnboardingModal"; // Added import
 
 const categorias = [
   { nome: "Depilação", cor: "from-pink-500 to-rose-500", icon: "✨" },
@@ -55,6 +57,7 @@ export default function Inicio() {
   const [buscaCidade, setBuscaCidade] = useState("");
   const [buscaCategoria, setBuscaCategoria] = useState("");
   const [mostrarTermos, setMostrarTermos] = useState(false);
+  const [mostrarOnboarding, setMostrarOnboarding] = useState(false); // Added state
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -67,6 +70,11 @@ export default function Inicio() {
       try {
         const userData = await base44.auth.me();
         setUser(userData);
+
+        // Se o usuário não completou o cadastro, mostra onboarding
+        if (userData && !userData.cadastro_completo) { // Added null check for userData
+          setMostrarOnboarding(true);
+        }
       } catch {
         setUser(null);
       }
@@ -77,6 +85,17 @@ export default function Inicio() {
   const handleAceitarTermos = () => {
     localStorage.setItem('termos_aceitos', 'true');
     setMostrarTermos(false);
+  };
+
+  const handleOnboardingComplete = async () => {
+    setMostrarOnboarding(false);
+    // Atualizar dados do usuário
+    try {
+      const userData = await base44.auth.me();
+      setUser(userData);
+    } catch (error) {
+      console.error("Erro ao atualizar usuário:", error);
+    }
   };
 
   const { data: anunciosDestaque = [] } = useQuery({
@@ -109,6 +128,7 @@ export default function Inicio() {
   return (
     <div className="min-h-screen">
       <TermosCondicoes open={mostrarTermos} onAccept={handleAceitarTermos} />
+      <OnboardingModal open={mostrarOnboarding} onComplete={handleOnboardingComplete} /> {/* Added OnboardingModal */}
 
       {/* Hero Section - TODOS */}
       <section

@@ -23,6 +23,7 @@ import {
   Award,
   Check
 } from "lucide-react";
+import { useNavigate } from 'react-router-dom';
 
 const categorias = [
   "Todas",
@@ -43,7 +44,8 @@ const servicosContrataveis = [
     nome: "Criação de Google Negócios Personalizado",
     descricao: "Tenha seu perfil profissional completo no Google com otimização SEO, fotos, descrições e tudo configurado para atrair mais clientes.",
     categoria: "Serviços Contratáveis",
-    preco: 0, // Valor a definir
+    tipo_publico: "profissional",
+    preco: 0,
     preco_texto: "Consulte",
     imagens: ["https://images.unsplash.com/photo-1573164713988-8665fc963095?w=800&q=80"],
     beneficios: [
@@ -58,11 +60,12 @@ const servicosContrataveis = [
     status: 'ativo'
   },
   {
-    id: "geracao-imagens", // Changed from geracao-imagens-ia
-    nome: "Geração de Imagens Profissionais", // Changed from Geração de Imagens Profissionais com IA
-    descricao: "Imagens de alta qualidade geradas para seu anúncio. Imagens únicas, profissionais e personalizadas para destacar seu negócio.", // Updated description
+    id: "geracao-imagens",
+    nome: "Geração de Imagens Profissionais",
+    descricao: "Imagens de alta qualidade geradas para seu anúncio. Imagens únicas, profissionais e personalizadas para destacar seu negócio.",
     categoria: "Serviços Contratáveis",
-    preco: 50, // Added a default price
+    tipo_publico: "profissional",
+    preco: 50,
     preco_texto: "A partir de R$ 50",
     imagens: ["https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&q=80"],
     beneficios: [
@@ -75,42 +78,85 @@ const servicosContrataveis = [
     ],
     em_destaque: true,
     status: 'ativo'
+  },
+  // Produtos para PACIENTES
+  {
+    id: "consulta-estetica",
+    nome: "Consulta Estética Online",
+    descricao: "Consulta online com profissionais qualificados para orientação sobre tratamentos estéticos ideais para você.",
+    categoria: "Serviços para Pacientes",
+    tipo_publico: "paciente",
+    preco: 150,
+    preco_texto: "R$ 150,00",
+    imagens: ["https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800&q=80"],
+    beneficios: [
+      "Consulta de 30 minutos",
+      "Profissional qualificado",
+      "Indicação de tratamentos",
+      "Orientação personalizada",
+      "Certificado de consulta"
+    ],
+    em_destaque: true,
+    status: 'ativo'
+  },
+  {
+    id: "kit-skincare",
+    nome: "Kit Skincare Personalizado",
+    descricao: "Kit completo de produtos para cuidados com a pele, selecionados especialmente para seu tipo de pele.",
+    categoria: "Produtos para Pacientes",
+    tipo_publico: "paciente",
+    preco: 299,
+    preco_texto: "R$ 299,00",
+    imagens: ["https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=800&q=80"],
+    beneficios: [
+      "4 produtos profissionais",
+      "Personalizado para seu tipo de pele",
+      "Frete grátis",
+      "Rotina de uso inclusa",
+      "Suporte dermatológico"
+    ],
+    em_destaque: false,
+    status: 'ativo'
   }
 ];
 
 export default function Produtos() {
+  const navigate = useNavigate();
   const [busca, setBusca] = useState("");
   const [categoriaFiltro, setCategoriaFiltro] = useState("Todas");
   const [ordenacao, setOrdenacao] = useState("relevancia");
+  const [categoriaSelecionada, setCategoriaSelecionada] = useState("Todas");
+  const [user, setUser] = useState(null);
 
-  // CARREGAMENTO INSTANTÂNEO
-  const { data: produtos = [], isLoading } = useQuery({
-    queryKey: ['produtos', categoriaFiltro, busca, ordenacao],
-    queryFn: async () => {
-      let filtros = { status: 'ativo' };
-
-      if (categoriaFiltro && categoriaFiltro !== "Todas") {
-        filtros.categoria = categoriaFiltro;
+  React.useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const userData = await base44.auth.me();
+        setUser(userData);
+      } catch {
+        setUser(null);
       }
+    };
+    fetchUser();
+  }, []);
 
-      let ordem = '-created_date';
-      if (ordenacao === 'menor_preco') ordem = 'preco';
-      if (ordenacao === 'maior_preco') ordem = '-preco';
-      if (ordenacao === 'mais_avaliados') ordem = '-media_avaliacoes';
-
-      const todosProdutosAPI = await base44.entities.Produto.filter(filtros, ordem);
-
-      return todosProdutosAPI;
-    },
-    staleTime: 10 * 60 * 1000, // 10 minutos
-    cacheTime: 30 * 60 * 1000, // 30 minutos
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    refetchOnReconnect: false,
+  const { data: produtosDatabase = [] } = useQuery({
+    queryKey: ['produtos'],
+    queryFn: () => base44.entities.Produto.filter({ status: 'ativo' }),
+    staleTime: 5 * 60 * 1000,
     initialData: [],
   });
 
-  const todosProdutos = [...produtos, ...servicosContrataveis];
+  const isPaciente = user?.tipo_usuario === 'paciente';
+  const isProfissional = user?.tipo_usuario === 'profissional' || !user;
+
+  // Filtrar produtos baseado no tipo de usuário
+  const todosProdutos = [
+    ...servicosContrataveis.filter(s =>
+      isProfissional ? s.tipo_publico === "profissional" : s.tipo_publico === "paciente"
+    ),
+    ...produtosDatabase
+  ];
 
   const produtosFiltrados = todosProdutos.filter(produto => {
     const matchCategoria = categoriaFiltro === "Todas" || produto.categoria === categoriaFiltro;
@@ -121,6 +167,12 @@ export default function Produtos() {
 
     return matchCategoria && matchBusca;
   });
+
+  const categoriasDisponiveis = [
+    "Todas",
+    ...(isProfissional ? ["Serviços Contratáveis"] : ["Serviços para Pacientes", "Produtos para Pacientes"]),
+    ...categorias
+  ];
 
   const handleContratar = (servico) => {
     const mensagem = `Olá! Tenho interesse em contratar: ${servico.nome}. Gostaria de mais informações sobre valores e como funciona! 💼`;
@@ -135,14 +187,16 @@ export default function Produtos() {
         {/* Header */}
         <div className="text-center mb-8">
           <Badge className="mb-4 bg-[#F7D426] text-[#2C2C2C] font-bold">
-            <Gift className="w-4 h-4 mr-2" />
-            Marketplace Clube da Beleza
+            {isPaciente ? "🛍️ Produtos e Serviços para Você" : "💼 Serviços Profissionais"}
           </Badge>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-            Produtos com Pontos
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            {isPaciente ? "Produtos e Serviços" : "Serviços Contratáveis"}
           </h1>
-          <p className="text-gray-600">
-            Compre produtos e ganhe pontos para trocar por prêmios
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            {isPaciente
+              ? "Encontre produtos e serviços de qualidade para cuidar da sua beleza e bem-estar"
+              : "Impulsione seu negócio com nossos serviços profissionais"
+            }
           </p>
         </div>
 
@@ -233,13 +287,7 @@ export default function Produtos() {
         </Card>
 
         {/* Products Grid */}
-        {isLoading ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {Array(8).fill(0).map((_, i) => (
-              <Card key={i} className="h-96 animate-pulse bg-gray-100" />
-            ))}
-          </div>
-        ) : produtosFiltrados.length === 0 ? (
+        {produtosFiltrados.length === 0 ? (
           <Card className="p-12 text-center">
             <div className="text-6xl mb-4">🛍️</div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">

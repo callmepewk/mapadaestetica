@@ -1,274 +1,274 @@
 
 import React, { useState, useEffect, useRef } from "react";
-import { base44 } from "@/api/base44Client";
-import { useMutation } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { 
   MessageCircle, 
   X, 
-  Send, 
-  Minimize2,
-  Sparkles
+  Send 
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const perguntasSugeridas = [
-  "Como faço para criar um anúncio?",
-  "Quais são os planos disponíveis?",
-  "Como funciona o programa de pontos?",
-  "Quanto custa anunciar?",
-  "Como entro em contato com um profissional?",
-  "Posso alterar meu plano depois?",
-  "Como funciona a busca por localização?",
-  "O que é a Calculadora de Laser?"
-];
-
 export default function Chatbot() {
   const [aberto, setAberto] = useState(false);
-  const [minimizado, setMinimizado] = useState(false);
-  const [mensagem, setMensagem] = useState("");
-  const [conversa, setConversa] = useState([
-    {
-      tipo: "bot",
-      texto: "Olá! 👋 Sou o Dr. Beleza, assistente do Mapa da Estética. Como posso ajudá-lo hoje?",
-      timestamp: new Date()
-    }
-  ]);
-  const chatRef = useRef(null);
+  const [mensagens, setMensagens] = useState([]);
+  const [inputMensagem, setInputMensagem] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [tipoUsuario, setTipoUsuario] = useState(null);
+  const messagesEndRef = useRef(null);
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (chatRef.current && !chatRef.current.contains(event.target) && aberto) {
-        setAberto(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [aberto]);
-
-  const enviarMensagemMutation = useMutation({
-    mutationFn: async (pergunta) => {
-      const resposta = await base44.integrations.Core.InvokeLLM({
-        prompt: `Você é o Dr. Beleza, o assistente virtual do Mapa da Estética e Clube da Beleza. 
-        
-        Responda à seguinte pergunta de forma amigável, útil e profissional em português:
-        "${pergunta}"
-        
-        Informações importantes sobre a plataforma:
-        - Somos uma plataforma que conecta profissionais de estética a clientes em todo Brasil
-        - Temos 4 planos para profissionais: FREE (grátis), Básico (R$ 99), Avançado (R$ 297) e Premium (R$ 997)
-        - Oferecemos mais de 64 categorias de serviços de estética
-        - Temos mais de 3.000 profissionais parceiros
-        - Contato Central de Vendas: (31) 97259-5643 / WhatsApp
-        - Horário de atendimento: Segunda a Sexta, 9h às 18h
-        - Cadastro gratuito para profissionais no plano FREE
-        - Sistema de pontos e descontos para clientes no Clube da Beleza
-        - Agendamento online e chat direto com profissionais
-        - Calculadora de Viabilidade de Laser desenvolvida pelo Dr. Jauru
-        - Assistente de Pesquisa para descobrir tratamentos
-        
-        Responda de forma direta e objetiva em até 3 parágrafos curtos.
-        Use emojis quando apropriado para deixar a conversa mais amigável.`,
-      });
-      return resposta;
-    },
-    onSuccess: (resposta) => {
-      setConversa(prev => [...prev, {
-        tipo: "bot",
-        texto: resposta,
-        timestamp: new Date()
-      }]);
-    },
-  });
-
-  const handleEnviarMensagem = (texto) => {
-    if (!texto.trim()) return;
-
-    setConversa(prev => [...prev, {
-      tipo: "usuario",
-      texto: texto,
-      timestamp: new Date()
-    }]);
-
-    setMensagem("");
-    enviarMensagemMutation.mutate(texto);
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const handlePerguntaSugerida = (pergunta) => {
-    handleEnviarMensagem(pergunta);
+  useEffect(() => {
+    scrollToBottom();
+  }, [mensagens]);
+
+  useEffect(() => {
+    if (aberto && mensagens.length === 0) {
+      setMensagens([
+        {
+          tipo: "bot",
+          conteudo: "Olá! Sou o Dr. Beleza 🩺✨, seu assistente virtual!\n\nPara que eu possa te ajudar melhor, você é:",
+          opcoes: [
+            { texto: "👤 Paciente/Cliente", valor: "paciente" },
+            { texto: "💼 Profissional da Estética", valor: "profissional" }
+          ]
+        }
+      ]);
+    }
+  }, [aberto, mensagens.length]); // Added mensagens.length to dependency array to ensure it only runs once per open
+
+  const handleEscolhaTipo = (tipo) => {
+    setTipoUsuario(tipo);
+    
+    setMensagens(prev => [
+      ...prev,
+      { tipo: "usuario", conteudo: tipo === "paciente" ? "Sou paciente" : "Sou profissional" }
+    ]);
+
+    if (tipo === "paciente") {
+      setTimeout(() => {
+        setMensagens(prev => [
+          ...prev,
+          {
+            tipo: "bot",
+            conteudo: "Perfeito! Como posso te ajudar hoje?",
+            opcoes: [
+              { texto: "🔍 Encontrar profissionais", valor: "encontrar_profissionais" },
+              { texto: "💆 Saber sobre tratamentos", valor: "tratamentos" },
+              { texto: "📍 Profissionais perto de mim", valor: "perto_de_mim" },
+              { texto: "❓ Tirar dúvidas", valor: "duvidas_paciente" }
+            ]
+          }
+        ]);
+      }, 500);
+    } else { // tipo === "profissional"
+      setTimeout(() => {
+        setMensagens(prev => [
+          ...prev,
+          {
+            tipo: "bot",
+            conteudo: "Ótimo! Como posso ajudar seu negócio?",
+            opcoes: [
+              { texto: "📢 Criar anúncio", valor: "criar_anuncio" },
+              { texto: "📊 Ver meus anúncios", valor: "meus_anuncios" },
+              { texto: "💎 Conhecer planos", valor: "planos" },
+              { texto: "🎯 Marketing digital", valor: "marketing" },
+              { texto: "❓ Suporte técnico", valor: "suporte" }
+            ]
+          }
+        ]);
+      }, 500);
+    }
+  };
+
+  const handleOpcao = async (opcao) => {
+    setMensagens(prev => [
+      ...prev,
+      { tipo: "usuario", conteudo: opcao.texto }
+    ]);
+
+    setLoading(true);
+
+    let resposta = "";
+
+    if (tipoUsuario === "paciente") {
+      switch (opcao.valor) {
+        case "encontrar_profissionais":
+          resposta = "Você pode encontrar profissionais de várias formas:\n\n1. Use a busca na página inicial\n2. Navegue pelas categorias\n3. Veja profissionais em destaque\n\nQue tipo de profissional você procura?";
+          break;
+        case "tratamentos":
+          resposta = "Temos informações sobre diversos tratamentos:\n\n• Harmonização Facial\n• Depilação a Laser\n• Micropigmentação\n• Limpeza de Pele\n• E muito mais!\n\nVisite nosso Blog para saber mais sobre cada tratamento.";
+          break;
+        case "perto_de_mim":
+          resposta = "Para encontrar profissionais perto de você:\n\n1. Informe sua cidade na busca\n2. Ative a localização do navegador\n3. Veja os profissionais mais próximos\n\nQual sua cidade?";
+          break;
+        case "duvidas_paciente":
+          resposta = "Posso te ajudar com:\n\n• Como funciona a plataforma\n• Como encontrar profissionais\n• Informações sobre tratamentos\n• Contato com profissionais\n\nSobre o que você tem dúvida?";
+          break;
+        default:
+          resposta = "Desculpe, não entendi. Poderia escolher uma das opções acima?";
+          break;
+      }
+    } else { // tipoUsuario === "profissional"
+      switch (opcao.valor) {
+        case "criar_anuncio":
+          resposta = "Para criar seu anúncio:\n\n1. Clique em 'Cadastrar Anúncio'\n2. Preencha suas informações\n3. Adicione fotos\n4. Publique!\n\n✨ Comece GRÁTIS agora!";
+          break;
+        case "meus_anuncios":
+          resposta = "Acesse 'Meu Perfil' para:\n\n• Ver seus anúncios ativos\n• Editar informações\n• Ver estatísticas\n• Gerenciar contatos\n\nVocê já criou seu primeiro anúncio?";
+          break;
+        case "planos":
+          resposta = "Temos 4 planos incríveis:\n\n🆓 FREE - Comece grátis\n⭐ BÁSICO - R$ 99/mês\n💎 AVANÇADO - R$ 297/mês (Mais Popular!)\n👑 PREMIUM - Consulte\n\nQuer saber mais sobre algum plano específico?";
+          break;
+        case "marketing":
+          resposta = "Oferecemos:\n\n• Criação de Google Negócios\n• Geração de imagens profissionais\n• Otimização SEO\n• Destaque nos resultados\n\nQual serviço te interessa?";
+          break;
+        case "suporte":
+          resposta = "Precisa de ajuda? Entre em contato:\n\n📞 Central: (31) 97259-5643\n💻 Suporte: (54) 99155-4136\n📧 Email: Fale Conosco\n\nComo posso ajudar?";
+          break;
+        default:
+          resposta = "Desculpe, não entendi. Poderia escolher uma das opções acima?";
+          break;
+      }
+    }
+
+    setTimeout(() => {
+      setMensagens(prev => [
+        ...prev,
+        { tipo: "bot", conteudo: resposta }
+      ]);
+      setLoading(false);
+    }, 1000);
+  };
+
+  const handleEnviarMensagem = (e) => {
+    e.preventDefault();
+    if (!inputMensagem.trim() || loading) return;
+
+    setMensagens(prev => [...prev, {
+      tipo: "usuario",
+      conteudo: inputMensagem,
+    }]);
+    setInputMensagem("");
+
+    // As per the outline, free-form text input does not trigger a bot response
+    // after the initial menu-driven flow, unless specific logic is added here.
+    // For now, it only adds the user's message to the chat.
   };
 
   return (
     <>
       {/* Botão Flutuante */}
       <AnimatePresence>
-        {!aberto && (
-          <motion.button
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0, opacity: 0 }}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={() => setAberto(true)}
-            className="fixed bottom-6 right-6 z-50 w-16 h-16 sm:w-20 sm:h-20 rounded-full shadow-2xl hover:shadow-3xl transition-all group"
-            style={{
-              background: "linear-gradient(135deg, #F7D426 0%, #FFE066 100%)"
-            }}
-          >
-            <div className="relative w-full h-full rounded-full overflow-hidden border-4 border-white">
-              <img
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/6aa7c4ea6_image.png"
-                alt="Dr. Beleza"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 border-2 border-white rounded-full animate-pulse"></div>
-            <div className="absolute bottom-0 right-0 bg-[#F7D426] rounded-full p-1 border-2 border-white">
-              <MessageCircle className="w-4 h-4 text-[#2C2C2C]" />
-            </div>
-          </motion.button>
-        )}
+        <motion.button
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0, opacity: 0 }}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={() => setAberto(!aberto)}
+          className="fixed bottom-6 right-6 z-50 w-16 h-16 bg-gradient-to-r from-pink-600 to-rose-600 rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform"
+        >
+          {aberto ? <X className="w-6 h-6 text-white" /> : <MessageCircle className="w-6 h-6 text-white" />}
+        </motion.button>
       </AnimatePresence>
 
-      {/* Janela do Chat */}
+      {/* Janela do Chatbot */}
       <AnimatePresence>
         {aberto && (
           <motion.div
-            ref={chatRef}
-            initial={{ opacity: 0, y: 100, scale: 0.8 }}
-            animate={{ 
-              opacity: 1, 
-              y: 0, 
-              scale: 1,
-              height: minimizado ? "auto" : "600px"
-            }}
-            exit={{ opacity: 0, y: 100, scale: 0.8 }}
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-6 right-6 z-50 w-[90vw] sm:w-96 shadow-2xl rounded-2xl overflow-hidden"
+            className="fixed bottom-24 right-6 z-50 w-96 max-w-[calc(100vw-3rem)] shadow-2xl rounded-2xl overflow-hidden"
           >
-            <Card className="border-none h-full flex flex-col">
+            <Card className="border-none overflow-hidden">
               {/* Header */}
-              <div className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] p-4 flex items-center gap-3">
-                <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-white flex-shrink-0">
-                  <img
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/6aa7c4ea6_image.png"
-                    alt="Dr. Beleza"
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-[#2C2C2C]">Dr. Beleza</h3>
-                  <p className="text-xs text-[#2C2C2C]/80 flex items-center gap-1">
-                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                    Online
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setMinimizado(!minimizado)}
-                    className="p-2 hover:bg-white/20 rounded-lg transition-colors"
-                  >
-                    <Minimize2 className="w-4 h-4 text-[#2C2C2C]" />
-                  </button>
-                  <button
-                    onClick={() => setAberto(false)}
-                    className="p-2 hover:bg-white/20 rounded-lg transition-colors"
-                  >
-                    <X className="w-4 h-4 text-[#2C2C2C]" />
-                  </button>
+              <div className="bg-gradient-to-r from-pink-600 to-rose-600 p-4 text-white">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+                    <img
+                      src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/acc7e047d_drbeleza.png"
+                      alt="Dr. Beleza"
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                  </div>
+                  <div>
+                    <h3 className="font-bold">Dr. Beleza</h3>
+                    <p className="text-xs text-white/90">Seu assistente virtual</p>
+                  </div>
                 </div>
               </div>
 
-              {!minimizado && (
-                <>
-                  {/* Messages */}
-                  <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
-                    {conversa.map((msg, index) => (
-                      <motion.div
-                        key={index}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className={`flex ${msg.tipo === "usuario" ? "justify-end" : "justify-start"}`}
-                      >
-                        <div className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-                          msg.tipo === "usuario"
-                            ? "bg-[#F7D426] text-[#2C2C2C] rounded-br-none"
-                            : "bg-white text-gray-800 rounded-bl-none shadow-md"
-                        }`}>
-                          <p className="text-sm whitespace-pre-line">{msg.texto}</p>
-                          <p className="text-xs mt-1 opacity-70">
-                            {msg.timestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                          </p>
-                        </div>
-                      </motion.div>
-                    ))}
-
-                    {enviarMensagemMutation.isPending && (
-                      <div className="flex justify-start">
-                        <div className="bg-white rounded-2xl rounded-bl-none px-4 py-3 shadow-md">
-                          <div className="flex gap-2">
-                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
-                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.4s" }}></div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Sugestões */}
-                    {conversa.length === 1 && (
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-xs text-gray-500">
-                          <Sparkles className="w-3 h-3" />
-                          <span>Sugestões de perguntas:</span>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {perguntasSugeridas.slice(0, 4).map((pergunta, index) => (
+              {/* Messages */}
+              <div className="h-96 overflow-y-auto p-4 bg-gray-50 space-y-4">
+                {mensagens.map((msg, index) => (
+                  <div key={index} className={`flex ${msg.tipo === "usuario" ? "justify-end" : "justify-start"}`}>
+                    <div className={`max-w-[80%] rounded-2xl p-3 ${
+                      msg.tipo === "usuario" 
+                        ? "bg-gradient-to-r from-pink-600 to-rose-600 text-white rounded-br-none" 
+                        : "bg-white shadow-md rounded-bl-none"
+                    }`}>
+                      <p className="text-sm whitespace-pre-line">{msg.conteudo}</p>
+                      
+                      {msg.opcoes && (
+                        <div className="mt-3 space-y-2">
+                          {msg.opcoes.map((opcao, i) => (
                             <button
-                              key={index}
-                              onClick={() => handlePerguntaSugerida(pergunta)}
-                              className="text-xs bg-white hover:bg-[#FFF9E6] border border-gray-200 hover:border-[#F7D426] rounded-full px-3 py-2 transition-all"
+                              key={i}
+                              onClick={() => !tipoUsuario ? handleEscolhaTipo(opcao.valor) : handleOpcao(opcao)}
+                              className="w-full text-left px-3 py-2 bg-pink-50 hover:bg-pink-100 rounded-lg transition-colors text-sm font-medium text-pink-900"
                             >
-                              {pergunta}
+                              {opcao.texto}
                             </button>
                           ))}
                         </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Input */}
-                  <div className="p-4 bg-white border-t">
-                    <div className="flex gap-2">
-                      <Input
-                        value={mensagem}
-                        onChange={(e) => setMensagem(e.target.value)}
-                        onKeyPress={(e) => {
-                          if (e.key === 'Enter' && !enviarMensagemMutation.isPending) {
-                            handleEnviarMensagem(mensagem);
-                          }
-                        }}
-                        placeholder="Digite sua pergunta..."
-                        className="flex-1"
-                        disabled={enviarMensagemMutation.isPending}
-                      />
-                      <Button
-                        onClick={() => handleEnviarMensagem(mensagem)}
-                        disabled={!mensagem.trim() || enviarMensagemMutation.isPending}
-                        className="bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold"
-                      >
-                        <Send className="w-4 h-4" />
-                      </Button>
+                      )}
                     </div>
                   </div>
-                </>
+                ))}
+
+                {loading && (
+                  <div className="flex justify-start">
+                    <div className="bg-white shadow-md rounded-2xl rounded-bl-none p-3">
+                      <div className="flex gap-1">
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Input - desabilitado se não escolheu tipo */}
+              {tipoUsuario && (
+                <div className="p-4 border-t bg-white">
+                  <form onSubmit={handleEnviarMensagem} className="flex gap-2">
+                    <Input
+                      value={inputMensagem}
+                      onChange={(e) => setInputMensagem(e.target.value)}
+                      placeholder="Digite sua mensagem..."
+                      className="flex-1"
+                      disabled={loading}
+                    />
+                    <Button
+                      type="submit"
+                      size="icon"
+                      disabled={!inputMensagem.trim() || loading}
+                      className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
+                    >
+                      <Send className="w-4 h-4" />
+                    </Button>
+                  </form>
+                </div>
               )}
             </Card>
           </motion.div>
