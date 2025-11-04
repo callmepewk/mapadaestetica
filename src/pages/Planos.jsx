@@ -1,129 +1,130 @@
-
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, Star, Crown, Sparkles, ArrowRight } from "lucide-react";
+import { Check, Sparkles, Star, Zap, Crown, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
 const planos = [
   {
-    nome: "LIGHT",
-    tipo: "light",
-    preco: "Grátis",
+    nome: "BÁSICO",
+    tipo: "basico",
+    preco: "Consulte",
     cor: "from-gray-400 to-gray-500",
     icone: Sparkles,
     destaque: false,
+    limites: {
+      tags: 1,
+      especialidades: 1,
+      anuncios: 1
+    },
     beneficios: [
-      "Sem mensalidade",
-      "Checkup da Pele",
-      "Oferece descontos e benefícios",
-      "Acumula pontos ao consumir produtos ou serviços",
-      "Aceito em mais de 3.000 serviços e profissionais",
-      "CHÁ DA BELEZA - Voucher mensal não cumulativo"
-    ],
-    limitacoes: [
-      "Pontos somente ao consumir",
-      "Sem créditos automáticos"
+      "1 Tag para exposição",
+      "1 Especialidade cadastrada",
+      "1 Anúncio ativo",
+      "Perfil básico na plataforma",
+      "Suporte por email",
+      "Estatísticas básicas"
     ]
   },
   {
-    nome: "GOLD",
-    tipo: "gold",
+    nome: "INTERMEDIÁRIO",
+    tipo: "intermediario",
     preco: "Consulte",
-    cor: "from-yellow-400 to-amber-500",
+    cor: "from-blue-400 to-cyan-500",
     icone: Star,
-    destaque: true,
+    destaque: false,
+    limites: {
+      tags: 10,
+      especialidades: 5,
+      anuncios: 20
+    },
     beneficios: [
-      "Programa Spa da Pele - incluso kit Beauty Drink",
-      "12 sessões Skincare Mood* Clube+",
-      "Crédito automático de 250 pontos/mês",
-      "Oferece descontos e benefícios na Rede Parceiro",
-      "Aceito em mais de 3.000 serviços",
-      "Check da Pele - dermahelp/teleconsulta 50%",
-      "Beauty Pass Máquinas da Beleza*",
-      "CHÁ DA BELEZA - Voucher mensal cortesia"
+      "10 Tags para maior exposição",
+      "5 Especialidades cadastradas",
+      "Até 20 Anúncios ativos",
+      "Perfil destacado",
+      "Suporte prioritário",
+      "Estatísticas avançadas",
+      "Badge de verificação",
+      "Aparece nas buscas principais"
     ]
   },
   {
-    nome: "VIP",
-    tipo: "vip",
+    nome: "AVANÇADO",
+    tipo: "avancado",
     preco: "Consulte",
     cor: "from-purple-500 to-pink-500",
+    icone: Zap,
+    destaque: true,
+    limites: {
+      tags: 20,
+      especialidades: 10,
+      anuncios: 50
+    },
+    beneficios: [
+      "20 Tags premium",
+      "10 Especialidades cadastradas",
+      "Até 50 Anúncios ativos",
+      "Prioridade máxima nas buscas",
+      "Perfil premium com destaque",
+      "Suporte VIP com chat direto",
+      "Estatísticas completas",
+      "Selo de Profissional Verificado",
+      "Aparece no topo dos resultados",
+      "Galeria de fotos ampliada"
+    ]
+  },
+  {
+    nome: "PREMIUM",
+    tipo: "premium",
+    preco: "Consulte",
+    cor: "from-yellow-400 to-amber-500",
     icone: Crown,
     destaque: false,
+    limites: {
+      tags: "Ilimitadas",
+      especialidades: "Ilimitadas",
+      anuncios: "Ilimitados"
+    },
     beneficios: [
-      "SOFTLIFT CLUBERS",
-      "Botox Day + Injetável AH",
-      "Check da Up Pele anual",
-      "Beauty Pass VIP Face Skincare",
-      "Beauty Pass VIP Máquinas da Beleza",
-      "CHA DA BELEZA - Beauty Drink Anytime",
-      "Eventos exclusivos para sócios",
-      "Programas de tratamento exclusivos"
+      "Tags ILIMITADAS",
+      "Especialidades ILIMITADAS",
+      "Anúncios ILIMITADOS",
+      "Assistente com Claude.ia integrado",
+      "Prioridade MÁXIMA em todas as buscas",
+      "Destaque permanente na home",
+      "Suporte 24/7 dedicado",
+      "Gerente de conta exclusivo",
+      "Analytics profissional completo",
+      "Marketing digital incluso",
+      "Selo Premium Exclusivo",
+      "Conteúdo patrocinado mensal"
     ]
   }
 ];
 
 export default function Planos() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8 md:py-12">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12">
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
-        <div className="text-center mb-12 md:mb-16 px-4">
-          <Badge className="mb-4 bg-pink-100 text-pink-700">
-            Clube de Benefícios
+        <div className="text-center mb-16">
+          <Badge className="mb-4 bg-[#F7D426] text-[#2C2C2C] font-bold">
+            Planos Mapa da Estética
           </Badge>
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
-            Escolha Seu Plano
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            Escolha Seu Plano de Anúncios
           </h1>
-          <p className="text-base md:text-xl text-gray-600 max-w-2xl mx-auto">
-            Cartão Clube+ - Descontos exclusivos, pontos e benefícios em toda rede parceira
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Diferentes opções para atender profissionais de todos os tamanhos
           </p>
         </div>
 
-        {/* How it Works */}
-        <div className="mb-12 md:mb-16 px-4">
-          <Card className="border-none shadow-xl bg-gradient-to-br from-pink-50 to-rose-50">
-            <CardContent className="p-6 md:p-8">
-              <h2 className="text-2xl font-bold text-center mb-8">Como Funciona</h2>
-              <div className="grid sm:grid-cols-3 gap-6 md:gap-8">
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-gradient-to-br from-pink-500 to-rose-500 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
-                    1
-                  </div>
-                  <h3 className="font-semibold text-base md:text-lg mb-2">Escolha o Cartão</h3>
-                  <p className="text-gray-600 text-sm">
-                    Selecione o plano que melhor atende suas necessidades
-                  </p>
-                </div>
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-gradient-to-br from-pink-500 to-rose-500 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
-                    2
-                  </div>
-                  <h3 className="font-semibold text-base md:text-lg mb-2">Associe-se</h3>
-                  <p className="text-gray-600 text-sm">
-                    Faça seu cadastro e receba seu cartão virtual
-                  </p>
-                </div>
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-gradient-to-br from-pink-500 to-rose-500 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
-                    3
-                  </div>
-                  <h3 className="font-semibold text-base md:text-lg mb-2">Aproveite!</h3>
-                  <p className="text-gray-600 text-sm">
-                    Use seus benefícios e acumule pontos
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Plans Grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-12 md:mb-16 px-4">
+        {/* Plans Comparison */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
           {planos.map((plano, index) => {
             const IconComponent = plano.icone;
             return (
@@ -135,10 +136,10 @@ export default function Planos() {
                 className={`flex ${plano.destaque ? "lg:-translate-y-4" : ""}`}
               >
                 <Card className={`relative overflow-hidden border-none shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col w-full ${
-                  plano.destaque ? "ring-4 ring-pink-500" : ""
+                  plano.destaque ? "ring-4 ring-purple-500" : ""
                 }`}>
                   {plano.destaque && (
-                    <div className="absolute top-0 right-0 bg-gradient-to-r from-pink-500 to-rose-500 text-white px-4 py-1 text-sm font-semibold z-10">
+                    <div className="absolute top-0 right-0 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-1 text-sm font-semibold z-10">
                       Mais Popular
                     </div>
                   )}
@@ -150,15 +151,32 @@ export default function Planos() {
                     
                     <div className="relative z-10 text-white">
                       <IconComponent className="w-12 h-12 mb-4" />
-                      <h3 className="text-3xl font-bold mb-2">{plano.nome}</h3>
+                      <h3 className="text-2xl font-bold mb-2">{plano.nome}</h3>
                       <div className="flex items-baseline gap-2">
-                        <span className="text-4xl font-bold">{plano.preco}</span>
-                        {plano.preco !== "Grátis" && <span className="text-sm opacity-80">Consulte</span>}
+                        <span className="text-3xl font-bold">{plano.preco}</span>
                       </div>
                     </div>
                   </div>
 
                   <CardContent className="p-6 flex flex-col flex-1">
+                    <div className="mb-6 p-4 bg-gradient-to-br from-gray-50 to-white rounded-lg border-2 border-gray-200">
+                      <h4 className="font-bold mb-3 text-center">Limites</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Tags:</span>
+                          <span className="font-bold">{plano.limites.tags}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Especialidades:</span>
+                          <span className="font-bold">{plano.limites.especialidades}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Anúncios:</span>
+                          <span className="font-bold">{plano.limites.anuncios}</span>
+                        </div>
+                      </div>
+                    </div>
+
                     <div className="space-y-3 mb-6 flex-1">
                       {plano.beneficios.map((beneficio, i) => (
                         <div key={i} className="flex items-start gap-3">
@@ -170,24 +188,15 @@ export default function Planos() {
                       ))}
                     </div>
 
-                    {plano.limitacoes && (
-                      <div className="mb-6 p-3 bg-gray-50 rounded-lg">
-                        <p className="text-xs text-gray-500 font-medium mb-2">Observações:</p>
-                        {plano.limitacoes.map((lim, i) => (
-                          <p key={i} className="text-xs text-gray-600">• {lim}</p>
-                        ))}
-                      </div>
-                    )}
-
                     <Link to={createPageUrl("FaleConosco")} className="mt-auto">
                       <Button
                         className={`w-full ${
                           plano.destaque
-                            ? "bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
-                            : "bg-gray-900 hover:bg-gray-800"
+                            ? "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                            : "bg-[#2C2C2C] hover:bg-[#3A3A3A]"
                         }`}
                       >
-                        {plano.preco === "Grátis" ? "Começar Grátis" : "Saiba Mais"}
+                        Contratar Plano
                         <ArrowRight className="w-4 h-4 ml-2" />
                       </Button>
                     </Link>
@@ -199,53 +208,53 @@ export default function Planos() {
         </div>
 
         {/* Benefits Section */}
-        <Card className="border-none shadow-xl bg-gradient-to-br from-gray-900 to-gray-800 text-white">
-          <CardContent className="p-8 md:p-12">
+        <Card className="border-none shadow-2xl bg-gradient-to-br from-gray-900 to-gray-800 text-white mb-16">
+          <CardContent className="p-12">
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold mb-4">Benefícios Exclusivos</h2>
+              <h2 className="text-3xl font-bold mb-4">Por Que Anunciar Conosco?</h2>
               <p className="text-gray-300">
-                Todos os planos incluem acesso à nossa rede de parceiros
+                A maior plataforma de profissionais de estética do Brasil
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="text-center p-4">
-                <div className="w-16 h-16 bg-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-3xl">🎁</span>
+            <div className="grid md:grid-cols-4 gap-8 text-center">
+              <div>
+                <div className="w-16 h-16 bg-[#F7D426]/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-3xl">🎯</span>
                 </div>
-                <h3 className="font-semibold mb-2">Descontos Exclusivos</h3>
+                <h3 className="font-semibold mb-2">Público Qualificado</h3>
                 <p className="text-sm text-gray-300">
-                  Em toda rede parceira
+                  Milhares de clientes buscando serviços
                 </p>
               </div>
 
-              <div className="text-center p-4">
-                <div className="w-16 h-16 bg-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-3xl">⭐</span>
+              <div>
+                <div className="w-16 h-16 bg-[#F7D426]/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-3xl">📈</span>
                 </div>
-                <h3 className="font-semibold mb-2">Acumule Pontos</h3>
+                <h3 className="font-semibold mb-2">Mais Visibilidade</h3>
                 <p className="text-sm text-gray-300">
-                  Troque por prêmios
+                  Destaque nos resultados de busca
                 </p>
               </div>
 
-              <div className="text-center p-4">
-                <div className="w-16 h-16 bg-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-3xl">🏆</span>
+              <div>
+                <div className="w-16 h-16 bg-[#F7D426]/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-3xl">💼</span>
                 </div>
-                <h3 className="font-semibold mb-2">Eventos Exclusivos</h3>
+                <h3 className="font-semibold mb-2">Gestão Profissional</h3>
                 <p className="text-sm text-gray-300">
-                  Para membros do clube
+                  Ferramentas para gerenciar seus anúncios
                 </p>
               </div>
 
-              <div className="text-center p-4">
-                <div className="w-16 h-16 bg-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-3xl">💝</span>
+              <div>
+                <div className="w-16 h-16 bg-[#F7D426]/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-3xl">🤝</span>
                 </div>
-                <h3 className="font-semibold mb-2">Ações Solidárias</h3>
+                <h3 className="font-semibold mb-2">Suporte Dedicado</h3>
                 <p className="text-sm text-gray-300">
-                  Apoie projetos sociais
+                  Equipe pronta para ajudar
                 </p>
               </div>
             </div>
@@ -253,13 +262,20 @@ export default function Planos() {
         </Card>
 
         {/* CTA */}
-        <div className="text-center mt-16">
-          <p className="text-gray-600 mb-4">Tem dúvidas sobre qual plano escolher?</p>
-          <Link to={createPageUrl("FaleConosco")}>
-            <Button size="lg" variant="outline">
-              Fale Conosco
-            </Button>
-          </Link>
+        <div className="text-center">
+          <p className="text-gray-600 mb-4 text-lg">Tem dúvidas sobre qual plano escolher?</p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link to={createPageUrl("FaleConosco")}>
+              <Button size="lg" className="bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold">
+                Fale Conosco
+              </Button>
+            </Link>
+            <Link to={createPageUrl("CadastrarAnuncio")}>
+              <Button size="lg" variant="outline">
+                Criar Anúncio Grátis
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     </div>
