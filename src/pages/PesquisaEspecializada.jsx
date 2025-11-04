@@ -141,17 +141,19 @@ Seja profissional, técnico mas acessível. Use informações baseadas em evidê
         </Button>
 
         <div className="text-center mb-8">
-          <Badge className="mb-4 bg-[#F7D426] text-[#2C2C2C] font-bold">
+          <div className="flex justify-center items-center gap-3 mb-4">
             <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/2fd7caf1e_image.png"
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/894287324_drbeleza.png"
               alt="Dr. Beleza"
-              className="w-4 h-4 rounded-full mr-2 inline-block"
+              className="w-16 h-16 rounded-full object-cover shadow-lg"
               onError={(e) => {
                 e.target.style.display = 'none';
               }}
             />
-            Consulte Tratamentos Agora
-          </Badge>
+            <Badge className="bg-[#F7D426] text-[#2C2C2C] font-bold px-4 py-2 text-base">
+              Consulte Tratamentos Agora
+            </Badge>
+          </div>
           <h1 className="text-3xl md:text-4xl font-bold text-[#2C2C2C] mb-3">
             Dr. Beleza
           </h1>

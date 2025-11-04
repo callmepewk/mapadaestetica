@@ -210,7 +210,7 @@ export default function Inicio() {
     queryKey: ['anuncios-destaque'],
     queryFn: async () => {
       const anuncios = await base44.entities.Anuncio.filter(
-        { 
+        {
           status: 'ativo',
           plano: { $in: ['avancado', 'premium'] }
         },
@@ -345,7 +345,7 @@ export default function Inicio() {
               <div className="flex flex-col md:flex-row items-center gap-6">
                 <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
                   <img
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe9/2fd7caf1e_image.png"
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe9/894287324_drbeleza.png"
                     alt="Dr. Beleza"
                     className="w-16 h-16 rounded-full object-cover"
                     onError={(e) => {
@@ -425,7 +425,7 @@ export default function Inicio() {
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-3">Custo-Benefício Imbatível</h3>
                 <p className="text-gray-600 mb-4">
-                  <strong>Comece de Graça!</strong> Alcance milhares de clientes sem investimento inicial. 
+                  <strong>Comece de Graça!</strong> Alcance milhares de clientes sem investimento inicial.
                   Planos pagos a partir de R$ 99/mês com benefícios exclusivos.
                 </p>
                 <ul className="text-left text-sm text-gray-600 space-y-2">

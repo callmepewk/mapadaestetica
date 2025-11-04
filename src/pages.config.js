@@ -13,6 +13,7 @@ import ArtigoBlog from './pages/ArtigoBlog';
 import PesquisaEspecializada from './pages/PesquisaEspecializada';
 import Anuncios from './pages/Anuncios';
 import AgradecimentoCompra from './pages/AgradecimentoCompra';
+import EditarAnuncio from './pages/EditarAnuncio';
 import Layout from './Layout.jsx';
 
 
@@ -32,6 +33,7 @@ export const PAGES = {
     "PesquisaEspecializada": PesquisaEspecializada,
     "Anuncios": Anuncios,
     "AgradecimentoCompra": AgradecimentoCompra,
+    "EditarAnuncio": EditarAnuncio,
 }
 
 export const pagesConfig = {

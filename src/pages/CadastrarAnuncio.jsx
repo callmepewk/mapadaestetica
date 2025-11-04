@@ -291,7 +291,7 @@ export default function CadastrarAnuncio() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
       <style>{`
-        /* Estilo para checkboxes - importante para ser azul */
+        /* Estilo para checkboxes - check PRETO */
         input[type="checkbox"] {
           appearance: none;
           -webkit-appearance: none;
@@ -315,7 +315,7 @@ export default function CadastrarAnuncio() {
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
-          color: white;
+          color: black; /* Changed from white to black */
           font-size: 0.875rem;
           font-weight: bold;
         }
@@ -711,7 +711,7 @@ export default function CadastrarAnuncio() {
                       <SelectValue placeholder="Selecione" />
                     </SelectTrigger>
                     <SelectContent>
-                      {estados.map((uf) => (
+                        {estados.map((uf) => (
                         <SelectItem key={uf} value={uf}>{uf}</SelectItem>
                       ))}
                     </SelectContent>

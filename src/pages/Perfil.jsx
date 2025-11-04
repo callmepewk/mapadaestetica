@@ -45,14 +45,14 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function Perfil() {
   const navigate = useNavigate();
-  const queryClient = useQueryClient(); // Moved as per outline
+  const queryClient = useQueryClient();
   const [editandoPerfil, setEditandoPerfil] = useState(false);
-  const [mostrarMeusAnuncios, setMostrarMeusAnuncios] = useState(false); // Added as per outline
+  const [mostrarMeusAnuncios, setMostrarMeusAnuncios] = useState(false);
   const [editandoSenha, setEditandoSenha] = useState(false);
   const [senhaAtual, setSenhaAtual] = useState("");
   const [novaSenha, setNovaSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
-  const [user, setUser] = useState(null); // Moved as per outline
+  const [user, setUser] = useState(null);
   const [perfilEditado, setPerfilEditado] = useState({});
 
   React.useEffect(() => {
@@ -85,7 +85,7 @@ export default function Perfil() {
       const userData = await base44.auth.me();
       setUser(userData);
       setPerfilEditado(userData);
-      setEditandoPerfil(false); // Changed from setEditando
+      setEditandoPerfil(false);
       queryClient.invalidateQueries(['user']);
     },
   });
@@ -115,6 +115,10 @@ export default function Perfil() {
 
   const handleVerAnuncio = (anuncioId) => {
     navigate(`${createPageUrl("DetalhesAnuncio")}?id=${anuncioId}`);
+  };
+
+  const handleEditarAnuncio = (anuncioId) => {
+    navigate(`${createPageUrl("EditarAnuncio")}?id=${anuncioId}`);
   };
 
   if (!user) {
@@ -176,7 +180,7 @@ export default function Perfil() {
                   Editar Perfil
                 </Button>
                 <Button
-                  onClick={() => setEditandoPerfil(true)} // Assuming this navigates to or opens a comprehensive profile editor
+                  onClick={() => setEditandoPerfil(true)}
                   className="flex-1 md:flex-initial bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C]"
                 >
                   <User className="w-4 h-4 mr-2" />
@@ -452,9 +456,16 @@ export default function Perfil() {
                                 <Button
                                   size="sm"
                                   variant="outline"
+                                  onClick={() => handleEditarAnuncio(anuncio.id)}
+                                >
+                                  Editar
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
                                   onClick={() => handleVerAnuncio(anuncio.id)}
                                 >
-                                  Ver Anúncio
+                                  Ver
                                 </Button>
                               </div>
                             </div>
@@ -498,7 +509,7 @@ export default function Perfil() {
               <CardContent className="p-6">
                 <h3 className="font-semibold text-lg mb-4">Informações do Perfil</h3>
                 <div className="space-y-4">
-                  {editandoPerfil ? ( // Changed from editando
+                  {editandoPerfil ? (
                     <>
                       <div>
                         <Label htmlFor="telefone">Telefone</Label>
