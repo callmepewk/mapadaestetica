@@ -39,9 +39,11 @@ import {
   Clock,
   Star,
   AlertCircle,
-  MessageCircle
+  MessageCircle,
+  ShoppingCart // Added ShoppingCart icon
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { format } from 'date-fns'; // Added date-fns format
 
 export default function Perfil() {
   const navigate = useNavigate();
@@ -78,6 +80,21 @@ export default function Perfil() {
     enabled: !!user,
     staleTime: 5 * 60 * 1000, // 5 minutos
     cacheTime: 15 * 60 * 1000, // 15 minutos
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    initialData: [],
+  });
+
+  const { data: meusPedidos = [], isLoading: isLoadingPedidos } = useQuery({
+    queryKey: ['meus-pedidos', user?.email],
+    queryFn: async () => {
+      if (!user) return [];
+      return await base44.entities.PedidoProduto.filter({ usuario_email: user.email });
+    },
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+    cacheTime: 15 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     refetchOnReconnect: false,
@@ -246,8 +263,9 @@ export default function Perfil() {
 
             {/* Tabs */}
             <Tabs defaultValue="anuncios" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="anuncios">Meus Anúncios</TabsTrigger>
+                <TabsTrigger value="produtos">Produtos & Serviços</TabsTrigger>
                 <TabsTrigger value="relatorios">Relatórios</TabsTrigger>
                 <TabsTrigger value="atividades">Atividades</TabsTrigger>
               </TabsList>
@@ -282,6 +300,140 @@ export default function Perfil() {
                     >
                       Criar Novo Anúncio
                     </Button>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* NOVA ABA: Meus Produtos e Serviços */}
+              <TabsContent value="produtos" className="space-y-4">
+                <Card className="border-none shadow-lg">
+                  <CardContent className="p-6">
+                    <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                      <ShoppingCart className="w-5 h-5 text-pink-600" />
+                      Meus Produtos e Serviços Contratados
+                    </h3>
+                    
+                    {meusPedidos.length === 0 ? (
+                      <div className="text-center py-12 bg-gradient-to-br from-gray-50 to-white rounded-xl border-2 border-dashed border-gray-300">
+                        <div className="text-6xl mb-4">🛍️</div>
+                        <p className="text-gray-500 mb-4">
+                          Você ainda não possui produtos ou serviços contratados
+                        </p>
+                        <Button
+                          onClick={() => navigate(createPageUrl("Produtos"))}
+                          className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
+                        >
+                          Ver Produtos Disponíveis
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {meusPedidos.map((pedido) => (
+                          <div
+                            key={pedido.id}
+                            className="p-4 bg-white border-2 border-gray-200 rounded-lg hover:border-pink-300 transition-colors"
+                          >
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                  {pedido.tipo === 'servico' ? (
+                                    <Badge className="bg-blue-100 text-blue-800">Serviço</Badge>
+                                  ) : (
+                                    <Badge className="bg-green-100 text-green-800">Produto</Badge>
+                                  )}
+                                  <Badge className={
+                                    pedido.status_pedido === 'entregue' ? 'bg-green-100 text-green-800' :
+                                    pedido.status_pedido === 'em_transito' ? 'bg-blue-100 text-blue-800' :
+                                    pedido.status_pedido === 'enviado' ? 'bg-yellow-100 text-yellow-800' :
+                                    pedido.status_pedido === 'cancelado' ? 'bg-red-100 text-red-800' :
+                                    'bg-gray-100 text-gray-800'
+                                  }>
+                                    {pedido.status_pedido.replace(/_/g, ' ')}
+                                  </Badge>
+                                </div>
+                                <h5 className="font-medium text-gray-900 mb-1">{pedido.produto_nome}</h5>
+                                <p className="text-sm text-gray-600">
+                                  Pedido #{pedido.id.slice(0, 8)} • {format(new Date(pedido.created_date), "dd/MM/yyyy 'às' HH:mm")}
+                                </p>
+                                <p className="text-sm font-bold text-gray-900 mt-2">
+                                  Valor: R$ {pedido.valor_total.toFixed(2)}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Rastreamento */}
+                            {pedido.codigo_rastreio && (
+                              <div className="mt-3 pt-3 border-t bg-blue-50 p-3 rounded">
+                                <div className="flex items-center justify-between mb-2">
+                                  <p className="text-sm font-medium text-blue-900">
+                                    📦 Rastreamento
+                                  </p>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      const url = pedido.transportadora === 'Correios' 
+                                        ? `https://www.correios.com.br/rastreamento?codigo=${pedido.codigo_rastreio}`
+                                        : `https://www.google.com/search?q=rastrear+${pedido.codigo_rastreio}`;
+                                      window.open(url, '_blank');
+                                    }}
+                                    className="text-xs"
+                                  >
+                                    Rastrear Encomenda
+                                  </Button>
+                                </div>
+                                <p className="text-xs text-blue-700">
+                                  Código: <span className="font-mono font-bold">{pedido.codigo_rastreio}</span>
+                                </p>
+                                {pedido.transportadora && (
+                                  <p className="text-xs text-blue-700 mt-1">
+                                    Transportadora: {pedido.transportadora}
+                                  </p>
+                                )}
+
+                                {/* Histórico de Rastreio */}
+                                {pedido.historico_rastreio && pedido.historico_rastreio.length > 0 && (
+                                  <div className="mt-3 space-y-2">
+                                    <p className="text-xs font-medium text-blue-900">Últimas atualizações:</p>
+                                    {pedido.historico_rastreio.slice(-3).reverse().map((item, i) => (
+                                      <div key={i} className="text-xs bg-white p-2 rounded border border-blue-200">
+                                        <div className="flex justify-between mb-1">
+                                          <span className="font-medium">{item.status}</span>
+                                          <span className="text-gray-500">
+                                            {format(new Date(item.data), "dd/MM HH:mm")}
+                                          </span>
+                                        </div>
+                                        {item.localizacao && (
+                                          <p className="text-gray-600">📍 {item.localizacao}</p>
+                                        )}
+                                        {item.descricao && (
+                                          <p className="text-gray-600">{item.descricao}</p>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Endereço de Entrega */}
+                            {pedido.endereco_entrega && (
+                              <div className="mt-3 pt-3 border-t">
+                                <p className="text-xs font-medium text-gray-700 mb-1">Endereço de Entrega:</p>
+                                <p className="text-xs text-gray-600">
+                                  {pedido.endereco_entrega.rua}, {pedido.endereco_entrega.numero}
+                                  {pedido.endereco_entrega.complemento && ` - ${pedido.endereco_entrega.complemento}`}
+                                  <br />
+                                  {pedido.endereco_entrega.bairro} - {pedido.endereco_entrega.cidade}/{pedido.endereco_entrega.estado}
+                                  <br />
+                                  CEP: {pedido.endereco_entrega.cep}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>
