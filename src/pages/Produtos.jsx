@@ -13,11 +13,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { 
-  Search, 
-  Filter, 
-  ShoppingCart, 
-  Star, 
+import {
+  Search,
+  Filter,
+  ShoppingCart,
+  Star,
   Gift,
   TrendingUp,
   Award,
@@ -58,11 +58,11 @@ const servicosContrataveis = [
     status: 'ativo'
   },
   {
-    id: "geracao-imagens-ia",
-    nome: "Geração de Imagens Profissionais com IA",
-    descricao: "Imagens de alta qualidade geradas por inteligência artificial para seu anúncio. Imagens únicas, profissionais e personalizadas para destacar seu negócio.",
+    id: "geracao-imagens", // Changed from geracao-imagens-ia
+    nome: "Geração de Imagens Profissionais", // Changed from Geração de Imagens Profissionais com IA
+    descricao: "Imagens de alta qualidade geradas para seu anúncio. Imagens únicas, profissionais e personalizadas para destacar seu negócio.", // Updated description
     categoria: "Serviços Contratáveis",
-    preco: 0,
+    preco: 50, // Added a default price
     preco_texto: "A partir de R$ 50",
     imagens: ["https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&q=80"],
     beneficios: [
@@ -88,16 +88,16 @@ export default function Produtos() {
     queryKey: ['produtos', categoriaFiltro, busca, ordenacao],
     queryFn: async () => {
       let filtros = { status: 'ativo' };
-      
+
       if (categoriaFiltro && categoriaFiltro !== "Todas") {
         filtros.categoria = categoriaFiltro;
       }
-      
+
       let ordem = '-created_date';
       if (ordenacao === 'menor_preco') ordem = 'preco';
       if (ordenacao === 'maior_preco') ordem = '-preco';
       if (ordenacao === 'mais_avaliados') ordem = '-media_avaliacoes';
-      
+
       const todosProdutosAPI = await base44.entities.Produto.filter(filtros, ordem);
 
       return todosProdutosAPI;
@@ -111,14 +111,14 @@ export default function Produtos() {
   });
 
   const todosProdutos = [...produtos, ...servicosContrataveis];
-  
+
   const produtosFiltrados = todosProdutos.filter(produto => {
     const matchCategoria = categoriaFiltro === "Todas" || produto.categoria === categoriaFiltro;
-    const matchBusca = !busca || 
+    const matchBusca = !busca ||
       produto.nome?.toLowerCase().includes(busca.toLowerCase()) ||
       produto.descricao?.toLowerCase().includes(busca.toLowerCase()) ||
       produto.marca?.toLowerCase().includes(busca.toLowerCase());
-    
+
     return matchCategoria && matchBusca;
   });
 
@@ -285,7 +285,7 @@ export default function Produtos() {
                       {produto.categoria === "Serviços Contratáveis" ? "💼" : "🛍️"}
                     </div>
                   )}
-                  
+
                   {produto.em_destaque && (
                     <Badge className="absolute top-2 left-2 bg-[#F7D426] text-[#2C2C2C] border-none">
                       Destaque
@@ -303,7 +303,7 @@ export default function Produtos() {
                   {produto.marca && (
                     <p className="text-xs text-gray-500 mb-1">{produto.marca}</p>
                   )}
-                  
+
                   <h3 className="font-bold text-base mb-2 line-clamp-2 group-hover:text-pink-600 transition-colors">
                     {produto.nome}
                   </h3>
@@ -350,12 +350,12 @@ export default function Produtos() {
 
                     <Button
                       size="sm"
-                      onClick={() => produto.categoria === "Serviços Contratáveis" 
-                        ? handleContratar(produto) 
+                      onClick={() => produto.categoria === "Serviços Contratáveis"
+                        ? handleContratar(produto)
                         : null
                       }
-                      className={produto.categoria === "Serviços Contratáveis" 
-                        ? "bg-blue-600 hover:bg-blue-700 text-white" 
+                      className={produto.categoria === "Serviços Contratáveis"
+                        ? "bg-blue-600 hover:bg-blue-700 text-white"
                         : "bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold"
                       }
                     >
