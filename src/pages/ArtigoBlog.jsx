@@ -4,11 +4,19 @@ import { createPageUrl } from "@/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Calendar, Clock, Share2 } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, Share2, X } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function ArtigoBlog() {
   const navigate = useNavigate();
   const [artigo, setArtigo] = useState(null);
+  const [mostrarCompartilhar, setMostrarCompartilhar] = useState(false);
 
   useEffect(() => {
     const artigoSalvo = localStorage.getItem('artigo_selecionado');
@@ -43,18 +51,31 @@ export default function ArtigoBlog() {
     return colors[categoria] || "bg-gray-100 text-gray-800";
   };
 
-  const handleCompartilhar = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: artigo.titulo,
-          text: artigo.resumo,
-          url: window.location.href,
-        });
-      } catch (error) {
-        console.log('Erro ao compartilhar:', error);
-      }
-    }
+  const artigoUrl = window.location.href;
+  const artigoTexto = `${artigo.titulo}\n\n${artigo.resumo}\n\nLeia mais em: ${artigoUrl}`;
+
+  const compartilharWhatsApp = () => {
+    const url = `https://wa.me/?text=${encodeURIComponent(artigoTexto)}`;
+    window.open(url, '_blank');
+  };
+
+  const compartilharInstagramDirect = () => {
+    const url = `https://www.instagram.com/direct/new/?text=${encodeURIComponent(artigoTexto)}`;
+    window.open(url, '_blank');
+  };
+
+  const compartilharInstagramStories = () => {
+    // Para stories, vamos gerar uma imagem compartilhável (1080x1920)
+    alert("Para compartilhar nos Stories do Instagram:\n\n1. Faça um print desta página\n2. Abra o Instagram\n3. Vá em Stories\n4. Selecione a imagem capturada\n\nDimensões ideais: 1080x1920px");
+  };
+
+  const compartilharFacebookPost = () => {
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(artigoUrl)}`;
+    window.open(url, '_blank', 'width=600,height=400');
+  };
+
+  const compartilharFacebookStories = () => {
+    alert("Para compartilhar nos Stories do Facebook:\n\n1. Faça um print desta página\n2. Abra o Facebook\n3. Vá em Stories\n4. Selecione a imagem capturada\n\nDimensões ideais: 1080x1920px");
   };
 
   return (
@@ -96,7 +117,7 @@ export default function ArtigoBlog() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={handleCompartilhar}
+                onClick={() => setMostrarCompartilhar(true)}
                 className="ml-auto"
               >
                 <Share2 className="w-4 h-4 mr-2" />
@@ -150,6 +171,66 @@ export default function ArtigoBlog() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Compartilhar Dialog */}
+        <Dialog open={mostrarCompartilhar} onOpenChange={setMostrarCompartilhar}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Compartilhar Artigo</DialogTitle>
+              <DialogDescription>
+                Escolha onde você quer compartilhar este artigo
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-3">
+              <Button
+                onClick={compartilharWhatsApp}
+                className="w-full bg-green-600 hover:bg-green-700 text-white"
+              >
+                📱 Compartilhar no WhatsApp
+              </Button>
+              
+              <div className="border-t pt-3">
+                <p className="text-sm font-semibold mb-2">Instagram</p>
+                <div className="grid gap-2">
+                  <Button
+                    onClick={compartilharInstagramDirect}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    💬 Instagram Direct
+                  </Button>
+                  <Button
+                    onClick={compartilharInstagramStories}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    📸 Instagram Stories (1080x1920)
+                  </Button>
+                </div>
+              </div>
+
+              <div className="border-t pt-3">
+                <p className="text-sm font-semibold mb-2">Facebook</p>
+                <div className="grid gap-2">
+                  <Button
+                    onClick={compartilharFacebookPost}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    📰 Facebook Post
+                  </Button>
+                  <Button
+                    onClick={compartilharFacebookStories}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    📸 Facebook Stories (1080x1920)
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

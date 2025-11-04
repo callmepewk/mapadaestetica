@@ -62,7 +62,7 @@ export default function FaleConosco() {
         - Temos 3 planos: Light (grátis), Gold e VIP
         - Oferecemos mais de 64 categorias de serviços de estética
         - Temos mais de 3.000 profissionais parceiros
-        - Contato: (21) 98034-3873 / WhatsApp
+        - Contato: (31) 97259-5643 / WhatsApp
         - Horário de atendimento: Segunda a Sexta, 9h às 18h
         
         Responda de forma direta e objetiva em até 3 parágrafos.`,
@@ -85,6 +85,13 @@ export default function FaleConosco() {
     }
   };
 
+  const handleContatarCentralVendas = () => {
+    const mensagem = "Olá! Gostaria de mais informações sobre as vantagens e planos do Clube da Beleza! 💆‍♀️";
+    const whatsapp = "5531972595643";
+    const url = `https://wa.me/${whatsapp}?text=${encodeURIComponent(mensagem)}`;
+    window.open(url, '_blank');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12">
       <div className="max-w-6xl mx-auto px-4">
@@ -96,9 +103,16 @@ export default function FaleConosco() {
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
             Fale Conosco
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-6">
             Entre em contato conosco ou converse com nosso assistente virtual
           </p>
+          <Button
+            onClick={handleContatarCentralVendas}
+            size="lg"
+            className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] hover:from-[#E5C215] hover:to-[#F7D426] text-[#2C2C2C] font-bold"
+          >
+            💬 Informações sobre Planos do Clube da Beleza
+          </Button>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">

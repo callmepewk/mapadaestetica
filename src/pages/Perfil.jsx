@@ -45,14 +45,14 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function Perfil() {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient(); // Moved as per outline
   const [editandoPerfil, setEditandoPerfil] = useState(false);
   const [mostrarMeusAnuncios, setMostrarMeusAnuncios] = useState(false); // Added as per outline
   const [editandoSenha, setEditandoSenha] = useState(false);
   const [senhaAtual, setSenhaAtual] = useState("");
   const [novaSenha, setNovaSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(null); // Moved as per outline
   const [perfilEditado, setPerfilEditado] = useState({});
 
   React.useEffect(() => {
@@ -111,6 +111,10 @@ export default function Perfil() {
 
   const handleSair = () => {
     base44.auth.logout();
+  };
+
+  const handleVerAnuncio = (anuncioId) => {
+    navigate(`${createPageUrl("DetalhesAnuncio")}?id=${anuncioId}`);
   };
 
   if (!user) {
@@ -237,6 +241,7 @@ export default function Perfil() {
                 <TabsTrigger value="atividades">Atividades</TabsTrigger>
               </TabsList>
 
+              {/* TabsContent for "anuncios" */}
               <TabsContent value="anuncios" className="space-y-4">
                 <Card className="border-none shadow-lg">
                   <CardContent className="p-6">
@@ -270,7 +275,7 @@ export default function Perfil() {
                 </Card>
               </TabsContent>
 
-              {/* New Relatorios TabContent */}
+              {/* TabsContent for "relatorios" */}
               <TabsContent value="relatorios" className="space-y-4">
                 <Card className="border-none shadow-lg">
                   <CardContent className="p-6">
@@ -400,6 +405,7 @@ export default function Perfil() {
                 </Card>
               </TabsContent>
 
+              {/* TabsContent for "atividades" */}
               <TabsContent value="atividades" className="space-y-4">
                 <Card className="border-none shadow-lg">
                   <CardContent className="p-6">
@@ -410,15 +416,14 @@ export default function Perfil() {
                       </div>
                     ) : (
                       <div className="space-y-3">
-                        {meusAnuncios.map((anuncio) => ( // Removed slice(0,5) to show all
+                        {meusAnuncios.map((anuncio) => (
                           <div
                             key={anuncio.id}
-                            className="p-4 bg-white border-2 border-gray-200 rounded-lg hover:border-[#F7D426] transition-colors cursor-pointer"
-                            onClick={() => navigate(`${createPageUrl("DetalhesAnuncio")}?id=${anuncio.id}`)}
+                            className="p-4 bg-white border-2 border-gray-200 rounded-lg hover:border-[#F7D426] transition-colors"
                           >
                             <div className="flex items-start justify-between mb-2">
                               <div className="flex-1">
-                                <h5 className="font-medium truncate text-gray-900 mb-1">{anuncio.titulo}</h5>
+                                <h5 className="font-medium text-gray-900 mb-1">{anuncio.titulo}</h5>
                                 <div className="flex items-center gap-2 text-xs text-gray-500">
                                   <Badge className={
                                     anuncio.status === 'ativo' ? 'bg-green-100 text-green-800' :
@@ -431,18 +436,27 @@ export default function Perfil() {
                                   <span>{anuncio.categoria}</span>
                                 </div>
                               </div>
-                              {anuncio.status === 'pendente' && (
+                              <div className="flex gap-2">
+                                {anuncio.status === 'pendente' && (
+                                  <Button
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      atualizarStatusMutation.mutate({ id: anuncio.id, status: 'ativo' });
+                                    }}
+                                    className="bg-green-600 hover:bg-green-700"
+                                  >
+                                    Ativar
+                                  </Button>
+                                )}
                                 <Button
                                   size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation(); // Prevent navigating when clicking the button
-                                    atualizarStatusMutation.mutate({ id: anuncio.id, status: 'ativo' });
-                                  }}
-                                  className="bg-green-600 hover:bg-green-700"
+                                  variant="outline"
+                                  onClick={() => handleVerAnuncio(anuncio.id)}
                                 >
-                                  Ativar
+                                  Ver Anúncio
                                 </Button>
-                              )}
+                              </div>
                             </div>
                             
                             <div className="grid grid-cols-3 gap-4 mt-3 pt-3 border-t">

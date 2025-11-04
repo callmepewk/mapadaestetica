@@ -210,25 +210,6 @@ export default function SobreNos() {
           <p className="text-xl text-white/90 mb-8">
             Somos o clube de benefícios mais completo do Brasil para quem ama cuidar da sua estética e bem-estar
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              size="lg"
-              className="bg-white text-pink-600 hover:bg-gray-100"
-              onClick={() => setMostrarPlanos(!mostrarPlanos)}
-            >
-              Seja Parte Dessa Comunidade
-              {mostrarPlanos ? <ChevronUp className="w-5 h-5 ml-2" /> : <ChevronDown className="w-5 h-5 ml-2" />}
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="bg-white/10 text-white border-white hover:bg-white/20"
-              onClick={() => setMostrarPlanosAnunciantes(!mostrarPlanosAnunciantes)}
-            >
-              Quero Ser um Anunciante
-              {mostrarPlanosAnunciantes ? <ChevronUp className="w-5 h-5 ml-2" /> : <ChevronDown className="w-5 h-5 ml-2" />}
-            </Button>
-          </div>
         </div>
       </section>
 
@@ -524,7 +505,7 @@ export default function SobreNos() {
 
       {/* CTA Section */}
       <section className="py-20 bg-gradient-to-br from-pink-50 to-rose-50">
-        <div className="max-w-4xl mx-auto px-4 =">
+        <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
             Pronto para Transformar Sua Experiência com Beleza?
           </h2>
@@ -532,17 +513,15 @@ export default function SobreNos() {
             Junte-se a milhares de pessoas que já fazem parte do Clube da Beleza
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              size="lg"
-              onClick={() => setMostrarPlanos(!mostrarPlanos)}
-              className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
-            >
-              Ver Planos Clube+
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </Button>
             <Link to={createPageUrl("FaleConosco")}>
-              <Button size="lg" variant="outline">
+              <Button size="lg" className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700">
                 Fale Conosco
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            </Link>
+            <Link to={createPageUrl("Anuncios")}>
+              <Button size="lg" variant="outline">
+                Ver Profissionais
               </Button>
             </Link>
           </div>

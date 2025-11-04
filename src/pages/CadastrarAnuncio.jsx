@@ -130,17 +130,11 @@ export default function CadastrarAnuncio() {
       alvara_funcionamento: { possui: false, documento_url: "" },
       registro_profissional: { possui: false, documento_url: "" }
     },
-    servicos_oferecidos: [],
     tags: [],
     procedimentos_servicos: []
   });
 
   const [novaTag, setNovaTag] = useState("");
-  const [novoServico, setNovoServico] = useState({
-    nome: "",
-    preco: "",
-    duracao: ""
-  });
 
   const criarAnuncioMutation = useMutation({
     mutationFn: async (data) => {
@@ -264,29 +258,6 @@ export default function CadastrarAnuncio() {
     }));
   };
 
-  const adicionarServico = () => {
-    if (novoServico.nome) {
-      setFormData(prev => ({
-        ...prev,
-        servicos_oferecidos: [
-          ...prev.servicos_oferecidos,
-          {
-            ...novoServico,
-            preco: parseFloat(novoServico.preco) || 0
-          }
-        ]
-      }));
-      setNovoServico({ nome: "", preco: "", duracao: "" });
-    }
-  };
-
-  const removerServico = (index) => {
-    setFormData(prev => ({
-      ...prev,
-      servicos_oferecidos: prev.servicos_oferecidos.filter((_, i) => i !== index)
-    }));
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.titulo || !formData.descricao || !formData.categoria || !formData.cidade) {
@@ -320,13 +291,37 @@ export default function CadastrarAnuncio() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
       <style>{`
+        /* Estilo para checkboxes - importante para ser azul */
+        input[type="checkbox"] {
+          appearance: none;
+          -webkit-appearance: none;
+          width: 1.25rem;
+          height: 1.25rem;
+          border: 2px solid #d1d5db;
+          border-radius: 0.25rem;
+          background-color: white;
+          cursor: pointer;
+          position: relative;
+        }
+        
         input[type="checkbox"]:checked {
           background-color: #3b82f6 !important;
           border-color: #3b82f6 !important;
         }
         
-        input[type="checkbox"]:checked:hover {
-          background-color: #2563eb !important;
+        input[type="checkbox"]:checked::after {
+          content: '✓';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          color: white;
+          font-size: 0.875rem;
+          font-weight: bold;
+        }
+        
+        input[type="checkbox"]:hover {
+          border-color: #3b82f6;
         }
       `}</style>
 
@@ -1031,65 +1026,6 @@ export default function CadastrarAnuncio() {
                   <Send className="w-4 h-4 mr-2" />
                   {enviandoVerificacao ? "Enviando..." : "Solicitar Verificação de Documentos"}
                 </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Services */}
-          <Card className="border-none shadow-lg">
-            <CardContent className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Serviços Oferecidos</h2>
-              <div className="space-y-4">
-                <div className="grid md:grid-cols-4 gap-4">
-                  <div className="md:col-span-2">
-                    <Input
-                      placeholder="Nome do serviço"
-                      value={novoServico.nome}
-                      onChange={(e) => setNovoServico({ ...novoServico, nome: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <Input
-                      type="number"
-                      placeholder="Preço"
-                      value={novoServico.preco}
-                      onChange={(e) => setNovoServico({ ...novoServico, preco: e.target.value })}
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="Duração"
-                      value={novoServico.duracao}
-                      onChange={(e) => setNovoServico({ ...novoServico, duracao: e.target.value })}
-                    />
-                    <Button type="button" onClick={adicionarServico}>
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                {formData.servicos_oferecidos.length > 0 && (
-                  <div className="space-y-2">
-                    {formData.servicos_oferecidos.map((servico, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div>
-                          <p className="font-medium">{servico.nome}</p>
-                          <p className="text-sm text-gray-500">
-                            R$ {servico.preco} • {servico.duracao}
-                          </p>
-                        </div>
-                        <Button
-                          type="button"
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => removerServico(index)}
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
             </CardContent>
           </Card>
