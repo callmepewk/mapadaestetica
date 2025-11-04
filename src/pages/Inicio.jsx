@@ -4,9 +4,9 @@ import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { 
-  Search, 
-  MapPin, 
+import {
+  Search,
+  MapPin,
   ArrowRight,
   Sparkles,
   Clock,
@@ -43,7 +43,7 @@ const categorias = [
 ];
 
 const cidades = [
-  "São Paulo", "Rio de Janeiro", "Belo Horizonte", "Brasília", 
+  "São Paulo", "Rio de Janeiro", "Belo Horizonte", "Brasília",
   "Curitiba", "Porto Alegre", "Salvador", "Fortaleza"
 ];
 
@@ -107,13 +107,13 @@ export default function Inicio() {
 
   return (
     <div className="min-h-screen">
-      <TermosCondicoes 
-        open={mostrarTermos} 
-        onAccept={() => setMostrarTermos(false)} 
+      <TermosCondicoes
+        open={mostrarTermos}
+        onAccept={() => setMostrarTermos(false)}
       />
 
       {/* Hero Section */}
-      <section 
+      <section
         className="relative text-white py-12 sm:py-16 md:py-20 lg:py-32 overflow-hidden"
         style={{
           backgroundImage: "linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1560750588-73207b1ef5b8?w=1920&q=80')",
@@ -122,13 +122,13 @@ export default function Inicio() {
         }}
       >
         <div className="absolute inset-0 bg-gradient-to-br from-[#2C2C2C]/80 via-[#2C2C2C]/70 to-[#2C2C2C]/80"></div>
-        
+
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 text-center">
           <div className="inline-flex items-center gap-2 bg-[#F7D426]/90 text-[#2C2C2C] backdrop-blur-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded-full mb-4 sm:mb-6 font-bold">
             <Sparkles className="w-3 h-3 sm:w-4 sm:h-4" />
             <span className="text-xs sm:text-sm">Mais de 500+ profissionais cadastrados</span>
           </div>
-          
+
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 leading-tight px-2">
             Explore a sua cidade!
           </h1>
@@ -148,7 +148,7 @@ export default function Inicio() {
                   className="pl-10 h-12 text-gray-800 border-gray-200 text-base"
                 />
               </div>
-              
+
               <Select value={buscaCategoria} onValueChange={setBuscaCategoria}>
                 <SelectTrigger className="h-12 text-gray-800 text-base">
                   <SelectValue placeholder="Selecione uma categoria" />
@@ -162,7 +162,7 @@ export default function Inicio() {
                 </SelectContent>
               </Select>
 
-              <Button 
+              <Button
                 onClick={handleBuscar}
                 className="h-12 bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold shadow-lg hover:shadow-xl transition-all text-base border-2 border-[#2C2C2C]"
               >
@@ -340,6 +340,108 @@ export default function Inicio() {
               <Button size="lg" className="w-full sm:w-auto bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white">
                 Acessar Blog
                 <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Patrocinadores Section */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <Badge className="mb-4 bg-[#F7D426] text-[#2C2C2C] font-bold">
+              Parceiros Estratégicos
+            </Badge>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Seja um Patrocinador
+            </h2>
+            <p className="text-gray-600 max-w-2xl mx-auto mb-8">
+              Fortaleça sua marca alcançando milhares de profissionais e clientes da estética
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6 mb-8">
+            {[1, 2, 3].map((i) => (
+              <Card key={i} className="border-2 border-dashed border-gray-300 hover:border-[#F7D426] transition-colors">
+                <CardContent className="p-8 text-center">
+                  <div className="w-full h-32 bg-gray-100 rounded-lg flex items-center justify-center mb-4">
+                    <Sparkles className="w-12 h-12 text-gray-400" />
+                  </div>
+                  <p className="text-sm text-gray-500">Espaço para Patrocinador {i}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <div className="text-center">
+            <Link to={createPageUrl("FaleConosco")}>
+              <Button size="lg" className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+                Quero Ser um Patrocinador
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Anunciantes Section */}
+      <section className="py-16 bg-gradient-to-br from-pink-50 to-rose-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <Badge className="mb-4 bg-pink-600 text-white">
+              Destaque na Plataforma
+            </Badge>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Seja um Anunciante
+            </h2>
+            <p className="text-gray-600 max-w-2xl mx-auto mb-8">
+              Amplie seu alcance com anúncios estratégicos para profissionais e clientes da estética
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 mb-8">
+            {[
+              {
+                title: "Banner Principal",
+                desc: "Destaque máximo na página inicial",
+                icon: "🎯"
+              },
+              {
+                title: "Banner Lateral",
+                desc: "Presença constante em todas as páginas",
+                icon: "📱"
+              },
+              {
+                title: "Post Patrocinado",
+                desc: "Conteúdo integrado no feed",
+                icon: "✨"
+              },
+              {
+                title: "Email Marketing",
+                desc: "Alcance direto aos usuários",
+                icon: "📧"
+              }
+            ].map((item, i) => (
+              <Card key={i} className="border-none shadow-xl hover:shadow-2xl transition-all">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="text-4xl">{item.icon}</div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold mb-2">{item.title}</h3>
+                      <p className="text-gray-600">{item.desc}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <div className="text-center">
+            <Link to={createPageUrl("FaleConosco")}>
+              <Button size="lg" className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-pink-700">
+                Quero Ser um Anunciante
+                <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>
           </div>
