@@ -1,7 +1,5 @@
-
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import {
@@ -18,7 +16,8 @@ import {
   Eye,
   Calendar,
   Lock,
-  Crown
+  Crown,
+  Star
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -31,121 +30,64 @@ import { ptBR } from "date-fns/locale";
 
 export default function DetalhesAnuncio() {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const [anuncio, setAnuncio] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [imagemAtual, setImagemAtual] = useState(0);
   const [user, setUser] = useState(null);
-  const [anuncioId, setAnuncioId] = useState(null);
 
-  // Extrair ID da URL IMEDIATAMENTE
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const id = urlParams.get('id');
-    console.log("ID extraído da URL:", id);
-    
-    if (id) {
-      setAnuncioId(id);
-    } else {
-      console.error("Nenhum ID encontrado na URL");
-    }
-
-    const fetchUser = async () => {
+    const carregarDados = async () => {
       try {
-        const userData = await base44.auth.me();
-        setUser(userData);
+        // Buscar usuário
+        try {
+          const userData = await base44.auth.me();
+          setUser(userData);
+        } catch {
+          setUser(null);
+        }
+
+        // Buscar anúncio
+        const urlParams = new URLSearchParams(window.location.search);
+        const id = urlParams.get('id');
+        
+        if (!id) {
+          setLoading(false);
+          return;
+        }
+
+        const anuncios = await base44.entities.Anuncio.filter({ id: id });
+        
+        if (anuncios && anuncios.length > 0) {
+          const anuncioEncontrado = anuncios[0];
+          setAnuncio(anuncioEncontrado);
+          
+          // Incrementar visualizações
+          await base44.entities.Anuncio.update(id, {
+            visualizacoes: (anuncioEncontrado.visualizacoes || 0) + 1
+          });
+        }
       } catch (error) {
-        setUser(null);
+        console.error("Erro:", error);
+      } finally {
+        setLoading(false);
       }
     };
-    fetchUser();
+
+    carregarDados();
   }, []);
 
-  const { data: anuncio, isLoading, error } = useQuery({
-    queryKey: ['anuncio-detalhes-unico', anuncioId],
-    queryFn: async () => {
-      console.log("Buscando anúncio com ID:", anuncioId);
-      
-      if (!anuncioId) {
-        throw new Error("ID não fornecido");
-      }
-      
-      const anuncios = await base44.entities.Anuncio.filter({ id: anuncioId });
-      console.log("Anúncios retornados:", anuncios);
-      
-      if (!anuncios || anuncios.length === 0) {
-        throw new Error("Anúncio não encontrado no banco");
-      }
-      
-      const anuncioEncontrado = anuncios[0];
-      console.log("Anúncio encontrado:", anuncioEncontrado);
-      
-      // Incrementar visualizações
-      try {
-        await base44.entities.Anuncio.update(anuncioId, {
-          visualizacoes: (anuncioEncontrado.visualizacoes || 0) + 1
-        });
-      } catch (err) {
-        console.error("Erro ao incrementar visualizações:", err);
-      }
-      
-      return anuncioEncontrado;
-    },
-    enabled: !!anuncioId,
-    retry: 1,
-    retryDelay: 1000,
-    staleTime: Infinity,
-    cacheTime: 30 * 60 * 1000,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-  });
-
-  // Log de estados
-  useEffect(() => {
-    console.log("Estado atual - anuncioId:", anuncioId, "isLoading:", isLoading, "error:", error, "anuncio:", anuncio);
-  }, [anuncioId, isLoading, error, anuncio]);
-
-  if (!anuncioId) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
-        <Card className="p-12 text-center max-w-md mx-4">
-          <div className="text-6xl mb-4">⚠️</div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">
-            ID não fornecido
-          </h3>
-          <p className="text-gray-600 mb-6">
-            Nenhum ID de anúncio foi fornecido na URL.
-          </p>
-          <Button
-            onClick={() => navigate(createPageUrl("Anuncios"))}
-            className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
-          >
-            Voltar para Anúncios
-          </Button>
-        </Card>
-      </div>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="animate-pulse space-y-4">
-            <div className="h-10 w-32 bg-gray-200 rounded" />
-            <div className="grid lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-2 space-y-6">
-                <div className="h-96 bg-gray-200 rounded-xl" />
-                <div className="h-64 bg-gray-200 rounded-xl" />
-              </div>
-              <div className="h-96 bg-gray-200 rounded-xl" />
-            </div>
-          </div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando anúncio...</p>
         </div>
       </div>
     );
   }
 
-  if (error || !anuncio) {
-    console.error("Erro ao carregar anúncio:", error);
+  if (!anuncio) {
     return (
       <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
         <Card className="p-12 text-center max-w-md mx-4">
@@ -153,29 +95,15 @@ export default function DetalhesAnuncio() {
           <h3 className="text-xl font-semibold text-gray-900 mb-2">
             Anúncio não encontrado
           </h3>
-          <p className="text-gray-600 mb-2">
-            ID buscado: {anuncioId}
-          </p>
           <p className="text-gray-600 mb-6">
-            {error?.message || "Este anúncio pode ter sido removido ou não existe."}
+            Este anúncio não existe ou foi removido.
           </p>
-          <div className="flex flex-col gap-3">
-            <Button
-              onClick={() => {
-                queryClient.clear();
-                navigate(createPageUrl("Anuncios"));
-              }}
-              className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
-            >
-              Limpar Cache e Voltar
-            </Button>
-            <Button
-              onClick={() => window.location.reload()}
-              variant="outline"
-            >
-              Recarregar Página
-            </Button>
-          </div>
+          <Button
+            onClick={() => navigate(createPageUrl("Anuncios"))}
+            className="bg-gradient-to-r from-pink-600 to-rose-600"
+          >
+            Voltar para Anúncios
+          </Button>
         </Card>
       </div>
     );
@@ -187,24 +115,23 @@ export default function DetalhesAnuncio() {
   ].filter(Boolean);
 
   const isUserFree = !user || !user.plano_ativo || user.plano_ativo === 'free';
+  const isPaciente = user?.tipo_usuario === 'paciente';
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
       <div className="max-w-6xl mx-auto px-4">
         <Button
           variant="ghost"
-          onClick={() => {
-            queryClient.removeQueries(['anuncio-detalhes-unico']);
-            navigate(createPageUrl("Anuncios"));
-          }}
+          onClick={() => navigate(createPageUrl("Anuncios"))}
           className="mb-6"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Voltar para Anúncios
+          Voltar
         </Button>
 
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
+            {/* Galeria de Imagens */}
             <Card className="overflow-hidden border-none shadow-lg">
               <div className="relative h-96 bg-gray-100">
                 {todasImagens.length > 0 ? (
@@ -226,9 +153,7 @@ export default function DetalhesAnuncio() {
                         key={index}
                         onClick={() => setImagemAtual(index)}
                         className={`w-2 h-2 rounded-full transition-all ${
-                          imagemAtual === index
-                            ? "bg-white w-8"
-                            : "bg-white/50 hover:bg-white/75"
+                          imagemAtual === index ? "bg-white w-8" : "bg-white/50"
                         }`}
                       />
                     ))}
@@ -242,23 +167,18 @@ export default function DetalhesAnuncio() {
                     <button
                       key={index}
                       onClick={() => setImagemAtual(index)}
-                      className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
-                        imagemAtual === index
-                          ? "border-pink-500"
-                          : "border-gray-200 hover:border-gray-300"
+                      className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 ${
+                        imagemAtual === index ? "border-pink-500" : "border-gray-200"
                       }`}
                     >
-                      <img
-                        src={img}
-                        alt={`${anuncio.titulo} - ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
+                      <img src={img} alt="" className="w-full h-full object-cover" />
                     </button>
                   ))}
                 </div>
               )}
             </Card>
 
+            {/* Informações */}
             <Card className="border-none shadow-lg">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-4">
@@ -269,16 +189,16 @@ export default function DetalhesAnuncio() {
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">
                       {anuncio.titulo}
                     </h1>
-                    <div className="flex items-center gap-2 text-gray-600">
+                    <div className="flex items-center gap-2">
                       <Avatar className="w-10 h-10">
                         <AvatarImage src={anuncio.logo} />
                         <AvatarFallback className="bg-gradient-to-br from-pink-500 to-rose-500 text-white">
-                          {anuncio.profissional?.charAt(0) || "?"}
+                          {anuncio.profissional?.charAt(0)}
                         </AvatarFallback>
                       </Avatar>
                       <div>
                         <p className="font-semibold">{anuncio.profissional}</p>
-                        <div className="flex items-center gap-2 text-sm">
+                        <div className="flex items-center gap-2 text-sm text-gray-500">
                           <Eye className="w-3 h-3" />
                           <span>{anuncio.visualizacoes || 0} visualizações</span>
                         </div>
@@ -301,9 +221,7 @@ export default function DetalhesAnuncio() {
                 <div className="space-y-4">
                   <div>
                     <h3 className="font-semibold text-lg mb-2">Sobre</h3>
-                    <p className="text-gray-600 leading-relaxed">
-                      {anuncio.descricao}
-                    </p>
+                    <p className="text-gray-600 leading-relaxed">{anuncio.descricao}</p>
                   </div>
 
                   {anuncio.servicos_oferecidos && anuncio.servicos_oferecidos.length > 0 && (
@@ -311,16 +229,11 @@ export default function DetalhesAnuncio() {
                       <h3 className="font-semibold text-lg mb-3">Serviços Oferecidos</h3>
                       <div className="space-y-2">
                         {anuncio.servicos_oferecidos.map((servico, index) => (
-                          <div
-                            key={index}
-                            className="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
-                          >
+                          <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                             <div>
                               <p className="font-medium">{servico.nome}</p>
                               {servico.duracao && (
-                                <p className="text-sm text-gray-500">
-                                  Duração: {servico.duracao}
-                                </p>
+                                <p className="text-sm text-gray-500">Duração: {servico.duracao}</p>
                               )}
                             </div>
                             {servico.preco && (
@@ -355,23 +268,30 @@ export default function DetalhesAnuncio() {
             </Card>
           </div>
 
+          {/* Sidebar */}
           <div className="space-y-6">
-            {isUserFree && (
+            {(isUserFree || isPaciente) && (
               <Alert className="bg-gradient-to-br from-yellow-50 to-amber-50 border-2 border-yellow-300">
                 <Lock className="h-5 w-5 text-yellow-600" />
                 <AlertDescription className="text-yellow-900">
-                  <p className="font-semibold mb-2">🔒 Recursos Limitados no Plano FREE</p>
-                  <p className="text-sm mb-3">
-                    Faça upgrade para ter acesso completo aos contatos!
+                  <p className="font-semibold mb-2">
+                    {isPaciente ? "🔒 Acesso Limitado para Pacientes" : "🔒 Recursos Limitados no Plano FREE"}
                   </p>
-                  <Button
-                    onClick={() => navigate(createPageUrl("Planos"))}
-                    className="w-full bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700"
-                    size="sm"
-                  >
-                    <Crown className="w-4 h-4 mr-2" />
-                    Ver Planos
-                  </Button>
+                  <p className="text-sm mb-3">
+                    {isPaciente 
+                      ? "Pacientes têm acesso limitado aos contatos. Para acesso completo, altere seu tipo de conta via suporte."
+                      : "Faça upgrade para ter acesso completo aos contatos!"}
+                  </p>
+                  {!isPaciente && (
+                    <Button
+                      onClick={() => navigate(createPageUrl("Planos"))}
+                      className="w-full bg-gradient-to-r from-yellow-600 to-amber-600"
+                      size="sm"
+                    >
+                      <Crown className="w-4 h-4 mr-2" />
+                      Ver Planos
+                    </Button>
+                  )}
                 </AlertDescription>
               </Alert>
             )}
@@ -383,7 +303,7 @@ export default function DetalhesAnuncio() {
                 {anuncio.telefone && (
                   <a
                     href={`tel:${anuncio.telefone}`}
-                    className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100"
                   >
                     <Phone className="w-5 h-5 text-pink-600" />
                     <div>
@@ -394,27 +314,20 @@ export default function DetalhesAnuncio() {
                 )}
 
                 {anuncio.whatsapp && (
-                  isUserFree ? (
+                  (isUserFree || isPaciente) ? (
                     <div className="relative">
                       <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
                         <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
                           <span className="text-white font-bold">W</span>
                         </div>
-                        <div className="flex-1">
+                        <div>
                           <p className="text-xs text-gray-500">WhatsApp</p>
-                          <div className="relative inline-block">
-                            <p className="font-medium text-green-700 blur-sm select-none">
-                              ({anuncio.whatsapp.substring(0, 2)}) *****-****
-                            </p>
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <Lock className="w-4 h-4 text-green-700" />
-                            </div>
-                          </div>
+                          <p className="font-medium text-green-700 blur-sm">({anuncio.whatsapp.substring(0, 2)}) *****-****</p>
                         </div>
                       </div>
                       <div className="mt-2 text-xs text-center text-gray-600">
                         <Lock className="w-3 h-3 inline mr-1" />
-                        Faça upgrade para ver o WhatsApp
+                        {isPaciente ? "Faça upgrade do tipo de conta" : "Faça upgrade de plano"}
                       </div>
                     </div>
                   ) : (
@@ -422,7 +335,7 @@ export default function DetalhesAnuncio() {
                       href={`https://wa.me/${anuncio.whatsapp.replace(/\D/g, '')}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-3 p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
+                      className="flex items-center gap-3 p-3 bg-green-50 rounded-lg hover:bg-green-100"
                     >
                       <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
                         <span className="text-white font-bold">W</span>
@@ -438,7 +351,7 @@ export default function DetalhesAnuncio() {
                 {anuncio.email && (
                   <a
                     href={`mailto:${anuncio.email}`}
-                    className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100"
                   >
                     <Mail className="w-5 h-5 text-pink-600" />
                     <div className="flex-1 min-w-0">
@@ -453,7 +366,7 @@ export default function DetalhesAnuncio() {
                     href={anuncio.site}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100"
                   >
                     <Globe className="w-5 h-5 text-pink-600" />
                     <div>
@@ -473,7 +386,7 @@ export default function DetalhesAnuncio() {
                         href={anuncio.instagram}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex-1 flex items-center justify-center gap-2 p-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:opacity-90 transition-opacity"
+                        className="flex-1 flex items-center justify-center gap-2 p-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg"
                       >
                         <Instagram className="w-4 h-4" />
                         <span className="text-sm font-medium">Instagram</span>
@@ -484,7 +397,7 @@ export default function DetalhesAnuncio() {
                         href={anuncio.facebook}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex-1 flex items-center justify-center gap-2 p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        className="flex-1 flex items-center justify-center gap-2 p-2 bg-blue-600 text-white rounded-lg"
                       >
                         <Facebook className="w-4 h-4" />
                         <span className="text-sm font-medium">Facebook</span>
@@ -495,14 +408,12 @@ export default function DetalhesAnuncio() {
 
                 <Separator />
 
-                <div className="space-y-2">
+                <div>
                   <div className="flex items-center gap-2 text-gray-600">
                     <MapPin className="w-5 h-5 text-pink-600" />
                     <div>
                       <p className="font-medium">{anuncio.cidade}, {anuncio.estado}</p>
-                      {anuncio.endereco && (
-                        <p className="text-sm text-gray-500">{anuncio.endereco}</p>
-                      )}
+                      {anuncio.endereco && <p className="text-sm text-gray-500">{anuncio.endereco}</p>}
                     </div>
                   </div>
                 </div>
@@ -510,7 +421,7 @@ export default function DetalhesAnuncio() {
                 {anuncio.created_date && (
                   <div className="pt-4 border-t text-xs text-gray-500 flex items-center gap-1">
                     <Calendar className="w-3 h-3" />
-                    Anúncio criado em {format(new Date(anuncio.created_date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                    Anúncio criado em {format(new Date(anuncio.created_date), "dd/MM/yyyy")}
                   </div>
                 )}
               </CardContent>

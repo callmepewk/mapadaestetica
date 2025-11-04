@@ -1,15 +1,13 @@
-
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
-import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { createPageUrl } from "@/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ArrowLeft, Calendar, Clock, Share2, Heart, MessageCircle, Send, Flag, Trash2, AlertCircle } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, Share2, Heart, MessageCircle, Send, AlertCircle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -21,96 +19,67 @@ import { format } from "date-fns";
 
 export default function ArtigoBlog() {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const [artigo, setArtigo] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [mostrarCompartilhar, setMostrarCompartilhar] = useState(false);
   const [user, setUser] = useState(null);
   const [novoComentario, setNovoComentario] = useState("");
-  const [respondendoA, setRespondendoA] = useState(null);
+  const [comentarios, setComentarios] = useState([]);
   const [erro, setErro] = useState(null);
-  const [artigoId, setArtigoId] = useState(null);
-
-  // Extrair ID da URL IMEDIATAMENTE
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const id = urlParams.get('id');
-    console.log("ID do artigo extraído da URL:", id);
-    
-    if (id) {
-      setArtigoId(id);
-    } else {
-      console.error("Nenhum ID de artigo encontrado na URL");
-    }
-  }, []);
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const carregarDados = async () => {
       try {
-        const userData = await base44.auth.me();
-        setUser(userData);
+        // Buscar usuário
+        try {
+          const userData = await base44.auth.me();
+          setUser(userData);
+        } catch {
+          setUser(null);
+        }
+
+        // Buscar artigo
+        const urlParams = new URLSearchParams(window.location.search);
+        const id = urlParams.get('id');
+        
+        if (!id) {
+          setLoading(false);
+          return;
+        }
+
+        const artigos = await base44.entities.ArtigoBlog.filter({ id: id });
+        
+        if (artigos && artigos.length > 0) {
+          const artigoEncontrado = artigos[0];
+          setArtigo(artigoEncontrado);
+          
+          // Incrementar visualizações
+          await base44.entities.ArtigoBlog.update(id, {
+            visualizacoes: (artigoEncontrado.visualizacoes || 0) + 1
+          });
+
+          // Buscar comentários
+          const comentariosData = await base44.entities.ComentarioBlog.filter(
+            { artigo_id: id, status: 'ativo' },
+            '-created_date',
+            100
+          );
+          setComentarios(comentariosData);
+        }
       } catch (error) {
-        setUser(null);
+        console.error("Erro:", error);
+      } finally {
+        setLoading(false);
       }
     };
-    fetchUser();
+
+    carregarDados();
   }, []);
 
-  const { data: artigo, isLoading } = useQuery({
-    queryKey: ['artigo-unico', artigoId],
-    queryFn: async () => {
-      console.log("Buscando artigo com ID:", artigoId);
-      
-      if (!artigoId) {
-        throw new Error("ID não fornecido");
-      }
-      
-      const artigos = await base44.entities.ArtigoBlog.filter({ id: artigoId });
-      console.log("Artigos retornados:", artigos);
-      
-      if (!artigos || artigos.length === 0) {
-        throw new Error("Artigo não encontrado no banco");
-      }
-      
-      const artigoEncontrado = artigos[0];
-      console.log("Artigo encontrado:", artigoEncontrado);
-      
-      // Incrementar visualizações
-      try {
-        await base44.entities.ArtigoBlog.update(artigoId, {
-          visualizacoes: (artigoEncontrado.visualizacoes || 0) + 1
-        });
-      } catch (err) {
-        console.error("Erro ao incrementar visualizações:", err);
-      }
-      
-      return artigoEncontrado;
-    },
-    enabled: !!artigoId,
-    retry: 1,
-    retryDelay: 1000,
-    staleTime: Infinity,
-    cacheTime: 30 * 60 * 1000,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-  });
-
-  const { data: comentarios = [] } = useQuery({
-    queryKey: ['comentarios-artigo-unico', artigoId],
-    queryFn: async () => {
-      if (!artigoId) return [];
-      return await base44.entities.ComentarioBlog.filter({ artigo_id: artigoId, status: 'ativo' }, '-created_date', 100);
-    },
-    enabled: !!artigoId,
-  });
-
-  // Log de estados
-  useEffect(() => {
-    console.log("Estado atual - artigoId:", artigoId, "isLoading:", isLoading, "artigo:", artigo);
-  }, [artigoId, isLoading, artigo]);
-
-  const curtirMutation = useMutation({
-    mutationFn: async () => {
-      if (!user || !artigo) return;
-      
+  const handleCurtir = async () => {
+    if (!user || !artigo) return;
+    
+    try {
       const curtidas = artigo.curtidas || [];
       const jaCurtiu = curtidas.includes(user.email);
       
@@ -122,70 +91,14 @@ export default function ArtigoBlog() {
         curtidas: novasCurtidas,
         total_curtidas: novasCurtidas.length
       });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['artigo-unico', artigoId]);
-    },
-  });
 
-  const comentarMutation = useMutation({
-    mutationFn: async (dados) => {
-      return await base44.entities.ComentarioBlog.create(dados);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['comentarios-artigo-unico', artigoId]);
-      setNovoComentario("");
-      setRespondendoA(null);
-      setErro(null);
-    },
-    onError: (error) => {
-      setErro(error.message || "Erro ao enviar comentário");
-    },
-  });
+      setArtigo({ ...artigo, curtidas: novasCurtidas, total_curtidas: novasCurtidas.length });
+    } catch (error) {
+      console.error("Erro ao curtir:", error);
+    }
+  };
 
-  const denunciarMutation = useMutation({
-    mutationFn: async ({ comentarioId, motivo }) => {
-      const comentario = comentarios.find(c => c.id === comentarioId);
-      const denuncias = comentario.denuncias || [];
-      
-      await base44.entities.ComentarioBlog.update(comentarioId, {
-        denuncias: [...denuncias, {
-          usuario_email: user.email,
-          motivo,
-          data: new Date().toISOString()
-        }]
-      });
-      
-      await base44.integrations.Core.SendEmail({
-        to: "pedro_hbfreitas@hotmail.com",
-        subject: `Denúncia de Comentário - Artigo: ${artigo.titulo}`,
-        body: `
-          <h2>Denúncia de Comentário</h2>
-          <p><strong>Artigo:</strong> ${artigo.titulo}</p>
-          <p><strong>Comentário denunciado:</strong> ${comentario.comentario}</p>
-          <p><strong>Autor do comentário:</strong> ${comentario.usuario_nome} (${comentario.usuario_email})</p>
-          <p><strong>Denunciado por:</strong> ${user.full_name} (${user.email})</p>
-          <p><strong>Motivo:</strong> ${motivo}</p>
-          <p><strong>Data:</strong> ${new Date().toLocaleString('pt-BR')}</p>
-        `
-      });
-    },
-    onSuccess: () => {
-      alert("Denúncia enviada com sucesso!");
-      queryClient.invalidateQueries(['comentarios-artigo-unico', artigoId]);
-    },
-  });
-
-  const deletarComentarioMutation = useMutation({
-    mutationFn: async (comentarioId) => {
-      await base44.entities.ComentarioBlog.update(comentarioId, { status: 'deletado' });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['comentarios-artigo-unico', artigoId]);
-    },
-  });
-
-  const handleComentar = () => {
+  const handleComentar = async () => {
     if (!user) {
       base44.auth.redirectToLogin(window.location.pathname + window.location.search);
       return;
@@ -196,39 +109,30 @@ export default function ArtigoBlog() {
       return;
     }
     
-    comentarMutation.mutate({
-      artigo_id: artigoId,
-      usuario_nome: user.full_name,
-      usuario_email: user.email,
-      usuario_foto: user.foto_perfil || "",
-      comentario: novoComentario,
-      comentario_pai_id: respondendoA?.id || null
-    });
+    try {
+      await base44.entities.ComentarioBlog.create({
+        artigo_id: artigo.id,
+        usuario_nome: user.full_name,
+        usuario_email: user.email,
+        usuario_foto: user.foto_perfil || "",
+        comentario: novoComentario
+      });
+
+      // Recarregar comentários
+      const comentariosData = await base44.entities.ComentarioBlog.filter(
+        { artigo_id: artigo.id, status: 'ativo' },
+        '-created_date',
+        100
+      );
+      setComentarios(comentariosData);
+      setNovoComentario("");
+      setErro(null);
+    } catch (error) {
+      setErro("Erro ao enviar comentário");
+    }
   };
 
-  if (!artigoId) {
-    return (
-      <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
-        <Card className="p-12 text-center max-w-md mx-4">
-          <div className="text-6xl mb-4">⚠️</div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">
-            ID não fornecido
-          </h3>
-          <p className="text-gray-600 mb-6">
-            Nenhum ID de artigo foi fornecido na URL.
-          </p>
-          <Button
-            onClick={() => navigate(createPageUrl("Blog"))}
-            className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
-          >
-            Voltar para o Blog
-          </Button>
-        </Card>
-      </div>
-    );
-  }
-
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
         <div className="text-center">
@@ -240,7 +144,6 @@ export default function ArtigoBlog() {
   }
 
   if (!artigo) {
-    console.error("Artigo não carregado");
     return (
       <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
         <Card className="p-12 text-center max-w-md mx-4">
@@ -248,29 +151,15 @@ export default function ArtigoBlog() {
           <h3 className="text-xl font-semibold text-gray-900 mb-2">
             Artigo não encontrado
           </h3>
-          <p className="text-gray-600 mb-2">
-            ID buscado: {artigoId}
-          </p>
           <p className="text-gray-600 mb-6">
-            Este artigo pode ter sido removido ou não existe.
+            Este artigo não existe ou foi removido.
           </p>
-          <div className="flex flex-col gap-3">
-            <Button
-              onClick={() => {
-                queryClient.clear();
-                navigate(createPageUrl("Blog"));
-              }}
-              className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
-            >
-              Limpar Cache e Voltar
-            </Button>
-            <Button
-              onClick={() => window.location.reload()}
-              variant="outline"
-            >
-              Recarregar Página
-            </Button>
-          </div>
+          <Button
+            onClick={() => navigate(createPageUrl("Blog"))}
+            className="bg-gradient-to-r from-pink-600 to-rose-600"
+          >
+            Voltar para o Blog
+          </Button>
         </Card>
       </div>
     );
@@ -292,22 +181,16 @@ export default function ArtigoBlog() {
   const artigoUrl = window.location.href;
   const artigoTexto = `${artigo.titulo}\n\n${artigo.resumo}\n\nLeia mais em: ${artigoUrl}`;
 
-  const comentariosPrincipais = comentarios.filter(c => !c.comentario_pai_id);
-  const respostas = (comentarioPaiId) => comentarios.filter(c => c.comentario_pai_id === comentarioPaiId);
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
       <div className="max-w-4xl mx-auto px-4">
         <Button
           variant="ghost"
-          onClick={() => {
-            queryClient.removeQueries(['artigo-unico']);
-            navigate(createPageUrl("Blog"));
-          }}
+          onClick={() => navigate(createPageUrl("Blog"))}
           className="mb-6"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Voltar para o Blog
+          Voltar
         </Button>
 
         <Card className="border-none shadow-2xl overflow-hidden">
@@ -338,7 +221,7 @@ export default function ArtigoBlog() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => curtirMutation.mutate()}
+                  onClick={handleCurtir}
                   disabled={!user}
                   className={artigo.curtidas?.includes(user?.email) ? "text-red-600 border-red-600" : ""}
                 >
@@ -375,7 +258,7 @@ export default function ArtigoBlog() {
             <div className="mt-12 pt-8 border-t">
               <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                 <MessageCircle className="w-6 h-6" />
-                Comentários ({comentariosPrincipais.length})
+                Comentários ({comentarios.length})
               </h3>
 
               {erro && (
@@ -386,16 +269,6 @@ export default function ArtigoBlog() {
               )}
 
               <div className="mb-8">
-                {respondendoA && (
-                  <div className="bg-blue-50 p-3 rounded-lg mb-3 flex items-center justify-between">
-                    <span className="text-sm text-blue-900">
-                      Respondendo a <strong>{respondendoA.usuario_nome}</strong>
-                    </span>
-                    <Button variant="ghost" size="sm" onClick={() => setRespondendoA(null)}>
-                      Cancelar
-                    </Button>
-                  </div>
-                )}
                 <Textarea
                   placeholder={user ? "Escreva seu comentário..." : "Faça login para comentar"}
                   value={novoComentario}
@@ -406,16 +279,16 @@ export default function ArtigoBlog() {
                 />
                 <Button
                   onClick={handleComentar}
-                  disabled={!user || comentarMutation.isPending}
+                  disabled={!user}
                   className="bg-pink-600 hover:bg-pink-700"
                 >
                   <Send className="w-4 h-4 mr-2" />
-                  {comentarMutation.isPending ? "Enviando..." : "Comentar"}
+                  Comentar
                 </Button>
               </div>
 
               <div className="space-y-6">
-                {comentariosPrincipais.map((comentario) => (
+                {comentarios.map((comentario) => (
                   <div key={comentario.id} className="border-l-2 border-gray-200 pl-4">
                     <div className="flex items-start gap-3">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 to-rose-400 flex items-center justify-center text-white font-bold">
@@ -428,95 +301,7 @@ export default function ArtigoBlog() {
                             {format(new Date(comentario.created_date), "dd/MM/yyyy 'às' HH:mm")}
                           </span>
                         </div>
-                        <p className="text-gray-700 mb-2">{comentario.comentario}</p>
-                        <div className="flex items-center gap-3">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setRespondendoA(comentario)}
-                            className="text-xs"
-                          >
-                            <MessageCircle className="w-3 h-3 mr-1" />
-                            Responder
-                          </Button>
-                          {user && user.email === comentario.usuario_email && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => deletarComentarioMutation.mutate(comentario.id)}
-                              className="text-xs text-red-600"
-                            >
-                              <Trash2 className="w-3 h-3 mr-1" />
-                              Deletar
-                            </Button>
-                          )}
-                          {user && user.email !== comentario.usuario_email && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                const motivo = prompt("Por que você está denunciando este comentário?");
-                                if (motivo) {
-                                  denunciarMutation.mutate({ comentarioId: comentario.id, motivo });
-                                }
-                              }}
-                              className="text-xs text-orange-600"
-                            >
-                              <Flag className="w-3 h-3 mr-1" />
-                              Denunciar
-                            </Button>
-                          )}
-                        </div>
-
-                        {respostas(comentario.id).length > 0 && (
-                          <div className="mt-4 space-y-4 pl-4 border-l-2 border-gray-100">
-                            {respostas(comentario.id).map((resposta) => (
-                              <div key={resposta.id} className="flex items-start gap-3">
-                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white font-bold text-sm">
-                                  {resposta.usuario_nome.charAt(0)}
-                                </div>
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <span className="font-semibold text-gray-900 text-sm">{resposta.usuario_nome}</span>
-                                    <span className="text-xs text-gray-500">
-                                      {format(new Date(resposta.created_date), "dd/MM/yyyy 'às' HH:mm")}
-                                    </span>
-                                  </div>
-                                  <p className="text-gray-700 text-sm mb-2">{resposta.comentario}</p>
-                                  <div className="flex items-center gap-3">
-                                    {user && user.email === resposta.usuario_email && (
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => deletarComentarioMutation.mutate(resposta.id)}
-                                        className="text-xs text-red-600"
-                                      >
-                                        <Trash2 className="w-3 h-3 mr-1" />
-                                        Deletar
-                                      </Button>
-                                    )}
-                                    {user && user.email !== resposta.usuario_email && (
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => {
-                                          const motivo = prompt("Por que você está denunciando este comentário?");
-                                          if (motivo) {
-                                            denunciarMutation.mutate({ comentarioId: resposta.id, motivo });
-                                          }
-                                        }}
-                                        className="text-xs text-orange-600"
-                                      >
-                                        <Flag className="w-3 h-3 mr-1" />
-                                        Denunciar
-                                      </Button>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                        <p className="text-gray-700">{comentario.comentario}</p>
                       </div>
                     </div>
                   </div>
@@ -530,12 +315,12 @@ export default function ArtigoBlog() {
                   Gostou deste artigo?
                 </h3>
                 <p className="text-gray-600 mb-6">
-                  Continue explorando nosso blog para mais conteúdos sobre estética, beleza e bem-estar.
+                  Continue explorando nosso blog para mais conteúdos sobre estética e beleza.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Button
                     onClick={() => navigate(createPageUrl("Blog"))}
-                    className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
+                    className="bg-gradient-to-r from-pink-600 to-rose-600"
                   >
                     Ver Mais Artigos
                   </Button>
@@ -556,31 +341,29 @@ export default function ArtigoBlog() {
             <DialogHeader>
               <DialogTitle>Compartilhar Artigo</DialogTitle>
               <DialogDescription>
-                Escolha onde você quer compartilhar este artigo
+                Escolha onde você quer compartilhar
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-3">
               <Button
                 onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(artigoTexto)}`, '_blank')}
-                className="w-full bg-green-600 hover:bg-green-700 text-white"
+                className="w-full bg-green-600 hover:bg-green-700"
               >
-                📱 Compartilhar no WhatsApp
+                📱 WhatsApp
               </Button>
               
               <Button
                 onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(artigoUrl)}`, '_blank')}
                 variant="outline"
-                className="w-full"
               >
-                📘 Compartilhar no Facebook
+                📘 Facebook
               </Button>
 
               <Button
                 onClick={() => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(artigoTexto)}`, '_blank')}
                 variant="outline"
-                className="w-full"
               >
-                🐦 Compartilhar no Twitter
+                🐦 Twitter
               </Button>
             </div>
           </DialogContent>
