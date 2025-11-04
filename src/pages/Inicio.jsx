@@ -34,6 +34,7 @@ import TermosCondicoes from "../components/home/TermosCondicoes";
 import Tutorial from "../components/home/Tutorial";
 import { CardContent } from "@/components/ui/card";
 import CalculadoraLaserSection from "../components/home/CalculadoraLaserSection";
+import SEOStats from "../components/home/SEOStats";
 
 const categorias = [
   { nome: "Depilação", cor: "from-pink-500 to-rose-500", icon: "✨" },
@@ -387,6 +388,9 @@ export default function Inicio() {
           </div>
         </div>
       </section>
+
+      {/* SEO Stats Section - NOVO */}
+      <SEOStats />
 
       {/* Tutorial Section */}
       <Tutorial />
