@@ -9,42 +9,42 @@ import { createPageUrl } from "@/utils";
 
 const planos = [
   {
-    nome: "BÁSICO",
-    tipo: "basico",
-    preco: "Consulte",
+    nome: "FREE",
+    tipo: "free",
+    preco: "Grátis",
     cor: "from-gray-400 to-gray-500",
     icone: Sparkles,
     destaque: false,
     limites: {
-      tags: 1,
       especialidades: 1,
-      anuncios: 1
+      anuncios: 1,
+      tags: 1
     },
     beneficios: [
-      "1 Tag para exposição",
       "1 Especialidade cadastrada",
       "1 Anúncio ativo",
+      "1 Tag para exposição",
       "Perfil básico na plataforma",
       "Suporte por email",
       "Estatísticas básicas"
     ]
   },
   {
-    nome: "INTERMEDIÁRIO",
-    tipo: "intermediario",
-    preco: "Consulte",
+    nome: "BÁSICO",
+    tipo: "basico",
+    preco: "R$ 99/mês",
     cor: "from-blue-400 to-cyan-500",
     icone: Star,
     destaque: false,
     limites: {
-      tags: 10,
-      especialidades: 5,
-      anuncios: 20
+      especialidades: 2,
+      anuncios: 10,
+      tags: 5
     },
     beneficios: [
-      "10 Tags para maior exposição",
-      "5 Especialidades cadastradas",
-      "Até 20 Anúncios ativos",
+      "2 Especialidades cadastradas",
+      "10 Anúncios ativos",
+      "5 Tags para exposição",
       "Perfil destacado",
       "Suporte prioritário",
       "Estatísticas avançadas",
@@ -55,19 +55,19 @@ const planos = [
   {
     nome: "AVANÇADO",
     tipo: "avancado",
-    preco: "Consulte",
+    preco: "R$ 297/mês",
     cor: "from-purple-500 to-pink-500",
     icone: Zap,
     destaque: true,
     limites: {
-      tags: 20,
-      especialidades: 10,
-      anuncios: 50
+      especialidades: 5,
+      anuncios: 10,
+      tags: 20
     },
     beneficios: [
+      "5 Especialidades cadastradas",
+      "10 Anúncios ativos",
       "20 Tags premium",
-      "10 Especialidades cadastradas",
-      "Até 50 Anúncios ativos",
       "Prioridade máxima nas buscas",
       "Perfil premium com destaque",
       "Suporte VIP com chat direto",
@@ -80,24 +80,25 @@ const planos = [
   {
     nome: "PREMIUM",
     tipo: "premium",
-    preco: "Consulte",
+    preco: "R$ 997/mês",
     cor: "from-yellow-400 to-amber-500",
     icone: Crown,
     destaque: false,
     limites: {
-      tags: "Ilimitadas",
       especialidades: "Ilimitadas",
-      anuncios: "Ilimitados"
+      anuncios: "Ilimitados",
+      tags: 100
     },
     beneficios: [
-      "Tags ILIMITADAS",
       "Especialidades ILIMITADAS",
       "Anúncios ILIMITADOS",
-      "Assistente com Claude.ia integrado",
+      "100 Tags premium",
+      "Integração com WhatsApp Business",
+      "Assistente com IA integrado",
       "Prioridade MÁXIMA em todas as buscas",
       "Destaque permanente na home",
       "Suporte 24/7 dedicado",
-      "Gerente de conta exclusivo",
+      "Gerente de conta exclusivo (Géssica)",
       "Analytics profissional completo",
       "Marketing digital incluso",
       "Selo Premium Exclusivo",
@@ -163,16 +164,16 @@ export default function Planos() {
                       <h4 className="font-bold mb-3 text-center">Limites</h4>
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
-                          <span className="text-gray-600">Tags:</span>
-                          <span className="font-bold">{plano.limites.tags}</span>
-                        </div>
-                        <div className="flex justify-between">
                           <span className="text-gray-600">Especialidades:</span>
                           <span className="font-bold">{plano.limites.especialidades}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600">Anúncios:</span>
                           <span className="font-bold">{plano.limites.anuncios}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Tags:</span>
+                          <span className="font-bold">{plano.limites.tags}</span>
                         </div>
                       </div>
                     </div>
@@ -265,11 +266,15 @@ export default function Planos() {
         <div className="text-center">
           <p className="text-gray-600 mb-4 text-lg">Tem dúvidas sobre qual plano escolher?</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to={createPageUrl("FaleConosco")}>
+            <a
+              href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Gostaria de informações sobre os planos do Mapa da Estética! 💆‍♀️")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <Button size="lg" className="bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold">
                 Fale Conosco
               </Button>
-            </Link>
+            </a>
             <Link to={createPageUrl("CadastrarAnuncio")}>
               <Button size="lg" variant="outline">
                 Criar Anúncio Grátis

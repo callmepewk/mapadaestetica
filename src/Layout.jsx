@@ -108,7 +108,7 @@ export default function Layout({ children }) {
             <span className="text-center sm:text-left">Bem-vindo ao Mapa da Estética - Os melhores profissionais perto de você</span>
           </div>
           <div className="flex items-center gap-4">
-            <span className="font-semibold">(54) 99155-4136</span>
+            <span className="font-semibold">(31) 97259-5643</span>
           </div>
         </div>
       </div>
@@ -120,7 +120,7 @@ export default function Layout({ children }) {
             {/* Logo */}
             <Link to={createPageUrl("Inicio")} className="flex items-center gap-2 sm:gap-3 group flex-shrink-0">
               <img 
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/dfd50956f_image.png" 
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe4/dfd50956f_image.png" 
                 alt="Mapa da Estética"
                 className="h-12 sm:h-14 w-auto object-contain transform group-hover:scale-105 transition-transform"
               />
@@ -251,7 +251,7 @@ export default function Layout({ children }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
             <div>
               <img 
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/dfd50956f_image.png" 
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe4/dfd50956f_image.png" 
                 alt="Mapa da Estética"
                 className="h-12 w-auto object-contain mb-4 brightness-0 invert"
               />
@@ -274,10 +274,10 @@ export default function Layout({ children }) {
             <div>
               <h4 className="font-semibold mb-4 text-[#F7D426]">Contatos</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li className="font-semibold text-white">Suporte Técnico:</li>
-                <li><a href="tel:54991554136" className="hover:text-[#F7D426] transition-colors">(54) 99155-4136</a></li>
-                <li className="font-semibold text-white mt-3">Central de Vendas:</li>
+                <li className="font-semibold text-white">Central de Vendas:</li>
                 <li><a href="tel:31972595643" className="hover:text-[#F7D426] transition-colors">(31) 97259-5643</a></li>
+                <li className="font-semibold text-white mt-3">Suporte Técnico:</li>
+                <li><a href="tel:54991554136" className="hover:text-[#F7D426] transition-colors">(54) 99155-4136</a></li>
                 <li className="font-semibold text-white mt-3">Business & Partnerships:</li>
                 <li><a href="tel:21980343873" className="hover:text-[#F7D426] transition-colors">(21) 98034-3873</a></li>
               </ul>

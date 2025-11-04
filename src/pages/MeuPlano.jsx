@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useNavigate, Link } from "react-router-dom";
@@ -21,32 +22,32 @@ import {
 import { motion } from "framer-motion";
 
 const planosDisponiveis = {
-  basico: {
-    nome: "BÁSICO",
+  free: {
+    nome: "FREE",
     cor: "from-gray-400 to-gray-500",
     icone: Sparkles,
     beneficios: [
-      "1 Tag para exposição",
       "1 Especialidade cadastrada",
       "1 Anúncio ativo",
+      "1 Tag para exposição",
       "Perfil básico na plataforma",
       "Suporte por email",
       "Estatísticas básicas"
     ],
     limites: {
-      tags: 1,
       especialidades: 1,
-      anuncios: 1
+      anuncios: 1,
+      tags: 1
     }
   },
-  intermediario: {
-    nome: "INTERMEDIÁRIO",
+  basico: {
+    nome: "BÁSICO",
     cor: "from-blue-400 to-cyan-500",
     icone: Star,
     beneficios: [
-      "10 Tags para maior exposição",
-      "5 Especialidades cadastradas",
-      "Até 20 Anúncios ativos",
+      "2 Especialidades cadastradas",
+      "10 Anúncios ativos",
+      "5 Tags para exposição",
       "Perfil destacado",
       "Suporte prioritário",
       "Estatísticas avançadas",
@@ -54,9 +55,9 @@ const planosDisponiveis = {
       "Aparece nas buscas principais"
     ],
     limites: {
-      tags: 10,
-      especialidades: 5,
-      anuncios: 20
+      especialidades: 2,
+      anuncios: 10,
+      tags: 5
     }
   },
   avancado: {
@@ -64,9 +65,9 @@ const planosDisponiveis = {
     cor: "from-purple-500 to-pink-500",
     icone: Zap,
     beneficios: [
+      "5 Especialidades cadastradas",
+      "10 Anúncios ativos",
       "20 Tags premium",
-      "10 Especialidades cadastradas",
-      "Até 50 Anúncios ativos",
       "Prioridade máxima nas buscas",
       "Perfil premium com destaque",
       "Suporte VIP com chat direto",
@@ -76,9 +77,9 @@ const planosDisponiveis = {
       "Galeria de fotos ampliada"
     ],
     limites: {
-      tags: 20,
-      especialidades: 10,
-      anuncios: 50
+      especialidades: 5,
+      anuncios: 10,
+      tags: 20
     }
   },
   premium: {
@@ -86,23 +87,24 @@ const planosDisponiveis = {
     cor: "from-yellow-400 to-amber-500",
     icone: Crown,
     beneficios: [
-      "Tags ILIMITADAS",
       "Especialidades ILIMITADAS",
       "Anúncios ILIMITADOS",
-      "Assistente com Claude.ia integrado",
+      "100 Tags premium",
+      "Integração com WhatsApp Business",
+      "Assistente com IA integrado",
       "Prioridade MÁXIMA em todas as buscas",
       "Destaque permanente na home",
       "Suporte 24/7 dedicado",
-      "Gerente de conta exclusivo",
+      "Gerente de conta exclusivo (Géssica)",
       "Analytics profissional completo",
       "Marketing digital incluso",
       "Selo Premium Exclusivo",
       "Conteúdo patrocinado mensal"
     ],
     limites: {
-      tags: "Ilimitadas",
       especialidades: "Ilimitadas",
-      anuncios: "Ilimitados"
+      anuncios: "Ilimitados",
+      tags: 100
     }
   }
 };
@@ -137,7 +139,7 @@ export default function MeuPlano() {
     );
   }
 
-  const planoAtual = user.plano_ativo || 'basico';
+  const planoAtual = user.plano_ativo || 'free';
   const planoInfo = planosDisponiveis[planoAtual];
   const IconeAtual = planoInfo.icone;
 
@@ -208,16 +210,16 @@ export default function MeuPlano() {
                   <h3 className="text-xl font-bold mb-4">Seus Limites</h3>
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Tags:</span>
-                      <Badge className="bg-purple-100 text-purple-800">{planoInfo.limites.tags}</Badge>
-                    </div>
-                    <div className="flex justify-between items-center">
                       <span className="text-gray-600">Especialidades:</span>
-                      <Badge className="bg-blue-100 text-blue-800">{planoInfo.limites.especialidades}</Badge>
+                      <Badge className="bg-purple-100 text-purple-800">{planoInfo.limites.especialidades}</Badge>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-gray-600">Anúncios:</span>
-                      <Badge className="bg-pink-100 text-pink-800">{planoInfo.limites.anuncios}</Badge>
+                      <Badge className="bg-blue-100 text-blue-800">{planoInfo.limites.anuncios}</Badge>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Tags:</span>
+                      <Badge className="bg-pink-100 text-pink-800">{planoInfo.limites.tags}</Badge>
                     </div>
                   </div>
                 </div>
@@ -257,7 +259,7 @@ export default function MeuPlano() {
             <div className="grid md:grid-cols-2 gap-8">
               {outrosPlanos.map(([key, plano], index) => {
                 const Icone = plano.icone;
-                const ordem = ['basico', 'intermediario', 'avancado', 'premium'];
+                const ordem = ['free', 'basico', 'avancado', 'premium'];
                 const isUpgrade = ordem.indexOf(key) > ordem.indexOf(planoAtual);
                 
                 return (
@@ -290,16 +292,16 @@ export default function MeuPlano() {
                           <h4 className="font-bold mb-2 text-center">Limites</h4>
                           <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
-                              <span className="text-gray-600">Tags:</span>
-                              <span className="font-bold">{plano.limites.tags}</span>
-                            </div>
-                            <div className="flex justify-between">
                               <span className="text-gray-600">Especialidades:</span>
                               <span className="font-bold">{plano.limites.especialidades}</span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-gray-600">Anúncios:</span>
                               <span className="font-bold">{plano.limites.anuncios}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Tags:</span>
+                              <span className="font-bold">{plano.limites.tags}</span>
                             </div>
                           </div>
                         </div>
@@ -320,7 +322,7 @@ export default function MeuPlano() {
                           )}
                         </div>
 
-                        <Link to={createPageUrl("FaleConosco")}>
+                        <a href={`https://wa.me/5531972595643?text=${encodeURIComponent(`Olá! Tenho interesse no plano ${plano.nome} do Mapa da Estética! 💆‍♀️`)}`} target="_blank" rel="noopener noreferrer">
                           <Button
                             className={`w-full ${
                               isUpgrade
@@ -331,7 +333,7 @@ export default function MeuPlano() {
                             {isUpgrade ? 'Fazer Upgrade' : 'Consultar Plano'}
                             <ArrowRight className="w-4 h-4 ml-2" />
                           </Button>
-                        </Link>
+                        </a>
                       </CardContent>
                     </Card>
                   </motion.div>
@@ -349,11 +351,11 @@ export default function MeuPlano() {
               Nossa equipe está pronta para ajudá-lo a escolher o melhor plano para suas necessidades
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to={createPageUrl("FaleConosco")}>
+              <a href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Preciso de ajuda com os planos do Mapa da Estética! 💆‍♀️")}`} target="_blank" rel="noopener noreferrer">
                 <Button size="lg" className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700">
                   Falar com Suporte
                 </Button>
-              </Link>
+              </a>
               <Link to={createPageUrl("Planos")}>
                 <Button size="lg" variant="outline">
                   Ver Todos os Planos

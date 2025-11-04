@@ -12,7 +12,7 @@ import {
   Clock,
   Star,
   TrendingUp,
-  Calculator,
+  Calculator, // Keep Calculator for other sections if it's used elsewhere, otherwise it can be removed.
   Check,
   MessageCircle,
   ChevronDown,
@@ -333,23 +333,27 @@ export default function Inicio() {
           <Card className="border-none shadow-2xl bg-white/95 backdrop-blur overflow-hidden">
             <CardContent className="p-6 md:p-8">
               <div className="flex flex-col md:flex-row items-center gap-6">
-                <div className="w-20 h-20 bg-gradient-to-br from-[#2C2C2C] to-[#4A4A4A] rounded-2xl flex items-center justify-center flex-shrink-0">
-                  <Calculator className="w-10 h-10 text-[#F7D426]" />
+                <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
+                  <img
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/6aa7c4ea6_image.png"
+                    alt="Dr. Beleza"
+                    className="w-16 h-16 rounded-full object-cover"
+                  />
                 </div>
                 <div className="flex-1 text-center md:text-left">
                   <Badge className="mb-2 bg-[#F7D426] text-[#2C2C2C] border-none font-bold">
-                    Exclusivo Mapa da Estética
+                    Consulte Tratamentos Agora
                   </Badge>
                   <h2 className="text-2xl md:text-3xl font-bold text-[#2C2C2C] mb-2">
-                    Pesquisa Especializada
+                    Assistente de Pesquisa
                   </h2>
                   <p className="text-gray-600 mb-4">
-                    Conheça TODOS os procedimentos e serviços estéticos em detalhes antes de escolher o profissional ideal
+                    Descubra como funciona e qual o tratamento certo para você
                   </p>
                 </div>
                 <Link to={createPageUrl("PesquisaEspecializada")} className="flex-shrink-0">
                   <Button size="lg" className="bg-[#2C2C2C] hover:bg-[#3A3A3A] text-[#F7D426] font-bold shadow-xl">
-                    Acessar Pesquisa
+                    Acessar Assistente
                     <ArrowRight className="w-5 h-5 ml-2" />
                   </Button>
                 </Link>

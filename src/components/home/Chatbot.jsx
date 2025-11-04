@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useMutation } from "@tanstack/react-query";
@@ -32,7 +33,7 @@ export default function Chatbot() {
   const [conversa, setConversa] = useState([
     {
       tipo: "bot",
-      texto: "Olá! 👋 Sou o assistente do Mapa da Estética. Como posso ajudá-lo hoje?",
+      texto: "Olá! 👋 Sou o Dr. Beleza, assistente do Mapa da Estética. Como posso ajudá-lo hoje?",
       timestamp: new Date()
     }
   ]);
@@ -54,22 +55,23 @@ export default function Chatbot() {
   const enviarMensagemMutation = useMutation({
     mutationFn: async (pergunta) => {
       const resposta = await base44.integrations.Core.InvokeLLM({
-        prompt: `Você é o assistente virtual do Mapa da Estética e Clube da Beleza. 
+        prompt: `Você é o Dr. Beleza, o assistente virtual do Mapa da Estética e Clube da Beleza. 
         
         Responda à seguinte pergunta de forma amigável, útil e profissional em português:
         "${pergunta}"
         
         Informações importantes sobre a plataforma:
         - Somos uma plataforma que conecta profissionais de estética a clientes em todo Brasil
-        - Temos 3 planos: Light (grátis), Gold e VIP com benefícios crescentes
+        - Temos 4 planos para profissionais: FREE (grátis), Básico (R$ 99), Avançado (R$ 297) e Premium (R$ 997)
         - Oferecemos mais de 64 categorias de serviços de estética
         - Temos mais de 3.000 profissionais parceiros
-        - Contato: (21) 98034-3873 / WhatsApp
+        - Contato Central de Vendas: (31) 97259-5643 / WhatsApp
         - Horário de atendimento: Segunda a Sexta, 9h às 18h
-        - Cadastro gratuito para profissionais no plano Light
-        - Sistema de pontos e descontos para clientes
+        - Cadastro gratuito para profissionais no plano FREE
+        - Sistema de pontos e descontos para clientes no Clube da Beleza
         - Agendamento online e chat direto com profissionais
         - Calculadora de Viabilidade de Laser desenvolvida pelo Dr. Jauru
+        - Assistente de Pesquisa para descobrir tratamentos
         
         Responda de forma direta e objetiva em até 3 parágrafos curtos.
         Use emojis quando apropriado para deixar a conversa mais amigável.`,
@@ -122,7 +124,7 @@ export default function Chatbot() {
             <div className="relative w-full h-full rounded-full overflow-hidden border-4 border-white">
               <img
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/6aa7c4ea6_image.png"
-                alt="Assistente"
+                alt="Dr. Beleza"
                 className="w-full h-full object-cover"
               />
             </div>
@@ -156,13 +158,13 @@ export default function Chatbot() {
                 <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-white flex-shrink-0">
                   <img
                     src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/6aa7c4ea6_image.png"
-                    alt="Assistente"
+                    alt="Dr. Beleza"
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-bold text-[#2C2C2C]">Assistente Virtual</h3>
+                  <h3 className="font-bold text-[#2C2C2C]">Dr. Beleza</h3>
                   <p className="text-xs text-[#2C2C2C]/80 flex items-center gap-1">
                     <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                     Online
