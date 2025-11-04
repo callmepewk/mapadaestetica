@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -35,7 +34,7 @@ import Tutorial from "../components/home/Tutorial";
 import { CardContent } from "@/components/ui/card";
 import CalculadoraLaserSection from "../components/home/CalculadoraLaserSection";
 import SEOStats from "../components/home/SEOStats";
-import OnboardingModal from "../components/home/OnboardingModal"; // Added import
+import OnboardingModal from "../components/home/OnboardingModal";
 
 const categorias = [
   { nome: "Depilação", cor: "from-pink-500 to-rose-500", icon: "✨" },
@@ -57,7 +56,7 @@ export default function Inicio() {
   const [buscaCidade, setBuscaCidade] = useState("");
   const [buscaCategoria, setBuscaCategoria] = useState("");
   const [mostrarTermos, setMostrarTermos] = useState(false);
-  const [mostrarOnboarding, setMostrarOnboarding] = useState(false); // Added state
+  const [mostrarOnboarding, setMostrarOnboarding] = useState(false);
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -71,8 +70,7 @@ export default function Inicio() {
         const userData = await base44.auth.me();
         setUser(userData);
 
-        // Se o usuário não completou o cadastro, mostra onboarding
-        if (userData && !userData.cadastro_completo) { // Added null check for userData
+        if (userData && !userData.cadastro_completo) {
           setMostrarOnboarding(true);
         }
       } catch {
@@ -89,7 +87,6 @@ export default function Inicio() {
 
   const handleOnboardingComplete = async () => {
     setMostrarOnboarding(false);
-    // Atualizar dados do usuário
     try {
       const userData = await base44.auth.me();
       setUser(userData);
@@ -128,7 +125,7 @@ export default function Inicio() {
   return (
     <div className="min-h-screen">
       <TermosCondicoes open={mostrarTermos} onAccept={handleAceitarTermos} />
-      <OnboardingModal open={mostrarOnboarding} onComplete={handleOnboardingComplete} /> {/* Added OnboardingModal */}
+      <OnboardingModal open={mostrarOnboarding} onComplete={handleOnboardingComplete} />
 
       {/* Hero Section - TODOS */}
       <section
@@ -207,27 +204,13 @@ export default function Inicio() {
         </div>
       </section>
 
-      {/* PROFISSIONAIS: Conteúdo específico (de SEO até CTA) */}
+      {/* PROFISSIONAIS: Conteúdo específico */}
       {isProfissional && (
         <>
           <SEOStats />
           <Tutorial />
-
-          {/* Vantagens Section */}
-          <section className="py-16 bg-white">
-            {/* ... conteúdo completo das vantagens que você já tem */}
-          </section>
-
-          {/* Featured & Recent Listings */}
-          {anunciosDestaque.length > 0 && (
-            <section className="py-12 sm:py-16 bg-gradient-to-b from-gray-50 to-white">
-              {/* ... conteúdo completo */}
-            </section>
-          )}
-
           <CalculadoraLaserSection />
 
-          {/* CTA Profissionais */}
           <section className="py-12 sm:py-16 md:py-20 bg-gradient-to-r from-pink-600 to-rose-600 text-white">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
               <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 px-2">
@@ -247,7 +230,7 @@ export default function Inicio() {
         </>
       )}
 
-      {/* PACIENTES E TODOS: Explore sua cidade até Dr. Beleza */}
+      {/* TODOS: Categorias, Dr. Beleza, Blog, Redes Sociais */}
       <section className="py-12 sm:py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-8 sm:mb-12">
@@ -267,7 +250,6 @@ export default function Inicio() {
         </div>
       </section>
 
-      {/* Dr. Beleza - TODOS */}
       <section className="py-8 bg-gradient-to-r from-[#F7D426] to-[#FFE066]">
         <div className="max-w-7xl mx-auto px-4">
           <Card className="border-none shadow-2xl bg-white/95 backdrop-blur overflow-hidden">
@@ -307,7 +289,6 @@ export default function Inicio() {
         </div>
       </section>
 
-      {/* Blog - TODOS */}
       <section className="py-12 sm:py-16 bg-gradient-to-br from-pink-50 to-rose-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-8 sm:mb-12">
@@ -333,7 +314,6 @@ export default function Inicio() {
         </div>
       </section>
 
-      {/* REDES SOCIAIS - TODOS */}
       <section className="py-12 bg-gradient-to-r from-purple-600 to-pink-600">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <div className="mb-8">
