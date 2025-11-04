@@ -192,7 +192,7 @@ export default function Inicio() {
     setMostrarTermos(false);
   };
 
-  const { data: anunciosDestaque = [] } = useQuery({
+  const { data: anunciosDestaque = [], isLoading: isLoadingDestaque } = useQuery({
     queryKey: ['anuncios-destaque'],
     queryFn: async () => {
       const anuncios = await base44.entities.Anuncio.filter(
@@ -200,36 +200,31 @@ export default function Inicio() {
           status: 'ativo',
           plano: { $in: ['avancado', 'premium'] }
         },
-        '-plano,-visualizacoes',
+        '-created_date',
         6
       );
-      // Ordenar: premiums primeiro, depois avançados
       return anuncios.sort((a, b) => {
         if (a.plano === 'premium' && b.plano !== 'premium') return -1;
         if (a.plano !== 'premium' && b.plano === 'premium') return 1;
         return 0;
       });
     },
-    staleTime: 0, // Sempre busca dados frescos
-    cacheTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: true,
     refetchOnWindowFocus: true,
-    refetchOnMount: true, // FORÇAR REFETCH
-    refetchOnReconnect: false,
     initialData: [],
   });
 
-  const { data: anunciosRecentes = [] } = useQuery({
+  const { data: anunciosRecentes = [], isLoading: isLoadingRecentes } = useQuery({
     queryKey: ['anuncios-recentes'],
     queryFn: () => base44.entities.Anuncio.filter(
       { status: 'ativo' },
       '-created_date',
       9
     ),
-    staleTime: 0, // Sempre busca dados frescos
-    cacheTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: true,
     refetchOnWindowFocus: true,
-    refetchOnMount: true, // FORÇAR REFETCH
-    refetchOnReconnect: false,
     initialData: [],
   });
 
@@ -566,11 +561,26 @@ export default function Inicio() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {anunciosDestaque.map((anuncio) => (
-              <CardAnuncio key={anuncio.id} anuncio={anuncio} destaque />
-            ))}
-          </div>
+          {isLoadingDestaque ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              {Array(3).fill(0).map((_, i) => (
+                <div key={i} className="h-96 bg-gray-200 rounded-xl animate-pulse" />
+              ))}
+            </div>
+          ) : anunciosDestaque.length === 0 ? (
+            <div className="text-center py-12 bg-white rounded-xl border-2 border-dashed">
+              <p className="text-gray-500 mb-4">Nenhum anúncio em destaque no momento</p>
+              <Link to={createPageUrl("Anuncios")}>
+                <Button>Ver Todos os Anúncios</Button>
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              {anunciosDestaque.map((anuncio) => (
+                <CardAnuncio key={anuncio.id} anuncio={anuncio} destaque />
+              ))}
+            </div>
+          )}
 
           <div className="text-center mt-6 sm:mt-8">
             <Link to={createPageUrl("Anuncios")}>
@@ -584,7 +594,7 @@ export default function Inicio() {
       </section>
 
       {/* Recent Listings */}
-      {anunciosRecentes.length > 0 && (
+      {!isLoadingRecentes && anunciosRecentes.length > 0 && (
         <section className="py-12 sm:py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <div className="text-center mb-8 sm:mb-12">
@@ -802,7 +812,7 @@ export default function Inicio() {
 
       {/* CTA Section */}
       <section className="py-12 sm:py-16 md:py-20 bg-gradient-to-r from-pink-600 to-rose-600 text-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6                   text-center">
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 px-2">
             Você é um profissional da estética?
           </h2>

@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -29,17 +30,15 @@ export default function Blog() {
     fetchUser();
   }, []);
 
-  // Buscar artigos do banco de dados (atualizados semanalmente)
+  // Buscar artigos do banco de dados
   const { data: artigos = [], isLoading } = useQuery({
     queryKey: ['artigos-blog'],
     queryFn: async () => {
       return await base44.entities.ArtigoBlog.filter({ status: 'publicado' }, '-created_date', 50);
     },
-    staleTime: 7 * 24 * 60 * 60 * 1000, // 1 semana - atualização semanal
-    cacheTime: 7 * 24 * 60 * 60 * 1000,
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    refetchOnReconnect: false,
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     initialData: [],
   });
 
@@ -97,11 +96,11 @@ export default function Blog() {
         </div>
 
         {/* Featured Section */}
-        {!isLoading && artigos.length > 0 && (
+        {!isLoading && artigosFiltrados.length > 0 && ( // Use artigosFiltrados here to correctly display featured article even with search
           <div className="mb-8 md:mb-12 px-4">
             <Card 
               className="overflow-hidden border-none shadow-2xl bg-gradient-to-br from-pink-500 to-rose-500 text-white cursor-pointer hover:shadow-3xl transition-shadow"
-              onClick={() => handleArtigoClick(artigos[0])}
+              onClick={() => handleArtigoClick(artigosFiltrados[0])} // Use artigosFiltrados[0]
             >
               <CardContent className="p-6 md:p-12">
                 <Badge className="mb-4 bg-white/20 text-white border-none">
@@ -109,27 +108,27 @@ export default function Blog() {
                   Artigo em Destaque
                 </Badge>
                 <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4">
-                  {artigos[0].titulo}
+                  {artigosFiltrados[0].titulo}
                 </h2>
                 <p className="text-base md:text-lg text-white/90 mb-6">
-                  {artigos[0].resumo}
+                  {artigosFiltrados[0].resumo}
                 </p>
                 <div className="flex items-center gap-4 text-sm text-white/80 flex-wrap">
                   <span className="flex items-center gap-1">
                     <Calendar className="w-4 h-4" />
-                    {format(new Date(artigos[0].created_date), "dd/MM/yyyy")}
+                    {format(new Date(artigosFiltrados[0].created_date), "dd/MM/yyyy")}
                   </span>
                   <span className="flex items-center gap-1">
                     <Clock className="w-4 h-4" />
-                    {artigos[0].tempo_leitura} min de leitura
+                    {artigosFiltrados[0].tempo_leitura} min de leitura
                   </span>
                   <span className="flex items-center gap-1">
                     <Eye className="w-4 h-4" />
-                    {artigos[0].visualizacoes || 0} visualizações
+                    {artigosFiltrados[0].visualizacoes || 0} visualizações
                   </span>
                   <span className="flex items-center gap-1">
                     <Heart className="w-4 h-4 fill-white" />
-                    {artigos[0].total_curtidas || 0} curtidas
+                    {artigosFiltrados[0].total_curtidas || 0} curtidas
                   </span>
                 </div>
               </CardContent>
@@ -164,9 +163,9 @@ export default function Blog() {
           </Card>
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 px-4">
-            {artigosFiltrados.map((artigo, index) => (
+            {artigosFiltrados.slice(1).map((artigo) => (
               <Card
-                key={index}
+                key={artigo.id}
                 onClick={() => handleArtigoClick(artigo)}
                 className="overflow-hidden hover:shadow-xl transition-all duration-300 border-none cursor-pointer group"
               >
