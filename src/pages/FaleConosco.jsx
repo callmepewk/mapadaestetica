@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useMutation } from "@tanstack/react-query";
@@ -107,19 +108,57 @@ export default function FaleConosco() {
               <CardContent className="p-6 space-y-4">
                 <h3 className="font-semibold text-lg mb-4">Informações de Contato</h3>
 
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Phone className="w-5 h-5 text-pink-600" />
+                <div className="space-y-4">
+                  <div className="border-b pb-4">
+                    <p className="font-bold text-pink-600 mb-2">📞 Suporte Técnico</p>
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Phone className="w-5 h-5 text-pink-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium">Telefone / WhatsApp</p>
+                        <a href="tel:5499155413" className="text-sm text-gray-600 hover:text-pink-600">
+                          (54) 99155-4136
+                        </a>
+                        <p className="text-xs text-gray-500 mt-1">Seg-Sex: 9h às 18h | Sáb: 9h às 13h</p>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium">Telefone / WhatsApp</p>
-                    <a href="tel:21980343873" className="text-sm text-gray-600 hover:text-pink-600">
-                      (21) 98034-3873
-                    </a>
+
+                  <div className="border-b pb-4">
+                    <p className="font-bold text-blue-600 mb-2">💼 Central de Vendas</p>
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Phone className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium">Vendas e Planos</p>
+                        <a href="tel:31972595643" className="text-sm text-gray-600 hover:text-blue-600">
+                          (31) 97259-5643
+                        </a>
+                        <p className="text-xs text-gray-500 mt-1">Seg-Sex: 9h às 18h</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pb-2">
+                    <p className="font-bold text-purple-600 mb-2">🤝 Business & Partnerships</p>
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Phone className="w-5 h-5 text-purple-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium">Patrocínios e Anunciantes</p>
+                        <a href="tel:21980343873" className="text-sm text-gray-600 hover:text-purple-600">
+                          (21) 98034-3873
+                        </a>
+                        <p className="text-xs text-gray-500 mt-1">Seg-Sex: 9h às 18h</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-3 pt-4 border-t">
                   <div className="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center flex-shrink-0">
                     <Mail className="w-5 h-5 text-pink-600" />
                   </div>
@@ -139,21 +178,6 @@ export default function FaleConosco() {
                     <p className="font-medium">Localização</p>
                     <p className="text-sm text-gray-600">
                       Rio de Janeiro, RJ - Brasil
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Clock className="w-5 h-5 text-pink-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium">Horário de Atendimento</p>
-                    <p className="text-sm text-gray-600">
-                      Segunda a Sexta: 9h às 18h
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Sábado: 9h às 13h
                     </p>
                   </div>
                 </div>
