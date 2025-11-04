@@ -165,7 +165,7 @@ export default function CalculadoraLaserSection() {
         <div className="text-center mb-12">
           <Badge className="mb-4 bg-blue-600 text-white">
             <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/894287324_drbeleza.png"
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe2/894287324_drbeleza.png"
               alt="Dr. Beleza"
               className="w-4 h-4 rounded-full mr-2 inline-block"
             />

@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -66,7 +66,7 @@ export default function CadastrarAnuncio() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [enviandoVerificacao, setEnviandoVerificacao] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchUser = async () => {
       try {
         const userData = await base44.auth.me();

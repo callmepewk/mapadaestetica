@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -55,7 +55,7 @@ export default function Perfil() {
   const [user, setUser] = useState(null);
   const [perfilEditado, setPerfilEditado] = useState({});
 
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchUser = async () => {
       try {
         const userData = await base44.auth.me();
@@ -66,7 +66,7 @@ export default function Perfil() {
       }
     };
     fetchUser();
-  }, []);
+  }, [navigate]);
 
   const { data: meusAnuncios = [], isLoading: isLoadingAnuncios } = useQuery({
     queryKey: ['meus-anuncios', user?.email],
