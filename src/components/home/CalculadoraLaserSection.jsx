@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -70,10 +70,27 @@ export default function CalculadoraLaserSection() {
     fetchUser();
   }, []);
 
+  // Cálculo automático para preview (SEM abrir o modal)
+  const resultadosPreview = useMemo(() => {
+    const precoLiquido = dados.precoMedio * (1 - dados.descontoMedio / 100);
+    const margemBruta = precoLiquido - dados.custoVariavel;
+    const margemBrutaPct = isNaN((margemBruta / precoLiquido) * 100) ? 0 : (margemBruta / precoLiquido) * 100; // Handle division by zero
+    const capacidadeMaxima = dados.sessoesHora * dados.horasDia * dados.diasMes;
+    const receitaPotencialMes = precoLiquido * capacidadeMaxima;
+
+    return {
+      precoLiquido,
+      margemBruta,
+      margemBrutaPct,
+      capacidadeMaxima,
+      receitaPotencialMes
+    };
+  }, [dados]);
+
   const calcular = () => {
     const precoLiquido = dados.precoMedio * (1 - dados.descontoMedio / 100);
     const margemBruta = precoLiquido - dados.custoVariavel;
-    const margemBrutaPct = (margemBruta / precoLiquido) * 100;
+    const margemBrutaPct = isNaN((margemBruta / precoLiquido) * 100) ? 0 : (margemBruta / precoLiquido) * 100; // Handle division by zero
     const capacidadeMaxima = dados.sessoesHora * dados.horasDia * dados.diasMes;
     const receitaPotencialMes = precoLiquido * capacidadeMaxima;
 
@@ -122,16 +139,9 @@ export default function CalculadoraLaserSection() {
       tirAluguel
     });
 
+    // APENAS AQUI abrimos o modal
     setMostrarResultados(true);
   };
-
-  useEffect(() => {
-    // Only calculate initial results if the dialog is not open
-    // This prevents re-calculating and opening the dialog on every render for initial values
-    if (!mostrarResultados) {
-      calcular();
-    }
-  }, [dados]); // Depend on 'dados' to recalculate when inputs change
 
   const handleChange = (campo, valor) => {
     setDados(prev => ({ ...prev, [campo]: parseFloat(valor) || 0 }));
@@ -165,7 +175,7 @@ export default function CalculadoraLaserSection() {
         <div className="text-center mb-12">
           <Badge className="mb-4 bg-blue-600 text-white">
             <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe2/894287324_drbeleza.png"
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/894287324_drbeleza.png"
               alt="Dr. Beleza"
               className="w-4 h-4 rounded-full mr-2 inline-block"
             />
@@ -356,35 +366,38 @@ export default function CalculadoraLaserSection() {
               <CardContent className="p-6">
                 <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
                   <TrendingUp className="w-5 h-5" />
-                  Análise de Viabilidade
+                  Análise de Viabilidade (Preview)
                 </h3>
                 <div className="space-y-4">
                   <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
                     <p className="text-sm text-white/80 mb-1">Preço Líquido por Sessão</p>
-                    <p className="text-2xl font-bold">{formatCurrency(resultados.precoLiquido)}</p>
+                    <p className="text-2xl font-bold">{formatCurrency(resultadosPreview.precoLiquido)}</p>
                   </div>
                   <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
                     <p className="text-sm text-white/80 mb-1">Margem Bruta</p>
                     <p className="text-2xl font-bold">
-                      {formatCurrency(resultados.margemBruta)} 
-                      <span className="text-base ml-2">({resultados.margemBrutaPct.toFixed(1)}%)</span>
+                      {formatCurrency(resultadosPreview.margemBruta)} 
+                      <span className="text-base ml-2">({resultadosPreview.margemBrutaPct.toFixed(1)}%)</span>
                     </p>
                   </div>
                   <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
                     <p className="text-sm text-white/80 mb-1">Capacidade Máxima Mensal</p>
-                    <p className="text-2xl font-bold">{resultados.capacidadeMaxima.toFixed(0)} sessões</p>
+                    <p className="text-2xl font-bold">{resultadosPreview.capacidadeMaxima.toFixed(0)} sessões</p>
                   </div>
                   <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
                     <p className="text-sm text-white/80 mb-1">Receita Potencial Mensal</p>
-                    <p className="text-2xl font-bold">{formatCurrency(resultados.receitaPotencialMes)}</p>
+                    <p className="text-2xl font-bold">{formatCurrency(resultadosPreview.receitaPotencialMes)}</p>
                   </div>
                 </div>
+                <p className="text-xs text-white/70 mt-4 text-center">
+                  Clique em "Calcular Viabilidade" para ver o relatório completo
+                </p>
               </CardContent>
             </Card>
           </div>
         </div>
 
-        {/* Results Dialog - ONLY SHOWN WHEN mostrarResultados IS TRUE */}
+        {/* Results Dialog - APENAS quando calcular */}
         <Dialog open={mostrarResultados} onOpenChange={setMostrarResultados}>
           <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
