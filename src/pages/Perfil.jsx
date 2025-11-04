@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -37,7 +38,8 @@ import {
   TrendingUp,
   Clock,
   Star,
-  AlertCircle
+  AlertCircle,
+  MessageCircle // Added MessageCircle import
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -200,9 +202,10 @@ export default function Perfil() {
 
             {/* Tabs */}
             <Tabs defaultValue="anuncios" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-3"> {/* Updated grid-cols to 3 */}
                 <TabsTrigger value="anuncios">Meus Anúncios</TabsTrigger>
-                <TabsTrigger value="atividades">Atividades Recentes</TabsTrigger>
+                <TabsTrigger value="relatorios">Relatórios</TabsTrigger> {/* Added new tab trigger */}
+                <TabsTrigger value="atividades">Atividades</TabsTrigger>
               </TabsList>
 
               <TabsContent value="anuncios" className="space-y-4">
@@ -234,6 +237,136 @@ export default function Perfil() {
                     >
                       Criar Novo Anúncio
                     </Button>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* New Relatorios TabContent */}
+              <TabsContent value="relatorios" className="space-y-4">
+                <Card className="border-none shadow-lg">
+                  <CardContent className="p-6">
+                    <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                      <TrendingUp className="w-5 h-5 text-pink-600" />
+                      Relatórios de Performance
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-6">
+                      Acompanhe o desempenho dos seus anúncios com relatórios detalhados, similar ao Google Negócios
+                    </p>
+
+                    {/* Overview Cards */}
+                    <div className="grid md:grid-cols-2 gap-4 mb-6">
+                      <div className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg border-2 border-blue-200">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-blue-900">Visualizações Totais</span>
+                          <Eye className="w-5 h-5 text-blue-600" />
+                        </div>
+                        <p className="text-3xl font-bold text-blue-900">{totalVisualizacoes}</p>
+                        <p className="text-xs text-blue-700 mt-1">Nos últimos 30 dias</p>
+                      </div>
+
+                      <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border-2 border-green-200">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-green-900">Taxa de Cliques</span>
+                          <TrendingUp className="w-5 h-5 text-green-600" />
+                        </div>
+                        <p className="text-3xl font-bold text-green-900">
+                          {totalVisualizacoes > 0 ? ((meusAnuncios.length / totalVisualizacoes) * 100).toFixed(1) : 0}%
+                        </p>
+                        <p className="text-xs text-green-700 mt-1">CTR médio dos anúncios</p>
+                      </div>
+                    </div>
+
+                    {/* Performance by Ad */}
+                    <div className="space-y-3">
+                      <h4 className="font-semibold text-sm text-gray-700 mb-3">Desempenho por Anúncio</h4>
+                      {meusAnuncios.length === 0 ? (
+                        <div className="text-center py-8 bg-gray-50 rounded-lg">
+                          <p className="text-gray-500">Você ainda não possui anúncios ativos</p>
+                          <Button
+                            onClick={() => navigate(createPageUrl("CadastrarAnuncio"))}
+                            className="mt-4 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
+                          >
+                            Criar Primeiro Anúncio
+                          </Button>
+                        </div>
+                      ) : (
+                        meusAnuncios.slice(0, 5).map((anuncio) => (
+                          <div
+                            key={anuncio.id}
+                            className="p-4 bg-white border-2 border-gray-200 rounded-lg hover:border-pink-300 transition-colors"
+                          >
+                            <div className="flex items-start justify-between mb-2">
+                              <div className="flex-1">
+                                <h5 className="font-medium text-gray-900 mb-1">{anuncio.titulo}</h5>
+                                <div className="flex items-center gap-2 text-xs text-gray-500">
+                                  <Badge className={
+                                    anuncio.status === 'ativo' ? 'bg-green-100 text-green-800' :
+                                    anuncio.status === 'pendente' ? 'bg-yellow-100 text-yellow-800' :
+                                    'bg-gray-100 text-gray-800'
+                                  }>
+                                    {anuncio.status}
+                                  </Badge>
+                                  <span>•</span>
+                                  <span>{anuncio.categoria}</span>
+                                </div>
+                              </div>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => navigate(`${createPageUrl("DetalhesAnuncio")}?id=${anuncio.id}`)}
+                              >
+                                Ver Detalhes
+                              </Button>
+                            </div>
+                            
+                            <div className="grid grid-cols-3 gap-4 mt-3 pt-3 border-t">
+                              <div className="text-center">
+                                <div className="flex items-center justify-center gap-1 mb-1">
+                                  <Eye className="w-3 h-3 text-gray-400" />
+                                  <span className="text-xs text-gray-500">Visualizações</span>
+                                </div>
+                                <p className="text-lg font-bold text-gray-900">{anuncio.visualizacoes || 0}</p>
+                              </div>
+                              <div className="text-center">
+                                <div className="flex items-center justify-center gap-1 mb-1">
+                                  <Star className="w-3 h-3 text-gray-400" />
+                                  <span className="text-xs text-gray-500">Curtidas</span>
+                                </div>
+                                <p className="text-lg font-bold text-gray-900">{anuncio.curtidas || 0}</p>
+                              </div>
+                              <div className="text-center">
+                                <div className="flex items-center justify-center gap-1 mb-1">
+                                  <MessageCircle className="w-3 h-3 text-gray-400" />
+                                  <span className="text-xs text-gray-500">Comentários</span>
+                                </div>
+                                <p className="text-lg font-bold text-gray-900">{anuncio.comentarios?.length || 0}</p>
+                              </div>
+                            </div>
+
+                            {/* Tags/Keywords */}
+                            {anuncio.tags && anuncio.tags.length > 0 && (
+                              <div className="mt-3 pt-3 border-t">
+                                <p className="text-xs text-gray-500 mb-2">Palavras-chave (Google Business):</p>
+                                <div className="flex flex-wrap gap-1">
+                                  {anuncio.tags.slice(0, 5).map((tag, i) => (
+                                    <Badge key={i} variant="outline" className="text-xs">
+                                      {tag}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    <Alert className="mt-6 bg-blue-50 border-blue-200">
+                      <AlertCircle className="h-4 w-4 text-blue-600" />
+                      <AlertDescription className="text-blue-800 text-sm">
+                        💡 Dica: Use palavras-chave (tags) estratégicas para melhorar seu posicionamento no Google e aumentar suas visualizações!
+                      </AlertDescription>
+                    </Alert>
                   </CardContent>
                 </Card>
               </TabsContent>

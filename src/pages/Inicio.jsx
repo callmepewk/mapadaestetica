@@ -385,6 +385,153 @@ export default function Inicio() {
       {/* Tutorial Section */}
       <Tutorial />
 
+      {/* Vantagens Section - NEW */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <Badge className="mb-4 bg-[#F7D426] text-[#2C2C2C] font-bold">
+              Por Que Escolher o Mapa da Estética?
+            </Badge>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              A Melhor Plataforma para Profissionais de Estética
+            </h2>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              Conectamos profissionais de estética a milhares de clientes em potencial.
+              Descubra por que somos a escolha número 1 do setor!
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 mb-12">
+            {/* Custo-Benefício */}
+            <Card className="border-none shadow-xl hover:shadow-2xl transition-all">
+              <CardContent className="p-8 text-center">
+                <div className="w-20 h-20 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <span className="text-4xl">💰</span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Custo-Benefício Imbatível</h3>
+                <p className="text-gray-600 mb-4">
+                  Planos a partir de <strong>GRÁTIS</strong>! Alcance milhares de clientes sem investimento inicial.
+                  Planos pagos a partir de R$ 99/mês com benefícios exclusivos.
+                </p>
+                <ul className="text-left text-sm text-gray-600 space-y-2">
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                    <span>Sem taxa de cadastro</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                    <span>Sem comissão por agendamento</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                    <span>ROI comprovado em 30 dias</span>
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            {/* Exposição Máxima */}
+            <Card className="border-none shadow-xl hover:shadow-2xl transition-all border-2 border-[#F7D426]">
+              <CardContent className="p-8 text-center">
+                <div className="w-20 h-20 bg-gradient-to-br from-yellow-100 to-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <span className="text-4xl">🚀</span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Exposição Máxima</h3>
+                <p className="text-gray-600 mb-4">
+                  Seja encontrado por <strong>milhares de clientes</strong> que buscam ativamente por serviços de estética.
+                  Otimização para Google e redes sociais inclusa!
+                </p>
+                <ul className="text-left text-sm text-gray-600 space-y-2">
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                    <span>SEO otimizado (Google Business Keywords)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                    <span>Destaque nos resultados de busca</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                    <span>Compartilhamento em redes sociais</span>
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            {/* Ferramentas Profissionais */}
+            <Card className="border-none shadow-xl hover:shadow-2xl transition-all">
+              <CardContent className="p-8 text-center">
+                <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <span className="text-4xl">🛠️</span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Ferramentas Profissionais</h3>
+                <p className="text-gray-600 mb-4">
+                  Dashboard completo com <strong>relatórios em tempo real</strong> estilo Google Negócios.
+                  Acompanhe visualizações, cliques e desempenho dos seus anúncios.
+                </p>
+                <ul className="text-left text-sm text-gray-600 space-y-2">
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                    <span>Relatórios detalhados de performance</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                    <span>Gestão de múltiplos anúncios</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                    <span>Analytics profissional</span>
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Numbers Section */}
+          <Card className="border-none shadow-xl bg-gradient-to-br from-pink-600 to-rose-600 text-white">
+            <CardContent className="p-8">
+              <div className="grid md:grid-cols-4 gap-8 text-center">
+                <div>
+                  <div className="text-4xl font-bold mb-2">500+</div>
+                  <p className="text-white/90">Profissionais Cadastrados</p>
+                </div>
+                <div>
+                  <div className="text-4xl font-bold mb-2">10.000+</div>
+                  <p className="text-white/90">Buscas Mensais</p>
+                </div>
+                <div>
+                  <div className="text-4xl font-bold mb-2">95%</div>
+                  <p className="text-white/90">Taxa de Satisfação</p>
+                </div>
+                <div>
+                  <div className="text-4xl font-bold mb-2">30+</div>
+                  <p className="text-white/90">Categorias de Serviços</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="text-center mt-12">
+            <p className="text-lg text-gray-600 mb-6">
+              Junte-se a centenas de profissionais que já aumentaram sua clientela com o Mapa da Estética!
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link to={createPageUrl("CadastrarAnuncio")}>
+                <Button size="lg" className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white">
+                  Começar Gratuitamente
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              </Link>
+              <Link to={createPageUrl("Planos")}>
+                <Button size="lg" variant="outline">
+                  Ver Todos os Planos
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Featured Listings */}
       <section className="py-12 sm:py-16 bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">

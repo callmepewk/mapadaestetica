@@ -23,7 +23,7 @@ const planos = [
     beneficios: [
       "1 Especialidade cadastrada",
       "1 Anúncio ativo",
-      "1 Tag para exposição",
+      "1 Tag/palavra-chave do Google Negócio",
       "Perfil básico na plataforma",
       "Suporte por email",
       "Estatísticas básicas"
@@ -44,7 +44,7 @@ const planos = [
     beneficios: [
       "2 Especialidades cadastradas",
       "10 Anúncios ativos",
-      "5 Tags para exposição",
+      "5 Tags/palavras-chave do Google Negócio",
       "Perfil destacado",
       "Suporte prioritário",
       "Estatísticas avançadas",
@@ -67,11 +67,11 @@ const planos = [
     beneficios: [
       "5 Especialidades cadastradas",
       "10 Anúncios ativos",
-      "20 Tags premium",
+      "20 Tags/palavras-chave premium",
       "Prioridade máxima nas buscas",
       "Perfil premium com destaque",
       "Suporte VIP com chat direto",
-      "Estatísticas completas",
+      "Relatórios completos (estilo Google Negócios)",
       "Selo de Profissional Verificado",
       "Aparece no topo dos resultados",
       "Galeria de fotos ampliada"
@@ -80,7 +80,7 @@ const planos = [
   {
     nome: "PREMIUM",
     tipo: "premium",
-    preco: "R$ 997/mês",
+    preco: "Consulte",
     cor: "from-yellow-400 to-amber-500",
     icone: Crown,
     destaque: false,
@@ -92,7 +92,7 @@ const planos = [
     beneficios: [
       "Especialidades ILIMITADAS",
       "Anúncios ILIMITADOS",
-      "100 Tags premium",
+      "100 Tags/palavras-chave premium",
       "Integração com WhatsApp Business",
       "Assistente com IA integrado",
       "Prioridade MÁXIMA em todas as buscas",
@@ -103,7 +103,8 @@ const planos = [
       "Marketing digital incluso",
       "Selo Premium Exclusivo",
       "Conteúdo patrocinado mensal"
-    ]
+    ],
+    consultePremium: true
   }
 ];
 
@@ -172,7 +173,7 @@ export default function Planos() {
                           <span className="font-bold">{plano.limites.anuncios}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-600">Tags:</span>
+                          <span className="text-gray-600">Tags/Keywords:</span>
                           <span className="font-bold">{plano.limites.tags}</span>
                         </div>
                       </div>
@@ -189,18 +190,34 @@ export default function Planos() {
                       ))}
                     </div>
 
-                    <Link to={createPageUrl("FaleConosco")} className="mt-auto">
-                      <Button
-                        className={`w-full ${
-                          plano.destaque
-                            ? "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                            : "bg-[#2C2C2C] hover:bg-[#3A3A3A]"
-                        }`}
+                    {plano.consultePremium ? (
+                      <a
+                        href={`https://wa.me/5531972595643?text=${encodeURIComponent(`Olá! Gostaria de informações sobre o plano ${plano.nome} do Mapa da Estética! 💎`)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-auto"
                       >
-                        Contratar Plano
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                      </Button>
-                    </Link>
+                        <Button
+                          className="w-full bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700"
+                        >
+                          Consulte Mais Informações
+                          <ArrowRight className="w-4 h-4 ml-2" />
+                        </Button>
+                      </a>
+                    ) : (
+                      <Link to={createPageUrl("FaleConosco")} className="mt-auto">
+                        <Button
+                          className={`w-full ${
+                            plano.destaque
+                              ? "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                              : "bg-[#2C2C2C] hover:bg-[#3A3A3A]"
+                          }`}
+                        >
+                          Contratar Plano
+                          <ArrowRight className="w-4 h-4 ml-2" />
+                        </Button>
+                      </Link>
+                    )}
                   </CardContent>
                 </Card>
               </motion.div>
