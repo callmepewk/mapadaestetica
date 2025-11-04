@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ArrowLeft, Calendar, Clock, Share2, Heart, MessageCircle, Send, Flag, Trash2, AlertCircle, ThumbsUp } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, Share2, Heart, MessageCircle, Send, Flag, Trash2, AlertCircle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -21,12 +21,12 @@ import { format } from "date-fns";
 export default function ArtigoBlog() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [artigo, setArtigo] = useState(null);
   const [mostrarCompartilhar, setMostrarCompartilhar] = useState(false);
   const [user, setUser] = useState(null);
   const [novoComentario, setNovoComentario] = useState("");
   const [respondendoA, setRespondendoA] = useState(null);
   const [erro, setErro] = useState(null);
+  const [visualizacaoIncrementada, setVisualizacaoIncrementada] = useState(false);
 
   const artigoId = new URLSearchParams(window.location.search).get('id');
 
@@ -42,21 +42,20 @@ export default function ArtigoBlog() {
     fetchUser();
   }, []);
 
-  const { data: artigoData, isLoading } = useQuery({
+  const { data: artigo, isLoading } = useQuery({
     queryKey: ['artigo', artigoId],
     queryFn: async () => {
-      if (!artigoId) return null;
-      const artigos = await base44.entities.ArtigoBlog.filter({ id: artigoId }, '', 1);
-      if (artigos.length > 0) {
-        // Incrementar visualizações
-        await base44.entities.ArtigoBlog.update(artigoId, {
-          visualizacoes: (artigos[0].visualizacoes || 0) + 1
-        });
-        return artigos[0];
+      if (!artigoId) throw new Error("ID não fornecido");
+      const artigos = await base44.entities.ArtigoBlog.filter({ id: artigoId });
+      if (!artigos || artigos.length === 0) {
+        throw new Error("Artigo não encontrado");
       }
-      return null;
+      return artigos[0];
     },
     enabled: !!artigoId,
+    retry: 2,
+    retryDelay: 500,
+    staleTime: 2 * 60 * 1000,
   });
 
   const { data: comentarios = [] } = useQuery({
@@ -68,13 +67,22 @@ export default function ArtigoBlog() {
     enabled: !!artigoId,
   });
 
+  // Incrementar visualizações apenas UMA vez
   useEffect(() => {
-    if (artigoData) {
-      setArtigo(artigoData);
-    } else if (!isLoading && !artigoId) {
-      navigate(createPageUrl("Blog"));
-    }
-  }, [artigoData, artigoId, isLoading, navigate]);
+    const incrementarView = async () => {
+      if (artigo && artigo.id && !visualizacaoIncrementada) {
+        try {
+          await base44.entities.ArtigoBlog.update(artigo.id, {
+            visualizacoes: (artigo.visualizacoes || 0) + 1
+          });
+          setVisualizacaoIncrementada(true);
+        } catch (err) {
+          console.error("Erro ao incrementar visualização:", err);
+        }
+      }
+    };
+    incrementarView();
+  }, [artigo?.id, visualizacaoIncrementada]);
 
   const curtirMutation = useMutation({
     mutationFn: async () => {
@@ -99,23 +107,16 @@ export default function ArtigoBlog() {
 
   const comentarMutation = useMutation({
     mutationFn: async (dados) => {
-      const comentariosFiltrados = await base44.integrations.Core.InvokeLLM({
-        prompt: `Analise o seguinte comentário e determine se contém palavras rudes, ofensivas, discriminatórias ou inadequadas: "${dados.comentario}". Responda apenas com "true" se for inadequado ou "false" se for apropriado.`,
-      });
-      
-      if (comentariosFiltrados.toLowerCase().includes('true')) {
-        throw new Error('Comentário contém linguagem inadequada');
-      }
-      
       return await base44.entities.ComentarioBlog.create(dados);
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['comentarios-artigo', artigoId]);
       setNovoComentario("");
       setRespondendoA(null);
+      setErro(null);
     },
     onError: (error) => {
-      setErro(error.message);
+      setErro(error.message || "Erro ao enviar comentário");
     },
   });
 
@@ -182,13 +183,35 @@ export default function ArtigoBlog() {
     });
   };
 
-  if (isLoading || !artigo) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando...</p>
+          <p className="text-gray-600">Carregando artigo...</p>
         </div>
+      </div>
+    );
+  }
+
+  if (!artigo) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
+        <Card className="p-12 text-center max-w-md mx-4">
+          <div className="text-6xl mb-4">📰</div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">
+            Artigo não encontrado
+          </h3>
+          <p className="text-gray-600 mb-6">
+            Este artigo pode ter sido removido ou não existe.
+          </p>
+          <Button
+            onClick={() => navigate(createPageUrl("Blog"))}
+            className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
+          >
+            Voltar para o Blog
+          </Button>
+        </Card>
       </div>
     );
   }
@@ -286,7 +309,6 @@ export default function ArtigoBlog() {
               ))}
             </div>
 
-            {/* Seção de Comentários */}
             <div className="mt-12 pt-8 border-t">
               <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                 <MessageCircle className="w-6 h-6" />
@@ -300,7 +322,6 @@ export default function ArtigoBlog() {
                 </Alert>
               )}
 
-              {/* Formulário de Comentário */}
               <div className="mb-8">
                 {respondendoA && (
                   <div className="bg-blue-50 p-3 rounded-lg mb-3 flex items-center justify-between">
@@ -330,7 +351,6 @@ export default function ArtigoBlog() {
                 </Button>
               </div>
 
-              {/* Lista de Comentários */}
               <div className="space-y-6">
                 {comentariosPrincipais.map((comentario) => (
                   <div key={comentario.id} className="border-l-2 border-gray-200 pl-4">
@@ -385,7 +405,6 @@ export default function ArtigoBlog() {
                           )}
                         </div>
 
-                        {/* Respostas */}
                         {respostas(comentario.id).length > 0 && (
                           <div className="mt-4 space-y-4 pl-4 border-l-2 border-gray-100">
                             {respostas(comentario.id).map((resposta) => (
@@ -442,7 +461,6 @@ export default function ArtigoBlog() {
               </div>
             </div>
 
-            {/* Footer CTA */}
             <div className="mt-12 pt-8 border-t">
               <div className="bg-gradient-to-r from-pink-50 to-rose-50 p-6 md:p-8 rounded-xl">
                 <h3 className="text-xl font-bold text-gray-900 mb-3">
@@ -470,7 +488,6 @@ export default function ArtigoBlog() {
           </CardContent>
         </Card>
 
-        {/* Dialog de Compartilhamento */}
         <Dialog open={mostrarCompartilhar} onOpenChange={setMostrarCompartilhar}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>

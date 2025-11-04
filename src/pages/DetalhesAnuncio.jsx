@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import {
   MapPin,
@@ -30,17 +30,15 @@ import { ptBR } from "date-fns/locale";
 
 export default function DetalhesAnuncio() {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const [anuncioId, setAnuncioId] = useState(null);
   const [imagemAtual, setImagemAtual] = useState(0);
   const [user, setUser] = useState(null);
+  const [visualizacaoIncrementada, setVisualizacaoIncrementada] = useState(false);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const id = urlParams.get('id');
-    if (id) {
-      setAnuncioId(id);
-    }
+    setAnuncioId(id);
 
     const fetchUser = async () => {
       try {
@@ -53,40 +51,43 @@ export default function DetalhesAnuncio() {
     fetchUser();
   }, []);
 
-  // Query com GARANTIA de carregamento
-  const { data: anuncio, isLoading } = useQuery({
-    queryKey: ['anuncio-detalhe', anuncioId],
+  const { data: anuncio, isLoading, error } = useQuery({
+    queryKey: ['anuncio-detalhes', anuncioId],
     queryFn: async () => {
-      if (!anuncioId) return null;
+      if (!anuncioId) throw new Error("ID não fornecido");
       
-      try {
-        // Tentar buscar por ID direto
-        const anuncios = await base44.entities.Anuncio.filter({ id: anuncioId });
-        
-        if (anuncios && anuncios.length > 0) {
-          // Incrementar visualizações UMA ÚNICA VEZ
-          const anuncioEncontrado = anuncios[0];
-          await base44.entities.Anuncio.update(anuncioId, {
-            visualizacoes: (anuncioEncontrado.visualizacoes || 0) + 1
-          });
-          return anuncioEncontrado;
-        }
-        
-        return null;
-      } catch (error) {
-        console.error("Erro ao buscar anúncio:", error);
-        return null;
+      const anuncios = await base44.entities.Anuncio.filter({ id: anuncioId });
+      
+      if (!anuncios || anuncios.length === 0) {
+        throw new Error("Anúncio não encontrado");
       }
+      
+      return anuncios[0];
     },
     enabled: !!anuncioId,
-    retry: 3,
-    retryDelay: 1000,
-    staleTime: 5 * 60 * 1000,
-    cacheTime: 10 * 60 * 1000,
+    retry: 2,
+    retryDelay: 500,
+    staleTime: 2 * 60 * 1000,
   });
 
-  // Loading state
-  if (isLoading || !anuncioId) {
+  // Incrementar visualizações apenas UMA vez
+  useEffect(() => {
+    const incrementarView = async () => {
+      if (anuncio && anuncio.id && !visualizacaoIncrementada) {
+        try {
+          await base44.entities.Anuncio.update(anuncio.id, {
+            visualizacoes: (anuncio.visualizacoes || 0) + 1
+          });
+          setVisualizacaoIncrementada(true);
+        } catch (err) {
+          console.error("Erro ao incrementar visualização:", err);
+        }
+      }
+    };
+    incrementarView();
+  }, [anuncio?.id, visualizacaoIncrementada]);
+
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-6xl mx-auto px-4">
@@ -105,8 +106,7 @@ export default function DetalhesAnuncio() {
     );
   }
 
-  // Not found - apenas se realmente não encontrou depois de tentar
-  if (!anuncio && !isLoading) {
+  if (error || !anuncio) {
     return (
       <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
         <Card className="p-12 text-center max-w-md mx-4">
@@ -115,7 +115,7 @@ export default function DetalhesAnuncio() {
             Anúncio não encontrado
           </h3>
           <p className="text-gray-600 mb-6">
-            O anúncio que você procura pode ter sido removido ou não existe mais.
+            Este anúncio pode ter sido removido ou não existe.
           </p>
           <Button
             onClick={() => navigate(createPageUrl("Anuncios"))}
@@ -128,13 +128,12 @@ export default function DetalhesAnuncio() {
     );
   }
 
-  // Anúncio encontrado - renderizar normalmente
   const todasImagens = [
     anuncio.imagem_principal,
     ...(anuncio.imagens_galeria || [])
   ].filter(Boolean);
 
-  const isUserFree = !user || user.plano_ativo === 'free' || !user.plano_ativo;
+  const isUserFree = !user || !user.plano_ativo || user.plano_ativo === 'free';
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
@@ -149,9 +148,7 @@ export default function DetalhesAnuncio() {
         </Button>
 
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Image Gallery */}
             <Card className="overflow-hidden border-none shadow-lg">
               <div className="relative h-96 bg-gray-100">
                 {todasImagens.length > 0 ? (
@@ -206,7 +203,6 @@ export default function DetalhesAnuncio() {
               )}
             </Card>
 
-            {/* Info Card */}
             <Card className="border-none shadow-lg">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-4">
@@ -221,7 +217,7 @@ export default function DetalhesAnuncio() {
                       <Avatar className="w-10 h-10">
                         <AvatarImage src={anuncio.logo} />
                         <AvatarFallback className="bg-gradient-to-br from-pink-500 to-rose-500 text-white">
-                          {anuncio.profissional?.charAt(0)}
+                          {anuncio.profissional?.charAt(0) || "?"}
                         </AvatarFallback>
                       </Avatar>
                       <div>
@@ -294,7 +290,7 @@ export default function DetalhesAnuncio() {
                           ? "bg-green-100 text-green-800"
                           : "bg-red-100 text-red-800"
                       }`}>
-                        {anuncio.status_funcionamento}
+                        {anuncio.status_funcionamento || "N/D"}
                       </Badge>
                     </div>
                   )}
@@ -303,7 +299,6 @@ export default function DetalhesAnuncio() {
             </Card>
           </div>
 
-          {/* Sidebar */}
           <div className="space-y-6">
             {isUserFree && (
               <Alert className="bg-gradient-to-br from-yellow-50 to-amber-50 border-2 border-yellow-300">
@@ -325,7 +320,6 @@ export default function DetalhesAnuncio() {
               </Alert>
             )}
 
-            {/* Contact Card */}
             <Card className="border-none shadow-lg sticky top-24">
               <CardContent className="p-6 space-y-4">
                 <h3 className="font-semibold text-lg mb-4">Informações de Contato</h3>
@@ -415,7 +409,6 @@ export default function DetalhesAnuncio() {
 
                 <Separator />
 
-                {/* Social Media */}
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-gray-600">Redes Sociais</p>
                   <div className="flex gap-2">
@@ -446,7 +439,6 @@ export default function DetalhesAnuncio() {
 
                 <Separator />
 
-                {/* Location */}
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-gray-600">
                     <MapPin className="w-5 h-5 text-pink-600" />
