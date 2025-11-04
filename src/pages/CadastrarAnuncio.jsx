@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -24,7 +25,9 @@ import {
   CheckCircle,
   AlertCircle,
   ArrowLeft,
-  Plus
+  Plus,
+  Star,
+  Send
 } from "lucide-react";
 import AssistenteAnuncio from "../components/home/AssistenteAnuncio";
 
@@ -47,12 +50,21 @@ const estados = [
   "RS", "RO", "RR", "SC", "SP", "SE", "TO"
 ];
 
+const tiposEstabelecimento = [
+  { nome: "Consultório", estrelas: 1 },
+  { nome: "Clínica", estrelas: 2 },
+  { nome: "Centro Clínico", estrelas: 3 },
+  { nome: "Centro de Especialidade", estrelas: 4 },
+  { nome: "Clínica de Luxo", estrelas: 5 }
+];
+
 export default function CadastrarAnuncio() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [sucesso, setSucesso] = useState(false);
   const [erro, setErro] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [enviandoVerificacao, setEnviandoVerificacao] = useState(false);
 
   React.useEffect(() => {
     const fetchUser = async () => {
@@ -82,6 +94,10 @@ export default function CadastrarAnuncio() {
     descricao: "",
     categoria: "",
     subcategoria: "",
+    categoria_clinica: "",
+    faixa_preco: "$",
+    tipo_estabelecimento: "",
+    estrelas_estabelecimento: 1,
     profissional: "",
     telefone: "",
     whatsapp: "",
@@ -98,9 +114,26 @@ export default function CadastrarAnuncio() {
     video_url: "",
     horario_funcionamento: "",
     status_funcionamento: "N/D",
-    servicos_oferecidos: []
+    amenidades: {
+      estacionamento: false,
+      estacionamento_valet: false,
+      aceita_pet: false,
+      lounge: false,
+      lounge_bar: false,
+      musica_ambiente: false,
+      seguranca: false
+    },
+    verificacao_autoridade: {
+      licenca_sanitaria: { possui: false, documento_url: "" },
+      alvara_funcionamento: { possui: false, documento_url: "" },
+      registro_profissional: { possui: false, documento_url: "" }
+    },
+    servicos_oferecidos: [],
+    tags: [],
+    procedimentos_servicos: []
   });
 
+  const [novaTag, setNovaTag] = useState("");
   const [novoServico, setNovoServico] = useState({
     nome: "",
     preco: "",
@@ -112,9 +145,11 @@ export default function CadastrarAnuncio() {
       const anuncio = await base44.entities.Anuncio.create({
         ...data,
         status: "pendente",
-        plano: user?.plano_ativo || "light",
+        plano: user?.plano_ativo || "free",
         em_destaque: false,
-        visualizacoes: 0
+        visualizacoes: 0,
+        curtidas: 0,
+        profissional_verificado: false
       });
       return anuncio;
     },
@@ -135,11 +170,94 @@ export default function CadastrarAnuncio() {
     setUploadingImage(true);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      setFormData(prev => ({ ...prev, [tipo]: file_url }));
+      if (tipo.startsWith('verificacao_')) {
+        const [_, doc] = tipo.split('verificacao_');
+        setFormData(prev => ({
+          ...prev,
+          verificacao_autoridade: {
+            ...prev.verificacao_autoridade,
+            [doc]: {
+              ...prev.verificacao_autoridade[doc],
+              documento_url: file_url
+            }
+          }
+        }));
+      } else {
+        setFormData(prev => ({ ...prev, [tipo]: file_url }));
+      }
     } catch (error) {
       setErro("Erro ao fazer upload da imagem");
     }
     setUploadingImage(false);
+  };
+
+  const solicitarVerificacao = async () => {
+    const docs = formData.verificacao_autoridade;
+    const docsParaVerificar = [];
+    
+    if (docs.licenca_sanitaria.possui && docs.licenca_sanitaria.documento_url) {
+      docsParaVerificar.push('Licença Sanitária');
+    }
+    if (docs.alvara_funcionamento.possui && docs.alvara_funcionamento.documento_url) {
+      docsParaVerificar.push('Alvará de Funcionamento');
+    }
+    if (docs.registro_profissional.possui && docs.registro_profissional.documento_url) {
+      docsParaVerificar.push('Registro Profissional');
+    }
+
+    if (docsParaVerificar.length === 0) {
+      setErro("Por favor, selecione e faça upload de pelo menos um documento para verificação.");
+      return;
+    }
+
+    setEnviandoVerificacao(true);
+    try {
+      await base44.integrations.Core.SendEmail({
+        to: "pedro_hbfreitas@hotmail.com", // Replace with actual recipient email
+        subject: `Solicitação de Verificação de Documentos - ${formData.profissional}`,
+        body: `
+          <h2>Solicitação de Verificação de Documentos</h2>
+          <p><strong>Profissional:</strong> ${formData.profissional}</p>
+          <p><strong>Email:</strong> ${formData.email}</p>
+          <p><strong>Telefone:</strong> ${formData.telefone || 'N/A'}</p>
+          <p><strong>WhatsApp:</strong> ${formData.whatsapp || 'N/A'}</p>
+          <p><strong>Mensagem:</strong> Gostaria de validar meus documentos para me tornar um profissional verificado</p>
+          
+          <h3>Documentos Enviados:</h3>
+          <ul>
+            ${docs.licenca_sanitaria.possui ? `<li><a href="${docs.licenca_sanitaria.documento_url}">Licença Sanitária</a></li>` : ''}
+            ${docs.alvara_funcionamento.possui ? `<li><a href="${docs.alvara_funcionamento.documento_url}">Alvará de Funcionamento</a></li>` : ''}
+            ${docs.registro_profissional.possui ? `<li><a href="${docs.registro_profissional.documento_url}">Registro Profissional</a></li>` : ''}
+          </ul>
+          
+          <p>Por favor, verifique os documentos e aprove ou rejeite a solicitação.</p>
+        `
+      });
+      
+      alert("Solicitação de verificação enviada com sucesso! Você receberá um retorno em até 48 horas.");
+      setErro(null); // Clear any previous error
+    } catch (error) {
+      setErro("Erro ao enviar solicitação de verificação. Por favor, tente novamente.");
+      console.error("Error sending verification email:", error);
+    }
+    setEnviandoVerificacao(false);
+  };
+
+  const adicionarTag = () => {
+    if (novaTag.trim() && !formData.tags.includes(novaTag.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        tags: [...prev.tags, novaTag.trim()]
+      }));
+      setNovaTag("");
+    }
+  };
+
+  const removerTag = (tag) => {
+    setFormData(prev => ({
+      ...prev,
+      tags: prev.tags.filter(t => t !== tag)
+    }));
   };
 
   const adicionarServico = () => {
@@ -272,10 +390,7 @@ export default function CadastrarAnuncio() {
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <Label htmlFor="categoria">Categoria *</Label>
-                      <AssistenteAnuncio campo="categoria" valor={formData.categoria} onAplicar={() => {}} />
-                    </div>
+                    <Label htmlFor="categoria">Categoria *</Label>
                     <Select
                       value={formData.categoria}
                       onValueChange={(value) => setFormData({ ...formData, categoria: value })}
@@ -293,14 +408,181 @@ export default function CadastrarAnuncio() {
                   </div>
 
                   <div>
-                    <Label htmlFor="subcategoria">Subcategoria</Label>
+                    <Label htmlFor="categoria_clinica">Nome do Serviço Clínico</Label>
                     <Input
-                      id="subcategoria"
-                      value={formData.subcategoria}
-                      onChange={(e) => setFormData({ ...formData, subcategoria: e.target.value })}
-                      placeholder="Ex: Preenchimento Labial"
+                      id="categoria_clinica"
+                      value={formData.categoria_clinica}
+                      onChange={(e) => setFormData({ ...formData, categoria_clinica: e.target.value })}
+                      placeholder="Ex: Harmonização Facial Avançada"
                     />
                   </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Faixa de Preço</Label>
+                    <Select
+                      value={formData.faixa_preco}
+                      onValueChange={(value) => setFormData({ ...formData, faixa_preco: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="$">$ - Econômico</SelectItem>
+                        <SelectItem value="$$">$$ - Moderado</SelectItem>
+                        <SelectItem value="$$$">$$$ - Premium</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label>Tipo de Estabelecimento</Label>
+                    <Select
+                      value={formData.tipo_estabelecimento}
+                      onValueChange={(value) => {
+                        const tipo = tiposEstabelecimento.find(t => t.nome === value);
+                        setFormData({ 
+                          ...formData, 
+                          tipo_estabelecimento: value,
+                          estrelas_estabelecimento: tipo?.estrelas || 1
+                        });
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {tiposEstabelecimento.map((tipo) => (
+                          <SelectItem key={tipo.nome} value={tipo.nome}>
+                            {tipo.nome} - {[...Array(tipo.estrelas)].map((_, i) => '⭐').join('')}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div>
+                  <Label>Tags / Hashtags</Label>
+                  <div className="flex gap-2 mb-2">
+                    <Input
+                      value={novaTag}
+                      onChange={(e) => setNovaTag(e.target.value)}
+                      placeholder="Ex: #botox"
+                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), adicionarTag())}
+                    />
+                    <Button type="button" onClick={adicionarTag}>
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {formData.tags.map((tag, i) => (
+                      <Badge key={i} className="bg-pink-100 text-pink-800">
+                        {tag}
+                        <X 
+                          className="w-3 h-3 ml-1 cursor-pointer" 
+                          onClick={() => removerTag(tag)}
+                        />
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Aumente sua Visibilidade */}
+          <Card className="border-none shadow-lg bg-gradient-to-br from-purple-50 to-pink-50">
+            <CardContent className="p-6">
+              <h2 className="text-xl font-semibold mb-4 text-purple-900">⭐ Aumente sua Visibilidade</h2>
+              <p className="text-sm text-gray-600 mb-4">
+                Estas informações aparecem no seu anúncio com ícones destacados
+              </p>
+              
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    checked={formData.amenidades.estacionamento}
+                    onCheckedChange={(checked) => setFormData({
+                      ...formData,
+                      amenidades: { ...formData.amenidades, estacionamento: checked }
+                    })}
+                    id="estacionamento"
+                  />
+                  <Label htmlFor="estacionamento">🅿️ Estacionamento</Label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    checked={formData.amenidades.estacionamento_valet}
+                    onCheckedChange={(checked) => setFormData({
+                      ...formData,
+                      amenidades: { ...formData.amenidades, estacionamento_valet: checked }
+                    })}
+                    id="estacionamento_valet"
+                  />
+                  <Label htmlFor="estacionamento_valet">🚗 Estacionamento com Valet</Label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    checked={formData.amenidades.aceita_pet}
+                    onCheckedChange={(checked) => setFormData({
+                      ...formData,
+                      amenidades: { ...formData.amenidades, aceita_pet: checked }
+                    })}
+                    id="aceita_pet"
+                  />
+                  <Label htmlFor="aceita_pet">🐾 Aceita Pet</Label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    checked={formData.amenidades.lounge}
+                    onCheckedChange={(checked) => setFormData({
+                      ...formData,
+                      amenidades: { ...formData.amenidades, lounge: checked }
+                    })}
+                    id="lounge"
+                  />
+                  <Label htmlFor="lounge">🛋️ Lounge</Label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    checked={formData.amenidades.lounge_bar}
+                    onCheckedChange={(checked) => setFormData({
+                      ...formData,
+                      amenidades: { ...formData.amenidades, lounge_bar: checked }
+                    })}
+                    id="lounge_bar"
+                  />
+                  <Label htmlFor="lounge_bar">🍹 Lounge Bar</Label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    checked={formData.amenidades.musica_ambiente}
+                    onCheckedChange={(checked) => setFormData({
+                      ...formData,
+                      amenidades: { ...formData.amenidades, musica_ambiente: checked }
+                    })}
+                    id="musica_ambiente"
+                  />
+                  <Label htmlFor="musica_ambiente">🎵 Música Ambiente</Label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    checked={formData.amenidades.seguranca}
+                    onCheckedChange={(checked) => setFormData({
+                      ...formData,
+                      amenidades: { ...formData.amenidades, seguranca: checked }
+                    })}
+                    id="seguranca"
+                  />
+                  <Label htmlFor="seguranca">🛡️ Possui Segurança</Label>
                 </div>
               </div>
             </CardContent>
@@ -536,6 +818,199 @@ export default function CadastrarAnuncio() {
                     )}
                   </div>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Verificação de Autoridade */}
+          <Card className="border-none shadow-lg bg-gradient-to-br from-blue-50 to-cyan-50">
+            <CardContent className="p-6">
+              <h2 className="text-xl font-semibold mb-4 text-blue-900">✅ Verificação de Autoridade</h2>
+              <p className="text-sm text-gray-600 mb-4">
+                Com todos os 3 documentos verificados, você se torna um <strong>Profissional Verificado</strong>
+              </p>
+
+              <div className="space-y-4">
+                {/* Licença Sanitária */}
+                <div className="border-2 border-blue-200 rounded-lg p-4">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <Checkbox 
+                      checked={formData.verificacao_autoridade.licenca_sanitaria.possui}
+                      onCheckedChange={(checked) => setFormData({
+                        ...formData,
+                        verificacao_autoridade: {
+                          ...formData.verificacao_autoridade,
+                          licenca_sanitaria: {
+                            ...formData.verificacao_autoridade.licenca_sanitaria,
+                            possui: checked,
+                            documento_url: checked ? formData.verificacao_autoridade.licenca_sanitaria.documento_url : ""
+                          }
+                        }
+                      })}
+                      id="licenca_sanitaria_possui"
+                    />
+                    <Label htmlFor="licenca_sanitaria_possui" className="font-semibold">Licença Sanitária</Label>
+                  </div>
+                  {formData.verificacao_autoridade.licenca_sanitaria.possui && (
+                    formData.verificacao_autoridade.licenca_sanitaria.documento_url ? (
+                      <div className="relative border border-blue-300 rounded-lg p-2 mt-2 flex items-center justify-between text-sm text-blue-700">
+                        <span>Documento Enviado ({formData.verificacao_autoridade.licenca_sanitaria.documento_url.split('/').pop()})</span>
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => setFormData(prev => ({
+                            ...prev,
+                            verificacao_autoridade: {
+                              ...prev.verificacao_autoridade,
+                              licenca_sanitaria: {
+                                ...prev.verificacao_autoridade.licenca_sanitaria,
+                                documento_url: ""
+                              }
+                            }
+                          }))}
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <label className="flex flex-col items-center justify-center h-24 border-2 border-dashed border-blue-300 rounded-lg cursor-pointer hover:border-blue-500 transition-colors mt-2">
+                        <Upload className="w-6 h-6 text-blue-400 mb-1" />
+                        <span className="text-xs text-blue-600">Upload do Documento (PDF ou Imagem)</span>
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept="image/*,application/pdf"
+                          onChange={(e) => handleImageUpload(e.target.files[0], 'verificacao_licenca_sanitaria')}
+                        />
+                      </label>
+                    )
+                  )}
+                </div>
+
+                {/* Alvará de Funcionamento */}
+                <div className="border-2 border-blue-200 rounded-lg p-4">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <Checkbox 
+                      checked={formData.verificacao_autoridade.alvara_funcionamento.possui}
+                      onCheckedChange={(checked) => setFormData({
+                        ...formData,
+                        verificacao_autoridade: {
+                          ...formData.verificacao_autoridade,
+                          alvara_funcionamento: {
+                            ...formData.verificacao_autoridade.alvara_funcionamento,
+                            possui: checked,
+                            documento_url: checked ? formData.verificacao_autoridade.alvara_funcionamento.documento_url : ""
+                          }
+                        }
+                      })}
+                      id="alvara_funcionamento_possui"
+                    />
+                    <Label htmlFor="alvara_funcionamento_possui" className="font-semibold">Alvará de Funcionamento</Label>
+                  </div>
+                  {formData.verificacao_autoridade.alvara_funcionamento.possui && (
+                    formData.verificacao_autoridade.alvara_funcionamento.documento_url ? (
+                      <div className="relative border border-blue-300 rounded-lg p-2 mt-2 flex items-center justify-between text-sm text-blue-700">
+                        <span>Documento Enviado ({formData.verificacao_autoridade.alvara_funcionamento.documento_url.split('/').pop()})</span>
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => setFormData(prev => ({
+                            ...prev,
+                            verificacao_autoridade: {
+                              ...prev.verificacao_autoridade,
+                              alvara_funcionamento: {
+                                ...prev.verificacao_autoridade.alvara_funcionamento,
+                                documento_url: ""
+                              }
+                            }
+                          }))}
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <label className="flex flex-col items-center justify-center h-24 border-2 border-dashed border-blue-300 rounded-lg cursor-pointer hover:border-blue-500 transition-colors mt-2">
+                        <Upload className="w-6 h-6 text-blue-400 mb-1" />
+                        <span className="text-xs text-blue-600">Upload do Documento (PDF ou Imagem)</span>
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept="image/*,application/pdf"
+                          onChange={(e) => handleImageUpload(e.target.files[0], 'verificacao_alvara_funcionamento')}
+                        />
+                      </label>
+                    )
+                  )}
+                </div>
+
+                {/* Registro Profissional */}
+                <div className="border-2 border-blue-200 rounded-lg p-4">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <Checkbox 
+                      checked={formData.verificacao_autoridade.registro_profissional.possui}
+                      onCheckedChange={(checked) => setFormData({
+                        ...formData,
+                        verificacao_autoridade: {
+                          ...formData.verificacao_autoridade,
+                          registro_profissional: {
+                            ...formData.verificacao_autoridade.registro_profissional,
+                            possui: checked,
+                            documento_url: checked ? formData.verificacao_autoridade.registro_profissional.documento_url : ""
+                          }
+                        }
+                      })}
+                      id="registro_profissional_possui"
+                    />
+                    <Label htmlFor="registro_profissional_possui" className="font-semibold">Registro Profissional</Label>
+                  </div>
+                  {formData.verificacao_autoridade.registro_profissional.possui && (
+                    formData.verificacao_autoridade.registro_profissional.documento_url ? (
+                      <div className="relative border border-blue-300 rounded-lg p-2 mt-2 flex items-center justify-between text-sm text-blue-700">
+                        <span>Documento Enviado ({formData.verificacao_autoridade.registro_profissional.documento_url.split('/').pop()})</span>
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => setFormData(prev => ({
+                            ...prev,
+                            verificacao_autoridade: {
+                              ...prev.verificacao_autoridade,
+                              registro_profissional: {
+                                ...prev.verificacao_autoridade.registro_profissional,
+                                documento_url: ""
+                              }
+                            }
+                          }))}
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <label className="flex flex-col items-center justify-center h-24 border-2 border-dashed border-blue-300 rounded-lg cursor-pointer hover:border-blue-500 transition-colors mt-2">
+                        <Upload className="w-6 h-6 text-blue-400 mb-1" />
+                        <span className="text-xs text-blue-600">Upload do Documento (PDF ou Imagem)</span>
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept="image/*,application/pdf"
+                          onChange={(e) => handleImageUpload(e.target.files[0], 'verificacao_registro_profissional')}
+                        />
+                      </label>
+                    )
+                  )}
+                </div>
+
+                <Button
+                  type="button"
+                  onClick={solicitarVerificacao}
+                  disabled={enviandoVerificacao}
+                  className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+                >
+                  <Send className="w-4 h-4 mr-2" />
+                  {enviandoVerificacao ? "Enviando..." : "Solicitar Verificação de Documentos"}
+                </Button>
               </div>
             </CardContent>
           </Card>
