@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -81,7 +82,16 @@ export default function Blog() {
   };
 
   const handleArtigoClick = (artigo) => {
-    navigate(`${createPageUrl("ArtigoBlog")}?id=${artigo.id}`);
+    // Artigos gerais redirecionam para fontes externas
+    if (artigo.tipo === 'geral' && artigo.link_externo) {
+      window.open(artigo.link_externo, '_blank');
+    } else if (artigo.tipo === 'profissional') {
+      // Artigos profissionais abrem página interna
+      navigate(`${createPageUrl("ArtigoBlog")}?id=${artigo.id}`);
+    } else {
+      // Fallback para artigos sem link externo
+      navigate(`${createPageUrl("ArtigoBlog")}?id=${artigo.id}`);
+    }
   };
 
   const ArtigoCard = ({ artigo }) => (
@@ -108,6 +118,12 @@ export default function Blog() {
               <><Users className="w-3 h-3 mr-1" /> Geral</>
             )}
           </Badge>
+          {artigo.tipo === 'geral' && artigo.link_externo && (
+            <Badge className="bg-blue-100 text-blue-800 text-xs">
+              <ExternalLink className="w-3 h-3 mr-1" />
+              Externo
+            </Badge>
+          )}
         </div>
         <h3 className="font-bold text-lg md:text-xl mb-3 line-clamp-2 group-hover:text-pink-600 transition-colors">
           {artigo.titulo}
@@ -151,14 +167,14 @@ export default function Blog() {
             Fique por Dentro do Universo da Estética
           </h1>
           <p className="text-base md:text-xl text-gray-600 max-w-2xl mx-auto px-4">
-            Artigos para profissionais e público geral
+            Artigos para profissionais e conteúdos das melhores fontes
           </p>
         </div>
 
         {/* Fontes Externas */}
         <div className="mb-12 px-4">
           <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-            📚 Leia Também de Fontes Confiáveis
+            📚 Fontes Confiáveis de Conteúdo
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {fontesExternas.map((fonte, index) => (
@@ -218,10 +234,10 @@ export default function Blog() {
               <Card className="p-12 text-center mx-4">
                 <div className="text-6xl mb-4">📰</div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  Nenhum artigo geral encontrado
+                  Explore as fontes confiáveis acima
                 </h3>
                 <p className="text-gray-600">
-                  Volte mais tarde para novos conteúdos
+                  Clique nos ícones acima para acessar conteúdo das melhores publicações
                 </p>
               </Card>
             ) : (
@@ -252,14 +268,12 @@ export default function Blog() {
                             <Clock className="w-4 h-4" />
                             {artigosGerais[0].tempo_leitura} min de leitura
                           </span>
-                          <span className="flex items-center gap-1">
-                            <Eye className="w-4 h-4" />
-                            {artigosGerais[0].visualizacoes || 0} visualizações
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Heart className="w-4 h-4 fill-white" />
-                            {artigosGerais[0].total_curtidas || 0} curtidas
-                          </span>
+                          {artigosGerais[0].link_externo && (
+                            <span className="flex items-center gap-1">
+                              <ExternalLink className="w-4 h-4" />
+                              Link externo
+                            </span>
+                          )}
                         </div>
                       </CardContent>
                     </Card>

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -35,14 +34,14 @@ export default function DetalhesAnuncio() {
   const [anuncioId, setAnuncioId] = useState(null);
   const [imagemAtual, setImagemAtual] = useState(0);
   const [user, setUser] = useState(null);
-  const [visualizacaoIncrementada, setVisualizacaoIncrementada] = useState(false); // New state
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const id = urlParams.get('id');
-    setAnuncioId(id);
+    if (id) {
+      setAnuncioId(id);
+    }
 
-    // Buscar usuário autenticado
     const fetchUser = async () => {
       try {
         const userData = await base44.auth.me();
@@ -54,43 +53,40 @@ export default function DetalhesAnuncio() {
     fetchUser();
   }, []);
 
-  // CARREGAMENTO INSTANTÂNEO - CORRIGIDO
-  const { data: anuncio, isLoading, error } = useQuery({
-    queryKey: ['anuncio', anuncioId],
+  // Query com GARANTIA de carregamento
+  const { data: anuncio, isLoading } = useQuery({
+    queryKey: ['anuncio-detalhe', anuncioId],
     queryFn: async () => {
-      if (!anuncioId) return null; // Added check
-      const anuncios = await base44.entities.Anuncio.filter({ id: anuncioId });
-      if (anuncios.length === 0) return null; // Added check
-      return anuncios[0];
-    },
-    enabled: !!anuncioId,
-    staleTime: 15 * 60 * 1000,
-    cacheTime: 30 * 60 * 1000,
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    refetchOnReconnect: false,
-  });
-
-  const incrementarVisualizacoesMutation = useMutation({
-    mutationFn: async () => {
-      if (anuncio && anuncio.id) { // Added anuncio.id check
-        await base44.entities.Anuncio.update(anuncio.id, {
-          visualizacoes: (anuncio.visualizacoes || 0) + 1
-        });
+      if (!anuncioId) return null;
+      
+      try {
+        // Tentar buscar por ID direto
+        const anuncios = await base44.entities.Anuncio.filter({ id: anuncioId });
+        
+        if (anuncios && anuncios.length > 0) {
+          // Incrementar visualizações UMA ÚNICA VEZ
+          const anuncioEncontrado = anuncios[0];
+          await base44.entities.Anuncio.update(anuncioId, {
+            visualizacoes: (anuncioEncontrado.visualizacoes || 0) + 1
+          });
+          return anuncioEncontrado;
+        }
+        
+        return null;
+      } catch (error) {
+        console.error("Erro ao buscar anúncio:", error);
+        return null;
       }
     },
+    enabled: !!anuncioId,
+    retry: 3,
+    retryDelay: 1000,
+    staleTime: 5 * 60 * 1000,
+    cacheTime: 10 * 60 * 1000,
   });
 
-  // CORRIGIDO: Incrementar visualizações apenas UMA VEZ
-  useEffect(() => {
-    if (anuncio && anuncio.id && !visualizacaoIncrementada) {
-      incrementarVisualizacoesMutation.mutate();
-      setVisualizacaoIncrementada(true);
-    }
-  }, [anuncio?.id]);
-
-  // Renderização instantânea com skeleton leve
-  if (isLoading) { // Changed condition
+  // Loading state
+  if (isLoading || !anuncioId) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-6xl mx-auto px-4">
@@ -109,7 +105,8 @@ export default function DetalhesAnuncio() {
     );
   }
 
-  if (error || !anuncio) { // New error/not found handling
+  // Not found - apenas se realmente não encontrou depois de tentar
+  if (!anuncio && !isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
         <Card className="p-12 text-center max-w-md mx-4">
@@ -118,7 +115,7 @@ export default function DetalhesAnuncio() {
             Anúncio não encontrado
           </h3>
           <p className="text-gray-600 mb-6">
-            O anúncio que você está procurando não existe ou foi removido.
+            O anúncio que você procura pode ter sido removido ou não existe mais.
           </p>
           <Button
             onClick={() => navigate(createPageUrl("Anuncios"))}
@@ -131,18 +128,17 @@ export default function DetalhesAnuncio() {
     );
   }
 
+  // Anúncio encontrado - renderizar normalmente
   const todasImagens = [
     anuncio.imagem_principal,
     ...(anuncio.imagens_galeria || [])
   ].filter(Boolean);
 
-  // Verificar se usuário é free
   const isUserFree = !user || user.plano_ativo === 'free' || !user.plano_ativo;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
       <div className="max-w-6xl mx-auto px-4">
-        {/* Back Button */}
         <Button
           variant="ghost"
           onClick={() => navigate(createPageUrl("Anuncios"))}
@@ -309,14 +305,13 @@ export default function DetalhesAnuncio() {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Free Plan Restriction Alert */}
             {isUserFree && (
               <Alert className="bg-gradient-to-br from-yellow-50 to-amber-50 border-2 border-yellow-300">
                 <Lock className="h-5 w-5 text-yellow-600" />
                 <AlertDescription className="text-yellow-900">
                   <p className="font-semibold mb-2">🔒 Recursos Limitados no Plano FREE</p>
                   <p className="text-sm mb-3">
-                    Faça upgrade para ter acesso completo aos contatos dos profissionais!
+                    Faça upgrade para ter acesso completo aos contatos!
                   </p>
                   <Button
                     onClick={() => navigate(createPageUrl("Planos"))}
