@@ -12,6 +12,7 @@ import MeuPlano from './pages/MeuPlano';
 import ArtigoBlog from './pages/ArtigoBlog';
 import PesquisaEspecializada from './pages/PesquisaEspecializada';
 import Anuncios from './pages/Anuncios';
+import AgradecimentoCompra from './pages/AgradecimentoCompra';
 import Layout from './Layout.jsx';
 
 
@@ -30,6 +31,7 @@ export const PAGES = {
     "ArtigoBlog": ArtigoBlog,
     "PesquisaEspecializada": PesquisaEspecializada,
     "Anuncios": Anuncios,
+    "AgradecimentoCompra": AgradecimentoCompra,
 }
 
 export const pagesConfig = {
