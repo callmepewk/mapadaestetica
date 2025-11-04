@@ -78,12 +78,23 @@ export default function Layout({ children }) {
         
         body, p, span, div, input, textarea, button {
           font-size: 14px;
+          -webkit-user-select: text;
+          -moz-user-select: text;
+          -ms-user-select: text;
+          user-select: text;
         }
         
         @media (min-width: 768px) {
           body, p, span, div, input, textarea, button {
             font-size: 16px;
           }
+        }
+        
+        button, .cursor-pointer {
+          -webkit-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
+          user-select: none;
         }
       `}</style>
 

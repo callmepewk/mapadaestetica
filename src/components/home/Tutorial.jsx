@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import {
   PlayCircle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 const etapas = [
   {
@@ -49,9 +51,20 @@ const etapas = [
 
 export default function Tutorial() {
   const [etapaAtiva, setEtapaAtiva] = useState(0);
+  const navigate = useNavigate(); // Initialize useNavigate hook
+
+  // Helper function to generate page URLs
+  const createPageUrl = (pageName) => {
+    switch (pageName) {
+      case "CadastrarAnuncio":
+        return "/cadastrar-anuncio"; // Replace with your actual route for "CadastrarAnuncio"
+      default:
+        return "/"; // Default fallback route
+    }
+  };
 
   return (
-    <section className="py-16 bg-gradient-to-b from-white to-gray-50">
+    <section className="py-12 sm:py-16 bg-gradient-to-br from-pink-50 to-rose-50"> {/* Updated section className */}
       <div className="max-w-7xl mx-auto px-4">
         <div className="text-center mb-12">
           <Badge className="mb-4 bg-[#F7D426] text-[#2C2C2C] font-bold">
@@ -259,12 +272,13 @@ export default function Tutorial() {
                         <ArrowRight className="w-4 h-4 ml-2" />
                       </Button>
                     ) : (
-                      <Button
-                        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                        className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] hover:from-[#E5C215] hover:to-[#FFD655] text-[#2C2C2C] font-bold border-2 border-[#2C2C2C]"
+                      <Button 
+                        onClick={() => navigate(createPageUrl("CadastrarAnuncio"))} // Updated onClick
+                        size="lg" // Added size prop
+                        className="w-full sm:w-auto bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700" // Updated className
                       >
                         Começar Agora
-                        <CheckCircle className="w-4 h-4 ml-2" />
+                        <ArrowRight className="w-5 h-5 ml-2" /> {/* Changed icon and size */}
                       </Button>
                     )}
                   </div>

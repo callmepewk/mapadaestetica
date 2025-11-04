@@ -1,10 +1,10 @@
+
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { 
   Calculator, 
   User, 
@@ -40,12 +40,22 @@ export default function CalculadoraLaser() {
 
     // Análise de idade
     const idade = parseInt(dados.idade);
-    if (idade < 18) {
+    if (isNaN(idade) || idade < 0) {
+      alertas.push("Por favor, insira uma idade válida.");
+      pontuacao -= 100; // Drastically reduce score for invalid input to prevent proceeding
+    } else if (idade < 18) {
       alertas.push("Recomenda-se aguardar até 18 anos para depilação a laser definitiva");
       pontuacao -= 20;
     } else if (idade >= 18 && idade <= 50) {
       pontuacao += 20;
+    } else if (idade > 50 && idade <= 70) {
+      recomendacoes.push("A eficácia do laser pode ser ligeiramente menor em idades mais avançadas.");
+      pontuacao += 10;
+    } else {
+      alertas.push("Para idades avançadas, a avaliação médica é ainda mais crucial.");
+      pontuacao -= 5;
     }
+
 
     // Análise de fototipo
     if (dados.fototipo === "1" || dados.fototipo === "2" || dados.fototipo === "3") {
@@ -54,9 +64,9 @@ export default function CalculadoraLaser() {
     } else if (dados.fototipo === "4") {
       pontuacao += 15;
       recomendacoes.push("Bons resultados esperados com laser apropriado");
-    } else {
+    } else if (dados.fototipo === "5" || dados.fototipo === "6") { // Assuming "6" might be added later, or just covering V. Fototipo 6 missing in options, but good to have condition.
       pontuacao += 5;
-      alertas.push("Fototipos mais altos requerem laser específico (Nd:YAG)");
+      alertas.push("Fototipos mais altos requerem laser específico (Nd:YAG) e maior cautela.");
     }
 
     // Análise de cor do pelo
@@ -76,7 +86,7 @@ export default function CalculadoraLaser() {
       recomendacoes.push("Alta densidade permite melhores resultados");
     } else if (dados.densidadePelos === "media") {
       pontuacao += 10;
-    } else {
+    } else { // baixa
       pontuacao += 5;
     }
 
@@ -86,6 +96,7 @@ export default function CalculadoraLaser() {
       recomendacoes.push("Suas expectativas estão alinhadas com resultados típicos");
     } else {
       alertas.push("É importante ter expectativas realistas sobre redução de 70-90% dos pelos");
+      pontuacao -= 10; // Penalize unrealistic expectations slightly
     }
 
     // Condições pré-existentes
@@ -136,40 +147,36 @@ export default function CalculadoraLaser() {
 
       <div>
         <Label className="text-lg font-semibold mb-3 block">Qual seu fototipo de pele?</Label>
-        <RadioGroup value={dados.fototipo} onValueChange={(value) => setDados({ ...dados, fototipo: value })}>
-          <div className="space-y-3">
-            <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
-              <RadioGroupItem value="1" id="f1" />
-              <Label htmlFor="f1" className="flex-1 cursor-pointer">
-                <span className="font-medium">Tipo I-II:</span> Pele muito clara, sempre queima, nunca bronzeia
-              </Label>
+        <div className="space-y-3">
+          {[
+            { value: "1", label: "Tipo I-II: Pele muito clara, sempre queima, nunca bronzeia" },
+            { value: "2", label: "Tipo III: Pele clara, às vezes queima, bronzeia gradualmente" },
+            { value: "3", label: "Tipo IV: Pele morena clara, raramente queima, sempre bronzeia" },
+            { value: "4", label: "Tipo V: Pele morena, nunca queima, bronzeia facilmente" },
+            { value: "5", label: "Tipo VI: Pele negra, nunca queima" }
+          ].map((option) => (
+            <div
+              key={option.value}
+              onClick={() => setDados({ ...dados, fototipo: option.value })}
+              className={`flex items-center space-x-3 p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                dados.fototipo === option.value
+                  ? 'border-[#F7D426] bg-[#FFF9E6]'
+                  : 'border-gray-200 hover:bg-gray-50'
+              }`}
+            >
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                dados.fototipo === option.value
+                  ? 'border-[#F7D426] bg-[#F7D426]'
+                  : 'border-gray-300'
+              }`}>
+                {dados.fototipo === option.value && (
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#2C2C2C]"></div>
+                )}
+              </div>
+              <Label className="flex-1 cursor-pointer">{option.label}</Label>
             </div>
-            <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
-              <RadioGroupItem value="2" id="f2" />
-              <Label htmlFor="f2" className="flex-1 cursor-pointer">
-                <span className="font-medium">Tipo III:</span> Pele clara, às vezes queima, bronzeia gradualmente
-              </Label>
-            </div>
-            <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
-              <RadioGroupItem value="3" id="f3" />
-              <Label htmlFor="f3" className="flex-1 cursor-pointer">
-                <span className="font-medium">Tipo IV:</span> Pele morena clara, raramente queima, sempre bronzeia
-              </Label>
-            </div>
-            <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
-              <RadioGroupItem value="4" id="f4" />
-              <Label htmlFor="f4" className="flex-1 cursor-pointer">
-                <span className="font-medium">Tipo V:</span> Pele morena, nunca queima, bronzeia facilmente
-              </Label>
-            </div>
-            <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
-              <RadioGroupItem value="5" id="f5" />
-              <Label htmlFor="f5" className="flex-1 cursor-pointer">
-                <span className="font-medium">Tipo VI:</span> Pele negra, nunca queima
-              </Label>
-            </div>
-          </div>
-        </RadioGroup>
+          ))}
+        </div>
       </div>
 
       <Button
@@ -186,54 +193,69 @@ export default function CalculadoraLaser() {
     <div className="space-y-6">
       <div>
         <Label className="text-lg font-semibold mb-3 block">Qual a cor predominante dos pelos?</Label>
-        <RadioGroup value={dados.corPelo} onValueChange={(value) => setDados({ ...dados, corPelo: value })}>
-          <div className="space-y-3">
-            <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
-              <RadioGroupItem value="preto" id="p1" />
-              <Label htmlFor="p1" className="flex-1 cursor-pointer font-medium">Preto</Label>
+        <div className="space-y-3">
+          {[
+            { value: "preto", label: "Preto" },
+            { value: "castanho-escuro", label: "Castanho Escuro" },
+            { value: "castanho-claro", label: "Castanho Claro" },
+            { value: "loiro", label: "Loiro/Claro" },
+            { value: "ruivo", label: "Ruivo" },
+            { value: "branco", label: "Branco/Grisalho" }
+          ].map((option) => (
+            <div
+              key={option.value}
+              onClick={() => setDados({ ...dados, corPelo: option.value })}
+              className={`flex items-center space-x-3 p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                dados.corPelo === option.value
+                  ? 'border-[#F7D426] bg-[#FFF9E6]'
+                  : 'border-gray-200 hover:bg-gray-50'
+              }`}
+            >
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                dados.corPelo === option.value
+                  ? 'border-[#F7D426] bg-[#F7D426]'
+                  : 'border-gray-300'
+              }`}>
+                {dados.corPelo === option.value && (
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#2C2C2C]"></div>
+                )}
+              </div>
+              <Label className="flex-1 cursor-pointer font-medium">{option.label}</Label>
             </div>
-            <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
-              <RadioGroupItem value="castanho-escuro" id="p2" />
-              <Label htmlFor="p2" className="flex-1 cursor-pointer font-medium">Castanho Escuro</Label>
-            </div>
-            <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
-              <RadioGroupItem value="castanho-claro" id="p3" />
-              <Label htmlFor="p3" className="flex-1 cursor-pointer font-medium">Castanho Claro</Label>
-            </div>
-            <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
-              <RadioGroupItem value="loiro" id="p4" />
-              <Label htmlFor="p4" className="flex-1 cursor-pointer font-medium">Loiro/Claro</Label>
-            </div>
-            <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
-              <RadioGroupItem value="ruivo" id="p5" />
-              <Label htmlFor="p5" className="flex-1 cursor-pointer font-medium">Ruivo</Label>
-            </div>
-            <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
-              <RadioGroupItem value="branco" id="p6" />
-              <Label htmlFor="p6" className="flex-1 cursor-pointer font-medium">Branco/Grisalho</Label>
-            </div>
-          </div>
-        </RadioGroup>
+          ))}
+        </div>
       </div>
 
       <div>
         <Label className="text-lg font-semibold mb-3 block">Qual a densidade dos pelos?</Label>
-        <RadioGroup value={dados.densidadePelos} onValueChange={(value) => setDados({ ...dados, densidadePelos: value })}>
-          <div className="space-y-3">
-            <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
-              <RadioGroupItem value="alta" id="d1" />
-              <Label htmlFor="d1" className="flex-1 cursor-pointer font-medium">Alta (muitos pelos)</Label>
+        <div className="space-y-3">
+          {[
+            { value: "alta", label: "Alta (muitos pelos)" },
+            { value: "media", label: "Média" },
+            { value: "baixa", label: "Baixa (poucos pelos)" }
+          ].map((option) => (
+            <div
+              key={option.value}
+              onClick={() => setDados({ ...dados, densidadePelos: option.value })}
+              className={`flex items-center space-x-3 p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                dados.densidadePelos === option.value
+                  ? 'border-[#F7D426] bg-[#FFF9E6]'
+                  : 'border-gray-200 hover:bg-gray-50'
+              }`}
+            >
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                dados.densidadePelos === option.value
+                  ? 'border-[#F7D426] bg-[#F7D426]'
+                  : 'border-gray-300'
+              }`}>
+                {dados.densidadePelos === option.value && (
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#2C2C2C]"></div>
+                )}
+              </div>
+              <Label className="flex-1 cursor-pointer font-medium">{option.label}</Label>
             </div>
-            <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
-              <RadioGroupItem value="media" id="d2" />
-              <Label htmlFor="d2" className="flex-1 cursor-pointer font-medium">Média</Label>
-            </div>
-            <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
-              <RadioGroupItem value="baixa" id="d3" />
-              <Label htmlFor="d3" className="flex-1 cursor-pointer font-medium">Baixa (poucos pelos)</Label>
-            </div>
-          </div>
-        </RadioGroup>
+          ))}
+        </div>
       </div>
 
       <div className="flex gap-3">
@@ -259,46 +281,66 @@ export default function CalculadoraLaser() {
     <div className="space-y-6">
       <div>
         <Label className="text-lg font-semibold mb-3 block">Suas expectativas são:</Label>
-        <RadioGroup value={dados.expectativa} onValueChange={(value) => setDados({ ...dados, expectativa: value })}>
-          <div className="space-y-3">
-            <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
-              <RadioGroupItem value="realista" id="e1" />
-              <Label htmlFor="e1" className="flex-1 cursor-pointer">
-                <span className="font-medium">Realista:</span> Redução de 70-90% dos pelos em 6-8 sessões
-              </Label>
+        <div className="space-y-3">
+          {[
+            { value: "realista", label: "Realista: Redução de 70-90% dos pelos em 6-8 sessões" },
+            { value: "alta", label: "Alta: Remoção 100% permanente em poucas sessões" }
+          ].map((option) => (
+            <div
+              key={option.value}
+              onClick={() => setDados({ ...dados, expectativa: option.value })}
+              className={`flex items-center space-x-3 p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                dados.expectativa === option.value
+                  ? 'border-[#F7D426] bg-[#FFF9E6]'
+                  : 'border-gray-200 hover:bg-gray-50'
+              }`}
+            >
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                dados.expectativa === option.value
+                  ? 'border-[#F7D426] bg-[#F7D426]'
+                  : 'border-gray-300'
+              }`}>
+                {dados.expectativa === option.value && (
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#2C2C2C]"></div>
+                )}
+              </div>
+              <Label className="flex-1 cursor-pointer">{option.label}</Label>
             </div>
-            <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
-              <RadioGroupItem value="alta" id="e2" />
-              <Label htmlFor="e2" className="flex-1 cursor-pointer">
-                <span className="font-medium">Alta:</span> Remoção 100% permanente em poucas sessões
-              </Label>
-            </div>
-          </div>
-        </RadioGroup>
+          ))}
+        </div>
       </div>
 
       <div>
         <Label className="text-lg font-semibold mb-3 block">Condições pré-existentes:</Label>
-        <RadioGroup value={dados.condicoesPreexistentes} onValueChange={(value) => setDados({ ...dados, condicoesPreexistentes: value })}>
-          <div className="space-y-3">
-            <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
-              <RadioGroupItem value="nenhuma" id="c1" />
-              <Label htmlFor="c1" className="flex-1 cursor-pointer font-medium">Nenhuma</Label>
+        <div className="space-y-3">
+          {[
+            { value: "nenhuma", label: "Nenhuma" },
+            { value: "pele-sensivel", label: "Pele Sensível" },
+            { value: "hormonal", label: "Distúrbios Hormonais (SOP, etc)" },
+            { value: "medicamentos", label: "Uso de Medicamentos Fotossensibilizantes" }
+          ].map((option) => (
+            <div
+              key={option.value}
+              onClick={() => setDados({ ...dados, condicoesPreexistentes: option.value })}
+              className={`flex items-center space-x-3 p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                dados.condicoesPreexistentes === option.value
+                  ? 'border-[#F7D426] bg-[#FFF9E6]'
+                  : 'border-gray-200 hover:bg-gray-50'
+              }`}
+            >
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                dados.condicoesPreexistentes === option.value
+                  ? 'border-[#F7D426] bg-[#F7D426]'
+                  : 'border-gray-300'
+              }`}>
+                {dados.condicoesPreexistentes === option.value && (
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#2C2C2C]"></div>
+                )}
+              </div>
+              <Label className="flex-1 cursor-pointer font-medium">{option.label}</Label>
             </div>
-            <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
-              <RadioGroupItem value="pele-sensivel" id="c2" />
-              <Label htmlFor="c2" className="flex-1 cursor-pointer font-medium">Pele Sensível</Label>
-            </div>
-            <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
-              <RadioGroupItem value="hormonal" id="c3" />
-              <Label htmlFor="c3" className="flex-1 cursor-pointer font-medium">Distúrbios Hormonais (SOP, etc)</Label>
-            </div>
-            <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
-              <RadioGroupItem value="medicamentos" id="c4" />
-              <Label htmlFor="c4" className="flex-1 cursor-pointer font-medium">Uso de Medicamentos Fotossensibilizantes</Label>
-            </div>
-          </div>
-        </RadioGroup>
+          ))}
+        </div>
       </div>
 
       <div className="flex gap-3">
@@ -419,29 +461,35 @@ export default function CalculadoraLaser() {
           </p>
         </div>
 
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-2">
-            {[1, 2, 3].map((step) => (
-              <div key={step} className="flex items-center flex-1">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
-                  etapa >= step ? 'bg-[#F7D426] text-[#2C2C2C]' : 'bg-gray-200 text-gray-500'
-                }`}>
-                  {step}
-                </div>
-                {step < 3 && (
-                  <div className={`flex-1 h-1 mx-2 ${
-                    etapa > step ? 'bg-[#F7D426]' : 'bg-gray-200'
-                  }`} />
-                )}
-              </div>
-            ))}
+        {etapa < 4 && (
+          <div className="mb-8">
+            <div className="flex items-center justify-center mb-4">
+              {[1, 2, 3].map((step, index) => (
+                <React.Fragment key={step}>
+                  <div className="flex flex-col items-center">
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold transition-all ${
+                      etapa >= step ? 'bg-[#F7D426] text-[#2C2C2C]' : 'bg-gray-200 text-gray-500'
+                    }`}>
+                      {step}
+                    </div>
+                    <span className={`text-xs mt-2 font-medium text-center w-24 ${
+                      etapa >= step ? 'text-[#2C2C2C]' : 'text-gray-500'
+                    }`}>
+                      {step === 1 && 'Dados Pessoais'}
+                      {step === 2 && 'Características'}
+                      {step === 3 && 'Avaliação'}
+                    </span>
+                  </div>
+                  {step < 3 && (
+                    <div className={`h-1 w-20 mx-2 transition-all ${
+                      etapa > step ? 'bg-[#F7D426]' : 'bg-gray-200'
+                    }`} />
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
           </div>
-          <div className="flex justify-between text-xs text-gray-600">
-            <span>Dados Pessoais</span>
-            <span>Características</span>
-            <span>Avaliação</span>
-          </div>
-        </div>
+        )}
 
         <Card className="border-none shadow-2xl">
           <CardContent className="p-6 md:p-8">
