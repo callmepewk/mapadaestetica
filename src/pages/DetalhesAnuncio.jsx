@@ -1,6 +1,7 @@
+
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import {
@@ -30,15 +31,22 @@ import { ptBR } from "date-fns/locale";
 
 export default function DetalhesAnuncio() {
   const navigate = useNavigate();
-  const [anuncioId, setAnuncioId] = useState(null);
+  const queryClient = useQueryClient();
   const [imagemAtual, setImagemAtual] = useState(0);
   const [user, setUser] = useState(null);
-  const [visualizacaoIncrementada, setVisualizacaoIncrementada] = useState(false);
+  const [anuncioId, setAnuncioId] = useState(null);
 
+  // Extrair ID da URL IMEDIATAMENTE
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const id = urlParams.get('id');
-    setAnuncioId(id);
+    console.log("ID extraído da URL:", id);
+    
+    if (id) {
+      setAnuncioId(id);
+    } else {
+      console.error("Nenhum ID encontrado na URL");
+    }
 
     const fetchUser = async () => {
       try {
@@ -52,40 +60,70 @@ export default function DetalhesAnuncio() {
   }, []);
 
   const { data: anuncio, isLoading, error } = useQuery({
-    queryKey: ['anuncio-detalhes', anuncioId],
+    queryKey: ['anuncio-detalhes-unico', anuncioId],
     queryFn: async () => {
-      if (!anuncioId) throw new Error("ID não fornecido");
+      console.log("Buscando anúncio com ID:", anuncioId);
+      
+      if (!anuncioId) {
+        throw new Error("ID não fornecido");
+      }
       
       const anuncios = await base44.entities.Anuncio.filter({ id: anuncioId });
+      console.log("Anúncios retornados:", anuncios);
       
       if (!anuncios || anuncios.length === 0) {
-        throw new Error("Anúncio não encontrado");
+        throw new Error("Anúncio não encontrado no banco");
       }
       
-      return anuncios[0];
+      const anuncioEncontrado = anuncios[0];
+      console.log("Anúncio encontrado:", anuncioEncontrado);
+      
+      // Incrementar visualizações
+      try {
+        await base44.entities.Anuncio.update(anuncioId, {
+          visualizacoes: (anuncioEncontrado.visualizacoes || 0) + 1
+        });
+      } catch (err) {
+        console.error("Erro ao incrementar visualizações:", err);
+      }
+      
+      return anuncioEncontrado;
     },
     enabled: !!anuncioId,
-    retry: 2,
-    retryDelay: 500,
-    staleTime: 2 * 60 * 1000,
+    retry: 1,
+    retryDelay: 1000,
+    staleTime: Infinity,
+    cacheTime: 30 * 60 * 1000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
-  // Incrementar visualizações apenas UMA vez
+  // Log de estados
   useEffect(() => {
-    const incrementarView = async () => {
-      if (anuncio && anuncio.id && !visualizacaoIncrementada) {
-        try {
-          await base44.entities.Anuncio.update(anuncio.id, {
-            visualizacoes: (anuncio.visualizacoes || 0) + 1
-          });
-          setVisualizacaoIncrementada(true);
-        } catch (err) {
-          console.error("Erro ao incrementar visualização:", err);
-        }
-      }
-    };
-    incrementarView();
-  }, [anuncio?.id, visualizacaoIncrementada]);
+    console.log("Estado atual - anuncioId:", anuncioId, "isLoading:", isLoading, "error:", error, "anuncio:", anuncio);
+  }, [anuncioId, isLoading, error, anuncio]);
+
+  if (!anuncioId) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
+        <Card className="p-12 text-center max-w-md mx-4">
+          <div className="text-6xl mb-4">⚠️</div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">
+            ID não fornecido
+          </h3>
+          <p className="text-gray-600 mb-6">
+            Nenhum ID de anúncio foi fornecido na URL.
+          </p>
+          <Button
+            onClick={() => navigate(createPageUrl("Anuncios"))}
+            className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
+          >
+            Voltar para Anúncios
+          </Button>
+        </Card>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -107,6 +145,7 @@ export default function DetalhesAnuncio() {
   }
 
   if (error || !anuncio) {
+    console.error("Erro ao carregar anúncio:", error);
     return (
       <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
         <Card className="p-12 text-center max-w-md mx-4">
@@ -114,15 +153,29 @@ export default function DetalhesAnuncio() {
           <h3 className="text-xl font-semibold text-gray-900 mb-2">
             Anúncio não encontrado
           </h3>
-          <p className="text-gray-600 mb-6">
-            Este anúncio pode ter sido removido ou não existe.
+          <p className="text-gray-600 mb-2">
+            ID buscado: {anuncioId}
           </p>
-          <Button
-            onClick={() => navigate(createPageUrl("Anuncios"))}
-            className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
-          >
-            Voltar para Anúncios
-          </Button>
+          <p className="text-gray-600 mb-6">
+            {error?.message || "Este anúncio pode ter sido removido ou não existe."}
+          </p>
+          <div className="flex flex-col gap-3">
+            <Button
+              onClick={() => {
+                queryClient.clear();
+                navigate(createPageUrl("Anuncios"));
+              }}
+              className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
+            >
+              Limpar Cache e Voltar
+            </Button>
+            <Button
+              onClick={() => window.location.reload()}
+              variant="outline"
+            >
+              Recarregar Página
+            </Button>
+          </div>
         </Card>
       </div>
     );
@@ -140,7 +193,10 @@ export default function DetalhesAnuncio() {
       <div className="max-w-6xl mx-auto px-4">
         <Button
           variant="ghost"
-          onClick={() => navigate(createPageUrl("Anuncios"))}
+          onClick={() => {
+            queryClient.removeQueries(['anuncio-detalhes-unico']);
+            navigate(createPageUrl("Anuncios"));
+          }}
           className="mb-6"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />

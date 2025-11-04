@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
@@ -26,9 +27,20 @@ export default function ArtigoBlog() {
   const [novoComentario, setNovoComentario] = useState("");
   const [respondendoA, setRespondendoA] = useState(null);
   const [erro, setErro] = useState(null);
-  const [visualizacaoIncrementada, setVisualizacaoIncrementada] = useState(false);
+  const [artigoId, setArtigoId] = useState(null);
 
-  const artigoId = new URLSearchParams(window.location.search).get('id');
+  // Extrair ID da URL IMEDIATAMENTE
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+    console.log("ID do artigo extraído da URL:", id);
+    
+    if (id) {
+      setArtigoId(id);
+    } else {
+      console.error("Nenhum ID de artigo encontrado na URL");
+    }
+  }, []);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -43,23 +55,46 @@ export default function ArtigoBlog() {
   }, []);
 
   const { data: artigo, isLoading } = useQuery({
-    queryKey: ['artigo', artigoId],
+    queryKey: ['artigo-unico', artigoId],
     queryFn: async () => {
-      if (!artigoId) throw new Error("ID não fornecido");
-      const artigos = await base44.entities.ArtigoBlog.filter({ id: artigoId });
-      if (!artigos || artigos.length === 0) {
-        throw new Error("Artigo não encontrado");
+      console.log("Buscando artigo com ID:", artigoId);
+      
+      if (!artigoId) {
+        throw new Error("ID não fornecido");
       }
-      return artigos[0];
+      
+      const artigos = await base44.entities.ArtigoBlog.filter({ id: artigoId });
+      console.log("Artigos retornados:", artigos);
+      
+      if (!artigos || artigos.length === 0) {
+        throw new Error("Artigo não encontrado no banco");
+      }
+      
+      const artigoEncontrado = artigos[0];
+      console.log("Artigo encontrado:", artigoEncontrado);
+      
+      // Incrementar visualizações
+      try {
+        await base44.entities.ArtigoBlog.update(artigoId, {
+          visualizacoes: (artigoEncontrado.visualizacoes || 0) + 1
+        });
+      } catch (err) {
+        console.error("Erro ao incrementar visualizações:", err);
+      }
+      
+      return artigoEncontrado;
     },
     enabled: !!artigoId,
-    retry: 2,
-    retryDelay: 500,
-    staleTime: 2 * 60 * 1000,
+    retry: 1,
+    retryDelay: 1000,
+    staleTime: Infinity,
+    cacheTime: 30 * 60 * 1000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   const { data: comentarios = [] } = useQuery({
-    queryKey: ['comentarios-artigo', artigoId],
+    queryKey: ['comentarios-artigo-unico', artigoId],
     queryFn: async () => {
       if (!artigoId) return [];
       return await base44.entities.ComentarioBlog.filter({ artigo_id: artigoId, status: 'ativo' }, '-created_date', 100);
@@ -67,22 +102,10 @@ export default function ArtigoBlog() {
     enabled: !!artigoId,
   });
 
-  // Incrementar visualizações apenas UMA vez
+  // Log de estados
   useEffect(() => {
-    const incrementarView = async () => {
-      if (artigo && artigo.id && !visualizacaoIncrementada) {
-        try {
-          await base44.entities.ArtigoBlog.update(artigo.id, {
-            visualizacoes: (artigo.visualizacoes || 0) + 1
-          });
-          setVisualizacaoIncrementada(true);
-        } catch (err) {
-          console.error("Erro ao incrementar visualização:", err);
-        }
-      }
-    };
-    incrementarView();
-  }, [artigo?.id, visualizacaoIncrementada]);
+    console.log("Estado atual - artigoId:", artigoId, "isLoading:", isLoading, "artigo:", artigo);
+  }, [artigoId, isLoading, artigo]);
 
   const curtirMutation = useMutation({
     mutationFn: async () => {
@@ -101,7 +124,7 @@ export default function ArtigoBlog() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['artigo', artigoId]);
+      queryClient.invalidateQueries(['artigo-unico', artigoId]);
     },
   });
 
@@ -110,7 +133,7 @@ export default function ArtigoBlog() {
       return await base44.entities.ComentarioBlog.create(dados);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['comentarios-artigo', artigoId]);
+      queryClient.invalidateQueries(['comentarios-artigo-unico', artigoId]);
       setNovoComentario("");
       setRespondendoA(null);
       setErro(null);
@@ -149,7 +172,7 @@ export default function ArtigoBlog() {
     },
     onSuccess: () => {
       alert("Denúncia enviada com sucesso!");
-      queryClient.invalidateQueries(['comentarios-artigo', artigoId]);
+      queryClient.invalidateQueries(['comentarios-artigo-unico', artigoId]);
     },
   });
 
@@ -158,7 +181,7 @@ export default function ArtigoBlog() {
       await base44.entities.ComentarioBlog.update(comentarioId, { status: 'deletado' });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['comentarios-artigo', artigoId]);
+      queryClient.invalidateQueries(['comentarios-artigo-unico', artigoId]);
     },
   });
 
@@ -183,6 +206,28 @@ export default function ArtigoBlog() {
     });
   };
 
+  if (!artigoId) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
+        <Card className="p-12 text-center max-w-md mx-4">
+          <div className="text-6xl mb-4">⚠️</div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">
+            ID não fornecido
+          </h3>
+          <p className="text-gray-600 mb-6">
+            Nenhum ID de artigo foi fornecido na URL.
+          </p>
+          <Button
+            onClick={() => navigate(createPageUrl("Blog"))}
+            className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
+          >
+            Voltar para o Blog
+          </Button>
+        </Card>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
@@ -195,6 +240,7 @@ export default function ArtigoBlog() {
   }
 
   if (!artigo) {
+    console.error("Artigo não carregado");
     return (
       <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
         <Card className="p-12 text-center max-w-md mx-4">
@@ -202,15 +248,29 @@ export default function ArtigoBlog() {
           <h3 className="text-xl font-semibold text-gray-900 mb-2">
             Artigo não encontrado
           </h3>
+          <p className="text-gray-600 mb-2">
+            ID buscado: {artigoId}
+          </p>
           <p className="text-gray-600 mb-6">
             Este artigo pode ter sido removido ou não existe.
           </p>
-          <Button
-            onClick={() => navigate(createPageUrl("Blog"))}
-            className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
-          >
-            Voltar para o Blog
-          </Button>
+          <div className="flex flex-col gap-3">
+            <Button
+              onClick={() => {
+                queryClient.clear();
+                navigate(createPageUrl("Blog"));
+              }}
+              className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
+            >
+              Limpar Cache e Voltar
+            </Button>
+            <Button
+              onClick={() => window.location.reload()}
+              variant="outline"
+            >
+              Recarregar Página
+            </Button>
+          </div>
         </Card>
       </div>
     );
@@ -240,7 +300,10 @@ export default function ArtigoBlog() {
       <div className="max-w-4xl mx-auto px-4">
         <Button
           variant="ghost"
-          onClick={() => navigate(createPageUrl("Blog"))}
+          onClick={() => {
+            queryClient.removeQueries(['artigo-unico']);
+            navigate(createPageUrl("Blog"));
+          }}
           className="mb-6"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
