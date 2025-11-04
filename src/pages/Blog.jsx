@@ -81,78 +81,98 @@ export default function Blog() {
     return colors[categoria] || "bg-gray-100 text-gray-800";
   };
 
-  const handleArtigoClick = (artigo) => {
+  const handleArtigoClick = (e, artigo) => {
+    e.preventDefault();
+    
+    if (!artigo || !artigo.id) {
+      console.error("Artigo sem ID:", artigo);
+      return;
+    }
+    
+    // Artigos profissionais abrem página interna
+    if (artigo.tipo === 'profissional') {
+      console.log("Navegando para artigo profissional:", artigo.id);
+      const url = `${createPageUrl("ArtigoBlog")}?id=${artigo.id}`;
+      console.log("URL gerada:", url);
+      navigate(url);
+    } 
     // Artigos gerais redirecionam para fontes externas
-    if (artigo.tipo === 'geral' && artigo.link_externo) {
+    else if (artigo.tipo === 'geral' && artigo.link_externo) {
+      console.log("Redirecionando para link externo:", artigo.link_externo);
       window.open(artigo.link_externo, '_blank');
-    } else if (artigo.tipo === 'profissional') {
-      // Artigos profissionais abrem página interna
-      navigate(`${createPageUrl("ArtigoBlog")}?id=${artigo.id}`);
-    } else {
-      // Fallback para artigos sem link externo
-      navigate(`${createPageUrl("ArtigoBlog")}?id=${artigo.id}`);
+    } 
+    // Fallback: abre página interna se não tiver link externo
+    else {
+      console.log("Navegando para artigo (fallback):", artigo.id);
+      const url = `${createPageUrl("ArtigoBlog")}?id=${artigo.id}`;
+      console.log("URL gerada:", url);
+      navigate(url);
     }
   };
 
-  const ArtigoCard = ({ artigo }) => (
-    <Card
-      onClick={() => handleArtigoClick(artigo)}
-      className="overflow-hidden hover:shadow-xl transition-all duration-300 border-none cursor-pointer group"
-    >
-      <div className="h-48 bg-gradient-to-br from-pink-100 to-rose-100 flex items-center justify-center text-5xl md:text-6xl group-hover:scale-110 transition-transform duration-300">
-        {artigo.imagem_capa ? (
-          <img src={artigo.imagem_capa} alt={artigo.titulo} className="w-full h-full object-cover" />
-        ) : (
-          "✨"
-        )}
-      </div>
-      <CardContent className="p-4 md:p-6">
-        <div className="flex items-center gap-2 mb-3">
-          <Badge className={getCategoriaColor(artigo.categoria)}>
-            {artigo.categoria}
-          </Badge>
-          <Badge variant="outline" className="text-xs">
-            {artigo.tipo === 'profissional' ? (
-              <><Briefcase className="w-3 h-3 mr-1" /> Profissional</>
-            ) : (
-              <><Users className="w-3 h-3 mr-1" /> Geral</>
-            )}
-          </Badge>
-          {artigo.tipo === 'geral' && artigo.link_externo && (
-            <Badge className="bg-blue-100 text-blue-800 text-xs">
-              <ExternalLink className="w-3 h-3 mr-1" />
-              Externo
-            </Badge>
+  const ArtigoCard = ({ artigo }) => {
+    if (!artigo) return null;
+    
+    return (
+      <Card
+        onClick={(e) => handleArtigoClick(e, artigo)}
+        className="overflow-hidden hover:shadow-xl transition-all duration-300 border-none cursor-pointer group"
+      >
+        <div className="h-48 bg-gradient-to-br from-pink-100 to-rose-100 flex items-center justify-center text-5xl md:text-6xl group-hover:scale-110 transition-transform duration-300">
+          {artigo.imagem_capa ? (
+            <img src={artigo.imagem_capa} alt={artigo.titulo} className="w-full h-full object-cover" />
+          ) : (
+            "✨"
           )}
         </div>
-        <h3 className="font-bold text-lg md:text-xl mb-3 line-clamp-2 group-hover:text-pink-600 transition-colors">
-          {artigo.titulo}
-        </h3>
-        <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-          {artigo.resumo}
-        </p>
-        
-        <div className="flex items-center gap-3 text-xs text-gray-500 pt-3 border-t flex-wrap">
-          <span className="flex items-center gap-1">
-            <Eye className="w-3 h-3" />
-            {artigo.visualizacoes || 0}
-          </span>
-          <span className="flex items-center gap-1">
-            <Heart className="w-3 h-3" />
-            {artigo.total_curtidas || 0}
-          </span>
-          <span className="flex items-center gap-1">
-            <Clock className="w-3 h-3" />
-            {artigo.tempo_leitura} min
-          </span>
-        </div>
+        <CardContent className="p-4 md:p-6">
+          <div className="flex items-center gap-2 mb-3">
+            <Badge className={getCategoriaColor(artigo.categoria)}>
+              {artigo.categoria}
+            </Badge>
+            <Badge variant="outline" className="text-xs">
+              {artigo.tipo === 'profissional' ? (
+                <><Briefcase className="w-3 h-3 mr-1" /> Profissional</>
+              ) : (
+                <><Users className="w-3 h-3 mr-1" /> Geral</>
+              )}
+            </Badge>
+            {artigo.tipo === 'geral' && artigo.link_externo && (
+              <Badge className="bg-blue-100 text-blue-800 text-xs">
+                <ExternalLink className="w-3 h-3 mr-1" />
+                Externo
+              </Badge>
+            )}
+          </div>
+          <h3 className="font-bold text-lg md:text-xl mb-3 line-clamp-2 group-hover:text-pink-600 transition-colors">
+            {artigo.titulo}
+          </h3>
+          <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+            {artigo.resumo}
+          </p>
+          
+          <div className="flex items-center gap-3 text-xs text-gray-500 pt-3 border-t flex-wrap">
+            <span className="flex items-center gap-1">
+              <Eye className="w-3 h-3" />
+              {artigo.visualizacoes || 0}
+            </span>
+            <span className="flex items-center gap-1">
+              <Heart className="w-3 h-3" />
+              {artigo.total_curtidas || 0}
+            </span>
+            <span className="flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              {artigo.tempo_leitura} min
+            </span>
+          </div>
 
-        <div className="text-xs text-gray-400 mt-2">
-          {format(new Date(artigo.created_date), "dd/MM/yyyy")}
-        </div>
-      </CardContent>
-    </Card>
-  );
+          <div className="text-xs text-gray-400 mt-2">
+            {format(new Date(artigo.created_date), "dd/MM/yyyy")}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8 md:py-12">
@@ -246,7 +266,7 @@ export default function Blog() {
                   <div className="mb-8 md:mb-12 px-4">
                     <Card 
                       className="overflow-hidden border-none shadow-2xl bg-gradient-to-br from-pink-500 to-rose-500 text-white cursor-pointer hover:shadow-3xl transition-shadow"
-                      onClick={() => handleArtigoClick(artigosGerais[0])}
+                      onClick={(e) => handleArtigoClick(e, artigosGerais[0])}
                     >
                       <CardContent className="p-6 md:p-12">
                         <Badge className="mb-4 bg-white/20 text-white border-none">
@@ -321,7 +341,7 @@ export default function Blog() {
                   <div className="mb-8 md:mb-12 px-4">
                     <Card 
                       className="overflow-hidden border-none shadow-2xl bg-gradient-to-br from-indigo-600 to-purple-600 text-white cursor-pointer hover:shadow-3xl transition-shadow"
-                      onClick={() => handleArtigoClick(artigosProfissionais[0])}
+                      onClick={(e) => handleArtigoClick(e, artigosProfissionais[0])}
                     >
                       <CardContent className="p-6 md:p-12">
                         <Badge className="mb-4 bg-white/20 text-white border-none">

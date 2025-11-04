@@ -11,6 +11,19 @@ import { ptBR } from "date-fns/locale";
 export default function CardAnuncio({ anuncio, destaque = false }) {
   const navigate = useNavigate();
 
+  const handleClick = (e) => {
+    e.preventDefault();
+    if (!anuncio || !anuncio.id) {
+      console.error("Anúncio sem ID:", anuncio);
+      return;
+    }
+    
+    console.log("Navegando para anúncio:", anuncio.id);
+    const url = `${createPageUrl("DetalhesAnuncio")}?id=${anuncio.id}`;
+    console.log("URL gerada:", url);
+    navigate(url);
+  };
+
   const getStatusColor = (status) => {
     const colors = {
       "Aberto Agora": "bg-green-100 text-green-800 border-green-200",
@@ -35,7 +48,11 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
     return colors[categoria] || "bg-gray-100 text-gray-800";
   };
 
-  const isPremium = anuncio.plano === 'premium';
+  const isPremium = anuncio?.plano === 'premium';
+
+  if (!anuncio) {
+    return null;
+  }
 
   return (
     <div className="w-full">
@@ -43,9 +60,8 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
         className={`overflow-hidden cursor-pointer group hover:shadow-2xl transition-shadow duration-200 border-none h-full flex flex-col ${
           isPremium ? 'ring-2 ring-[#F7D426]' : ''
         }`}
-        onClick={() => navigate(`${createPageUrl("DetalhesAnuncio")}?id=${anuncio.id}`)}
+        onClick={handleClick}
       >
-        {/* Image - LAZY LOADING */}
         <div className="relative h-40 sm:h-48 md:h-56 overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 flex-shrink-0">
           {anuncio.imagem_principal ? (
             <img
@@ -98,7 +114,6 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
           )}
         </div>
 
-        {/* Content */}
         <CardContent className="p-3 sm:p-4 flex flex-col flex-1">
           <div className="mb-2 sm:mb-3">
             <Badge className={`text-xs ${getCategoriaColor(anuncio.categoria)}`}>
