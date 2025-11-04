@@ -191,7 +191,7 @@ export default function Inicio() {
         </div>
       </section>
 
-      {/* Calculadora Destaque */}
+      {/* Pesquisa Especializada Section */}
       <section className="py-8 bg-gradient-to-r from-[#F7D426] to-[#FFE066]">
         <div className="max-w-7xl mx-auto px-4">
           <Card className="border-none shadow-2xl bg-white/95 backdrop-blur overflow-hidden">
@@ -202,18 +202,18 @@ export default function Inicio() {
                 </div>
                 <div className="flex-1 text-center md:text-left">
                   <Badge className="mb-2 bg-[#F7D426] text-[#2C2C2C] border-none font-bold">
-                    Exclusivo Clube da Beleza
+                    Exclusivo Mapa da Estética
                   </Badge>
                   <h2 className="text-2xl md:text-3xl font-bold text-[#2C2C2C] mb-2">
-                    Calculadora de Viabilidade de Laser
+                    Pesquisa Especializada
                   </h2>
                   <p className="text-gray-600 mb-4">
-                    Desenvolvida pelo Dr. Jauru Nunes de Freitas - Descubra se o tratamento a laser é ideal para você
+                    Conheça TODOS os procedimentos e serviços estéticos em detalhes antes de escolher o profissional ideal
                   </p>
                 </div>
-                <Link to={createPageUrl("CalculadoraLaser")} className="flex-shrink-0">
+                <Link to={createPageUrl("PesquisaEspecializada")} className="flex-shrink-0">
                   <Button size="lg" className="bg-[#2C2C2C] hover:bg-[#3A3A3A] text-[#F7D426] font-bold shadow-xl">
-                    Acessar Calculadora
+                    Acessar Pesquisa
                     <ArrowRight className="w-5 h-5 ml-2" />
                   </Button>
                 </Link>
@@ -439,7 +439,7 @@ export default function Inicio() {
 
           <div className="text-center">
             <Link to={createPageUrl("FaleConosco")}>
-              <Button size="lg" className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-pink-700">
+              <Button size="lg" className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700">
                 Quero Ser um Anunciante
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>

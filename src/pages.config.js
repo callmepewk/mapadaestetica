@@ -11,6 +11,7 @@ import CalculadoraLaser from './pages/CalculadoraLaser';
 import Produtos from './pages/Produtos';
 import MeuPlano from './pages/MeuPlano';
 import ArtigoBlog from './pages/ArtigoBlog';
+import PesquisaEspecializada from './pages/PesquisaEspecializada';
 import Layout from './Layout.jsx';
 
 
@@ -28,6 +29,7 @@ export const PAGES = {
     "Produtos": Produtos,
     "MeuPlano": MeuPlano,
     "ArtigoBlog": ArtigoBlog,
+    "PesquisaEspecializada": PesquisaEspecializada,
 }
 
 export const pagesConfig = {

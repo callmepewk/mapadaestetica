@@ -108,7 +108,7 @@ export default function Layout({ children }) {
             <span className="text-center sm:text-left">Bem-vindo ao Mapa da Estética - Os melhores profissionais perto de você</span>
           </div>
           <div className="flex items-center gap-4">
-            <span className="font-semibold">(21) 98034-3873</span>
+            <span className="font-semibold">(54) 99155-4136</span>
           </div>
         </div>
       </div>
@@ -265,25 +265,31 @@ export default function Layout({ children }) {
               <ul className="space-y-2 text-sm text-gray-400">
                 <li><Link to={createPageUrl("Inicio")} className="hover:text-[#F7D426] transition-colors">Início</Link></li>
                 <li><Link to={createPageUrl("Anuncios")} className="hover:text-[#F7D426] transition-colors">Anúncios</Link></li>
-                <li><Link to={createPageUrl("Produtos")} className="hover:text-[#F7D426] transition-colors">Produtos</Link></li> {/* Added "Produtos" link */}
+                <li><Link to={createPageUrl("Produtos")} className="hover:text-[#F7D426] transition-colors">Produtos</Link></li>
                 <li><Link to={createPageUrl("Planos")} className="hover:text-[#F7D426] transition-colors">Planos</Link></li>
                 <li><Link to={createPageUrl("Blog")} className="hover:text-[#F7D426] transition-colors">Blog</Link></li>
               </ul>
             </div>
 
             <div>
-              <h4 className="font-semibold mb-4 text-[#F7D426]">Suporte</h4>
+              <h4 className="font-semibold mb-4 text-[#F7D426]">Contatos</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><Link to={createPageUrl("FaleConosco")} className="hover:text-[#F7D426] transition-colors">Fale Conosco</Link></li>
-                <li><Link to={createPageUrl("SobreNos")} className="hover:text-[#F7D426] transition-colors">Sobre Nós</Link></li>
+                <li className="font-semibold text-white">Suporte Técnico:</li>
+                <li><a href="tel:54991554136" className="hover:text-[#F7D426] transition-colors">(54) 99155-4136</a></li>
+                <li className="font-semibold text-white mt-3">Central de Vendas:</li>
+                <li><a href="tel:31972595643" className="hover:text-[#F7D426] transition-colors">(31) 97259-5643</a></li>
+                <li className="font-semibold text-white mt-3">Business & Partnerships:</li>
                 <li><a href="tel:21980343873" className="hover:text-[#F7D426] transition-colors">(21) 98034-3873</a></li>
               </ul>
             </div>
 
             <div>
-              <h4 className="font-semibold mb-4 text-[#F7D426]">Contato</h4>
-              <p className="text-sm text-gray-400 mb-2">WhatsApp: (21) 98034-3873</p>
-              <p className="text-sm text-gray-400 break-words">Email: contato@mapadaestetica.com.br</p>
+              <h4 className="font-semibold mb-4 text-[#F7D426]">Institucional</h4>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li><Link to={createPageUrl("FaleConosco")} className="hover:text-[#F7D426] transition-colors">Fale Conosco</Link></li>
+                <li><Link to={createPageUrl("SobreNos")} className="hover:text-[#F7D426] transition-colors">Sobre Nós</Link></li>
+                <li><Link to={createPageUrl("PesquisaEspecializada")} className="hover:text-[#F7D426] transition-colors">Pesquisa Especializada</Link></li>
+              </ul>
             </div>
           </div>
 
