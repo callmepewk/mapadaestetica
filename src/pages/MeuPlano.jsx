@@ -15,56 +15,95 @@ import {
   Gift,
   Award,
   TrendingUp,
-  ArrowLeft
+  ArrowLeft,
+  Zap
 } from "lucide-react";
 import { motion } from "framer-motion";
 
 const planosDisponiveis = {
-  light: {
-    nome: "LIGHT",
+  basico: {
+    nome: "BÁSICO",
     cor: "from-gray-400 to-gray-500",
     icone: Sparkles,
     beneficios: [
-      "Sem mensalidade",
-      "Checkup da Pele",
-      "Oferece descontos e benefícios",
-      "Acumula pontos ao consumir produtos ou serviços",
-      "Aceito em mais de 3.000 serviços e profissionais",
-      "CHÁ DA BELEZA - Voucher mensal não cumulativo"
+      "1 Tag para exposição",
+      "1 Especialidade cadastrada",
+      "1 Anúncio ativo",
+      "Perfil básico na plataforma",
+      "Suporte por email",
+      "Estatísticas básicas"
     ],
-    pontos_mensais: 0
+    limites: {
+      tags: 1,
+      especialidades: 1,
+      anuncios: 1
+    }
   },
-  gold: {
-    nome: "GOLD",
-    cor: "from-yellow-400 to-amber-500",
+  intermediario: {
+    nome: "INTERMEDIÁRIO",
+    cor: "from-blue-400 to-cyan-500",
     icone: Star,
     beneficios: [
-      "Programa Spa da Pele - incluso kit Beauty Drink",
-      "12 sessões Skincare Mood* Clube+",
-      "Crédito automático de 250 pontos/mês",
-      "Oferece descontos e benefícios na Rede Parceiro",
-      "Aceito em mais de 3.000 serviços",
-      "Check da Pele - dermahelp/teleconsulta 50%",
-      "Beauty Pass Máquinas da Beleza*",
-      "CHÁ DA BELEZA - Voucher mensal cortesia"
+      "10 Tags para maior exposição",
+      "5 Especialidades cadastradas",
+      "Até 20 Anúncios ativos",
+      "Perfil destacado",
+      "Suporte prioritário",
+      "Estatísticas avançadas",
+      "Badge de verificação",
+      "Aparece nas buscas principais"
     ],
-    pontos_mensais: 250
+    limites: {
+      tags: 10,
+      especialidades: 5,
+      anuncios: 20
+    }
   },
-  vip: {
-    nome: "VIP",
+  avancado: {
+    nome: "AVANÇADO",
     cor: "from-purple-500 to-pink-500",
+    icone: Zap,
+    beneficios: [
+      "20 Tags premium",
+      "10 Especialidades cadastradas",
+      "Até 50 Anúncios ativos",
+      "Prioridade máxima nas buscas",
+      "Perfil premium com destaque",
+      "Suporte VIP com chat direto",
+      "Estatísticas completas",
+      "Selo de Profissional Verificado",
+      "Aparece no topo dos resultados",
+      "Galeria de fotos ampliada"
+    ],
+    limites: {
+      tags: 20,
+      especialidades: 10,
+      anuncios: 50
+    }
+  },
+  premium: {
+    nome: "PREMIUM",
+    cor: "from-yellow-400 to-amber-500",
     icone: Crown,
     beneficios: [
-      "SOFTLIFT CLUBERS",
-      "Botox Day + Injetável AH",
-      "Check da Up Pele anual",
-      "Beauty Pass VIP Face Skincare",
-      "Beauty Pass VIP Máquinas da Beleza",
-      "CHA DA BELEZA - Beauty Drink Anytime",
-      "Eventos exclusivos para sócios",
-      "Programas de tratamento exclusivos"
+      "Tags ILIMITADAS",
+      "Especialidades ILIMITADAS",
+      "Anúncios ILIMITADOS",
+      "Assistente com Claude.ia integrado",
+      "Prioridade MÁXIMA em todas as buscas",
+      "Destaque permanente na home",
+      "Suporte 24/7 dedicado",
+      "Gerente de conta exclusivo",
+      "Analytics profissional completo",
+      "Marketing digital incluso",
+      "Selo Premium Exclusivo",
+      "Conteúdo patrocinado mensal"
     ],
-    pontos_mensais: 500
+    limites: {
+      tags: "Ilimitadas",
+      especialidades: "Ilimitadas",
+      anuncios: "Ilimitados"
+    }
   }
 };
 
@@ -98,19 +137,15 @@ export default function MeuPlano() {
     );
   }
 
-  const planoAtual = user.plano_ativo || 'light';
+  const planoAtual = user.plano_ativo || 'basico';
   const planoInfo = planosDisponiveis[planoAtual];
   const IconeAtual = planoInfo.icone;
-  const pontosAtuais = user.pontos_acumulados || 0;
-  const proximoNivel = pontosAtuais < 1000 ? 1000 : pontosAtuais < 5000 ? 5000 : 10000;
-  const progressoPontos = (pontosAtuais / proximoNivel) * 100;
 
   const outrosPlanos = Object.entries(planosDisponiveis).filter(([key]) => key !== planoAtual);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
       <div className="max-w-7xl mx-auto px-4">
-        {/* Back Button */}
         <Button
           variant="ghost"
           onClick={() => navigate(createPageUrl("Perfil"))}
@@ -120,13 +155,12 @@ export default function MeuPlano() {
           Voltar
         </Button>
 
-        {/* Header */}
         <div className="text-center mb-12">
           <Badge className="mb-4 bg-[#F7D426] text-[#2C2C2C] font-bold">
-            Meu Plano Clube+
+            Mapa da Estética
           </Badge>
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-            Gerenciar Plano e Pontos
+            Gerenciar Plano de Anúncios
           </h1>
           <p className="text-gray-600">
             Veja seus benefícios e explore opções de upgrade
@@ -155,7 +189,6 @@ export default function MeuPlano() {
 
           <CardContent className="p-8">
             <div className="grid md:grid-cols-2 gap-8">
-              {/* Benefits */}
               <div>
                 <h3 className="text-xl font-bold mb-4">Seus Benefícios</h3>
                 <div className="space-y-3">
@@ -170,25 +203,22 @@ export default function MeuPlano() {
                 </div>
               </div>
 
-              {/* Points */}
               <div>
                 <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6 mb-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-bold">Meus Pontos</h3>
-                    <Gift className="w-8 h-8 text-purple-600" />
-                  </div>
-                  <div className="text-center mb-4">
-                    <p className="text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                      {pontosAtuais}
-                    </p>
-                    <p className="text-sm text-gray-600 mt-1">pontos acumulados</p>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-xs text-gray-600">
-                      <span>Próximo nível: {proximoNivel} pts</span>
-                      <span>{Math.round(progressoPontos)}%</span>
+                  <h3 className="text-xl font-bold mb-4">Seus Limites</h3>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Tags:</span>
+                      <Badge className="bg-purple-100 text-purple-800">{planoInfo.limites.tags}</Badge>
                     </div>
-                    <Progress value={progressoPontos} className="h-2" />
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Especialidades:</span>
+                      <Badge className="bg-blue-100 text-blue-800">{planoInfo.limites.especialidades}</Badge>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Anúncios:</span>
+                      <Badge className="bg-pink-100 text-pink-800">{planoInfo.limites.anuncios}</Badge>
+                    </div>
                   </div>
                 </div>
 
@@ -197,12 +227,11 @@ export default function MeuPlano() {
                     <div className="flex items-start gap-3">
                       <Award className="w-5 h-5 text-yellow-600 mt-0.5" />
                       <div>
-                        <p className="font-semibold text-sm mb-1">Pontos Mensais</p>
+                        <p className="font-semibold text-sm mb-1">Vantagens do Plano</p>
                         <p className="text-xs text-gray-600">
-                          {planoInfo.pontos_mensais > 0 
-                            ? `Você recebe ${planoInfo.pontos_mensais} pontos automáticos todo mês`
-                            : 'Acumule pontos consumindo na rede parceira'
-                          }
+                          {planoAtual === 'avancado' || planoAtual === 'premium' 
+                            ? 'Seu anúncio aparece com prioridade nas buscas!' 
+                            : 'Faça upgrade para ter prioridade nas buscas'}
                         </p>
                       </div>
                     </div>
@@ -228,7 +257,8 @@ export default function MeuPlano() {
             <div className="grid md:grid-cols-2 gap-8">
               {outrosPlanos.map(([key, plano], index) => {
                 const Icone = plano.icone;
-                const isUpgrade = ['light', 'gold', 'vip'].indexOf(key) > ['light', 'gold', 'vip'].indexOf(planoAtual);
+                const ordem = ['basico', 'intermediario', 'avancado', 'premium'];
+                const isUpgrade = ordem.indexOf(key) > ordem.indexOf(planoAtual);
                 
                 return (
                   <motion.div
@@ -256,6 +286,24 @@ export default function MeuPlano() {
                       </div>
 
                       <CardContent className="p-6">
+                        <div className="bg-gradient-to-br from-gray-50 to-white rounded-lg p-4 mb-4">
+                          <h4 className="font-bold mb-2 text-center">Limites</h4>
+                          <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Tags:</span>
+                              <span className="font-bold">{plano.limites.tags}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Especialidades:</span>
+                              <span className="font-bold">{plano.limites.especialidades}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Anúncios:</span>
+                              <span className="font-bold">{plano.limites.anuncios}</span>
+                            </div>
+                          </div>
+                        </div>
+
                         <div className="space-y-3 mb-6">
                           {plano.beneficios.slice(0, 5).map((beneficio, i) => (
                             <div key={i} className="flex items-start gap-3">
@@ -271,14 +319,6 @@ export default function MeuPlano() {
                             </p>
                           )}
                         </div>
-
-                        {plano.pontos_mensais > 0 && (
-                          <div className="bg-purple-50 p-3 rounded-lg mb-4">
-                            <p className="text-sm font-semibold text-purple-900">
-                              🎁 {plano.pontos_mensais} pontos automáticos/mês
-                            </p>
-                          </div>
-                        )}
 
                         <Link to={createPageUrl("FaleConosco")}>
                           <Button
