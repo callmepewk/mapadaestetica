@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -22,7 +21,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { Badge } from "@/components/ui/badge"; // Added Badge import
+import { Badge } from "@/components/ui/badge";
 
 const categorias = [
   "Todas",
@@ -37,27 +36,27 @@ const ITEMS_PER_PAGE = 10;
 export default function Anuncios() {
   const [busca, setBusca] = useState("");
   const [cidadeFiltro, setCidadeFiltro] = useState("");
-  const [estadoFiltro, setEstadoFiltro] = useState(""); // New state
+  const [estadoFiltro, setEstadoFiltro] = useState("");
   const [categoriaFiltro, setCategoriaFiltro] = useState("Todas");
-  const [procedimentoFiltro, setProcedimentoFiltro] = useState(""); // New state
+  const [procedimentoFiltro, setProcedimentoFiltro] = useState("");
   const [paginaAtual, setPaginaAtual] = useState(1);
   const [viewMode, setViewMode] = useState("grid");
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const cidade = urlParams.get('cidade');
-    const estado = urlParams.get('estado'); // New param
+    const estado = urlParams.get('estado');
     const categoria = urlParams.get('categoria');
-    const procedimento = urlParams.get('procedimento'); // New param
+    const procedimento = urlParams.get('procedimento');
     
     if (cidade) setCidadeFiltro(cidade);
-    if (estado) setEstadoFiltro(estado); // Set new state
+    if (estado) setEstadoFiltro(estado);
     if (categoria) setCategoriaFiltro(categoria);
-    if (procedimento) setProcedimentoFiltro(procedimento); // Set new state
+    if (procedimento) setProcedimentoFiltro(procedimento);
   }, []);
 
   const { data: anuncios, isLoading } = useQuery({
-    queryKey: ['anuncios', categoriaFiltro, cidadeFiltro, estadoFiltro, procedimentoFiltro, busca], // Added new filters
+    queryKey: ['anuncios', categoriaFiltro, cidadeFiltro, estadoFiltro, procedimentoFiltro, busca],
     queryFn: async () => {
       let filtros = { status: 'ativo' };
       
@@ -65,8 +64,7 @@ export default function Anuncios() {
         filtros.categoria = categoriaFiltro;
       }
       
-      // Priorizar planos premium e avançado
-      let ordem = '-plano,-created_date'; // Changed sort order
+      let ordem = '-plano,-created_date';
       
       const todosAnuncios = await base44.entities.Anuncio.filter(filtros, ordem);
       
@@ -74,10 +72,10 @@ export default function Anuncios() {
         const matchCidade = !cidadeFiltro || 
           anuncio.cidade?.toLowerCase().includes(cidadeFiltro.toLowerCase());
         
-        const matchEstado = !estadoFiltro || // New filter logic
+        const matchEstado = !estadoFiltro ||
           anuncio.estado?.toLowerCase().includes(estadoFiltro.toLowerCase());
         
-        const matchProcedimento = !procedimentoFiltro || // New filter logic
+        const matchProcedimento = !procedimentoFiltro ||
           anuncio.procedimentos_servicos?.some(p => 
             p.toLowerCase().includes(procedimentoFiltro.toLowerCase())
           ) ||
@@ -88,11 +86,11 @@ export default function Anuncios() {
           anuncio.titulo?.toLowerCase().includes(busca.toLowerCase()) ||
           anuncio.profissional?.toLowerCase().includes(busca.toLowerCase()) ||
           anuncio.descricao?.toLowerCase().includes(busca.toLowerCase()) ||
-          anuncio.procedimentos_servicos?.some(p => // Added to search
+          anuncio.procedimentos_servicos?.some(p => 
             p.toLowerCase().includes(busca.toLowerCase())
           );
         
-        return matchCidade && matchEstado && matchProcedimento && matchBusca; // Combined all filter conditions
+        return matchCidade && matchEstado && matchProcedimento && matchBusca;
       });
     },
     initialData: [],
@@ -112,7 +110,6 @@ export default function Anuncios() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
       <div className="max-w-7xl mx-auto px-4">
-        {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
             Encontre Profissionais de Estética
@@ -122,14 +119,13 @@ export default function Anuncios() {
           </p>
         </div>
 
-        {/* Filters */}
         <Card className="p-6 mb-8 shadow-lg border-none">
-          <div className="grid md:grid-cols-5 gap-4"> {/* Changed to 5 columns */}
+          <div className="grid md:grid-cols-5 gap-4">
             <div className="md:col-span-2">
               <div className="relative">
                 <Search className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
                 <Input
-                  placeholder="Buscar por nome, profissional, procedimento..." {/* Updated placeholder */}
+                  placeholder="Buscar por nome, profissional, procedimento..."
                   value={busca}
                   onChange={(e) => {
                     setBusca(e.target.value);
@@ -153,7 +149,7 @@ export default function Anuncios() {
               />
             </div>
 
-            <div> {/* New input for Estado */}
+            <div>
               <Input
                 placeholder="Estado (UF)"
                 value={estadoFiltro}
@@ -186,7 +182,7 @@ export default function Anuncios() {
             </Select>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-4 mt-4"> {/* New section for procedimento filter */}
+          <div className="grid md:grid-cols-2 gap-4 mt-4">
             <div className="relative">
               <Search className="absolute left-3 top-3.5 w-5 h-5 text-gray-400 z-10" />
               <Input
@@ -207,7 +203,7 @@ export default function Anuncios() {
               <span className="text-sm text-gray-600">
                 {anuncios.length} resultado{anuncios.length !== 1 ? 's' : ''}
               </span>
-              {procedimentoFiltro && ( // Display badge if procedimento filter is active
+              {procedimentoFiltro && (
                 <Badge className="bg-purple-100 text-purple-800">
                   Procedimento: {procedimentoFiltro}
                 </Badge>
@@ -235,7 +231,6 @@ export default function Anuncios() {
           </div>
         </Card>
 
-        {/* Results */}
         {isLoading ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array(6).fill(0).map((_, i) => (
@@ -263,7 +258,6 @@ export default function Anuncios() {
               ))}
             </div>
 
-            {/* Pagination */}
             {totalPaginas > 1 && (
               <div className="mt-12 flex justify-center">
                 <Pagination>
