@@ -12,7 +12,11 @@ import {
   Clock,
   Star,
   TrendingUp,
-  Calculator
+  Calculator,
+  Check,
+  MessageCircle,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,10 +51,134 @@ const cidades = [
   "Curitiba", "Porto Alegre", "Salvador", "Fortaleza"
 ];
 
+const planosAnunciantes = [
+  {
+    nome: "COBRE",
+    preco: "12x R$ 97",
+    total: "R$ 1.164/ano",
+    cor: "from-orange-600 to-orange-400",
+    dimensoes: "300x250px (Banner Médio)",
+    posicionamento: "Rodapé das páginas internas",
+    prioridade: "Baixa",
+    segmentacao: "1 categoria específica",
+    acesso_contatos: "Não incluído",
+    impressoes: "Até 50.000 impressões/mês",
+    beneficios: [
+      "Banner médio (300x250px)",
+      "Posicionamento no rodapé",
+      "Segmentação em 1 categoria",
+      "Até 50.000 impressões/mês",
+      "Relatório mensal básico",
+      "Suporte por email"
+    ]
+  },
+  {
+    nome: "PRATA",
+    preco: "12x R$ 197",
+    total: "R$ 2.364/ano",
+    cor: "from-gray-400 to-gray-300",
+    dimensoes: "728x90px (Banner Superior)",
+    posicionamento: "Topo das páginas de categoria",
+    prioridade: "Média",
+    segmentacao: "Até 3 categorias",
+    acesso_contatos: "Email dos leads",
+    impressoes: "Até 150.000 impressões/mês",
+    beneficios: [
+      "Banner superior (728x90px)",
+      "Topo das páginas de categoria",
+      "Segmentação em até 3 categorias",
+      "Até 150.000 impressões/mês",
+      "Acesso aos emails dos leads",
+      "Relatório semanal detalhado",
+      "Badge 'Patrocinador Prata'",
+      "Suporte prioritário"
+    ]
+  },
+  {
+    nome: "OURO",
+    preco: "12x R$ 597",
+    total: "R$ 7.164/ano",
+    cor: "from-yellow-500 to-yellow-400",
+    dimensoes: "970x250px (Billboard)",
+    posicionamento: "Destaque na Home + Páginas Principais",
+    prioridade: "Alta",
+    segmentacao: "Até 10 categorias ou todas",
+    acesso_contatos: "Email + Telefone dos leads",
+    impressoes: "Até 500.000 impressões/mês",
+    destaque: true,
+    beneficios: [
+      "Billboard premium (970x250px)",
+      "Destaque na Home e páginas principais",
+      "Segmentação em até 10 categorias",
+      "Até 500.000 impressões/mês",
+      "Email + Telefone dos leads qualificados",
+      "Post patrocinado mensal no blog",
+      "Destaque no newsletter semanal",
+      "Relatório em tempo real",
+      "Badge 'Patrocinador Ouro'",
+      "Gerente de conta dedicado"
+    ]
+  },
+  {
+    nome: "DIAMANTE",
+    preco: "12x R$ 997",
+    total: "R$ 11.964/ano",
+    cor: "from-cyan-400 to-blue-500",
+    dimensoes: "1920x400px (Banner Full)",
+    posicionamento: "Topo Fixo + Pop-up Estratégico",
+    prioridade: "Máxima",
+    segmentacao: "Todas as categorias + Geolocalização",
+    acesso_contatos: "Dados completos + WhatsApp",
+    impressoes: "Até 1.000.000 impressões/mês",
+    beneficios: [
+      "Banner Full HD (1920x400px)",
+      "Topo fixo + Pop-up estratégico",
+      "Todas as categorias + geolocalização",
+      "Até 1.000.000 impressões/mês",
+      "Dados completos dos leads (Email, Tel, WhatsApp)",
+      "4 posts patrocinados/mês no blog",
+      "Destaque premium no newsletter",
+      "Campanha de email marketing mensal",
+      "Vídeo institucional na home (30s)",
+      "Badge 'Patrocinador Diamante'",
+      "Analytics avançado em tempo real",
+      "Gerente de sucesso dedicado"
+    ]
+  },
+  {
+    nome: "PLATINA",
+    preco: "12x R$ 1.597",
+    total: "R$ 19.164/ano",
+    cor: "from-purple-600 to-pink-600",
+    dimensoes: "Formatos Personalizados",
+    posicionamento: "Exclusividade Total + Takeover",
+    prioridade: "EXCLUSIVA",
+    segmentacao: "Controle total + IA personalizada",
+    acesso_contatos: "CRM integrado + API",
+    impressoes: "ILIMITADAS",
+    beneficios: [
+      "Formatos de banner personalizados",
+      "Exclusividade de categoria (sem concorrentes)",
+      "Takeover da plataforma (1 dia/mês)",
+      "Impressões ILIMITADAS",
+      "CRM integrado + API para leads",
+      "Posts patrocinados ILIMITADOS",
+      "Email marketing semanal",
+      "Co-branding em materiais oficiais",
+      "Presença em eventos do Mapa da Estética",
+      "Landing page personalizada",
+      "Badge 'Parceiro Estratégico Platina'",
+      "Inteligência de mercado e analytics premium",
+      "Equipe de sucesso dedicada"
+    ]
+  }
+];
+
 export default function Inicio() {
   const [buscaCidade, setBuscaCidade] = useState("");
   const [buscaCategoria, setBuscaCategoria] = useState("");
   const [mostrarTermos, setMostrarTermos] = useState(false);
+  const [mostrarPlanosAnunciantes, setMostrarPlanosAnunciantes] = useState(false);
 
   useEffect(() => {
     const termosAceitos = localStorage.getItem('termos_aceitos');
@@ -103,6 +231,13 @@ export default function Inicio() {
     if (buscaCidade) params.append('cidade', buscaCidade);
     if (buscaCategoria) params.append('categoria', buscaCategoria);
     window.location.href = createPageUrl("Anuncios") + (params.toString() ? `?${params.toString()}` : '');
+  };
+
+  const handleSelecionarPlanoAnunciante = (plano) => {
+    const mensagem = `Olá! Tenho interesse no plano ${plano.nome} para Anunciantes (${plano.preco}). Gostaria de mais informações! 📢`;
+    const whatsapp = "5521980343873";
+    const url = `https://wa.me/${whatsapp}?text=${encodeURIComponent(mensagem)}`;
+    window.open(url, '_blank');
   };
 
   return (
@@ -398,53 +533,111 @@ export default function Inicio() {
             <p className="text-gray-600 max-w-2xl mx-auto mb-8">
               Amplie seu alcance com anúncios estratégicos para profissionais e clientes da estética
             </p>
+            <Button
+              size="lg"
+              onClick={() => setMostrarPlanosAnunciantes(!mostrarPlanosAnunciantes)}
+              className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
+            >
+              {mostrarPlanosAnunciantes ? "Ocultar Planos" : "Ver Planos para Anunciantes"}
+              {mostrarPlanosAnunciantes ? <ChevronUp className="w-5 h-5 ml-2" /> : <ChevronDown className="w-5 h-5 ml-2" />}
+            </Button>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8 mb-8">
-            {[
-              {
-                title: "Banner Principal",
-                desc: "Destaque máximo na página inicial",
-                icon: "🎯"
-              },
-              {
-                title: "Banner Lateral",
-                desc: "Presença constante em todas as páginas",
-                icon: "📱"
-              },
-              {
-                title: "Post Patrocinado",
-                desc: "Conteúdo integrado no feed",
-                icon: "✨"
-              },
-              {
-                title: "Email Marketing",
-                desc: "Alcance direto aos usuários",
-                icon: "📧"
-              }
-            ].map((item, i) => (
-              <Card key={i} className="border-none shadow-xl hover:shadow-2xl transition-all">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="text-4xl">{item.icon}</div>
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold mb-2">{item.title}</h3>
-                      <p className="text-gray-600">{item.desc}</p>
+          {mostrarPlanosAnunciantes && (
+            <div className="mt-12 bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-8 md:p-12">
+              <div className="text-center mb-12">
+                <Badge className="mb-4 bg-yellow-500 text-gray-900 font-bold">
+                  Planos para Anunciantes
+                </Badge>
+                <h3 className="text-3xl md:text-4xl font-bold text-white mb-4">
+                  Amplifique Sua Marca no Maior Marketplace de Estética
+                </h3>
+                <p className="text-gray-300 text-lg">
+                  Milhões de impressões mensais • Público altamente segmentado • ROI comprovado
+                </p>
+              </div>
+
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {planosAnunciantes.map((plano, index) => (
+                  <Card key={index} className={`border-none shadow-2xl hover:shadow-3xl transition-all bg-gray-800 text-white ${plano.destaque ? 'ring-4 ring-yellow-500 transform scale-105' : ''}`}>
+                    {plano.destaque && (
+                      <div className="bg-gradient-to-r from-yellow-500 to-amber-500 text-gray-900 text-center py-2 font-bold text-sm">
+                        ⭐ RECOMENDADO
+                      </div>
+                    )}
+                    <div className={`h-40 bg-gradient-to-br ${plano.cor} p-6 flex flex-col justify-center items-center`}>
+                      <h3 className="text-2xl font-bold mb-2">{plano.nome}</h3>
+                      <p className="text-2xl font-bold">{plano.preco}</p>
+                      <p className="text-sm opacity-80 mt-1">{plano.total}</p>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                    <CardContent className="p-6 space-y-4">
+                      <div className="space-y-2 text-sm border-b border-gray-700 pb-4">
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Dimensões:</span>
+                          <span className="font-semibold text-right">{plano.dimensoes}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Posicionamento:</span>
+                          <span className="font-semibold text-right">{plano.posicionamento}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Prioridade:</span>
+                          <Badge className={`${plano.prioridade === 'EXCLUSIVA' ? 'bg-purple-600' : plano.prioridade === 'Máxima' ? 'bg-red-600' : plano.prioridade === 'Alta' ? 'bg-orange-600' : 'bg-gray-600'}`}>
+                            {plano.prioridade}
+                          </Badge>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Segmentação:</span>
+                          <span className="font-semibold text-right">{plano.segmentacao}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Acesso:</span>
+                          <span className="font-semibold text-right">{plano.acesso_contatos}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Impressões:</span>
+                          <span className="font-semibold text-right">{plano.impressoes}</span>
+                        </div>
+                      </div>
 
-          <div className="text-center">
-            <Link to={createPageUrl("FaleConosco")}>
-              <Button size="lg" className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700">
-                Quero Ser um Anunciante
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            </Link>
-          </div>
+                      <div className="space-y-2">
+                        {plano.beneficios.map((beneficio, i) => (
+                          <div key={i} className="flex items-start gap-2">
+                            <Check className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
+                            <span className="text-xs text-gray-300">{beneficio}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <Button
+                        onClick={() => handleSelecionarPlanoAnunciante(plano)}
+                        className={`w-full ${plano.destaque ? 'bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700' : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700'}`}
+                      >
+                        <MessageCircle className="w-4 h-4 mr-2" />
+                        Contratar {plano.nome}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              <div className="text-center mt-12">
+                <p className="text-gray-400 mb-4">
+                  🎯 Todos os planos incluem relatórios detalhados e suporte especializado
+                </p>
+                <a
+                  href={`https://wa.me/5521980343873?text=${encodeURIComponent("Olá! Gostaria de informações sobre os planos para anunciantes do Mapa da Estética! 📢")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
+                    <MessageCircle className="w-5 h-5 mr-2" />
+                    Falar com Especialista
+                  </Button>
+                </a>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
