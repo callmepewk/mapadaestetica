@@ -339,14 +339,14 @@ export default function Inicio() {
           <Card className="border-none shadow-2xl bg-white/95 backdrop-blur overflow-hidden">
             <CardContent className="p-6 md:p-8">
               <div className="flex flex-col md:flex-row items-center gap-6">
-                <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
+                <div className="w-32 h-32 md:w-40 md:h-40 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg overflow-hidden">
                   <img
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe4/894287324_drbeleza.png"
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/acc7e047d_drbeleza.png"
                     alt="Dr. Beleza"
-                    className="w-16 h-16 rounded-full object-cover"
+                    className="w-full h-full object-cover"
                     onError={(e) => {
                       e.target.onerror = null;
-                      e.target.src = 'https://via.placeholder.com/64?text=Dr.+Beleza';
+                      e.target.src = 'https://via.placeholder.com/160?text=Dr.+Beleza';
                     }}
                   />
                 </div>
@@ -355,10 +355,10 @@ export default function Inicio() {
                     Consulte Tratamentos Agora
                   </Badge>
                   <h2 className="text-2xl md:text-3xl font-bold text-[#2C2C2C] mb-2">
-                    Dr. Beleza
+                    Dr. Beleza - Seu Assistente Inteligente
                   </h2>
                   <p className="text-gray-600 mb-4">
-                    Descubra como funciona e qual o tratamento certo para você
+                    Descubra como funciona e qual o tratamento certo para você com inteligência artificial
                   </p>
                 </div>
                 <Link to={createPageUrl("PesquisaEspecializada")} className="flex-shrink-0">
