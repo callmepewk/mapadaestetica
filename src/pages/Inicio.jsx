@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -180,12 +180,24 @@ export default function Inicio() {
   const [buscaCategoria, setBuscaCategoria] = useState("");
   const [mostrarTermos, setMostrarTermos] = useState(false);
   const [mostrarPlanosAnunciantes, setMostrarPlanosAnunciantes] = useState(false);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const termosAceitos = localStorage.getItem('termos_aceitos');
     if (!termosAceitos || termosAceitos !== 'true') {
       setMostrarTermos(true);
     }
+
+    // Buscar usuário
+    const fetchUser = async () => {
+      try {
+        const userData = await base44.auth.me();
+        setUser(userData);
+      } catch {
+        setUser(null);
+      }
+    };
+    fetchUser();
   }, []);
 
   const handleAceitarTermos = () => {
@@ -242,6 +254,9 @@ export default function Inicio() {
     const url = `https://wa.me/${whatsapp}?text=${encodeURIComponent(mensagem)}`;
     window.open(url, '_blank');
   };
+
+  const isPaciente = user?.tipo_usuario === 'paciente';
+  const isProfissional = user?.tipo_usuario === 'profissional';
 
   return (
     <div className="min-h-screen">
@@ -329,7 +344,7 @@ export default function Inicio() {
         </div>
       </section>
 
-      {/* Dr. Beleza Section */}
+      {/* Dr. Beleza Section - AMBOS VEEM */}
       <section className="py-8 bg-gradient-to-r from-[#F7D426] to-[#FFE066]">
         <div className="max-w-7xl mx-auto px-4">
           <Card className="border-none shadow-2xl bg-white/95 backdrop-blur overflow-hidden">
@@ -369,7 +384,7 @@ export default function Inicio() {
         </div>
       </section>
 
-      {/* Categories Grid */}
+      {/* Categories Grid - AMBOS VEEM */}
       <section className="py-12 sm:py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-8 sm:mb-12">
@@ -389,243 +404,429 @@ export default function Inicio() {
         </div>
       </section>
 
-      {/* SEO Stats Section - NOVO */}
-      <SEOStats />
+      {/* PROFISSIONAIS only block */}
+      {isProfissional && (
+        <>
+          {/* SEO Stats Section - APENAS PROFISSIONAIS */}
+          <SEOStats />
 
-      {/* Tutorial Section */}
-      <Tutorial />
+          {/* Tutorial Section - APENAS PROFISSIONAIS */}
+          <Tutorial />
 
-      {/* Vantagens Section */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <Badge className="mb-4 bg-[#F7D426] text-[#2C2C2C] font-bold">
-              Por Que Escolher o Mapa da Estética?
-            </Badge>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              A Melhor Plataforma para Profissionais de Estética
-            </h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Conectamos profissionais de estética a milhares de clientes em potencial.
-              Descubra por que somos a escolha número 1 do setor!
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8 mb-12">
-            {/* Custo-Benefício */}
-            <Card className="border-none shadow-xl hover:shadow-2xl transition-all">
-              <CardContent className="p-8 text-center">
-                <div className="w-20 h-20 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <span className="text-4xl">💰</span>
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">Custo-Benefício Imbatível</h3>
-                <p className="text-gray-600 mb-4">
-                  <strong>Comece de Graça!</strong> Alcance milhares de clientes sem investimento inicial.
-                  Planos pagos a partir de R$ 99/mês com benefícios exclusivos.
+          {/* Vantagens Section - APENAS PROFISSIONAIS */}
+          <section className="py-16 bg-white">
+            <div className="max-w-7xl mx-auto px-4">
+              <div className="text-center mb-12">
+                <Badge className="mb-4 bg-[#F7D426] text-[#2C2C2C] font-bold">
+                  Por Que Escolher o Mapa da Estética?
+                </Badge>
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                  A Melhor Plataforma para Profissionais de Estética
+                </h2>
+                <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+                  Conectamos profissionais de estética a milhares de clientes em potencial.
+                  Descubra por que somos a escolha número 1 do setor!
                 </p>
-                <ul className="text-left text-sm text-gray-600 space-y-2">
-                  <li className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                    <span>Sem taxa de cadastro</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                    <span>Sem comissão por agendamento</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                    <span>ROI comprovado em 30 dias</span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
+              </div>
 
-            {/* Exposição Máxima */}
-            <Card className="border-none shadow-xl hover:shadow-2xl transition-all border-2 border-[#F7D426]">
-              <CardContent className="p-8 =text-center">
-                <div className="w-20 h-20 bg-gradient-to-br from-yellow-100 to-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <span className="text-4xl">🚀</span>
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">Exposição Máxima</h3>
-                <p className="text-gray-600 mb-4">
-                  Seja encontrado por <strong>milhares de clientes</strong> que buscam ativamente por serviços de estética.
-                  Otimização para Google e redes sociais inclusa!
+              <div className="grid md:grid-cols-3 gap-8 mb-12">
+                {/* Custo-Benefício */}
+                <Card className="border-none shadow-xl hover:shadow-2xl transition-all">
+                  <CardContent className="p-8 text-center">
+                    <div className="w-20 h-20 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <span className="text-4xl">💰</span>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-3">Custo-Benefício Imbatível</h3>
+                    <p className="text-gray-600 mb-4">
+                      <strong>Comece de Graça!</strong> Alcance milhares de clientes sem investimento inicial.
+                      Planos pagos a partir de R$ 99/mês com benefícios exclusivos.
+                    </p>
+                    <ul className="text-left text-sm text-gray-600 space-y-2">
+                      <li className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span>Sem taxa de cadastro</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span>Sem comissão por agendamento</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span>ROI comprovado em 30 dias</span>
+                      </li>
+                    </ul>
+                  </CardContent>
+                </Card>
+
+                {/* Exposição Máxima */}
+                <Card className="border-none shadow-xl hover:shadow-2xl transition-all border-2 border-[#F7D426]">
+                  <CardContent className="p-8 =text-center">
+                    <div className="w-20 h-20 bg-gradient-to-br from-yellow-100 to-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <span className="text-4xl">🚀</span>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-3">Exposição Máxima</h3>
+                    <p className="text-gray-600 mb-4">
+                      Seja encontrado por <strong>milhares de clientes</strong> que buscam ativamente por serviços de estética.
+                      Otimização para Google e redes sociais inclusa!
+                    </p>
+                    <ul className="text-left text-sm text-gray-600 space-y-2">
+                      <li className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span>SEO otimizado (Google Business Keywords)</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span>Destaque nos resultados de busca</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span>Compartilhamento em redes sociais</span>
+                      </li>
+                    </ul>
+                  </CardContent>
+                </Card>
+
+                {/* Ferramentas Profissionais */}
+                <Card className="border-none shadow-xl hover:shadow-2xl transition-all">
+                  <CardContent className="p-8 text-center">
+                    <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <span className="text-4xl">🛠️</span>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-3">Ferramentas Profissionais</h3>
+                    <p className="text-gray-600 mb-4">
+                      Dashboard completo com <strong>relatórios em tempo real</strong> estilo Google Negócios.
+                      Acompanhe visualizações, cliques e desempenho dos seus anúncios.
+                    </p>
+                    <ul className="text-left text-sm text-gray-600 space-y-2">
+                      <li className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span>Relatórios detalhados de performance</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span>Gestão de múltiplos anúncios</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span>Analytics profissional</span>
+                      </li>
+                    </ul>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Numbers Section */}
+              <Card className="border-none shadow-xl bg-gradient-to-br from-pink-600 to-rose-600 text-white">
+                <CardContent className="p-8">
+                  <div className="grid md:grid-cols-4 gap-8 text-center">
+                    <div>
+                      <div className="text-4xl font-bold mb-2">500+</div>
+                      <p className="text-white/90">Profissionais Cadastrados</p>
+                    </div>
+                    <div>
+                      <div className="text-4xl font-bold mb-2">10.000+</div>
+                      <p className="text-white/90">Buscas Mensais</p>
+                    </div>
+                    <div>
+                      <div className="text-4xl font-bold mb-2">95%</div>
+                      <p className="text-white/90">Taxa de Satisfação</p>
+                    </div>
+                    <div>
+                      <div className="text-4xl font-bold mb-2">30+</div>
+                      <p className="text-white/90">Categorias de Serviços</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className="text-center mt-12">
+                <p className="text-lg text-gray-600 mb-6">
+                  Junte-se a centenas de profissionais que já aumentaram sua clientela com o Mapa da Estética!
                 </p>
-                <ul className="text-left text-sm text-gray-600 space-y-2">
-                  <li className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                    <span>SEO otimizado (Google Business Keywords)</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                    <span>Destaque nos resultados de busca</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                    <span>Compartilhamento em redes sociais</span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            {/* Ferramentas Profissionais */}
-            <Card className="border-none shadow-xl hover:shadow-2xl transition-all">
-              <CardContent className="p-8 text-center">
-                <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <span className="text-4xl">🛠️</span>
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">Ferramentas Profissionais</h3>
-                <p className="text-gray-600 mb-4">
-                  Dashboard completo com <strong>relatórios em tempo real</strong> estilo Google Negócios.
-                  Acompanhe visualizações, cliques e desempenho dos seus anúncios.
-                </p>
-                <ul className="text-left text-sm text-gray-600 space-y-2">
-                  <li className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                    <span>Relatórios detalhados de performance</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                    <span>Gestão de múltiplos anúncios</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                    <span>Analytics profissional</span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Numbers Section */}
-          <Card className="border-none shadow-xl bg-gradient-to-br from-pink-600 to-rose-600 text-white">
-            <CardContent className="p-8">
-              <div className="grid md:grid-cols-4 gap-8 text-center">
-                <div>
-                  <div className="text-4xl font-bold mb-2">500+</div>
-                  <p className="text-white/90">Profissionais Cadastrados</p>
-                </div>
-                <div>
-                  <div className="text-4xl font-bold mb-2">10.000+</div>
-                  <p className="text-white/90">Buscas Mensais</p>
-                </div>
-                <div>
-                  <div className="text-4xl font-bold mb-2">95%</div>
-                  <p className="text-white/90">Taxa de Satisfação</p>
-                </div>
-                <div>
-                  <div className="text-4xl font-bold mb-2">30+</div>
-                  <p className="text-white/90">Categorias de Serviços</p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Link to={createPageUrl("CadastrarAnuncio")}>
+                    <Button size="lg" className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white">
+                      Começar Gratuitamente
+                      <ArrowRight className="w-5 h-5 ml-2" />
+                    </Button>
+                  </Link>
+                  <Link to={createPageUrl("Planos")}>
+                    <Button size="lg" variant="outline">
+                      Ver Todos os Planos
+                    </Button>
+                  </Link>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </section>
 
-          <div className="text-center mt-12">
-            <p className="text-lg text-gray-600 mb-6">
-              Junte-se a centenas de profissionais que já aumentaram sua clientela com o Mapa da Estética!
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          {/* Featured Listings - APENAS PROFISSIONAIS */}
+          <section className="py-12 sm:py-16 bg-gradient-to-b from-gray-50 to-white">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 sm:mb-12 gap-4">
+                <div className="w-full sm:w-auto">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Star className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500 fill-yellow-500" />
+                    <span className="text-xs sm:text-sm font-semibold text-pink-600 uppercase tracking-wide">
+                      Separamos para você
+                    </span>
+                  </div>
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">
+                    Profissionais em Destaque
+                  </h2>
+                </div>
+                <Link to={createPageUrl("Anuncios")} className="w-full sm:w-auto">
+                  <Button variant="outline" className="w-full sm:w-auto flex items-center gap-2 justify-center">
+                    Ver Todos
+                    <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </Link>
+              </div>
+
+              {isLoadingDestaque ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                  {Array(3).fill(0).map((_, i) => (
+                    <div key={i} className="h-96 bg-gray-200 rounded-xl animate-pulse" />
+                  ))}
+                </div>
+              ) : anunciosDestaque.length === 0 ? (
+                <div className="text-center py-12 bg-white rounded-xl border-2 border-dashed">
+                  <p className="text-gray-500 mb-4">Nenhum anúncio em destaque no momento</p>
+                  <Link to={createPageUrl("Anuncios")}>
+                    <Button>Ver Todos os Anúncios</Button>
+                  </Link>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                  {anunciosDestaque.map((anuncio) => (
+                    <CardAnuncio key={anuncio.id} anuncio={anuncio} destaque />
+                  ))}
+                </div>
+              )}
+
+              <div className="text-center mt-6 sm:mt-8">
+                <Link to={createPageUrl("Anuncios")}>
+                  <Button className="w-full sm:w-auto bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white">
+                    <Search className="w-4 h-4 mr-2" />
+                    Ver Mais Anúncios
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </section>
+
+          {/* Recent Listings - APENAS PROFISSIONAIS */}
+          {!isLoadingRecentes && anunciosRecentes.length > 0 && (
+            <section className="py-12 sm:py-16 bg-white">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6">
+                <div className="text-center mb-8 sm:mb-12">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-[#F7D426]" />
+                    <span className="text-xs sm:text-sm font-semibold text-[#F7D426] uppercase tracking-wide">
+                      Novidades
+                    </span>
+                  </div>
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 px-2">
+                    Todos os Dias Novos Profissionais
+                  </h2>
+                  <p className="text-gray-600 text-base sm:text-lg px-4">
+                    Procuramos sempre indicar para você o que há de novo no mapa
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                  {anunciosRecentes.map((anuncio) => (
+                    <CardAnuncio key={anuncio.id} anuncio={anuncio} />
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* Calculadora de Laser Section - APENAS PROFISSIONAIS */}
+          <CalculadoraLaserSection />
+
+          {/* Patrocinadores Section - APENAS PROFISSIONAIS */}
+          <section className="py-16 bg-white">
+            <div className="max-w-7xl mx-auto px-4">
+              <div className="text-center mb-12">
+                <Badge className="mb-4 bg-[#F7D426] text-[#2C2C2C] font-bold">
+                  Parceiros Estratégicos
+                </Badge>
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                  Seja um Patrocinador
+                </h2>
+                <p className="text-gray-600 max-w-2xl mx-auto mb-8">
+                  Fortaleça sua marca alcançando milhares de profissionais e clientes da estética
+                </p>
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-6 mb-8">
+                {[1, 2, 3].map((i) => (
+                  <Card key={i} className="border-2 border-dashed border-gray-300 hover:border-[#F7D426] transition-colors">
+                    <CardContent className="p-8 text-center">
+                      <div className="w-full h-32 bg-gray-100 rounded-lg flex items-center justify-center mb-4">
+                        <Sparkles className="w-12 h-12 text-gray-400" />
+                      </div>
+                      <p className="text-sm text-gray-500">Espaço para Patrocinador {i}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              <div className="text-center">
+                <Link to={createPageUrl("FaleConosco")}>
+                  <Button size="lg" className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+                    Quero Ser um Patrocinador
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </section>
+
+          {/* Anunciantes Section - APENAS PROFISSIONAIS */}
+          <section className="py-16 bg-gradient-to-br from-pink-50 to-rose-50">
+            <div className="max-w-7xl mx-auto px-4">
+              <div className="text-center mb-12">
+                <Badge className="mb-4 bg-pink-600 text-white">
+                  Destaque na Plataforma
+                </Badge>
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                  Seja um Anunciante
+                </h2>
+                <p className="text-gray-600 max-w-2xl mx-auto mb-8">
+                  Amplie seu alcance com anúncios estratégicos para profissionais e clientes da estética
+                </p>
+                <Button
+                  size="lg"
+                  onClick={() => setMostrarPlanosAnunciantes(!mostrarPlanosAnunciantes)}
+                  className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-pink-700"
+                >
+                  {mostrarPlanosAnunciantes ? "Ocultar Planos" : "Ver Planos para Anunciantes"}
+                  {mostrarPlanosAnunciantes ? <ChevronUp className="w-5 h-5 ml-2" /> : <ChevronDown className="w-5 h-5 ml-2" />}
+                </Button>
+              </div>
+
+              {mostrarPlanosAnunciantes && (
+                <div className="mt-12 bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-8 md:p-12">
+                  <div className="text-center mb-12">
+                    <Badge className="mb-4 bg-yellow-500 text-gray-900 font-bold">
+                      Planos para Anunciantes
+                    </Badge>
+                    <h3 className="text-3xl md:text-4xl font-bold text-white mb-4">
+                      Amplifique Sua Marca no Maior Marketplace de Estética
+                    </h3>
+                    <p className="text-gray-300 text-lg">
+                      Milhões de impressões mensais • Público altamente segmentado • ROI comprovado
+                    </p>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {planosAnunciantes.map((plano, index) => (
+                      <Card key={index} className={`border-none shadow-2xl hover:shadow-3xl transition-all bg-gray-800 text-white ${plano.destaque ? 'ring-4 ring-yellow-500 transform scale-105' : ''}`}>
+                        {plano.destaque && (
+                          <div className="bg-gradient-to-r from-yellow-500 to-amber-500 text-gray-900 text-center py-2 font-bold text-sm">
+                            ⭐ RECOMENDADO
+                          </div>
+                        )}
+                        <div className={`h-40 bg-gradient-to-br ${plano.cor} p-6 flex flex-col justify-center items-center`}>
+                          <h3 className="text-2xl font-bold mb-2">{plano.nome}</h3>
+                          <p className="text-2xl font-bold">{plano.preco}</p>
+                          <p className="text-sm opacity-80 mt-1">{plano.total}</p>
+                        </div>
+                        <CardContent className="p-6 space-y-4">
+                          <div className="space-y-2 text-sm border-b border-gray-700 pb-4">
+                            <div className="flex justify-between">
+                              <span className="text-gray-400">Dimensões:</span>
+                              <span className="font-semibold text-right">{plano.dimensoes}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-400">Posicionamento:</span>
+                              <span className="font-semibold text-right">{plano.posicionamento}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-400">Prioridade:</span>
+                              <Badge className={`${plano.prioridade === 'EXCLUSIVA' ? 'bg-purple-600' : plano.prioridade === 'Máxima' ? 'bg-red-600' : plano.prioridade === 'Alta' ? 'bg-orange-600' : 'bg-gray-600'}`}>
+                                {plano.prioridade}
+                              </Badge>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-400">Segmentação:</span>
+                              <span className="font-semibold text-right">{plano.segmentacao}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-400">Acesso:</span>
+                              <span className="font-semibold text-right">{plano.acesso_contatos}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-400">Impressões:</span>
+                              <span className="font-semibold text-right">{plano.impressoes}</span>
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            {plano.beneficios.map((beneficio, i) => (
+                              <div key={i} className="flex items-start gap-2">
+                                <Check className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
+                                <span className="text-xs text-gray-300">{beneficio}</span>
+                              </div>
+                            ))}
+                          </div>
+
+                          <Button
+                            onClick={() => handleSelecionarPlanoAnunciante(plano)}
+                            className={`w-full ${plano.destaque ? 'bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700' : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700'}`}
+                          >
+                            <MessageCircle className="w-4 h-4 mr-2" />
+                            Contratar {plano.nome}
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+
+                  <div className="text-center mt-12">
+                    <p className="text-gray-400 mb-4">
+                      🎯 Todos os planos incluem relatórios detalhados e suporte especializado
+                    </p>
+                    <a
+                      href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Gostaria de informações sobre os planos para anunciantes do Mapa da Estética! 📢")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Button size="lg" variant="outline" className="border-white text-black bg-white hover:bg-gray-100">
+                        <MessageCircle className="w-5 h-5 mr-2" />
+                        Falar com Especialista
+                      </Button>
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* CTA Section - APENAS PROFISSIONAIS */}
+          <section className="py-12 sm:py-16 md:py-20 bg-gradient-to-r from-pink-600 to-rose-600 text-white">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6                   text-center">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 px-2">
+                Você é um profissional da estética?
+              </h2>
+              <p className="text-lg sm:text-xl mb-6 sm:mb-8 text-white/90 px-4">
+                Cadastre-se gratuitamente e comece a receber clientes hoje mesmo!
+              </p>
               <Link to={createPageUrl("CadastrarAnuncio")}>
-                <Button size="lg" className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white">
-                  Começar Gratuitamente
+                <Button size="lg" className="w-full sm:w-auto bg-white text-pink-600 hover:bg-gray-100 font-semibold shadow-xl">
+                  Cadastrar Meu Anúncio Grátis
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>
-              <Link to={createPageUrl("Planos")}>
-                <Button size="lg" variant="outline">
-                  Ver Todos os Planos
-                </Button>
-              </Link>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Listings */}
-      <section className="py-12 sm:py-16 bg-gradient-to-b from-gray-50 to-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 sm:mb-12 gap-4">
-            <div className="w-full sm:w-auto">
-              <div className="flex items-center gap-2 mb-2">
-                <Star className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500 fill-yellow-500" />
-                <span className="text-xs sm:text-sm font-semibold text-pink-600 uppercase tracking-wide">
-                  Separamos para você
-                </span>
-              </div>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">
-                Profissionais em Destaque
-              </h2>
-            </div>
-            <Link to={createPageUrl("Anuncios")} className="w-full sm:w-auto">
-              <Button variant="outline" className="w-full sm:w-auto flex items-center gap-2 justify-center">
-                Ver Todos
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-            </Link>
-          </div>
-
-          {isLoadingDestaque ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {Array(3).fill(0).map((_, i) => (
-                <div key={i} className="h-96 bg-gray-200 rounded-xl animate-pulse" />
-              ))}
-            </div>
-          ) : anunciosDestaque.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-xl border-2 border-dashed">
-              <p className="text-gray-500 mb-4">Nenhum anúncio em destaque no momento</p>
-              <Link to={createPageUrl("Anuncios")}>
-                <Button>Ver Todos os Anúncios</Button>
-              </Link>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {anunciosDestaque.map((anuncio) => (
-                <CardAnuncio key={anuncio.id} anuncio={anuncio} destaque />
-              ))}
-            </div>
-          )}
-
-          <div className="text-center mt-6 sm:mt-8">
-            <Link to={createPageUrl("Anuncios")}>
-              <Button className="w-full sm:w-auto bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white">
-                <Search className="w-4 h-4 mr-2" />
-                Ver Mais Anúncios
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Recent Listings */}
-      {!isLoadingRecentes && anunciosRecentes.length > 0 && (
-        <section className="py-12 sm:py-16 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6">
-            <div className="text-center mb-8 sm:mb-12">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-[#F7D426]" />
-                <span className="text-xs sm:text-sm font-semibold text-[#F7D426] uppercase tracking-wide">
-                  Novidades
-                </span>
-              </div>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 px-2">
-                Todos os Dias Novos Profissionais
-              </h2>
-              <p className="text-gray-600 text-base sm:text-lg px-4">
-                Procuramos sempre indicar para você o que há de novo no mapa
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {anunciosRecentes.map((anuncio) => (
-                <CardAnuncio key={anuncio.id} anuncio={anuncio} />
-              ))}
-            </div>
-          </div>
-        </section>
+          </section>
+        </>
       )}
 
-      {/* Blog Section */}
+      {/* Blog Section - AMBOS VEEM */}
       <section className="py-12 sm:py-16 bg-gradient-to-br from-pink-50 to-rose-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-8 sm:mb-12">
@@ -651,184 +852,47 @@ export default function Inicio() {
         </div>
       </section>
 
-      {/* Calculadora de Laser Section */}
-      <CalculadoraLaserSection />
-
-      {/* Patrocinadores Section */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <Badge className="mb-4 bg-[#F7D426] text-[#2C2C2C] font-bold">
-              Parceiros Estratégicos
-            </Badge>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Seja um Patrocinador
+      {/* REDES SOCIAIS - AMBOS VEEM */}
+      <section className="py-12 bg-gradient-to-r from-purple-600 to-pink-600">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <div className="mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              📱 Siga-nos nas Redes Sociais
             </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto mb-8">
-              Fortaleça sua marca alcançando milhares de profissionais e clientes da estética
+            <p className="text-white/90 text-lg">
+              Fique por dentro de novidades, dicas e tendências do mundo da estética
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6 mb-8">
-            {[1, 2, 3].map((i) => (
-              <Card key={i} className="border-2 border-dashed border-gray-300 hover:border-[#F7D426] transition-colors">
-                <CardContent className="p-8 text-center">
-                  <div className="w-full h-32 bg-gray-100 rounded-lg flex items-center justify-center mb-4">
-                    <Sparkles className="w-12 h-12 text-gray-400" />
-                  </div>
-                  <p className="text-sm text-gray-500">Espaço para Patrocinador {i}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          <div className="text-center">
-            <Link to={createPageUrl("FaleConosco")}>
-              <Button size="lg" className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
-                Quero Ser um Patrocinador
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Anunciantes Section */}
-      <section className="py-16 bg-gradient-to-br from-pink-50 to-rose-50">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <Badge className="mb-4 bg-pink-600 text-white">
-              Destaque na Plataforma
-            </Badge>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Seja um Anunciante
-            </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto mb-8">
-              Amplie seu alcance com anúncios estratégicos para profissionais e clientes da estética
-            </p>
-            <Button
-              size="lg"
-              onClick={() => setMostrarPlanosAnunciantes(!mostrarPlanosAnunciantes)}
-              className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-pink-700"
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a
+              href="https://www.instagram.com/_mapadaestetica/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group"
             >
-              {mostrarPlanosAnunciantes ? "Ocultar Planos" : "Ver Planos para Anunciantes"}
-              {mostrarPlanosAnunciantes ? <ChevronUp className="w-5 h-5 ml-2" /> : <ChevronDown className="w-5 h-5 ml-2" />}
-            </Button>
+              <Button size="lg" className="w-full sm:w-auto bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold shadow-xl">
+                <svg className="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                </svg>
+                Seguir no Instagram
+              </Button>
+            </a>
+
+            <a
+              href="https://www.facebook.com/mapadaestetica"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group"
+            >
+              <Button size="lg" className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-xl">
+                <svg className="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
+                Curtir no Facebook
+              </Button>
+            </a>
           </div>
-
-          {mostrarPlanosAnunciantes && (
-            <div className="mt-12 bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-8 md:p-12">
-              <div className="text-center mb-12">
-                <Badge className="mb-4 bg-yellow-500 text-gray-900 font-bold">
-                  Planos para Anunciantes
-                </Badge>
-                <h3 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                  Amplifique Sua Marca no Maior Marketplace de Estética
-                </h3>
-                <p className="text-gray-300 text-lg">
-                  Milhões de impressões mensais • Público altamente segmentado • ROI comprovado
-                </p>
-              </div>
-
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {planosAnunciantes.map((plano, index) => (
-                  <Card key={index} className={`border-none shadow-2xl hover:shadow-3xl transition-all bg-gray-800 text-white ${plano.destaque ? 'ring-4 ring-yellow-500 transform scale-105' : ''}`}>
-                    {plano.destaque && (
-                      <div className="bg-gradient-to-r from-yellow-500 to-amber-500 text-gray-900 text-center py-2 font-bold text-sm">
-                        ⭐ RECOMENDADO
-                      </div>
-                    )}
-                    <div className={`h-40 bg-gradient-to-br ${plano.cor} p-6 flex flex-col justify-center items-center`}>
-                      <h3 className="text-2xl font-bold mb-2">{plano.nome}</h3>
-                      <p className="text-2xl font-bold">{plano.preco}</p>
-                      <p className="text-sm opacity-80 mt-1">{plano.total}</p>
-                    </div>
-                    <CardContent className="p-6 space-y-4">
-                      <div className="space-y-2 text-sm border-b border-gray-700 pb-4">
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">Dimensões:</span>
-                          <span className="font-semibold text-right">{plano.dimensoes}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">Posicionamento:</span>
-                          <span className="font-semibold text-right">{plano.posicionamento}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">Prioridade:</span>
-                          <Badge className={`${plano.prioridade === 'EXCLUSIVA' ? 'bg-purple-600' : plano.prioridade === 'Máxima' ? 'bg-red-600' : plano.prioridade === 'Alta' ? 'bg-orange-600' : 'bg-gray-600'}`}>
-                            {plano.prioridade}
-                          </Badge>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">Segmentação:</span>
-                          <span className="font-semibold text-right">{plano.segmentacao}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">Acesso:</span>
-                          <span className="font-semibold text-right">{plano.acesso_contatos}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">Impressões:</span>
-                          <span className="font-semibold text-right">{plano.impressoes}</span>
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        {plano.beneficios.map((beneficio, i) => (
-                          <div key={i} className="flex items-start gap-2">
-                            <Check className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
-                            <span className="text-xs text-gray-300">{beneficio}</span>
-                          </div>
-                        ))}
-                      </div>
-
-                      <Button
-                        onClick={() => handleSelecionarPlanoAnunciante(plano)}
-                        className={`w-full ${plano.destaque ? 'bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700' : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700'}`}
-                      >
-                        <MessageCircle className="w-4 h-4 mr-2" />
-                        Contratar {plano.nome}
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-
-              <div className="text-center mt-12">
-                <p className="text-gray-400 mb-4">
-                  🎯 Todos os planos incluem relatórios detalhados e suporte especializado
-                </p>
-                <a
-                  href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Gostaria de informações sobre os planos para anunciantes do Mapa da Estética! 📢")}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Button size="lg" variant="outline" className="border-white text-black bg-white hover:bg-gray-100">
-                    <MessageCircle className="w-5 h-5 mr-2" />
-                    Falar com Especialista
-                  </Button>
-                </a>
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-12 sm:py-16 md:py-20 bg-gradient-to-r from-pink-600 to-rose-600 text-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6                   text-center">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 px-2">
-            Você é um profissional da estética?
-          </h2>
-          <p className="text-lg sm:text-xl mb-6 sm:mb-8 text-white/90 px-4">
-            Cadastre-se gratuitamente e comece a receber clientes hoje mesmo!
-          </p>
-          <Link to={createPageUrl("CadastrarAnuncio")}>
-            <Button size="lg" className="w-full sm:w-auto bg-white text-pink-600 hover:bg-gray-100 font-semibold shadow-xl">
-              Cadastrar Meu Anúncio Grátis
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </Button>
-          </Link>
         </div>
       </section>
     </div>
