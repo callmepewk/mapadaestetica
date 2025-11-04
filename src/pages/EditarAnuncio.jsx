@@ -168,7 +168,7 @@ export default function EditarAnuncio() {
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
-          color: black;
+          color: #000000 !important;
           font-size: 0.875rem;
           font-weight: bold;
         }

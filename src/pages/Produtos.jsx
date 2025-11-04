@@ -20,7 +20,8 @@ import {
   Star, 
   Gift,
   TrendingUp,
-  Award
+  Award,
+  Check
 } from "lucide-react";
 
 const categorias = [
@@ -32,7 +33,30 @@ const categorias = [
   "Suplementos",
   "Equipamentos",
   "Acessórios",
+  "Serviços Contratáveis",
   "Outros"
+];
+
+const servicosContrataveis = [
+  {
+    id: "google-negocios",
+    nome: "Criação de Google Negócios Personalizado",
+    descricao: "Tenha seu perfil profissional completo no Google com otimização SEO, fotos, descrições e tudo configurado para atrair mais clientes.",
+    categoria: "Serviços Contratáveis",
+    preco: 0, // Valor a definir
+    preco_texto: "Consulte",
+    imagens: ["https://images.unsplash.com/photo-1573164713988-8665fc963095?w=800&q=80"],
+    beneficios: [
+      "Criação completa do perfil",
+      "Otimização SEO local",
+      "Upload de fotos profissionais",
+      "Configuração de horários e serviços",
+      "Integração com seu site/WhatsApp",
+      "Suporte pós-criação"
+    ],
+    em_destaque: true,
+    status: 'ativo'
+  }
 ];
 
 export default function Produtos() {
@@ -55,16 +79,9 @@ export default function Produtos() {
       if (ordenacao === 'maior_preco') ordem = '-preco';
       if (ordenacao === 'mais_avaliados') ordem = '-media_avaliacoes';
       
-      const todosProdutos = await base44.entities.Produto.filter(filtros, ordem);
-      
-      return todosProdutos.filter(produto => {
-        const matchBusca = !busca || 
-          produto.nome?.toLowerCase().includes(busca.toLowerCase()) ||
-          produto.descricao?.toLowerCase().includes(busca.toLowerCase()) ||
-          produto.marca?.toLowerCase().includes(busca.toLowerCase());
-        
-        return matchBusca;
-      });
+      const todosProdutosAPI = await base44.entities.Produto.filter(filtros, ordem);
+
+      return todosProdutosAPI;
     },
     staleTime: 10 * 60 * 1000, // 10 minutos
     cacheTime: 30 * 60 * 1000, // 30 minutos
@@ -73,6 +90,25 @@ export default function Produtos() {
     refetchOnReconnect: false,
     initialData: [],
   });
+
+  const todosProdutos = [...produtos, ...servicosContrataveis];
+  
+  const produtosFiltrados = todosProdutos.filter(produto => {
+    const matchCategoria = categoriaFiltro === "Todas" || produto.categoria === categoriaFiltro;
+    const matchBusca = !busca || 
+      produto.nome?.toLowerCase().includes(busca.toLowerCase()) ||
+      produto.descricao?.toLowerCase().includes(busca.toLowerCase()) ||
+      produto.marca?.toLowerCase().includes(busca.toLowerCase());
+    
+    return matchCategoria && matchBusca;
+  });
+
+  const handleContratar = (servico) => {
+    const mensagem = `Olá! Tenho interesse em contratar: ${servico.nome}. Gostaria de mais informações sobre valores e como funciona! 💼`;
+    const whatsapp = "5531972595643";
+    const url = `https://wa.me/${whatsapp}?text=${encodeURIComponent(mensagem)}`;
+    window.open(url, '_blank');
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
@@ -172,7 +208,7 @@ export default function Produtos() {
           <div className="flex items-center gap-2 mt-4 pt-4 border-t">
             <Filter className="w-4 h-4 text-gray-500" />
             <span className="text-sm text-gray-600">
-              {produtos.length} produto{produtos.length !== 1 ? 's' : ''} encontrado{produtos.length !== 1 ? 's' : ''}
+              {produtosFiltrados.length} produto{produtosFiltrados.length !== 1 ? 's' : ''} encontrado{produtosFiltrados.length !== 1 ? 's' : ''}
             </span>
           </div>
         </Card>
@@ -184,7 +220,7 @@ export default function Produtos() {
               <Card key={i} className="h-96 animate-pulse bg-gray-100" />
             ))}
           </div>
-        ) : produtos.length === 0 ? (
+        ) : produtosFiltrados.length === 0 ? (
           <Card className="p-12 text-center">
             <div className="text-6xl mb-4">🛍️</div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
@@ -213,7 +249,7 @@ export default function Produtos() {
           </Card>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {produtos.map((produto) => (
+            {produtosFiltrados.map((produto) => (
               <Card
                 key={produto.id}
                 className="overflow-hidden hover:shadow-xl transition-all duration-300 border-none cursor-pointer group"
@@ -227,7 +263,7 @@ export default function Produtos() {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400 text-5xl">
-                      🛍️
+                      {produto.categoria === "Serviços Contratáveis" ? "💼" : "🛍️"}
                     </div>
                   )}
                   
@@ -257,16 +293,27 @@ export default function Produtos() {
                     {produto.descricao}
                   </p>
 
-                  {produto.media_avaliacoes > 0 && (
-                    <div className="flex items-center gap-1 mb-2">
-                      <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                      <span className="text-sm font-medium">{produto.media_avaliacoes.toFixed(1)}</span>
+                  {produto.beneficios && (
+                    <div className="mb-3 space-y-1">
+                      {produto.beneficios.slice(0, 3).map((beneficio, i) => (
+                        <div key={i} className="flex items-start gap-2 text-xs text-gray-600">
+                          <Check className="w-3 h-3 text-green-600 flex-shrink-0 mt-0.5" />
+                          <span>{beneficio}</span>
+                        </div>
+                      ))}
+                      {produto.beneficios.length > 3 && (
+                        <p className="text-xs text-gray-500">+{produto.beneficios.length - 3} benefícios</p>
+                      )}
                     </div>
                   )}
 
                   <div className="flex items-center justify-between pt-3 border-t">
                     <div>
-                      {produto.preco_promocional ? (
+                      {produto.categoria === "Serviços Contratáveis" ? (
+                        <p className="text-lg font-bold text-blue-600">
+                          {produto.preco_texto || "Consulte"}
+                        </p>
+                      ) : produto.preco_promocional ? (
                         <div>
                           <p className="text-xs text-gray-500 line-through">
                             R$ {produto.preco.toFixed(2)}
@@ -284,9 +331,16 @@ export default function Produtos() {
 
                     <Button
                       size="sm"
-                      className="bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold"
+                      onClick={() => produto.categoria === "Serviços Contratáveis" 
+                        ? handleContratar(produto) 
+                        : null
+                      }
+                      className={produto.categoria === "Serviços Contratáveis" 
+                        ? "bg-blue-600 hover:bg-blue-700 text-white" 
+                        : "bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold"
+                      }
                     >
-                      <ShoppingCart className="w-4 h-4" />
+                      {produto.categoria === "Serviços Contratáveis" ? "Contratar" : <ShoppingCart className="w-4 h-4" />}
                     </Button>
                   </div>
 

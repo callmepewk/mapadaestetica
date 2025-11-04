@@ -319,7 +319,7 @@ export default function CadastrarAnuncio() {
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
-          color: black; /* Changed from white to black */
+          color: #000000 !important; /* Changed from black to #000000 !important */
           font-size: 0.875rem;
           font-weight: bold;
         }

@@ -32,7 +32,7 @@ const categorias = [
   "Harmonização Facial", "Maquiagem", "Outros"
 ];
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 10; // LIMITADO A 10 ANÚNCIOS POR PÁGINA
 
 export default function Anuncios() {
   const [busca, setBusca] = useState("");

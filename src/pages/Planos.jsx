@@ -1,8 +1,9 @@
+
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, Sparkles, Star, Zap, Crown, ArrowRight } from "lucide-react";
+import { Check, Sparkles, Star, Zap, Crown, ArrowRight, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -27,6 +28,14 @@ const planos = [
       "Perfil básico na plataforma",
       "Suporte por email",
       "Estatísticas básicas"
+    ],
+    naoInclui: [
+      "Perfil destacado",
+      "Badge de verificação",
+      "Prioridade nas buscas",
+      "Suporte prioritário",
+      "Estatísticas avançadas",
+      "Relatórios detalhados"
     ]
   },
   {
@@ -50,6 +59,14 @@ const planos = [
       "Estatísticas avançadas",
       "Badge de verificação",
       "Aparece nas buscas principais"
+    ],
+    naoInclui: [
+      "Prioridade máxima nas buscas",
+      "Perfil premium",
+      "Suporte VIP 24/7",
+      "Gerente de conta dedicado",
+      "Marketing digital incluso",
+      "Integração WhatsApp Business"
     ]
   },
   {
@@ -75,6 +92,14 @@ const planos = [
       "Selo de Profissional Verificado",
       "Aparece no topo dos resultados",
       "Galeria de fotos ampliada"
+    ],
+    naoInclui: [
+      "Anúncios ilimitados",
+      "Especialidades ilimitadas",
+      "Gerente de conta exclusivo",
+      "Integração WhatsApp Business API",
+      "Assistente IA personalizado",
+      "Conteúdo patrocinado mensal"
     ]
   },
   {
@@ -104,6 +129,7 @@ const planos = [
       "Selo Premium Exclusivo",
       "Conteúdo patrocinado mensal"
     ],
+    naoInclui: [], // Premium não tem limitações
     consultePremium: true
   }
 ];
@@ -179,16 +205,38 @@ export default function Planos() {
                       </div>
                     </div>
 
-                    <div className="space-y-3 mb-6 flex-1">
-                      {plano.beneficios.map((beneficio, i) => (
-                        <div key={i} className="flex items-start gap-3">
-                          <div className="flex-shrink-0 w-5 h-5 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
-                            <Check className="w-3 h-3 text-green-600" />
+                    {/* Benefícios Incluídos */}
+                    <div className="mb-4">
+                      <h4 className="font-semibold text-sm mb-2 text-green-700">✓ O que está incluído:</h4>
+                      <div className="space-y-2">
+                        {plano.beneficios.map((beneficio, i) => (
+                          <div key={i} className="flex items-start gap-2">
+                            <div className="flex-shrink-0 w-4 h-4 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
+                              <Check className="w-3 h-3 text-green-600" />
+                            </div>
+                            <span className="text-xs text-gray-600">{beneficio}</span>
                           </div>
-                          <span className="text-sm text-gray-600">{beneficio}</span>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
+
+                    {/* O que NÃO está incluído */}
+                    {plano.naoInclui && plano.naoInclui.length > 0 && (
+                      <div className="mb-6 p-3 bg-red-50 rounded-lg">
+                        <h4 className="font-semibold text-sm mb-2 text-red-700">✗ Não incluído neste plano:</h4>
+                        <div className="space-y-1">
+                          {plano.naoInclui.map((item, i) => (
+                            <div key={i} className="flex items-start gap-2">
+                              <X className="w-3 h-3 text-red-500 flex-shrink-0 mt-0.5" />
+                              <span className="text-xs text-gray-600">{item}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <p className="text-xs text-red-600 mt-2 font-medium">
+                          Faça upgrade para ter acesso a esses recursos!
+                        </p>
+                      </div>
+                    )}
 
                     {plano.consultePremium ? (
                       <a
