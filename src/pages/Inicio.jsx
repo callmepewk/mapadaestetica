@@ -210,10 +210,10 @@ export default function Inicio() {
         return 0;
       });
     },
-    staleTime: 10 * 60 * 1000, // 10 minutos
-    cacheTime: 30 * 60 * 1000, // 30 minutos
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
+    staleTime: 0, // Sempre busca dados frescos
+    cacheTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true, // FORÇAR REFETCH
     refetchOnReconnect: false,
     initialData: [],
   });
@@ -225,10 +225,10 @@ export default function Inicio() {
       '-created_date',
       9
     ),
-    staleTime: 10 * 60 * 1000,
-    cacheTime: 30 * 60 * 1000,
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
+    staleTime: 0, // Sempre busca dados frescos
+    cacheTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true, // FORÇAR REFETCH
     refetchOnReconnect: false,
     initialData: [],
   });

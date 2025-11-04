@@ -131,10 +131,10 @@ export default function Anuncios() {
       const result = await base44.entities.Anuncio.filter(query, ordemParam, 100);
       return result;
     },
-    staleTime: 10 * 60 * 1000, // 10 minutos
-    cacheTime: 30 * 60 * 1000, // 30 minutos
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
+    staleTime: 0, // Sempre busca dados frescos
+    cacheTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true, // FORÇAR REFETCH
     refetchOnReconnect: false,
     initialData: [],
   });
