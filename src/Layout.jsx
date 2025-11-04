@@ -28,16 +28,6 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Chatbot from "./components/home/Chatbot";
 
-const navigationItems = [
-  { title: "Início", url: createPageUrl("Inicio"), icon: Home },
-  { title: "Anúncios", url: createPageUrl("Anuncios"), icon: Search },
-  { title: "Produtos", url: createPageUrl("Produtos"), icon: CreditCard }, // Added "Produtos" item
-  { title: "Planos", url: createPageUrl("Planos"), icon: CreditCard },
-  { title: "Blog", url: createPageUrl("Blog"), icon: Newspaper },
-  { title: "Sobre Nós", url: createPageUrl("SobreNos"), icon: Info },
-  { title: "Fale Conosco", url: createPageUrl("FaleConosco"), icon: MessageCircle },
-];
-
 export default function Layout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -56,6 +46,7 @@ export default function Layout({ children }) {
         }
       } catch (error) {
         setIsAuthenticated(false);
+        setUser(null); // Ensure user is null if authentication fails
       }
     };
     checkAuth();
@@ -63,7 +54,25 @@ export default function Layout({ children }) {
 
   const handleLogout = () => {
     base44.auth.logout();
+    setIsAuthenticated(false);
+    setUser(null);
+    navigate(createPageUrl("Inicio")); // Redirect to home after logout
   };
+
+  // Definir items de navegação baseado no tipo de usuário
+  const isPaciente = user?.tipo_usuario === 'paciente';
+  const isProfissional = user?.tipo_usuario === 'profissional';
+
+  const navigationItems = [
+    { title: "Início", url: createPageUrl("Inicio"), icon: Home },
+    { title: "Anúncios", url: createPageUrl("Anuncios"), icon: Search },
+    { title: "Produtos", url: createPageUrl("Produtos"), icon: CreditCard },
+    // Planos apenas para profissionais
+    ...(!isPaciente ? [{ title: "Planos", url: createPageUrl("Planos"), icon: CreditCard }] : []),
+    { title: "Blog", url: createPageUrl("Blog"), icon: Newspaper },
+    { title: "Sobre Nós", url: createPageUrl("SobreNos"), icon: Info },
+    { title: "Fale Conosco", url: createPageUrl("FaleConosco"), icon: MessageCircle },
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col">
@@ -152,12 +161,14 @@ export default function Layout({ children }) {
             <div className="flex items-center gap-2 sm:gap-3">
               {isAuthenticated ? (
                 <>
-                  <Link to={createPageUrl("CadastrarAnuncio")} className="hidden md:block">
-                    <Button className="bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold shadow-lg hover:shadow-xl transition-all duration-200 text-sm border-2 border-[#2C2C2C]">
-                      <PlusCircle className="w-4 h-4 mr-2" />
-                      Cadastrar Anúncio
-                    </Button>
-                  </Link>
+                  {isProfissional && (
+                    <Link to={createPageUrl("CadastrarAnuncio")} className="hidden md:block">
+                      <Button className="bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold shadow-lg hover:shadow-xl transition-all duration-200 text-sm border-2 border-[#2C2C2C]">
+                        <PlusCircle className="w-4 h-4 mr-2" />
+                        Cadastrar Anúncio
+                      </Button>
+                    </Link>
+                  )}
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -180,10 +191,12 @@ export default function Layout({ children }) {
                         <User className="w-4 h-4 mr-2" />
                         Meu Perfil
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => navigate(createPageUrl("MeuPlano"))}>
-                        <CreditCard className="w-4 h-4 mr-2" />
-                        Meu Plano
-                      </DropdownMenuItem>
+                      {isProfissional && (
+                        <DropdownMenuItem onClick={() => navigate(createPageUrl("MeuPlano"))}>
+                          <CreditCard className="w-4 h-4 mr-2" />
+                          Meu Plano
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={handleLogout}>
                         <LogOut className="w-4 h-4 mr-2" />
@@ -231,7 +244,7 @@ export default function Layout({ children }) {
                   <span>{item.title}</span>
                 </Link>
               ))}
-              {isAuthenticated && (
+              {isAuthenticated && isProfissional && (
                 <Link
                   to={createPageUrl("CadastrarAnuncio")}
                   onClick={() => setMobileMenuOpen(false)}
@@ -273,7 +286,7 @@ export default function Layout({ children }) {
                 <li><Link to={createPageUrl("Inicio")} className="hover:text-[#F7D426] transition-colors">Início</Link></li>
                 <li><Link to={createPageUrl("Anuncios")} className="hover:text-[#F7D426] transition-colors">Anúncios</Link></li>
                 <li><Link to={createPageUrl("Produtos")} className="hover:text-[#F7D426] transition-colors">Produtos</Link></li>
-                <li><Link to={createPageUrl("Planos")} className="hover:text-[#F7D426] transition-colors">Planos</Link></li>
+                {!isPaciente && <li><Link to={createPageUrl("Planos")} className="hover:text-[#F7D426] transition-colors">Planos</Link></li>}
                 <li><Link to={createPageUrl("Blog")} className="hover:text-[#F7D426] transition-colors">Blog</Link></li>
               </ul>
             </div>
