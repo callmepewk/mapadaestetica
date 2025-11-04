@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -68,32 +69,32 @@ const planos = [
 
 export default function Planos() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8 md:py-12">
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-12 md:mb-16 px-4">
           <Badge className="mb-4 bg-pink-100 text-pink-700">
             Clube de Benefícios
           </Badge>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
             Escolha Seu Plano
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-base md:text-xl text-gray-600 max-w-2xl mx-auto">
             Cartão Clube+ - Descontos exclusivos, pontos e benefícios em toda rede parceira
           </p>
         </div>
 
         {/* How it Works */}
-        <div className="mb-16">
+        <div className="mb-12 md:mb-16 px-4">
           <Card className="border-none shadow-xl bg-gradient-to-br from-pink-50 to-rose-50">
-            <CardContent className="p-8">
+            <CardContent className="p-6 md:p-8">
               <h2 className="text-2xl font-bold text-center mb-8">Como Funciona</h2>
-              <div className="grid md:grid-cols-3 gap-8">
+              <div className="grid sm:grid-cols-3 gap-6 md:gap-8">
                 <div className="text-center">
                   <div className="w-16 h-16 bg-gradient-to-br from-pink-500 to-rose-500 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
                     1
                   </div>
-                  <h3 className="font-semibold text-lg mb-2">Escolha o Cartão</h3>
+                  <h3 className="font-semibold text-base md:text-lg mb-2">Escolha o Cartão</h3>
                   <p className="text-gray-600 text-sm">
                     Selecione o plano que melhor atende suas necessidades
                   </p>
@@ -102,7 +103,7 @@ export default function Planos() {
                   <div className="w-16 h-16 bg-gradient-to-br from-pink-500 to-rose-500 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
                     2
                   </div>
-                  <h3 className="font-semibold text-lg mb-2">Associe-se</h3>
+                  <h3 className="font-semibold text-base md:text-lg mb-2">Associe-se</h3>
                   <p className="text-gray-600 text-sm">
                     Faça seu cadastro e receba seu cartão virtual
                   </p>
@@ -111,7 +112,7 @@ export default function Planos() {
                   <div className="w-16 h-16 bg-gradient-to-br from-pink-500 to-rose-500 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
                     3
                   </div>
-                  <h3 className="font-semibold text-lg mb-2">Aproveite!</h3>
+                  <h3 className="font-semibold text-base md:text-lg mb-2">Aproveite!</h3>
                   <p className="text-gray-600 text-sm">
                     Use seus benefícios e acumule pontos
                   </p>
@@ -122,7 +123,7 @@ export default function Planos() {
         </div>
 
         {/* Plans Grid */}
-        <div className="grid md:grid-cols-3 gap-8 mb-16">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-12 md:mb-16 px-4">
           {planos.map((plano, index) => {
             const IconComponent = plano.icone;
             return (
@@ -131,19 +132,19 @@ export default function Planos() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className={plano.destaque ? "md:-translate-y-4" : ""}
+                className={`flex ${plano.destaque ? "lg:-translate-y-4" : ""}`}
               >
-                <Card className={`relative overflow-hidden border-none shadow-xl hover:shadow-2xl transition-all duration-300 ${
+                <Card className={`relative overflow-hidden border-none shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col w-full ${
                   plano.destaque ? "ring-4 ring-pink-500" : ""
                 }`}>
                   {plano.destaque && (
-                    <div className="absolute top-0 right-0 bg-gradient-to-r from-pink-500 to-rose-500 text-white px-4 py-1 text-sm font-semibold">
+                    <div className="absolute top-0 right-0 bg-gradient-to-r from-pink-500 to-rose-500 text-white px-4 py-1 text-sm font-semibold z-10">
                       Mais Popular
                     </div>
                   )}
 
                   {/* Card Visual */}
-                  <div className={`h-48 bg-gradient-to-br ${plano.cor} p-6 relative overflow-hidden`}>
+                  <div className={`h-48 bg-gradient-to-br ${plano.cor} p-6 relative overflow-hidden flex-shrink-0`}>
                     <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20"></div>
                     <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full -ml-16 -mb-16"></div>
                     
@@ -157,8 +158,8 @@ export default function Planos() {
                     </div>
                   </div>
 
-                  <CardContent className="p-6">
-                    <div className="space-y-3 mb-6">
+                  <CardContent className="p-6 flex flex-col flex-1">
+                    <div className="space-y-3 mb-6 flex-1">
                       {plano.beneficios.map((beneficio, i) => (
                         <div key={i} className="flex items-start gap-3">
                           <div className="flex-shrink-0 w-5 h-5 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
@@ -178,7 +179,7 @@ export default function Planos() {
                       </div>
                     )}
 
-                    <Link to={createPageUrl("FaleConosco")}>
+                    <Link to={createPageUrl("FaleConosco")} className="mt-auto">
                       <Button
                         className={`w-full ${
                           plano.destaque

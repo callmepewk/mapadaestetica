@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -8,6 +10,7 @@ import { Search, Calendar, Clock, TrendingUp, Sparkles } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Blog() {
+  const navigate = useNavigate();
   const [busca, setBusca] = useState("");
   const [artigos, setArtigos] = useState([]);
   const [carregando, setCarregando] = useState(false);
@@ -16,7 +19,7 @@ export default function Blog() {
     setCarregando(true);
     try {
       const resultado = await base44.integrations.Core.InvokeLLM({
-        prompt: `Crie exatamente 9 artigos sobre estética, beleza, cuidados com a pele e tratamentos estéticos.
+        prompt: `Crie exatamente 6 artigos sobre estética, beleza, cuidados com a pele e tratamentos estéticos.
         
         Para cada artigo, forneça:
         - titulo: título atraente e profissional
@@ -24,7 +27,7 @@ export default function Blog() {
         - categoria: uma das categorias (Estética Facial, Estética Corporal, Cuidados com a Pele, Tratamentos, Tendências, Novidades)
         - data: data atual no formato dd/MM/yyyy
         - tempo_leitura: número entre 3 e 8 minutos
-        - conteudo: texto completo com 3 parágrafos
+        - conteudo: texto completo com 5-6 parágrafos detalhados sobre o tema, com informações úteis e profissionais
         
         IMPORTANTE: Retorne exatamente este formato JSON:
         {
@@ -65,7 +68,6 @@ export default function Blog() {
       setArtigos(resultado.artigos || []);
     } catch (error) {
       console.error("Erro ao buscar artigos:", error);
-      // Artigos de fallback
       setArtigos([
         {
           titulo: "Tendências em Harmonização Facial para 2025",
@@ -73,15 +75,7 @@ export default function Blog() {
           categoria: "Harmonização Facial",
           data: "03/01/2025",
           tempo_leitura: 5,
-          conteudo: "A harmonização facial continua em alta, mas com uma abordagem mais natural..."
-        },
-        {
-          titulo: "Cuidados com a Pele no Verão",
-          resumo: "Proteja sua pele durante os dias quentes com estas dicas essenciais de cuidados.",
-          categoria: "Cuidados com a Pele",
-          data: "03/01/2025",
-          tempo_leitura: 4,
-          conteudo: "O verão exige cuidados especiais com a pele para evitar danos causados pelo sol..."
+          conteudo: "A harmonização facial continua em alta, mas com uma abordagem mais natural. Os procedimentos minimamente invasivos estão ganhando cada vez mais espaço, priorizando resultados sutis que respeitam as características únicas de cada rosto.\n\nOs preenchimentos com ácido hialurônico continuam sendo os queridinhos, mas agora com técnicas mais refinadas. O foco está em restaurar volumes perdidos de forma estratégica, criando um aspecto rejuvenescido sem parecer artificial.\n\nA toxina botulínica também evoluiu. Além do tratamento tradicional de rugas, agora é usada para lifting de sobrancelhas, redução de sorriso gengival e até para afinar o rosto através da aplicação no músculo masseter.\n\nOs fios de sustentação PDO estão revolucionando o rejuvenescimento. Eles proporcionam lifting imediato e estimulam a produção de colágeno, com resultados que duram até 18 meses.\n\nA tecnologia também trouxe inovações como ultrassom microfocado e radiofrequência fracionada, que complementam os procedimentos injetáveis oferecendo firmeza e melhora da textura da pele sem cirurgia."
         }
       ]);
     }
@@ -111,49 +105,57 @@ export default function Blog() {
     return colors[categoria] || "bg-gray-100 text-gray-800";
   };
 
+  const handleArtigoClick = (artigo) => {
+    localStorage.setItem('artigo_selecionado', JSON.stringify(artigo));
+    navigate(createPageUrl("ArtigoBlog"));
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8 md:py-12">
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-8 md:mb-12">
           <div className="inline-flex items-center gap-2 bg-pink-100 text-pink-700 px-4 py-2 rounded-full mb-4">
             <TrendingUp className="w-4 h-4" />
             <span className="text-sm font-medium">Atualizado diariamente</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-2 px-4">
             Fique por Dentro do Universo da Estética
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-base md:text-xl text-gray-600 max-w-2xl mx-auto px-4">
             Acompanhe as últimas tendências, novidades e dicas do mundo da estética e beleza
           </p>
         </div>
 
         {/* Search */}
-        <div className="max-w-2xl mx-auto mb-12">
+        <div className="max-w-2xl mx-auto mb-8 md:mb-12 px-4">
           <div className="relative">
             <Search className="absolute left-4 top-4 w-5 h-5 text-gray-400" />
             <Input
               placeholder="Buscar artigos..."
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
-              className="pl-12 h-14 text-lg shadow-lg border-none"
+              className="pl-12 h-12 md:h-14 text-base md:text-lg shadow-lg border-none"
             />
           </div>
         </div>
 
         {/* Featured Section */}
         {!carregando && artigos.length > 0 && (
-          <div className="mb-12">
-            <Card className="overflow-hidden border-none shadow-2xl bg-gradient-to-br from-pink-500 to-rose-500 text-white">
-              <CardContent className="p-8 md:p-12">
+          <div className="mb-8 md:mb-12 px-4">
+            <Card 
+              className="overflow-hidden border-none shadow-2xl bg-gradient-to-br from-pink-500 to-rose-500 text-white cursor-pointer hover:shadow-3xl transition-shadow"
+              onClick={() => handleArtigoClick(artigos[0])}
+            >
+              <CardContent className="p-6 md:p-12">
                 <Badge className="mb-4 bg-white/20 text-white border-none">
                   <Sparkles className="w-3 h-3 mr-1" />
                   Artigo em Destaque
                 </Badge>
-                <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4">
                   {artigos[0].titulo}
                 </h2>
-                <p className="text-lg text-white/90 mb-6">
+                <p className="text-base md:text-lg text-white/90 mb-6">
                   {artigos[0].resumo}
                 </p>
                 <div className="flex items-center gap-4 text-sm text-white/80">
@@ -173,7 +175,7 @@ export default function Blog() {
 
         {/* Articles Grid */}
         {carregando ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 px-4">
             {Array(6).fill(0).map((_, i) => (
               <Card key={i} className="overflow-hidden">
                 <Skeleton className="h-48 w-full" />
@@ -187,7 +189,7 @@ export default function Blog() {
             ))}
           </div>
         ) : artigosFiltrados.length === 0 ? (
-          <Card className="p-12 text-center">
+          <Card className="p-12 text-center mx-4">
             <div className="text-6xl mb-4">📰</div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
               Nenhum artigo encontrado
@@ -197,20 +199,21 @@ export default function Blog() {
             </p>
           </Card>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 px-4">
             {artigosFiltrados.map((artigo, index) => (
               <Card
                 key={index}
+                onClick={() => handleArtigoClick(artigo)}
                 className="overflow-hidden hover:shadow-xl transition-all duration-300 border-none cursor-pointer group"
               >
-                <div className="h-48 bg-gradient-to-br from-pink-100 to-rose-100 flex items-center justify-center text-6xl group-hover:scale-110 transition-transform duration-300">
+                <div className="h-48 bg-gradient-to-br from-pink-100 to-rose-100 flex items-center justify-center text-5xl md:text-6xl group-hover:scale-110 transition-transform duration-300">
                   ✨
                 </div>
-                <CardContent className="p-6">
+                <CardContent className="p-4 md:p-6">
                   <Badge className={`mb-3 ${getCategoriaColor(artigo.categoria)}`}>
                     {artigo.categoria}
                   </Badge>
-                  <h3 className="font-bold text-xl mb-3 line-clamp-2 group-hover:text-pink-600 transition-colors">
+                  <h3 className="font-bold text-lg md:text-xl mb-3 line-clamp-2 group-hover:text-pink-600 transition-colors">
                     {artigo.titulo}
                   </h3>
                   <p className="text-gray-600 text-sm mb-4 line-clamp-3">
@@ -233,12 +236,12 @@ export default function Blog() {
         )}
 
         {/* Reload Button */}
-        <div className="text-center mt-12">
+        <div className="text-center mt-8 md:mt-12 px-4">
           <Button
             onClick={buscarArtigos}
             disabled={carregando}
             size="lg"
-            className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
+            className="w-full sm:w-auto bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
           >
             {carregando ? "Carregando..." : "Atualizar Artigos"}
           </Button>
