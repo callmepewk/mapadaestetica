@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -39,7 +38,7 @@ export default function Chatbot() {
         }
       ]);
     }
-  }, [aberto, mensagens.length]); // Added mensagens.length to dependency array to ensure it only runs once per open
+  }, [aberto, mensagens.length]);
 
   const handleEscolhaTipo = (tipo) => {
     setTipoUsuario(tipo);
@@ -65,7 +64,7 @@ export default function Chatbot() {
           }
         ]);
       }, 500);
-    } else { // tipo === "profissional"
+    } else {
       setTimeout(() => {
         setMensagens(prev => [
           ...prev,
@@ -113,7 +112,7 @@ export default function Chatbot() {
           resposta = "Desculpe, não entendi. Poderia escolher uma das opções acima?";
           break;
       }
-    } else { // tipoUsuario === "profissional"
+    } else {
       switch (opcao.valor) {
         case "criar_anuncio":
           resposta = "Para criar seu anúncio:\n\n1. Clique em 'Cadastrar Anúncio'\n2. Preencha suas informações\n3. Adicione fotos\n4. Publique!\n\n✨ Comece GRÁTIS agora!";
@@ -154,15 +153,11 @@ export default function Chatbot() {
       conteudo: inputMensagem,
     }]);
     setInputMensagem("");
-
-    // As per the outline, free-form text input does not trigger a bot response
-    // after the initial menu-driven flow, unless specific logic is added here.
-    // For now, it only adds the user's message to the chat.
   };
 
   return (
     <>
-      {/* Botão Flutuante */}
+      {/* Botão Flutuante com imagem do Dr. Beleza */}
       <AnimatePresence>
         <motion.button
           initial={{ scale: 0, opacity: 0 }}
@@ -171,9 +166,21 @@ export default function Chatbot() {
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           onClick={() => setAberto(!aberto)}
-          className="fixed bottom-6 right-6 z-50 w-16 h-16 bg-gradient-to-r from-pink-600 to-rose-600 rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform"
+          className="fixed bottom-6 right-6 z-50 w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform overflow-hidden"
         >
-          {aberto ? <X className="w-6 h-6 text-white" /> : <MessageCircle className="w-6 h-6 text-white" />}
+          {aberto ? (
+            <X className="w-6 h-6 text-white" />
+          ) : (
+            <img
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/acc7e047d_drbeleza.png"
+              alt="Dr. Beleza"
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.parentElement.innerHTML = '<svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"></path><path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"></path></svg>';
+              }}
+            />
+          )}
         </motion.button>
       </AnimatePresence>
 
@@ -188,14 +195,18 @@ export default function Chatbot() {
             className="fixed bottom-24 right-6 z-50 w-96 max-w-[calc(100vw-3rem)] shadow-2xl rounded-2xl overflow-hidden"
           >
             <Card className="border-none overflow-hidden">
-              {/* Header */}
-              <div className="bg-gradient-to-r from-pink-600 to-rose-600 p-4 text-white">
+              {/* Header com cor do Dr. Beleza */}
+              <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-4 text-white">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center overflow-hidden">
                     <img
                       src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/acc7e047d_drbeleza.png"
                       alt="Dr. Beleza"
-                      className="w-10 h-10 rounded-full object-cover"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://via.placeholder.com/48?text=Dr';
+                      }}
                     />
                   </div>
                   <div>
@@ -211,7 +222,7 @@ export default function Chatbot() {
                   <div key={index} className={`flex ${msg.tipo === "usuario" ? "justify-end" : "justify-start"}`}>
                     <div className={`max-w-[80%] rounded-2xl p-3 ${
                       msg.tipo === "usuario" 
-                        ? "bg-gradient-to-r from-pink-600 to-rose-600 text-white rounded-br-none" 
+                        ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-br-none" 
                         : "bg-white shadow-md rounded-bl-none"
                     }`}>
                       <p className="text-sm whitespace-pre-line">{msg.conteudo}</p>
@@ -222,7 +233,7 @@ export default function Chatbot() {
                             <button
                               key={i}
                               onClick={() => !tipoUsuario ? handleEscolhaTipo(opcao.valor) : handleOpcao(opcao)}
-                              className="w-full text-left px-3 py-2 bg-pink-50 hover:bg-pink-100 rounded-lg transition-colors text-sm font-medium text-pink-900"
+                              className="w-full text-left px-3 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors text-sm font-medium text-blue-900"
                             >
                               {opcao.texto}
                             </button>
@@ -248,7 +259,7 @@ export default function Chatbot() {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Input - desabilitado se não escolheu tipo */}
+              {/* Input */}
               {tipoUsuario && (
                 <div className="p-4 border-t bg-white">
                   <form onSubmit={handleEnviarMensagem} className="flex gap-2">
@@ -263,7 +274,7 @@ export default function Chatbot() {
                       type="submit"
                       size="icon"
                       disabled={!inputMensagem.trim() || loading}
-                      className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
+                      className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600"
                     >
                       <Send className="w-4 h-4" />
                     </Button>

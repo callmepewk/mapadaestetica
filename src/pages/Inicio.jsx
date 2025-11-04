@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -120,91 +121,156 @@ export default function Inicio() {
   };
 
   const isPaciente = user?.tipo_usuario === 'paciente';
-  const isProfissional = user?.tipo_usuario === 'profissional' || !user;
+  const isProfissional = user?.tipo_usuario === 'profissional';
 
   return (
     <div className="min-h-screen">
       <TermosCondicoes open={mostrarTermos} onAccept={handleAceitarTermos} />
       <OnboardingModal open={mostrarOnboarding} onComplete={handleOnboardingComplete} />
 
-      {/* Hero Section - TODOS */}
-      <section
-        className="relative text-white py-12 sm:py-16 md:py-20 lg:py-32 overflow-hidden"
-        style={{
-          backgroundImage: "linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1560750588-73207b1ef5b8?w=1920&q=80')",
-          backgroundSize: "cover",
-          backgroundPosition: "center"
-        }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-[#2C2C2C]/80 via-[#2C2C2C]/70 to-[#2C2C2C]/80"></div>
+      {/* PACIENTES: Hero, Categorias, Dr. Beleza */}
+      {(isPaciente || !user) && (
+        <>
+          {/* Hero Section */}
+          <section
+            className="relative text-white py-12 sm:py-16 md:py-20 lg:py-32 overflow-hidden"
+            style={{
+              backgroundImage: "linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1560750588-73207b1ef5b8?w=1920&q=80')",
+              backgroundSize: "cover",
+              backgroundPosition: "center"
+            }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-[#2C2C2C]/80 via-[#2C2C2C]/70 to-[#2C2C2C]/80"></div>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 text-center">
-          <div className="inline-flex items-center gap-2 bg-[#F7D426]/90 text-[#2C2C2C] backdrop-blur-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded-full mb-4 sm:mb-6 font-bold">
-            <Sparkles className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span className="text-xs sm:text-sm">Mais de 500+ profissionais cadastrados</span>
-          </div>
-
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 leading-tight px-2">
-            Explore a sua cidade!
-          </h1>
-          <p className="text-lg sm:text-xl md:text-2xl mb-8 sm:mb-12 text-white/90 max-w-2xl mx-auto px-4">
-            Os melhores serviços e especialistas você encontra aqui
-          </p>
-
-          <div className="max-w-4xl mx-auto bg-white rounded-xl sm:rounded-2xl shadow-2xl p-4 sm:p-6 md:p-8">
-            <div className="flex flex-col gap-3 sm:gap-4">
-              <div className="relative">
-                <MapPin className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
-                <Input
-                  placeholder="Cidade, ex: São Paulo"
-                  value={buscaCidade}
-                  onChange={(e) => setBuscaCidade(e.target.value)}
-                  className="pl-10 h-12 text-gray-800 border-gray-200 text-base"
-                />
+            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 text-center">
+              <div className="inline-flex items-center gap-2 bg-[#F7D426]/90 text-[#2C2C2C] backdrop-blur-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded-full mb-4 sm:mb-6 font-bold">
+                <Sparkles className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="text-xs sm:text-sm">Mais de 500+ profissionais cadastrados</span>
               </div>
 
-              <Select value={buscaCategoria} onValueChange={setBuscaCategoria}>
-                <SelectTrigger className="h-12 text-gray-800 text-base">
-                  <SelectValue placeholder="Selecione uma categoria" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categorias.map((cat) => (
-                    <SelectItem key={cat.nome} value={cat.nome}>
-                      {cat.icon} {cat.nome}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 leading-tight px-2">
+                Explore a sua cidade!
+              </h1>
+              <p className="text-lg sm:text-xl md:text-2xl mb-8 sm:mb-12 text-white/90 max-w-2xl mx-auto px-4">
+                Os melhores serviços e especialistas você encontra aqui
+              </p>
 
-              <Button
-                onClick={handleBuscar}
-                className="h-12 bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold shadow-lg hover:shadow-xl transition-all text-base border-2 border-[#2C2C2C]"
-              >
-                <Search className="w-5 h-5 mr-2" />
-                Buscar
-              </Button>
+              <div className="max-w-4xl mx-auto bg-white rounded-xl sm:rounded-2xl shadow-2xl p-4 sm:p-6 md:p-8">
+                <div className="flex flex-col gap-3 sm:gap-4">
+                  <div className="relative">
+                    <MapPin className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
+                    <Input
+                      placeholder="Cidade, ex: São Paulo"
+                      value={buscaCidade}
+                      onChange={(e) => setBuscaCidade(e.target.value)}
+                      className="pl-10 h-12 text-gray-800 border-gray-200 text-base"
+                    />
+                  </div>
+
+                  <Select value={buscaCategoria} onValueChange={setBuscaCategoria}>
+                    <SelectTrigger className="h-12 text-gray-800 text-base">
+                      <SelectValue placeholder="Selecione uma categoria" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categorias.map((cat) => (
+                        <SelectItem key={cat.nome} value={cat.nome}>
+                          {cat.icon} {cat.nome}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <Button
+                    onClick={handleBuscar}
+                    className="h-12 bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold shadow-lg hover:shadow-xl transition-all text-base border-2 border-[#2C2C2C]"
+                  >
+                    <Search className="w-5 h-5 mr-2" />
+                    Buscar
+                  </Button>
+                </div>
+              </div>
+
+              <div className="mt-6 sm:mt-8 flex flex-wrap justify-center gap-2 px-4">
+                <span className="text-white/80 text-xs sm:text-sm w-full sm:w-auto text-center mb-2 sm:mb-0">Cidades populares:</span>
+                {cidades.slice(0, 5).map((cidade) => (
+                  <button
+                    key={cidade}
+                    onClick={() => {
+                      setBuscaCidade(cidade);
+                      handleBuscar();
+                    }}
+                    className="text-xs sm:text-sm bg-[#F7D426]/20 hover:bg-[#F7D426]/30 backdrop-blur-sm px-3 py-1 rounded-full transition-all text-white font-medium"
+                  >
+                    {cidade}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          </section>
 
-          <div className="mt-6 sm:mt-8 flex flex-wrap justify-center gap-2 px-4">
-            <span className="text-white/80 text-xs sm:text-sm w-full sm:w-auto text-center mb-2 sm:mb-0">Cidades populares:</span>
-            {cidades.slice(0, 5).map((cidade) => (
-              <button
-                key={cidade}
-                onClick={() => {
-                  setBuscaCidade(cidade);
-                  handleBuscar();
-                }}
-                className="text-xs sm:text-sm bg-[#F7D426]/20 hover:bg-[#F7D426]/30 backdrop-blur-sm px-3 py-1 rounded-full transition-all text-white font-medium"
-              >
-                {cidade}
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
+          {/* Categorias */}
+          <section className="py-12 sm:py-16 bg-white">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6">
+              <div className="text-center mb-8 sm:mb-12">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 px-2">
+                  Categorias Especiais
+                </h2>
+                <p className="text-gray-600 text-base sm:text-lg px-4">
+                  Explore os melhores profissionais em cada área
+                </p>
+              </div>
 
-      {/* PROFISSIONAIS: Conteúdo específico */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
+                {categorias.map((categoria) => (
+                  <CardCategoria key={categoria.nome} categoria={categoria} />
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* Dr. Beleza */}
+          <section className="py-8 bg-gradient-to-r from-[#F7D426] to-[#FFE066]">
+            <div className="max-w-7xl mx-auto px-4">
+              <Card className="border-none shadow-2xl bg-white/95 backdrop-blur overflow-hidden">
+                <CardContent className="p-6 md:p-8">
+                  <div className="flex flex-col md:flex-row items-center gap-6">
+                    <div className="w-32 h-32 md:w-40 md:h-40 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg overflow-hidden">
+                      <img
+                        src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/acc7e047d_drbeleza.png"
+                        alt="Dr. Beleza"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = 'https://via.placeholder.com/160?text=Dr.+Beleza';
+                        }}
+                      />
+                    </div>
+                    <div className="flex-1 text-center md:text-left">
+                      <Badge className="mb-2 bg-[#F7D426] text-[#2C2C2C] border-none font-bold">
+                        Consulte Tratamentos Agora
+                      </Badge>
+                      <h2 className="text-2xl md:text-3xl font-bold text-[#2C2C2C] mb-2">
+                        Dr. Beleza - Seu Assistente Inteligente
+                      </h2>
+                      <p className="text-gray-600 mb-4">
+                        Descubra como funciona e qual o tratamento certo para você com inteligência artificial
+                      </p>
+                    </div>
+                    <Link to={createPageUrl("PesquisaEspecializada")} className="flex-shrink-0">
+                      <Button size="lg" className="bg-[#2C2C2C] hover:bg-[#3A3A3A] text-[#F7D426] font-bold shadow-xl">
+                        Acessar Dr. Beleza
+                        <ArrowRight className="w-5 h-5 ml-2" />
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </section>
+        </>
+      )}
+
+      {/* PROFISSIONAIS: TODO O RESTO */}
       {isProfissional && (
         <>
           <SEOStats />
@@ -230,65 +296,7 @@ export default function Inicio() {
         </>
       )}
 
-      {/* TODOS: Categorias, Dr. Beleza, Blog, Redes Sociais */}
-      <section className="py-12 sm:py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-8 sm:mb-12">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 px-2">
-              Categorias Especiais
-            </h2>
-            <p className="text-gray-600 text-base sm:text-lg px-4">
-              Explore os melhores profissionais em cada área
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
-            {categorias.map((categoria) => (
-              <CardCategoria key={categoria.nome} categoria={categoria} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-8 bg-gradient-to-r from-[#F7D426] to-[#FFE066]">
-        <div className="max-w-7xl mx-auto px-4">
-          <Card className="border-none shadow-2xl bg-white/95 backdrop-blur overflow-hidden">
-            <CardContent className="p-6 md:p-8">
-              <div className="flex flex-col md:flex-row items-center gap-6">
-                <div className="w-32 h-32 md:w-40 md:h-40 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg overflow-hidden">
-                  <img
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/acc7e047d_drbeleza.png"
-                    alt="Dr. Beleza"
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = 'https://via.placeholder.com/160?text=Dr.+Beleza';
-                    }}
-                  />
-                </div>
-                <div className="flex-1 text-center md:text-left">
-                  <Badge className="mb-2 bg-[#F7D426] text-[#2C2C2C] border-none font-bold">
-                    Consulte Tratamentos Agora
-                  </Badge>
-                  <h2 className="text-2xl md:text-3xl font-bold text-[#2C2C2C] mb-2">
-                    Dr. Beleza - Seu Assistente Inteligente
-                  </h2>
-                  <p className="text-gray-600 mb-4">
-                    Descubra como funciona e qual o tratamento certo para você com inteligência artificial
-                  </p>
-                </div>
-                <Link to={createPageUrl("PesquisaEspecializada")} className="flex-shrink-0">
-                  <Button size="lg" className="bg-[#2C2C2C] hover:bg-[#3A3A3A] text-[#F7D426] font-bold shadow-xl">
-                    Acessar Dr. Beleza
-                    <ArrowRight className="w-5 h-5 ml-2" />
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-
+      {/* Blog - AMBOS */}
       <section className="py-12 sm:py-16 bg-gradient-to-br from-pink-50 to-rose-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-8 sm:mb-12">
@@ -314,6 +322,7 @@ export default function Inicio() {
         </div>
       </section>
 
+      {/* REDES SOCIAIS - AMBOS */}
       <section className="py-12 bg-gradient-to-r from-purple-600 to-pink-600">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <div className="mb-8">
