@@ -143,6 +143,11 @@ export default function MeuPlano() {
   const planoInfo = planosDisponiveis[planoAtual];
   const IconeAtual = planoInfo.icone;
 
+  const planoNome = planoAtual === 'free' ? 'FREE' :
+                   planoAtual === 'basico' ? 'BÁSICO' :
+                   planoAtual === 'avancado' ? 'AVANÇADO' :
+                   planoAtual === 'premium' ? 'PREMIUM' : 'FREE';
+
   const outrosPlanos = Object.entries(planosDisponiveis).filter(([key]) => key !== planoAtual);
 
   return (
@@ -177,12 +182,12 @@ export default function MeuPlano() {
             
             <div className="relative z-10 text-white">
               <Badge className="mb-4 bg-white/20 text-white border-none">
-                Plano Atual
+                Plano Atual - Mapa da Estética
               </Badge>
               <div className="flex items-center gap-4">
                 <IconeAtual className="w-16 h-16" />
                 <div>
-                  <h2 className="text-4xl font-bold">{planoInfo.nome}</h2>
+                  <h2 className="text-4xl font-bold">{planoNome}</h2>
                   <p className="text-white/80">Membro desde {user.data_adesao_plano ? new Date(user.data_adesao_plano).toLocaleDateString('pt-BR') : 'sempre'}</p>
                 </div>
               </div>

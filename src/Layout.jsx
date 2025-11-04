@@ -255,8 +255,11 @@ export default function Layout({ children }) {
                 alt="Mapa da Estética"
                 className="h-12 w-auto object-contain mb-4 brightness-0 invert"
               />
-              <p className="text-gray-400 text-sm">
+              <p className="text-gray-400 text-sm mb-2">
                 A maior plataforma de profissionais de estética do Brasil.
+              </p>
+              <p className="text-gray-400 text-xs">
+                CNPJ: 46.792.168/0001-88
               </p>
             </div>
 
@@ -288,13 +291,14 @@ export default function Layout({ children }) {
               <ul className="space-y-2 text-sm text-gray-400">
                 <li><Link to={createPageUrl("FaleConosco")} className="hover:text-[#F7D426] transition-colors">Fale Conosco</Link></li>
                 <li><Link to={createPageUrl("SobreNos")} className="hover:text-[#F7D426] transition-colors">Sobre Nós</Link></li>
-                <li><Link to={createPageUrl("PesquisaEspecializada")} className="hover:text-[#F7D426] transition-colors">Pesquisa Especializada</Link></li>
+                <li><Link to={createPageUrl("PesquisaEspecializada")} className="hover:text-[#F7D426] transition-colors">Dr. Beleza</Link></li>
               </ul>
             </div>
           </div>
 
           <div className="border-t border-gray-700 mt-6 sm:mt-8 pt-6 sm:pt-8 text-center text-xs sm:text-sm text-gray-400">
             <p>&copy; 2025 Mapa da Estética - Clube da Beleza. Todos os direitos reservados.</p>
+            <p className="mt-1">CNPJ: 46.792.168/0001-88</p>
           </div>
         </div>
       </footer>

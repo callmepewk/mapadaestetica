@@ -143,7 +143,7 @@ Seja profissional, técnico mas acessível. Use informações baseadas em evidê
         <div className="text-center mb-8">
           <Badge className="mb-4 bg-[#F7D426] text-[#2C2C2C] font-bold">
             <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe4/2fd7caf1e_image.png"
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/2fd7caf1e_image.png"
               alt="Dr. Beleza"
               className="w-4 h-4 rounded-full mr-2 inline-block"
               onError={(e) => {
@@ -153,7 +153,7 @@ Seja profissional, técnico mas acessível. Use informações baseadas em evidê
             Consulte Tratamentos Agora
           </Badge>
           <h1 className="text-3xl md:text-4xl font-bold text-[#2C2C2C] mb-3">
-            Assistente de Pesquisa
+            Dr. Beleza
           </h1>
           <p className="text-gray-600 text-lg max-w-2xl mx-auto">
             Descubra como funciona e qual o tratamento certo para você. Depois, encontre profissionais qualificados!

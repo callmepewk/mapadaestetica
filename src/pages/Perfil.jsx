@@ -46,7 +46,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 export default function Perfil() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [editando, setEditando] = useState(false);
+  const [editandoPerfil, setEditandoPerfil] = useState(false);
+  const [mostrarMeusAnuncios, setMostrarMeusAnuncios] = useState(false); // Added as per outline
   const [editandoSenha, setEditandoSenha] = useState(false);
   const [senhaAtual, setSenhaAtual] = useState("");
   const [novaSenha, setNovaSenha] = useState("");
@@ -84,8 +85,17 @@ export default function Perfil() {
       const userData = await base44.auth.me();
       setUser(userData);
       setPerfilEditado(userData);
-      setEditando(false);
+      setEditandoPerfil(false); // Changed from setEditando
       queryClient.invalidateQueries(['user']);
+    },
+  });
+
+  const atualizarStatusMutation = useMutation({
+    mutationFn: async ({ id, status }) => {
+      return await base44.entities.Anuncio.update(id, { status });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['meus-anuncios']);
     },
   });
 
@@ -120,34 +130,53 @@ export default function Perfil() {
   const anunciosExpirados = meusAnuncios.filter(a => a.status === 'expirado').length;
   const totalVisualizacoes = meusAnuncios.reduce((acc, a) => acc + (a.visualizacoes || 0), 0);
 
+  const planoNome = user?.plano_ativo === 'free' ? 'FREE' :
+                   user?.plano_ativo === 'basico' ? 'BÁSICO' :
+                   user?.plano_ativo === 'avancado' ? 'AVANÇADO' :
+                   user?.plano_ativo === 'premium' ? 'PREMIUM' : 'FREE';
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
       <div className="max-w-7xl mx-auto px-4">
         {/* Profile Header */}
-        <Card className="border-none shadow-xl mb-8">
-          <CardContent className="p-8">
-            <div className="flex flex-col md:flex-row items-center gap-6">
-              <Avatar className="w-24 h-24 border-4 border-pink-500">
-                <AvatarImage src={user.foto_perfil} />
-                <AvatarFallback className="bg-gradient-to-br from-pink-500 to-rose-500 text-white text-3xl">
-                  {user.full_name?.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 text-center md:text-left">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">{user.full_name}</h1>
-                <p className="text-gray-600 mb-2">{user.email}</p>
-                <Badge className="bg-gradient-to-r from-pink-500 to-rose-500 text-white">
-                  Plano {user.plano_ativo?.toUpperCase() || 'LIGHT'}
-                </Badge>
+        <Card className="border-none shadow-xl mb-8 overflow-hidden">
+          <div className="h-48 bg-gradient-to-r from-[#F7D426] to-[#FFE066] relative">
+            {/* Background image or pattern can go here */}
+          </div>
+
+          <CardContent className="px-6 pb-6">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 -mt-16 relative z-10">
+              <div className="flex items-center gap-4">
+                <Avatar className="w-24 h-24 md:w-32 md:h-32 border-4 border-white shadow-xl">
+                  <AvatarImage src={user?.foto_perfil} />
+                  <AvatarFallback className="text-3xl bg-gradient-to-br from-[#F7D426] to-[#FFE066] text-[#2C2C2C]">
+                    {user?.full_name?.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="mt-16 md:mt-0">
+                  <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{user?.full_name}</h1>
+                  <p className="text-gray-600">{user?.email}</p>
+                  <Badge className="mt-2 bg-[#F7D426] text-[#2C2C2C] font-bold">
+                    Plano {planoNome}
+                  </Badge>
+                </div>
               </div>
-              <div className="flex gap-2">
+
+              <div className="flex gap-2 w-full md:w-auto">
                 <Button
+                  onClick={() => setEditandoPerfil(true)}
                   variant="outline"
-                  onClick={() => setEditando(!editando)}
-                  className="border-pink-500 text-pink-600 hover:bg-pink-50"
+                  className="flex-1 md:flex-initial"
                 >
                   <Edit className="w-4 h-4 mr-2" />
-                  {editando ? "Cancelar" : "Editar Perfil"}
+                  Editar Perfil
+                </Button>
+                <Button
+                  onClick={() => setEditandoPerfil(true)} // Assuming this navigates to or opens a comprehensive profile editor
+                  className="flex-1 md:flex-initial bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C]"
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  Preencha seu Perfil
                 </Button>
               </div>
             </div>
@@ -376,33 +405,69 @@ export default function Perfil() {
                   <CardContent className="p-6">
                     <h3 className="font-semibold text-lg mb-4">Atividades Recentes</h3>
                     {meusAnuncios.length === 0 ? (
-                      <p className="text-gray-500 text-center py-8">
-                        Nenhuma atividade recente
-                      </p>
+                      <div className="text-center py-8 bg-gray-50 rounded-lg">
+                        <p className="text-gray-500">Nenhuma atividade recente</p>
+                      </div>
                     ) : (
                       <div className="space-y-3">
-                        {meusAnuncios.slice(0, 5).map((anuncio) => (
+                        {meusAnuncios.map((anuncio) => ( // Removed slice(0,5) to show all
                           <div
                             key={anuncio.id}
-                            className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                            className="p-4 bg-white border-2 border-gray-200 rounded-lg hover:border-[#F7D426] transition-colors cursor-pointer"
                             onClick={() => navigate(`${createPageUrl("DetalhesAnuncio")}?id=${anuncio.id}`)}
                           >
-                            <div className="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                              <span className="text-xl">✨</span>
+                            <div className="flex items-start justify-between mb-2">
+                              <div className="flex-1">
+                                <h5 className="font-medium truncate text-gray-900 mb-1">{anuncio.titulo}</h5>
+                                <div className="flex items-center gap-2 text-xs text-gray-500">
+                                  <Badge className={
+                                    anuncio.status === 'ativo' ? 'bg-green-100 text-green-800' :
+                                    anuncio.status === 'pendente' ? 'bg-yellow-100 text-yellow-800' :
+                                    'bg-gray-100 text-gray-800'
+                                  }>
+                                    {anuncio.status}
+                                  </Badge>
+                                  <span>•</span>
+                                  <span>{anuncio.categoria}</span>
+                                </div>
+                              </div>
+                              {anuncio.status === 'pendente' && (
+                                <Button
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation(); // Prevent navigating when clicking the button
+                                    atualizarStatusMutation.mutate({ id: anuncio.id, status: 'ativo' });
+                                  }}
+                                  className="bg-green-600 hover:bg-green-700"
+                                >
+                                  Ativar
+                                </Button>
+                              )}
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium truncate">{anuncio.titulo}</p>
-                              <p className="text-sm text-gray-500">
-                                {anuncio.visualizacoes || 0} visualizações
-                              </p>
+                            
+                            <div className="grid grid-cols-3 gap-4 mt-3 pt-3 border-t">
+                              <div className="text-center">
+                                <div className="flex items-center justify-center gap-1 mb-1">
+                                  <Eye className="w-3 h-3 text-gray-400" />
+                                  <span className="text-xs text-gray-500">Visualizações</span>
+                                </div>
+                                <p className="text-lg font-bold text-gray-900">{anuncio.visualizacoes || 0}</p>
+                              </div>
+                              <div className="text-center">
+                                <div className="flex items-center justify-center gap-1 mb-1">
+                                  <Star className="w-3 h-3 text-gray-400" />
+                                  <span className="text-xs text-gray-500">Curtidas</span>
+                                </div>
+                                <p className="text-lg font-bold text-gray-900">{anuncio.curtidas || 0}</p>
+                              </div>
+                              <div className="text-center">
+                                <div className="flex items-center justify-center gap-1 mb-1">
+                                  <MessageCircle className="w-3 h-3 text-gray-400" />
+                                  <span className="text-xs text-gray-500">Comentários</span>
+                                </div>
+                                <p className="text-lg font-bold text-gray-900">{anuncio.comentarios?.length || 0}</p>
+                              </div>
                             </div>
-                            <Badge className={
-                              anuncio.status === 'ativo' ? 'bg-green-100 text-green-800' :
-                              anuncio.status === 'pendente' ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-gray-100 text-gray-800'
-                            }>
-                              {anuncio.status}
-                            </Badge>
                           </div>
                         ))}
                       </div>
@@ -419,7 +484,7 @@ export default function Perfil() {
               <CardContent className="p-6">
                 <h3 className="font-semibold text-lg mb-4">Informações do Perfil</h3>
                 <div className="space-y-4">
-                  {editando ? (
+                  {editandoPerfil ? ( // Changed from editando
                     <>
                       <div>
                         <Label htmlFor="telefone">Telefone</Label>
@@ -526,7 +591,7 @@ export default function Perfil() {
                 <h3 className="font-semibold text-lg mb-4">Seu Plano</h3>
                 <div className="text-center">
                   <Badge className="mb-2 bg-gradient-to-r from-pink-500 to-rose-500 text-white text-lg px-4 py-2">
-                    {user.plano_ativo?.toUpperCase() || 'LIGHT'}
+                    {planoNome}
                   </Badge>
                   <p className="text-sm text-gray-600 mb-4">
                     Pontos Acumulados: <span className="font-bold">{user.pontos_acumulados || 0}</span>

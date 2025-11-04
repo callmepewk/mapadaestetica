@@ -114,6 +114,8 @@ export default function CadastrarAnuncio() {
     video_url: "",
     horario_funcionamento: "",
     status_funcionamento: "N/D",
+    status: "ativo",
+    data_agendamento: "",
     amenidades: {
       estacionamento: false,
       estacionamento_valet: false,
@@ -144,7 +146,9 @@ export default function CadastrarAnuncio() {
     mutationFn: async (data) => {
       const anuncio = await base44.entities.Anuncio.create({
         ...data,
-        status: "pendente",
+        // The `status` field is now directly from formData
+        // `plano` and `em_destaque` were already defined correctly in formData before the spread
+        // The original `status: "pendente"` is replaced by `formData.status`
         plano: user?.plano_ativo || "free",
         em_destaque: false,
         visualizacoes: 0,
@@ -289,6 +293,11 @@ export default function CadastrarAnuncio() {
       setErro("Por favor, preencha todos os campos obrigatórios");
       return;
     }
+
+    if (formData.status === 'pendente' && !formData.data_agendamento) {
+      setErro("Por favor, selecione uma data e hora para agendar a publicação.");
+      return;
+    }
     
     try {
       await criarAnuncioMutation.mutateAsync(formData);
@@ -310,6 +319,17 @@ export default function CadastrarAnuncio() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
+      <style>{`
+        input[type="checkbox"]:checked {
+          background-color: #3b82f6 !important;
+          border-color: #3b82f6 !important;
+        }
+        
+        input[type="checkbox"]:checked:hover {
+          background-color: #2563eb !important;
+        }
+      `}</style>
+
       <div className="max-w-4xl mx-auto px-4">
         <Button
           variant="ghost"
@@ -1074,18 +1094,60 @@ export default function CadastrarAnuncio() {
             </CardContent>
           </Card>
 
+          {/* Status e Agendamento */}
+          <Card className="border-none shadow-lg">
+            <CardContent className="p-6">
+              <h2 className="text-xl font-semibold mb-4">Publicação do Anúncio</h2>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Status do Anúncio</Label>
+                  <Select
+                    value={formData.status}
+                    onValueChange={(value) => setFormData({ ...formData, status: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ativo">Publicar Agora</SelectItem>
+                      <SelectItem value="pendente">Agendar Publicação</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {formData.status === 'pendente' && (
+                  <div>
+                    <Label>Data de Publicação</Label>
+                    <Input
+                      type="datetime-local"
+                      value={formData.data_agendamento}
+                      onChange={(e) => setFormData({ ...formData, data_agendamento: e.target.value })}
+                      className="mt-1"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      O anúncio será publicado automaticamente nesta data
+                    </p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Submit */}
           <Card className="border-none shadow-lg">
             <CardContent className="p-6">
               <Button
                 type="submit"
                 disabled={criarAnuncioMutation.isPending}
-                className="w-full bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 h-12 text-lg"
+                className="w-full bg-gradient-to-r from-[#F7D426] to-[#FFE066] hover:from-[#E5C215] hover:to-[#F7D426] text-[#2C2C2C] h-12 text-lg font-bold border-2 border-[#2C2C2C]"
               >
-                {criarAnuncioMutation.isPending ? "Criando Anúncio..." : "Cadastrar Anúncio"}
+                {criarAnuncioMutation.isPending ? "Criando Anúncio..." : 
+                 formData.status === 'ativo' ? "Publicar Anúncio Agora" : "Agendar Publicação"}
               </Button>
               <p className="text-sm text-gray-500 text-center mt-4">
-                Seu anúncio será revisado e publicado em até 24 horas
+                {formData.status === 'ativo' 
+                  ? 'Seu anúncio será publicado imediatamente' 
+                  : 'Seu anúncio será publicado na data selecionada'}
               </p>
             </CardContent>
           </Card>

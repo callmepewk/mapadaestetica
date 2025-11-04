@@ -1,10 +1,11 @@
+
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MapPin, Clock, Eye, Star } from "lucide-react";
+import { MapPin, Clock, Eye, Star, Crown } from "lucide-react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -36,6 +37,8 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
     return colors[categoria] || "bg-gray-100 text-gray-800";
   };
 
+  const isPremium = anuncio.plano === 'premium';
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -45,7 +48,9 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
       className="w-full"
     >
       <Card 
-        className="overflow-hidden cursor-pointer group hover:shadow-2xl transition-all duration-300 border-none h-full flex flex-col"
+        className={`overflow-hidden cursor-pointer group hover:shadow-2xl transition-all duration-300 border-none h-full flex flex-col ${
+          isPremium ? 'ring-2 ring-[#F7D426]' : ''
+        }`}
         onClick={() => navigate(`${createPageUrl("DetalhesAnuncio")}?id=${anuncio.id}`)}
       >
         {/* Image */}
@@ -62,7 +67,16 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
             </div>
           )}
           
-          {destaque && (
+          {isPremium && (
+            <div className="absolute top-2 left-2 sm:top-3 sm:left-3">
+              <Badge className="bg-gradient-to-r from-[#F7D426] to-yellow-500 text-[#2C2C2C] border-none shadow-lg text-xs font-bold">
+                <Crown className="w-3 h-3 mr-1 fill-[#2C2C2C]" />
+                PREMIUM
+              </Badge>
+            </div>
+          )}
+
+          {destaque && !isPremium && (
             <div className="absolute top-2 left-2 sm:top-3 sm:left-3">
               <Badge className="bg-yellow-500 text-white border-none shadow-lg text-xs">
                 <Star className="w-3 h-3 mr-1 fill-white" />

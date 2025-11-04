@@ -208,11 +208,22 @@ export default function Inicio() {
 
   const { data: anunciosDestaque, isLoading } = useQuery({
     queryKey: ['anuncios-destaque'],
-    queryFn: () => base44.entities.Anuncio.filter(
-      { status: 'ativo', em_destaque: true },
-      '-visualizacoes',
-      6
-    ),
+    queryFn: async () => {
+      const anuncios = await base44.entities.Anuncio.filter(
+        { 
+          status: 'ativo',
+          plano: { $in: ['avancado', 'premium'] }
+        },
+        '-plano,-visualizacoes',
+        6
+      );
+      // Ordenar: premiums primeiro, depois avançados
+      return anuncios.sort((a, b) => {
+        if (a.plano === 'premium' && b.plano !== 'premium') return -1;
+        if (a.plano !== 'premium' && b.plano === 'premium') return 1;
+        return 0;
+      });
+    },
     initialData: [],
   });
 
@@ -326,7 +337,7 @@ export default function Inicio() {
         </div>
       </section>
 
-      {/* Pesquisa Especializada Section */}
+      {/* Dr. Beleza Section */}
       <section className="py-8 bg-gradient-to-r from-[#F7D426] to-[#FFE066]">
         <div className="max-w-7xl mx-auto px-4">
           <Card className="border-none shadow-2xl bg-white/95 backdrop-blur overflow-hidden">
@@ -348,7 +359,7 @@ export default function Inicio() {
                     Consulte Tratamentos Agora
                   </Badge>
                   <h2 className="text-2xl md:text-3xl font-bold text-[#2C2C2C] mb-2">
-                    Assistente de Pesquisa
+                    Dr. Beleza
                   </h2>
                   <p className="text-gray-600 mb-4">
                     Descubra como funciona e qual o tratamento certo para você
@@ -356,7 +367,7 @@ export default function Inicio() {
                 </div>
                 <Link to={createPageUrl("PesquisaEspecializada")} className="flex-shrink-0">
                   <Button size="lg" className="bg-[#2C2C2C] hover:bg-[#3A3A3A] text-[#F7D426] font-bold shadow-xl">
-                    Acessar Assistente
+                    Acessar Dr. Beleza
                     <ArrowRight className="w-5 h-5 ml-2" />
                   </Button>
                 </Link>
@@ -389,7 +400,7 @@ export default function Inicio() {
       {/* Tutorial Section */}
       <Tutorial />
 
-      {/* Vantagens Section - NEW */}
+      {/* Vantagens Section */}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-12">
@@ -414,7 +425,7 @@ export default function Inicio() {
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-3">Custo-Benefício Imbatível</h3>
                 <p className="text-gray-600 mb-4">
-                  Planos a partir de <strong>GRÁTIS</strong>! Alcance milhares de clientes sem investimento inicial.
+                  <strong>Comece de Graça!</strong> Alcance milhares de clientes sem investimento inicial. 
                   Planos pagos a partir de R$ 99/mês com benefícios exclusivos.
                 </p>
                 <ul className="text-left text-sm text-gray-600 space-y-2">
