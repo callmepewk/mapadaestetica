@@ -1,16 +1,34 @@
+
 import React, { useState, useEffect } from "react";
+import { base44 } from "@/api/base44Client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calculator, TrendingUp, DollarSign, Activity } from "lucide-react";
+import { Calculator, TrendingUp, DollarSign, Activity, X, Download, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createPageUrl } from "@/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function CalculadoraLaserSection() {
+  const [user, setUser] = useState(null);
+  const [mostrarResultados, setMostrarResultados] = useState(false);
   const [dados, setDados] = useState({
     modeloLaser: "Ex: CO2 Fracionado",
+    marcaLaser: "Ex: Ibramed",
     custoAquisicao: 150000,
     custosAdicionais: 5000,
     custoAluguel: 4000,
@@ -40,6 +58,18 @@ export default function CalculadoraLaserSection() {
     tirAluguel: 0
   });
 
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const userData = await base44.auth.me();
+        setUser(userData);
+      } catch (error) {
+        setUser(null);
+      }
+    };
+    fetchUser();
+  }, []);
+
   const calcular = () => {
     const precoLiquido = dados.precoMedio * (1 - dados.descontoMedio / 100);
     const margemBruta = precoLiquido - dados.custoVariavel;
@@ -48,8 +78,13 @@ export default function CalculadoraLaserSection() {
     const receitaPotencialMes = precoLiquido * capacidadeMaxima;
 
     const investimentoTotal = dados.custoAquisicao + dados.custosAdicionais;
-    const paybackCompra = investimentoTotal / (margemBruta * capacidadeMaxima * 0.7);
-    const paybackAluguel = dados.custoAluguel / (margemBruta * capacidadeMaxima * 0.7 - dados.custoAluguel);
+    // Ensure margemBruta * capacidadeMaxima is not zero to avoid division by zero
+    const denominadorPaybackCompra = (margemBruta * capacidadeMaxima * 0.7);
+    const paybackCompra = denominadorPaybackCompra !== 0 ? investimentoTotal / denominadorPaybackCompra : Infinity;
+
+    const denominadorPaybackAluguel = (margemBruta * capacidadeMaxima * 0.7 - dados.custoAluguel);
+    const paybackAluguel = denominadorPaybackAluguel > 0 ? dados.custoAluguel / denominadorPaybackAluguel : Infinity;
+
 
     const fluxoMensalCompra = margemBruta * capacidadeMaxima * 0.7 - dados.manutencaoAnual / 12;
     const fluxoMensalAluguel = margemBruta * capacidadeMaxima * 0.7 - dados.custoAluguel - dados.manutencaoAnual / 12;
@@ -65,8 +100,13 @@ export default function CalculadoraLaserSection() {
       vplAluguel += fluxoMensalAluguel / Math.pow(1 + taxaMensal, i);
     }
 
-    const tirCompra = (vplCompra / investimentoTotal) * 100;
-    const tirAluguel = (vplAluguel / (dados.custoAluguel * meses)) * 100;
+    // TIR calculation is complex and often requires iterative methods or external libraries.
+    // The current implementation is a simplified approximation which might not be accurate.
+    // For a more robust solution, a financial library or more sophisticated algorithm would be needed.
+    // Here, we provide a basic approximation as per the original structure.
+    const tirCompra = investimentoTotal !== 0 ? (vplCompra / investimentoTotal) * 100 : 0;
+    const tirAluguel = (dados.custoAluguel * meses) !== 0 ? (vplAluguel / (dados.custoAluguel * meses)) * 100 : 0;
+
 
     setResultados({
       precoLiquido,
@@ -74,21 +114,31 @@ export default function CalculadoraLaserSection() {
       margemBrutaPct,
       capacidadeMaxima,
       receitaPotencialMes,
-      paybackCompra,
-      paybackAluguel,
+      paybackCompra: isFinite(paybackCompra) ? paybackCompra : 0, // Handle Infinity
+      paybackAluguel: isFinite(paybackAluguel) ? paybackAluguel : 0, // Handle Infinity
       vplCompra,
       vplAluguel,
       tirCompra,
       tirAluguel
     });
+
+    setMostrarResultados(true);
   };
 
   useEffect(() => {
-    calcular();
-  }, [dados]);
+    // Only calculate initial results if the dialog is not open
+    // This prevents re-calculating and opening the dialog on every render for initial values
+    if (!mostrarResultados) {
+      calcular();
+    }
+  }, [dados]); // Depend on 'dados' to recalculate when inputs change
 
   const handleChange = (campo, valor) => {
     setDados(prev => ({ ...prev, [campo]: parseFloat(valor) || 0 }));
+  };
+
+  const handleChangeTexto = (campo, valor) => {
+    setDados(prev => ({ ...prev, [campo]: valor }));
   };
 
   const formatCurrency = (value) => {
@@ -99,8 +149,15 @@ export default function CalculadoraLaserSection() {
   };
 
   const handleBaixarRelatorio = () => {
-    window.location.href = createPageUrl("Planos");
+    if (!user || user.plano_ativo === 'free' || !user.plano_ativo) {
+      // The tooltip will already handle the message for disabled button
+      return; 
+    }
+    // Download logic here
+    alert("Relatório completo sendo gerado... (Funcionalidade em desenvolvimento)");
   };
+
+  const isUserFree = !user || user.plano_ativo === 'free' || !user.plano_ativo;
 
   return (
     <section className="py-16 bg-gradient-to-br from-blue-50 to-cyan-50">
@@ -108,7 +165,7 @@ export default function CalculadoraLaserSection() {
         <div className="text-center mb-12">
           <Badge className="mb-4 bg-blue-600 text-white">
             <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/6aa7c4ea6_image.png"
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/894287324_drbeleza.png"
               alt="Dr. Beleza"
               className="w-4 h-4 rounded-full mr-2 inline-block"
             />
@@ -144,8 +201,18 @@ export default function CalculadoraLaserSection() {
                     <Input
                       type="text"
                       value={dados.modeloLaser}
-                      onChange={(e) => setDados({ ...dados, modeloLaser: e.target.value })}
+                      onChange={(e) => handleChangeTexto('modeloLaser', e.target.value)}
                       className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Marca do Laser</Label>
+                    <Input
+                      type="text"
+                      value={dados.marcaLaser}
+                      onChange={(e) => handleChangeTexto('marcaLaser', e.target.value)}
+                      className="mt-1"
+                      placeholder="Ex: Ibramed, Fotona, Lumenis"
                     />
                   </div>
                   <div>
@@ -273,6 +340,14 @@ export default function CalculadoraLaserSection() {
                   </div>
                 </TabsContent>
               </Tabs>
+
+              <Button
+                onClick={calcular}
+                className="w-full mt-6 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 h-12 text-lg font-bold"
+              >
+                <Calculator className="w-5 h-5 mr-2" />
+                Calcular Viabilidade
+              </Button>
             </CardContent>
           </Card>
 
@@ -306,74 +381,153 @@ export default function CalculadoraLaserSection() {
                 </div>
               </CardContent>
             </Card>
-
-            <Card className="border-none shadow-xl">
-              <CardContent className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                  <Activity className="w-5 h-5 text-blue-600" />
-                  Comparativo: Compra vs Aluguel
-                </h3>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-green-50 rounded-lg p-4">
-                      <p className="text-sm text-green-700 font-medium mb-2">Payback Compra</p>
-                      <p className="text-xl font-bold text-green-800">
-                        {resultados.paybackCompra.toFixed(1)} meses
-                      </p>
-                    </div>
-                    <div className="bg-blue-50 rounded-lg p-4">
-                      <p className="text-sm text-blue-700 font-medium mb-2">Payback Aluguel</p>
-                      <p className="text-xl font-bold text-blue-800">
-                        {resultados.paybackAluguel > 0 ? `${resultados.paybackAluguel.toFixed(1)} meses` : 'N/A'}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-purple-50 rounded-lg p-4">
-                      <p className="text-sm text-purple-700 font-medium mb-2">VPL Compra</p>
-                      <p className="text-lg font-bold text-purple-800">
-                        {formatCurrency(resultados.vplCompra)}
-                      </p>
-                    </div>
-                    <div className="bg-orange-50 rounded-lg p-4">
-                      <p className="text-sm text-orange-700 font-medium mb-2">VPL Aluguel</p>
-                      <p className="text-lg font-bold text-orange-800">
-                        {formatCurrency(resultados.vplAluguel)}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="bg-gradient-to-r from-yellow-50 to-amber-50 rounded-lg p-4 border-2 border-yellow-200">
-                    <p className="text-sm font-bold text-amber-900 mb-2">💡 Recomendação:</p>
-                    <p className="text-sm text-amber-800">
-                      {resultados.vplCompra > resultados.vplAluguel 
-                        ? "A COMPRA apresenta melhor retorno financeiro no longo prazo!" 
-                        : "O ALUGUEL pode ser mais vantajoso considerando os riscos e flexibilidade."}
-                    </p>
-                  </div>
-
-                  <div className="mt-6 space-y-3">
-                    <Button
-                      onClick={calcular}
-                      className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
-                    >
-                      <Calculator className="w-4 h-4 mr-2" />
-                      Calcular Viabilidade
-                    </Button>
-                    <Button
-                      onClick={handleBaixarRelatorio}
-                      variant="outline"
-                      className="w-full"
-                    >
-                      Baixar Relatório Completo
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
+
+        {/* Results Dialog */}
+        <Dialog open={mostrarResultados} onOpenChange={setMostrarResultados}>
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+                <TrendingUp className="w-6 h-6 text-blue-600" />
+                Relatório Completo de Viabilidade
+              </DialogTitle>
+              <DialogDescription>
+                Análise detalhada para {dados.marcaLaser} - {dados.modeloLaser}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-6 py-4">
+              {/* Informações do Equipamento */}
+              <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg p-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">📋 Informações do Equipamento</h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-600">Modelo</p>
+                    <p className="font-bold text-gray-900">{dados.modeloLaser}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Marca</p>
+                    <p className="font-bold text-gray-900">{dados.marcaLaser}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Custo de Aquisição</p>
+                    <p className="font-bold text-gray-900">{formatCurrency(dados.custoAquisicao)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Custo de Aluguel Mensal</p>
+                    <p className="font-bold text-gray-900">{formatCurrency(dados.custoAluguel)}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Análise Financeira */}
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">💰 Análise Financeira</h3>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="bg-white rounded-lg p-4 border-2 border-green-200">
+                    <p className="text-sm text-gray-600 mb-1">Preço Líquido por Sessão</p>
+                    <p className="text-xl font-bold text-green-700">{formatCurrency(resultados.precoLiquido)}</p>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 border-2 border-green-200">
+                    <p className="text-sm text-gray-600 mb-1">Margem Bruta</p>
+                    <p className="text-xl font-bold text-green-700">{formatCurrency(resultados.margemBruta)}</p>
+                    <p className="text-xs text-gray-500">({resultados.margemBrutaPct.toFixed(1)}%)</p>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 border-2 border-green-200">
+                    <p className="text-sm text-gray-600 mb-1">Receita Potencial/Mês</p>
+                    <p className="text-xl font-bold text-green-700">{formatCurrency(resultados.receitaPotencialMes)}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Compra vs Aluguel */}
+              <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">📊 Compra vs Aluguel</h3>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <h4 className="font-bold text-purple-700">COMPRA</h4>
+                    <div className="bg-white rounded-lg p-4 border-2 border-purple-200">
+                      <p className="text-sm text-gray-600 mb-1">Payback</p>
+                      <p className="text-2xl font-bold text-purple-700">
+                        {resultados.paybackCompra > 0 && isFinite(resultados.paybackCompra) ? `${resultados.paybackCompra.toFixed(1)} meses` : 'N/A'}
+                      </p>
+                    </div>
+                    <div className="bg-white rounded-lg p-4 border-2 border-purple-200">
+                      <p className="text-sm text-gray-600 mb-1">VPL (Valor Presente Líquido)</p>
+                      <p className="text-xl font-bold text-purple-700">{formatCurrency(resultados.vplCompra)}</p>
+                    </div>
+                    <div className="bg-white rounded-lg p-4 border-2 border-purple-200">
+                      <p className="text-sm text-gray-600 mb-1">TIR Estimada</p>
+                      <p className="text-xl font-bold text-purple-700">{resultados.tirCompra.toFixed(2)}%</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h4 className="font-bold text-pink-700">ALUGUEL</h4>
+                    <div className="bg-white rounded-lg p-4 border-2 border-pink-200">
+                      <p className="text-sm text-gray-600 mb-1">Payback</p>
+                      <p className="text-2xl font-bold text-pink-700">
+                        {resultados.paybackAluguel > 0 && isFinite(resultados.paybackAluguel) ? `${resultados.paybackAluguel.toFixed(1)} meses` : 'N/A'}
+                      </p>
+                    </div>
+                    <div className="bg-white rounded-lg p-4 border-2 border-pink-200">
+                      <p className="text-sm text-gray-600 mb-1">VPL (Valor Presente Líquido)</p>
+                      <p className="text-xl font-bold text-pink-700">{formatCurrency(resultados.vplAluguel)}</p>
+                    </div>
+                    <div className="bg-white rounded-lg p-4 border-2 border-pink-200">
+                      <p className="text-sm text-gray-600 mb-1">TIR Estimada</p>
+                      <p className="text-xl font-bold text-pink-700">{resultados.tirAluguel.toFixed(2)}%</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Recomendação */}
+              <div className="bg-gradient-to-r from-yellow-50 to-amber-50 rounded-lg p-6 border-2 border-yellow-300">
+                <h3 className="text-lg font-bold text-amber-900 mb-4">💡 Recomendação Final</h3>
+                <p className="text-amber-800 leading-relaxed">
+                  {resultados.vplCompra > resultados.vplAluguel 
+                    ? "Com base nos dados fornecidos, a COMPRA apresenta melhor retorno financeiro no longo prazo. O VPL positivo e o payback aceitável indicam que este é um investimento viável para sua clínica." 
+                    : "Com base nos dados fornecidos, o ALUGUEL pode ser mais vantajoso considerando os riscos e a flexibilidade operacional. Esta opção oferece menor comprometimento de capital e permite ajustes conforme a demanda."}
+                </p>
+              </div>
+
+              {/* Download Button */}
+              <div className="flex justify-end gap-4">
+                <TooltipProvider>
+                  <Tooltip delayDuration={200}>
+                    <TooltipTrigger asChild>
+                      <div>
+                        <Button
+                          onClick={handleBaixarRelatorio}
+                          disabled={isUserFree}
+                          className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {isUserFree ? <Lock className="w-4 h-4 mr-2" /> : <Download className="w-4 h-4 mr-2" />}
+                          Baixar Relatório Completo
+                        </Button>
+                      </div>
+                    </TooltipTrigger>
+                    {isUserFree && (
+                      <TooltipContent className="bg-yellow-50 border-2 border-yellow-300 text-yellow-900 p-4 max-w-xs z-50">
+                        <p className="font-semibold mb-2">🔒 Recurso Premium</p>
+                        <p className="text-sm">Para baixar o relatório completo, é necessário ter um plano BÁSICO ou superior.</p>
+                        <Button
+                          onClick={() => window.location.href = createPageUrl("Planos")}
+                          className="w-full mt-3 bg-yellow-600 hover:bg-yellow-700 text-white"
+                          size="sm"
+                        >
+                          Ver Planos
+                        </Button>
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         <div className="mt-12 text-center bg-blue-900 text-white rounded-xl p-8">
           <p className="text-lg font-bold mb-2">

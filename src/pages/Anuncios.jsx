@@ -214,7 +214,7 @@ export default function Anuncios() {
         </div>
 
         <Card className="p-6 mb-8 shadow-lg border-none">
-          <div className="grid md:grid-cols-5 gap-4">
+          <div className="grid md:grid-cols-5 gap-4 mb-4">
             <div className="md:col-span-2">
               <div className="relative">
                 <Search className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
@@ -276,7 +276,7 @@ export default function Anuncios() {
             </Select>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-4 mt-4">
+          <div className="grid md:grid-cols-2 gap-4 mb-4">
             <div className="relative">
               <Search className="absolute left-3 top-3.5 w-5 h-5 text-gray-400 z-10" />
               <Input
@@ -303,17 +303,17 @@ export default function Anuncios() {
             </div>
           </div>
 
-          <div className="mt-4">
+          <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
             <Button
               onClick={usarMinhaLocalizacao}
               disabled={localizando}
               variant="outline"
-              className="w-full md:w-auto"
+              className="w-full md:w-auto h-12"
             >
               <Locate className="w-4 h-4 mr-2" />
               {localizando ? "Localizando..." : "Usar Minha Localização"}
             </Button>
-            {/* Added a select for ordering, though not explicitly in the outline, it's needed for the new 'ordenacao' state */}
+            
             <Select
               value={ordenacao}
               onValueChange={(value) => {
@@ -321,7 +321,7 @@ export default function Anuncios() {
                 setPaginaAtual(1);
               }}
             >
-              <SelectTrigger className="w-full md:w-auto ml-0 md:ml-4 mt-2 md:mt-0 h-12">
+              <SelectTrigger className="w-full md:w-64 h-12">
                 <SelectValue placeholder="Ordenar por" />
               </SelectTrigger>
               <SelectContent>

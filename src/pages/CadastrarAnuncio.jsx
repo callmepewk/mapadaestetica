@@ -260,11 +260,14 @@ export default function CadastrarAnuncio() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.titulo || !formData.descricao || !formData.categoria || !formData.cidade) {
-      setErro("Por favor, preencha todos os campos obrigatórios");
+    
+    // Validação básica
+    if (!formData.titulo || !formData.descricao || !formData.categoria || !formData.cidade || !formData.estado || !formData.profissional) {
+      setErro("Por favor, preencha todos os campos obrigatórios: Título, Descrição, Categoria, Profissional, Cidade e Estado");
       return;
     }
 
+    // Validação de agendamento
     if (formData.status === 'pendente' && !formData.data_agendamento) {
       setErro("Por favor, selecione uma data e hora para agendar a publicação.");
       return;
@@ -274,6 +277,7 @@ export default function CadastrarAnuncio() {
       await criarAnuncioMutation.mutateAsync(formData);
     } catch (error) {
       console.error("Erro ao criar anúncio:", error);
+      setErro("Erro ao criar anúncio. Por favor, tente novamente.");
     }
   };
 
