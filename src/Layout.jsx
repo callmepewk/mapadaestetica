@@ -120,9 +120,13 @@ export default function Layout({ children }) {
             {/* Logo */}
             <Link to={createPageUrl("Inicio")} className="flex items-center gap-2 sm:gap-3 group flex-shrink-0">
               <img 
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe4/dfd50956f_image.png" 
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/541c2baf3_mapaimg.jpg" 
                 alt="Mapa da Estética"
-                className="h-12 sm:h-14 w-auto object-contain transform group-hover:scale-105 transition-transform"
+                className="h-12 sm:h-14 md:h-16 w-auto object-contain transform group-hover:scale-105 transition-transform"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe4/dfd50956f_image.png';
+                }}
               />
             </Link>
 

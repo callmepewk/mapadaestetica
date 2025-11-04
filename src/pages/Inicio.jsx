@@ -187,6 +187,11 @@ export default function Inicio() {
     }
   }, []);
 
+  const handleAceitarTermos = () => {
+    localStorage.setItem('termos_aceitos', 'true');
+    setMostrarTermos(false);
+  };
+
   const { data: anunciosDestaque = [] } = useQuery({
     queryKey: ['anuncios-destaque'],
     queryFn: async () => {
@@ -244,7 +249,7 @@ export default function Inicio() {
     <div className="min-h-screen">
       <TermosCondicoes
         open={mostrarTermos}
-        onAccept={() => setMostrarTermos(false)}
+        onAccept={handleAceitarTermos}
       />
 
       {/* Hero Section */}

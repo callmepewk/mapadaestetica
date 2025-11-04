@@ -384,7 +384,7 @@ export default function CalculadoraLaserSection() {
           </div>
         </div>
 
-        {/* Results Dialog */}
+        {/* Results Dialog - ONLY SHOWN WHEN mostrarResultados IS TRUE */}
         <Dialog open={mostrarResultados} onOpenChange={setMostrarResultados}>
           <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
