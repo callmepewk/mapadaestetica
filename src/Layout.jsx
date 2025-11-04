@@ -279,7 +279,7 @@ export default function Layout({ children }) {
                 <li className="font-semibold text-white mt-3">Suporte Técnico:</li>
                 <li><a href="tel:54991554136" className="hover:text-[#F7D426] transition-colors">(54) 99155-4136</a></li>
                 <li className="font-semibold text-white mt-3">Business & Partnerships:</li>
-                <li><a href="tel:21980343873" className="hover:text-[#F7D426] transition-colors">(21) 98034-3873</a></li>
+                <li><a href="tel:31972595643" className="hover:text-[#F7D426] transition-colors">(31) 97259-5643</a></li>
               </ul>
             </div>
 

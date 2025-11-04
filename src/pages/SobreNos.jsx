@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -190,7 +191,7 @@ export default function SobreNos() {
 
   const handleSelecionarPlanoAnunciante = (plano) => {
     const mensagem = `Olá! Tenho interesse no plano ${plano.nome} para Anunciantes (${plano.preco}). Gostaria de mais informações! 📢`;
-    const whatsapp = "5521980343873";
+    const whatsapp = "5531972595643"; // Updated WhatsApp number
     const url = `https://wa.me/${whatsapp}?text=${encodeURIComponent(mensagem)}`;
     window.open(url, '_blank');
   };
@@ -362,11 +363,11 @@ export default function SobreNos() {
                 🎯 Todos os planos incluem relatórios detalhados e suporte especializado
               </p>
               <a
-                href={`https://wa.me/5521980343873?text=${encodeURIComponent("Olá! Gostaria de informações sobre os planos para anunciantes do Mapa da Estética! 📢")}`}
+                href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Gostaria de informações sobre os planos para anunciantes do Mapa da Estética! 📢")}`}
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
+                <Button size="lg" variant="outline" className="border-white text-black bg-white hover:bg-gray-100">
                   <MessageCircle className="w-5 h-5 mr-2" />
                   Falar com Especialista
                 </Button>
@@ -523,7 +524,7 @@ export default function SobreNos() {
 
       {/* CTA Section */}
       <section className="py-20 bg-gradient-to-br from-pink-50 to-rose-50">
-        <div className="max-w-4xl mx-auto px-4 text-center">
+        <div className="max-w-4xl mx-auto px-4 =">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
             Pronto para Transformar Sua Experiência com Beleza?
           </h2>

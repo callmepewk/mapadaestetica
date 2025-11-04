@@ -117,7 +117,7 @@ export default function FaleConosco() {
                       </div>
                       <div>
                         <p className="font-medium">Telefone / WhatsApp</p>
-                        <a href="tel:5499155413" className="text-sm text-gray-600 hover:text-pink-600">
+                        <a href="tel:54991554136" className="text-sm text-gray-600 hover:text-pink-600">
                           (54) 99155-4136
                         </a>
                         <p className="text-xs text-gray-500 mt-1">Seg-Sex: 9h às 18h | Sáb: 9h às 13h</p>
@@ -149,8 +149,8 @@ export default function FaleConosco() {
                       </div>
                       <div>
                         <p className="font-medium">Patrocínios e Anunciantes</p>
-                        <a href="tel:21980343873" className="text-sm text-gray-600 hover:text-purple-600">
-                          (21) 98034-3873
+                        <a href="tel:31972595643" className="text-sm text-gray-600 hover:text-purple-600">
+                          (31) 97259-5643
                         </a>
                         <p className="text-xs text-gray-500 mt-1">Seg-Sex: 9h às 18h</p>
                       </div>

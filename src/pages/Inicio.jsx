@@ -235,7 +235,7 @@ export default function Inicio() {
 
   const handleSelecionarPlanoAnunciante = (plano) => {
     const mensagem = `Olá! Tenho interesse no plano ${plano.nome} para Anunciantes (${plano.preco}). Gostaria de mais informações! 📢`;
-    const whatsapp = "5521980343873";
+    const whatsapp = "5531972595643"; // Updated WhatsApp number
     const url = `https://wa.me/${whatsapp}?text=${encodeURIComponent(mensagem)}`;
     window.open(url, '_blank');
   };
@@ -633,11 +633,11 @@ export default function Inicio() {
                   🎯 Todos os planos incluem relatórios detalhados e suporte especializado
                 </p>
                 <a
-                  href={`https://wa.me/5521980343873?text=${encodeURIComponent("Olá! Gostaria de informações sobre os planos para anunciantes do Mapa da Estética! 📢")}`}
+                  href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Gostaria de informações sobre os planos para anunciantes do Mapa da Estética! 📢")}`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
+                  <Button size="lg" variant="outline" className="border-white text-black bg-white hover:bg-gray-100">
                     <MessageCircle className="w-5 h-5 mr-2" />
                     Falar com Especialista
                   </Button>
