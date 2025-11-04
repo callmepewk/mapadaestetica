@@ -210,10 +210,11 @@ export default function Inicio() {
         return 0;
       });
     },
-    staleTime: 5 * 60 * 1000, // 5 minutos
-    cacheTime: 10 * 60 * 1000, // 10 minutos
+    staleTime: 10 * 60 * 1000, // 10 minutos
+    cacheTime: 30 * 60 * 1000, // 30 minutos
     refetchOnWindowFocus: false,
     refetchOnMount: false,
+    refetchOnReconnect: false,
     initialData: [],
   });
 
@@ -224,10 +225,11 @@ export default function Inicio() {
       '-created_date',
       9
     ),
-    staleTime: 5 * 60 * 1000,
-    cacheTime: 10 * 60 * 1000,
+    staleTime: 10 * 60 * 1000,
+    cacheTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
+    refetchOnReconnect: false,
     initialData: [],
   });
 
@@ -339,7 +341,7 @@ export default function Inicio() {
               <div className="flex flex-col md:flex-row items-center gap-6">
                 <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
                   <img
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe9/894287324_drbeleza.png"
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe4/894287324_drbeleza.png"
                     alt="Dr. Beleza"
                     className="w-16 h-16 rounded-full object-cover"
                     onError={(e) => {
@@ -693,7 +695,7 @@ export default function Inicio() {
             <Button
               size="lg"
               onClick={() => setMostrarPlanosAnunciantes(!mostrarPlanosAnunciantes)}
-              className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
+              className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-pink-700"
             >
               {mostrarPlanosAnunciantes ? "Ocultar Planos" : "Ver Planos para Anunciantes"}
               {mostrarPlanosAnunciantes ? <ChevronUp className="w-5 h-5 ml-2" /> : <ChevronDown className="w-5 h-5 ml-2" />}

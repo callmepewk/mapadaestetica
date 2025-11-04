@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -39,7 +40,8 @@ export default function Produtos() {
   const [categoriaFiltro, setCategoriaFiltro] = useState("Todas");
   const [ordenacao, setOrdenacao] = useState("relevancia");
 
-  const { data: produtos, isLoading } = useQuery({
+  // CARREGAMENTO INSTANTÂNEO
+  const { data: produtos = [], isLoading } = useQuery({
     queryKey: ['produtos', categoriaFiltro, busca, ordenacao],
     queryFn: async () => {
       let filtros = { status: 'ativo' };
@@ -64,6 +66,11 @@ export default function Produtos() {
         return matchBusca;
       });
     },
+    staleTime: 10 * 60 * 1000, // 10 minutos
+    cacheTime: 30 * 60 * 1000, // 30 minutos
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
     initialData: [],
   });
 

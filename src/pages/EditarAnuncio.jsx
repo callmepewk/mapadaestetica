@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -56,6 +57,11 @@ export default function EditarAnuncio() {
       return anuncios[0];
     },
     enabled: !!anuncioId,
+    staleTime: 15 * 60 * 1000, // 15 minutos
+    cacheTime: 30 * 60 * 1000, // 30 minutos
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
   });
 
   useEffect(() => {

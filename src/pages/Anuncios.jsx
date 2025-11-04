@@ -106,7 +106,7 @@ export default function Anuncios() {
     categoria: categoriaFiltro,
   }), [cidadeFiltro, estadoFiltro, categoriaFiltro]);
 
-  // OTIMIZADO: Cache de 5 minutos
+  // CARREGAMENTO INSTANTÂNEO
   const { data: fetchedAnuncios = [], isLoading } = useQuery({
     queryKey: ['anuncios', serverSideFilters, ordenacao],
     queryFn: async () => {
@@ -121,21 +121,22 @@ export default function Anuncios() {
       }
       
       if (serverSideFilters.estado) {
-        query.estado = serverSideFilters.estado.toUpperCase(); // Ensure state is uppercase for consistent querying
+        query.estado = serverSideFilters.estado.toUpperCase();
       }
       
-      let ordemParam = '-created_date'; // Default sort
+      let ordemParam = '-created_date';
       if (ordenacao === 'mais_visualizados') ordemParam = '-visualizacoes';
       if (ordenacao === 'mais_antigos') ordemParam = 'created_date';
       
-      // Fetch a maximum of 100 announcements, sorted by `ordemParam`
       const result = await base44.entities.Anuncio.filter(query, ordemParam, 100);
       return result;
     },
-    staleTime: 5 * 60 * 1000, // 5 minutos
-    cacheTime: 10 * 60 * 1000, // 10 minutos
+    staleTime: 10 * 60 * 1000, // 10 minutos
+    cacheTime: 30 * 60 * 1000, // 30 minutos
     refetchOnWindowFocus: false,
-    initialData: [], // Provide initialData to avoid errors when data is undefined
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    initialData: [],
   });
 
   // Apply client-side filters and sorting to the fetched data

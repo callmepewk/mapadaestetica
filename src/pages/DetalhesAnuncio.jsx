@@ -53,7 +53,7 @@ export default function DetalhesAnuncio() {
     fetchUser();
   }, []);
 
-  // OTIMIZADO: Cache de 10 minutos
+  // CARREGAMENTO INSTANTÂNEO
   const { data: anuncio, isLoading } = useQuery({
     queryKey: ['anuncio', anuncioId],
     queryFn: async () => {
@@ -61,9 +61,11 @@ export default function DetalhesAnuncio() {
       return anuncios[0];
     },
     enabled: !!anuncioId,
-    staleTime: 10 * 60 * 1000, // 10 minutos
-    cacheTime: 15 * 60 * 1000, // 15 minutos
+    staleTime: 15 * 60 * 1000, // 15 minutos
+    cacheTime: 30 * 60 * 1000, // 30 minutos
     refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
   });
 
   const incrementarVisualizacoesMutation = useMutation({
@@ -85,17 +87,20 @@ export default function DetalhesAnuncio() {
     }
   }, [anuncio?.id]);
 
-  // Loading otimizado
-  if (isLoading || !anuncio) {
+  // Renderização instantânea com skeleton leve
+  if (!anuncio) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="grid lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-6">
-              <Card className="h-96 animate-pulse bg-gray-100" />
-              <Card className="h-64 animate-pulse bg-gray-100" />
+          <div className="animate-pulse space-y-4">
+            <div className="h-10 w-32 bg-gray-200 rounded" />
+            <div className="grid lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2 space-y-6">
+                <div className="h-96 bg-gray-200 rounded-xl" />
+                <div className="h-64 bg-gray-200 rounded-xl" />
+              </div>
+              <div className="h-96 bg-gray-200 rounded-xl" />
             </div>
-            <Card className="h-96 animate-pulse bg-gray-100" />
           </div>
         </div>
       </div>

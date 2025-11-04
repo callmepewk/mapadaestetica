@@ -15,6 +15,7 @@ export default function Blog() {
   const [busca, setBusca] = useState("");
   const [artigos, setArtigos] = useState([]);
   const [carregando, setCarregando] = useState(false);
+  const [carregouInicial, setCarregouInicial] = useState(false);
 
   const buscarArtigos = async () => {
     setCarregando(true);
@@ -67,6 +68,7 @@ export default function Blog() {
       });
       
       setArtigos(resultado.artigos || []);
+      setCarregouInicial(true);
     } catch (error) {
       console.error("Erro ao buscar artigos:", error);
       setArtigos([
@@ -79,13 +81,16 @@ export default function Blog() {
           conteudo: "A harmonização facial continua em alta, mas com uma abordagem mais natural. Os procedimentos minimamente invasivos estão ganhando cada vez mais espaço, priorizando resultados sutis que respeitam as características únicas de cada rosto.\n\nOs preenchimentos com ácido hialurônico continuam sendo os queridinhos, mas agora com técnicas mais refinadas. O foco está em restaurar volumes perdidos de forma estratégica, criando um aspecto rejuvenescido sem parecer artificial.\n\nA toxina botulínica também evoluiu. Além do tratamento tradicional de rugas, agora é usada para lifting de sobrancelhas, redução de sorriso gengival e até para afinar o rosto através da aplicação no músculo masseter.\n\nOs fios de sustentação PDO estão revolucionando o rejuvenescimento. Eles proporcionam lifting imediato e estimulam a produção de colágeno, com resultados que duram até 18 meses.\n\nA tecnologia também trouxe inovações como ultrassom microfocado e radiofrequência fracionada, que complementam os procedimentos injetáveis oferecendo firmeza e melhora da textura da pele sem cirurgia."
         }
       ]);
+      setCarregouInicial(true);
     }
     setCarregando(false);
   };
 
   useEffect(() => {
-    buscarArtigos();
-  }, []);
+    if (!carregouInicial) {
+      buscarArtigos();
+    }
+  }, [carregouInicial]);
 
   const artigosFiltrados = artigos.filter(artigo =>
     !busca || 

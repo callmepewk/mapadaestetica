@@ -68,6 +68,7 @@ export default function Perfil() {
     fetchUser();
   }, [navigate]);
 
+  // CARREGAMENTO INSTANTÂNEO
   const { data: meusAnuncios = [], isLoading: isLoadingAnuncios } = useQuery({
     queryKey: ['meus-anuncios', user?.email],
     queryFn: async () => {
@@ -75,6 +76,12 @@ export default function Perfil() {
       return await base44.entities.Anuncio.filter({ created_by: user.email });
     },
     enabled: !!user,
+    staleTime: 5 * 60 * 1000, // 5 minutos
+    cacheTime: 15 * 60 * 1000, // 15 minutos
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    initialData: [],
   });
 
   const updatePerfilMutation = useMutation({
