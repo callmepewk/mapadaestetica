@@ -1,96 +1,47 @@
-
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, Calendar, Clock, TrendingUp, Sparkles } from "lucide-react";
+import { Search, Calendar, Clock, TrendingUp, Sparkles, Heart, Eye, MessageCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { format } from "date-fns";
 
 export default function Blog() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [busca, setBusca] = useState("");
-  const [artigos, setArtigos] = useState([]);
-  const [carregando, setCarregando] = useState(false);
-  const [carregouInicial, setCarregouInicial] = useState(false);
+  const [user, setUser] = useState(null);
 
-  const buscarArtigos = async () => {
-    setCarregando(true);
-    try {
-      const resultado = await base44.integrations.Core.InvokeLLM({
-        prompt: `Crie exatamente 6 artigos sobre estética, beleza, cuidados com a pele e tratamentos estéticos.
-        
-        Para cada artigo, forneça:
-        - titulo: título atraente e profissional
-        - resumo: resumo de 2-3 linhas  
-        - categoria: uma das categorias (Estética Facial, Estética Corporal, Cuidados com a Pele, Tratamentos, Tendências, Novidades)
-        - data: data atual no formato dd/MM/yyyy
-        - tempo_leitura: número entre 3 e 8 minutos
-        - conteudo: texto completo com 5-6 parágrafos detalhados sobre o tema, com informações úteis e profissionais
-        
-        IMPORTANTE: Retorne exatamente este formato JSON:
-        {
-          "artigos": [
-            {
-              "titulo": "string",
-              "resumo": "string", 
-              "categoria": "string",
-              "data": "string",
-              "tempo_leitura": number,
-              "conteudo": "string"
-            }
-          ]
-        }`,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            artigos: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  titulo: { type: "string" },
-                  resumo: { type: "string" },
-                  categoria: { type: "string" },
-                  data: { type: "string" },
-                  tempo_leitura: { type: "number" },
-                  conteudo: { type: "string" }
-                },
-                required: ["titulo", "resumo", "categoria", "data", "tempo_leitura", "conteudo"]
-              }
-            }
-          },
-          required: ["artigos"]
-        }
-      });
-      
-      setArtigos(resultado.artigos || []);
-      setCarregouInicial(true);
-    } catch (error) {
-      console.error("Erro ao buscar artigos:", error);
-      setArtigos([
-        {
-          titulo: "Tendências em Harmonização Facial para 2025",
-          resumo: "Descubra as principais tendências de harmonização facial que estão dominando o mercado de estética.",
-          categoria: "Harmonização Facial",
-          data: "03/01/2025",
-          tempo_leitura: 5,
-          conteudo: "A harmonização facial continua em alta, mas com uma abordagem mais natural. Os procedimentos minimamente invasivos estão ganhando cada vez mais espaço, priorizando resultados sutis que respeitam as características únicas de cada rosto.\n\nOs preenchimentos com ácido hialurônico continuam sendo os queridinhos, mas agora com técnicas mais refinadas. O foco está em restaurar volumes perdidos de forma estratégica, criando um aspecto rejuvenescido sem parecer artificial.\n\nA toxina botulínica também evoluiu. Além do tratamento tradicional de rugas, agora é usada para lifting de sobrancelhas, redução de sorriso gengival e até para afinar o rosto através da aplicação no músculo masseter.\n\nOs fios de sustentação PDO estão revolucionando o rejuvenescimento. Eles proporcionam lifting imediato e estimulam a produção de colágeno, com resultados que duram até 18 meses.\n\nA tecnologia também trouxe inovações como ultrassom microfocado e radiofrequência fracionada, que complementam os procedimentos injetáveis oferecendo firmeza e melhora da textura da pele sem cirurgia."
-        }
-      ]);
-      setCarregouInicial(true);
-    }
-    setCarregando(false);
-  };
+  React.useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const userData = await base44.auth.me();
+        setUser(userData);
+      } catch (error) {
+        setUser(null);
+      }
+    };
+    fetchUser();
+  }, []);
 
-  useEffect(() => {
-    if (!carregouInicial) {
-      buscarArtigos();
-    }
-  }, [carregouInicial]);
+  // Buscar artigos do banco de dados (atualizados semanalmente)
+  const { data: artigos = [], isLoading } = useQuery({
+    queryKey: ['artigos-blog'],
+    queryFn: async () => {
+      return await base44.entities.ArtigoBlog.filter({ status: 'publicado' }, '-created_date', 50);
+    },
+    staleTime: 7 * 24 * 60 * 60 * 1000, // 1 semana - atualização semanal
+    cacheTime: 7 * 24 * 60 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    initialData: [],
+  });
 
   const artigosFiltrados = artigos.filter(artigo =>
     !busca || 
@@ -112,8 +63,7 @@ export default function Blog() {
   };
 
   const handleArtigoClick = (artigo) => {
-    localStorage.setItem('artigo_selecionado', JSON.stringify(artigo));
-    navigate(createPageUrl("ArtigoBlog"));
+    navigate(`${createPageUrl("ArtigoBlog")}?id=${artigo.id}`);
   };
 
   return (
@@ -123,7 +73,7 @@ export default function Blog() {
         <div className="text-center mb-8 md:mb-12">
           <div className="inline-flex items-center gap-2 bg-pink-100 text-pink-700 px-4 py-2 rounded-full mb-4">
             <TrendingUp className="w-4 h-4" />
-            <span className="text-sm font-medium">Atualizado diariamente</span>
+            <span className="text-sm font-medium">Atualizado semanalmente</span>
           </div>
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-2 px-4">
             Fique por Dentro do Universo da Estética
@@ -147,7 +97,7 @@ export default function Blog() {
         </div>
 
         {/* Featured Section */}
-        {!carregando && artigos.length > 0 && (
+        {!isLoading && artigos.length > 0 && (
           <div className="mb-8 md:mb-12 px-4">
             <Card 
               className="overflow-hidden border-none shadow-2xl bg-gradient-to-br from-pink-500 to-rose-500 text-white cursor-pointer hover:shadow-3xl transition-shadow"
@@ -164,14 +114,22 @@ export default function Blog() {
                 <p className="text-base md:text-lg text-white/90 mb-6">
                   {artigos[0].resumo}
                 </p>
-                <div className="flex items-center gap-4 text-sm text-white/80">
+                <div className="flex items-center gap-4 text-sm text-white/80 flex-wrap">
                   <span className="flex items-center gap-1">
                     <Calendar className="w-4 h-4" />
-                    {artigos[0].data}
+                    {format(new Date(artigos[0].created_date), "dd/MM/yyyy")}
                   </span>
                   <span className="flex items-center gap-1">
                     <Clock className="w-4 h-4" />
                     {artigos[0].tempo_leitura} min de leitura
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Eye className="w-4 h-4" />
+                    {artigos[0].visualizacoes || 0} visualizações
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Heart className="w-4 h-4 fill-white" />
+                    {artigos[0].total_curtidas || 0} curtidas
                   </span>
                 </div>
               </CardContent>
@@ -180,7 +138,7 @@ export default function Blog() {
         )}
 
         {/* Articles Grid */}
-        {carregando ? (
+        {isLoading ? (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 px-4">
             {Array(6).fill(0).map((_, i) => (
               <Card key={i} className="overflow-hidden">
@@ -213,7 +171,11 @@ export default function Blog() {
                 className="overflow-hidden hover:shadow-xl transition-all duration-300 border-none cursor-pointer group"
               >
                 <div className="h-48 bg-gradient-to-br from-pink-100 to-rose-100 flex items-center justify-center text-5xl md:text-6xl group-hover:scale-110 transition-transform duration-300">
-                  ✨
+                  {artigo.imagem_capa ? (
+                    <img src={artigo.imagem_capa} alt={artigo.titulo} className="w-full h-full object-cover" />
+                  ) : (
+                    "✨"
+                  )}
                 </div>
                 <CardContent className="p-4 md:p-6">
                   <Badge className={`mb-3 ${getCategoriaColor(artigo.categoria)}`}>
@@ -225,33 +187,31 @@ export default function Blog() {
                   <p className="text-gray-600 text-sm mb-4 line-clamp-3">
                     {artigo.resumo}
                   </p>
-                  <div className="flex items-center gap-4 text-xs text-gray-500 pt-4 border-t">
+                  
+                  {/* Stats */}
+                  <div className="flex items-center gap-3 text-xs text-gray-500 pt-3 border-t flex-wrap">
                     <span className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3" />
-                      {artigo.data}
+                      <Eye className="w-3 h-3" />
+                      {artigo.visualizacoes || 0}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Heart className="w-3 h-3" />
+                      {artigo.total_curtidas || 0}
                     </span>
                     <span className="flex items-center gap-1">
                       <Clock className="w-3 h-3" />
                       {artigo.tempo_leitura} min
                     </span>
                   </div>
+
+                  <div className="text-xs text-gray-400 mt-2">
+                    {format(new Date(artigo.created_date), "dd/MM/yyyy")}
+                  </div>
                 </CardContent>
               </Card>
             ))}
           </div>
         )}
-
-        {/* Reload Button */}
-        <div className="text-center mt-8 md:mt-12 px-4">
-          <Button
-            onClick={buscarArtigos}
-            disabled={carregando}
-            size="lg"
-            className="w-full sm:w-auto bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
-          >
-            {carregando ? "Carregando..." : "Atualizar Artigos"}
-          </Button>
-        </div>
       </div>
     </div>
   );
