@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useMutation } from "@tanstack/react-query";
@@ -12,7 +11,6 @@ import {
   Search, 
   ArrowLeft,
   ArrowRight,
-  BookOpen, // This icon is no longer used, but kept in imports for safety, could be removed.
   Sparkles
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -159,7 +157,6 @@ Seja profissional, técnico mas acessível. Use informações baseadas em evidê
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Sidebar de Busca */}
           <div className="lg:col-span-1">
             <Card className="border-none shadow-xl sticky top-24">
               <CardContent className="p-6">
@@ -233,7 +230,6 @@ Seja profissional, técnico mas acessível. Use informações baseadas em evidê
             </Card>
           </div>
 
-          {/* Conteúdo Principal */}
           <div className="lg:col-span-2">
             <Card className="border-none shadow-xl">
               <CardContent className="p-8">
