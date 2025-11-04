@@ -1,13 +1,12 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button"; // Added import
 import { Calculator, TrendingUp, DollarSign, Activity } from "lucide-react";
-import { createPageUrl } from "@/lib/utils"; // Added import, assuming this path for a utility function
+import { Button } from "@/components/ui/button";
+import { createPageUrl } from "@/utils";
 
 export default function CalculadoraLaserSection() {
   const [dados, setDados] = useState({
@@ -44,53 +43,30 @@ export default function CalculadoraLaserSection() {
   const calcular = () => {
     const precoLiquido = dados.precoMedio * (1 - dados.descontoMedio / 100);
     const margemBruta = precoLiquido - dados.custoVariavel;
-    // Prevent division by zero if precoLiquido is 0
-    const margemBrutaPct = precoLiquido > 0 ? (margemBruta / precoLiquido) * 100 : 0;
+    const margemBrutaPct = (margemBruta / precoLiquido) * 100;
     const capacidadeMaxima = dados.sessoesHora * dados.horasDia * dados.diasMes;
     const receitaPotencialMes = precoLiquido * capacidadeMaxima;
 
-    // Payback simplificado (em meses)
     const investimentoTotal = dados.custoAquisicao + dados.custosAdicionais;
-    const fluxoOperacionalCompraMes = margemBruta * capacidadeMaxima * 0.7; // 70% de ocupação
-    const fluxoOperacionalAluguelMes = margemBruta * capacidadeMaxima * 0.7 - dados.custoAluguel; // 70% de ocupação
+    const paybackCompra = investimentoTotal / (margemBruta * capacidadeMaxima * 0.7);
+    const paybackAluguel = dados.custoAluguel / (margemBruta * capacidadeMaxima * 0.7 - dados.custoAluguel);
 
-    const paybackCompra = fluxoOperacionalCompraMes > 0 ? investimentoTotal / fluxoOperacionalCompraMes : Infinity;
-    const paybackAluguel = fluxoOperacionalAluguelMes > 0 ? dados.custoAluguel / fluxoOperacionalAluguelMes : Infinity;
-
-
-    // VPL e TIR simplificados (cálculos aproximados)
-    const fluxoMensalCompra = (margemBruta * capacidadeMaxima * 0.7) - (dados.manutencaoAnual / 12);
-    const fluxoMensalAluguel = (margemBruta * capacidadeMaxima * 0.7) - dados.custoAluguel - (dados.manutencaoAnual / 12);
+    const fluxoMensalCompra = margemBruta * capacidadeMaxima * 0.7 - dados.manutencaoAnual / 12;
+    const fluxoMensalAluguel = margemBruta * capacidadeMaxima * 0.7 - dados.custoAluguel - dados.manutencaoAnual / 12;
     
     const taxaMensal = dados.taxaSelic / 12 / 100;
     const meses = dados.vidaUtil * 12;
     
     let vplCompra = -investimentoTotal;
-    let vplAluguel = 0; // Aluguel não tem investimento inicial para o VPL, pois o custo já é mensal.
-
-    if (taxaMensal <= -1) { // Prevent division by zero or negative discount factors
-      // Handle scenario where discount rate is -100% or more, which is mathematically problematic for VPL.
-      // In real terms, this is highly unlikely for Selic.
-      vplCompra = -Infinity;
-      vplAluguel = -Infinity;
-    } else {
-      for (let i = 1; i <= meses; i++) {
-        vplCompra += fluxoMensalCompra / Math.pow(1 + taxaMensal, i);
-        vplAluguel += fluxoMensalAluguel / Math.pow(1 + taxaMensal, i);
-      }
+    let vplAluguel = 0;
+    
+    for (let i = 1; i <= meses; i++) {
+      vplCompra += fluxoMensalCompra / Math.pow(1 + taxaMensal, i);
+      vplAluguel += fluxoMensalAluguel / Math.pow(1 + taxaMensal, i);
     }
 
-
-    // TIR is complex to calculate iteratively or with fixed formula.
-    // For a simplified approximation, we'll use a direct percentage based on total returns.
-    // Note: A true TIR requires solving a polynomial equation. This is a very rough estimate.
-    const totalRetornoCompra = (fluxoMensalCompra * meses) - investimentoTotal;
-    const tirCompra = investimentoTotal > 0 ? (totalRetornoCompra / investimentoTotal) * 100 : 0;
-
-    const totalRetornoAluguel = fluxoMensalAluguel * meses; // No initial investment for comparison basis
-    const custoTotalAluguel = dados.custoAluguel * meses;
-    const tirAluguel = custoTotalAluguel > 0 ? (totalRetornoAluguel / custoTotalAluguel) * 100 : 0;
-
+    const tirCompra = (vplCompra / investimentoTotal) * 100;
+    const tirAluguel = (vplAluguel / (dados.custoAluguel * meses)) * 100;
 
     setResultados({
       precoLiquido,
@@ -98,8 +74,8 @@ export default function CalculadoraLaserSection() {
       margemBrutaPct,
       capacidadeMaxima,
       receitaPotencialMes,
-      paybackCompra: isFinite(paybackCompra) ? paybackCompra : 0,
-      paybackAluguel: isFinite(paybackAluguel) ? paybackAluguel : 0,
+      paybackCompra,
+      paybackAluguel,
       vplCompra,
       vplAluguel,
       tirCompra,
@@ -132,7 +108,7 @@ export default function CalculadoraLaserSection() {
         <div className="text-center mb-12">
           <Badge className="mb-4 bg-blue-600 text-white">
             <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/6aa7c4ea2_image.png"
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/6aa7c4ea6_image.png"
               alt="Dr. Beleza"
               className="w-4 h-4 rounded-full mr-2 inline-block"
             />
@@ -148,7 +124,6 @@ export default function CalculadoraLaserSection() {
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
-          {/* Inputs */}
           <Card className="border-none shadow-xl">
             <CardContent className="p-6">
               <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
@@ -301,7 +276,6 @@ export default function CalculadoraLaserSection() {
             </CardContent>
           </Card>
 
-          {/* Resultados */}
           <div className="space-y-6">
             <Card className="border-none shadow-xl bg-gradient-to-br from-blue-600 to-cyan-600 text-white">
               <CardContent className="p-6">
@@ -378,29 +352,29 @@ export default function CalculadoraLaserSection() {
                         : "O ALUGUEL pode ser mais vantajoso considerando os riscos e flexibilidade."}
                     </p>
                   </div>
-                </div>
-                <div className="mt-6 space-y-3">
-                  <Button
-                    onClick={calcular}
-                    className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
-                  >
-                    <Calculator className="w-4 h-4 mr-2" />
-                    Calcular Viabilidade
-                  </Button>
-                  <Button
-                    onClick={handleBaixarRelatorio}
-                    variant="outline"
-                    className="w-full"
-                  >
-                    Baixar Relatório Completo
-                  </Button>
+
+                  <div className="mt-6 space-y-3">
+                    <Button
+                      onClick={calcular}
+                      className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+                    >
+                      <Calculator className="w-4 h-4 mr-2" />
+                      Calcular Viabilidade
+                    </Button>
+                    <Button
+                      onClick={handleBaixarRelatorio}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      Baixar Relatório Completo
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           </div>
         </div>
 
-        {/* Footer da Calculadora */}
         <div className="mt-12 text-center bg-blue-900 text-white rounded-xl p-8">
           <p className="text-lg font-bold mb-2">
             Calculadora desenvolvida por Dr. Jauru Nunes de Freitas

@@ -12,7 +12,6 @@ import {
   Clock,
   Star,
   TrendingUp,
-  Calculator, // Keep Calculator for other sections if it's used elsewhere, otherwise it can be removed.
   Check,
   MessageCircle,
   ChevronDown,
@@ -335,7 +334,7 @@ export default function Inicio() {
               <div className="flex flex-col md:flex-row items-center gap-6">
                 <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
                   <img
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/6aa7c4ea6_image.png"
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe9/6aa7c4ea6_image.png"
                     alt="Dr. Beleza"
                     className="w-16 h-16 rounded-full object-cover"
                   />
