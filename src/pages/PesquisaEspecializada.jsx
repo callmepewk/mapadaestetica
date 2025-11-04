@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useMutation } from "@tanstack/react-query";
@@ -142,9 +143,12 @@ Seja profissional, técnico mas acessível. Use informações baseadas em evidê
         <div className="text-center mb-8">
           <Badge className="mb-4 bg-[#F7D426] text-[#2C2C2C] font-bold">
             <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/6aa7c4ea6_image.png"
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe4/2fd7caf1e_image.png"
               alt="Dr. Beleza"
               className="w-4 h-4 rounded-full mr-2 inline-block"
+              onError={(e) => {
+                e.target.style.display = 'none';
+              }}
             />
             Consulte Tratamentos Agora
           </Badge>

@@ -334,9 +334,13 @@ export default function Inicio() {
               <div className="flex flex-col md:flex-row items-center gap-6">
                 <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
                   <img
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe9/6aa7c4ea6_image.png"
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe9/2fd7caf1e_image.png"
                     alt="Dr. Beleza"
                     className="w-16 h-16 rounded-full object-cover"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = 'https://via.placeholder.com/64?text=Dr.+Beleza';
+                    }}
                   />
                 </div>
                 <div className="flex-1 text-center md:text-left">
@@ -432,7 +436,7 @@ export default function Inicio() {
 
             {/* Exposição Máxima */}
             <Card className="border-none shadow-xl hover:shadow-2xl transition-all border-2 border-[#F7D426]">
-              <CardContent className="p-8 text-center">
+              <CardContent className="p-8 =text-center">
                 <div className="w-20 h-20 bg-gradient-to-br from-yellow-100 to-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
                   <span className="text-4xl">🚀</span>
                 </div>

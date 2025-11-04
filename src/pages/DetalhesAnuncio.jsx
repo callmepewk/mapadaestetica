@@ -15,13 +15,16 @@ import {
   Share2,
   Heart,
   Eye,
-  Calendar
+  Calendar,
+  Lock,
+  Crown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -30,11 +33,23 @@ export default function DetalhesAnuncio() {
   const queryClient = useQueryClient();
   const [anuncioId, setAnuncioId] = useState(null);
   const [imagemAtual, setImagemAtual] = useState(0);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const id = urlParams.get('id');
     setAnuncioId(id);
+
+    // Buscar usuário autenticado
+    const fetchUser = async () => {
+      try {
+        const userData = await base44.auth.me();
+        setUser(userData);
+      } catch (error) {
+        setUser(null);
+      }
+    };
+    fetchUser();
   }, []);
 
   const { data: anuncio, isLoading } = useQuery({
@@ -79,6 +94,9 @@ export default function DetalhesAnuncio() {
     anuncio.imagem_principal,
     ...(anuncio.imagens_galeria || [])
   ].filter(Boolean);
+
+  // Verificar se usuário é free
+  const isUserFree = !user || user.plano_ativo === 'free' || !user.plano_ativo;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
@@ -250,6 +268,27 @@ export default function DetalhesAnuncio() {
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* Free Plan Restriction Alert */}
+            {isUserFree && (
+              <Alert className="bg-gradient-to-br from-yellow-50 to-amber-50 border-2 border-yellow-300">
+                <Lock className="h-5 w-5 text-yellow-600" />
+                <AlertDescription className="text-yellow-900">
+                  <p className="font-semibold mb-2">🔒 Recursos Limitados no Plano FREE</p>
+                  <p className="text-sm mb-3">
+                    Faça upgrade para ter acesso completo aos contatos dos profissionais!
+                  </p>
+                  <Button
+                    onClick={() => navigate(createPageUrl("Planos"))}
+                    className="w-full bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700"
+                    size="sm"
+                  >
+                    <Crown className="w-4 h-4 mr-2" />
+                    Ver Planos
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            )}
+
             {/* Contact Card */}
             <Card className="border-none shadow-lg sticky top-24">
               <CardContent className="p-6 space-y-4">
@@ -269,20 +308,45 @@ export default function DetalhesAnuncio() {
                 )}
 
                 {anuncio.whatsapp && (
-                  <a
-                    href={`https://wa.me/${anuncio.whatsapp.replace(/\D/g, '')}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
-                  >
-                    <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
-                      <span className="text-white font-bold">W</span>
+                  isUserFree ? (
+                    <div className="relative">
+                      <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                        <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                          <span className="text-white font-bold">W</span>
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-xs text-gray-500">WhatsApp</p>
+                          <div className="relative inline-block">
+                            <p className="font-medium text-green-700 blur-sm select-none">
+                              ({anuncio.whatsapp.substring(0, 2)}) *****-****
+                            </p>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <Lock className="w-4 h-4 text-green-700" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="mt-2 text-xs text-center text-gray-600">
+                        <Lock className="w-3 h-3 inline mr-1" />
+                        Faça upgrade para ver o WhatsApp
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-xs text-gray-500">WhatsApp</p>
-                      <p className="font-medium text-green-700">Enviar mensagem</p>
-                    </div>
-                  </a>
+                  ) : (
+                    <a
+                      href={`https://wa.me/${anuncio.whatsapp.replace(/\D/g, '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
+                    >
+                      <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                        <span className="text-white font-bold">W</span>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">WhatsApp</p>
+                        <p className="font-medium text-green-700">Enviar mensagem</p>
+                      </div>
+                    </a>
+                  )
                 )}
 
                 {anuncio.email && (

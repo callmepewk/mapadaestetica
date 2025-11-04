@@ -39,7 +39,7 @@ import {
   Clock,
   Star,
   AlertCircle,
-  MessageCircle // Added MessageCircle import
+  MessageCircle
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -67,11 +67,13 @@ export default function Perfil() {
     fetchUser();
   }, []);
 
-  const { data: meusAnuncios } = useQuery({
-    queryKey: ['meus-anuncios'],
-    queryFn: () => base44.entities.Anuncio.filter({ created_by: user?.email }, '-created_date'),
+  const { data: meusAnuncios = [], isLoading: isLoadingAnuncios } = useQuery({
+    queryKey: ['meus-anuncios', user?.email],
+    queryFn: async () => {
+      if (!user) return [];
+      return await base44.entities.Anuncio.filter({ created_by: user.email });
+    },
     enabled: !!user,
-    initialData: [],
   });
 
   const updatePerfilMutation = useMutation({
@@ -89,8 +91,6 @@ export default function Perfil() {
 
   const excluirContaMutation = useMutation({
     mutationFn: async () => {
-      // Aqui você precisaria implementar a lógica de exclusão de conta
-      // Por enquanto, apenas fazemos logout
       base44.auth.logout();
     },
   });
@@ -118,7 +118,7 @@ export default function Perfil() {
   const anunciosPendentes = meusAnuncios.filter(a => a.status === 'pendente').length;
   const anunciosDestaque = meusAnuncios.filter(a => a.em_destaque).length;
   const anunciosExpirados = meusAnuncios.filter(a => a.status === 'expirado').length;
-  const totalVisualizacoes = meusAnuncios.reduce((sum, a) => sum + (a.visualizacoes || 0), 0);
+  const totalVisualizacoes = meusAnuncios.reduce((acc, a) => acc + (a.visualizacoes || 0), 0);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
@@ -202,9 +202,9 @@ export default function Perfil() {
 
             {/* Tabs */}
             <Tabs defaultValue="anuncios" className="w-full">
-              <TabsList className="grid w-full grid-cols-3"> {/* Updated grid-cols to 3 */}
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="anuncios">Meus Anúncios</TabsTrigger>
-                <TabsTrigger value="relatorios">Relatórios</TabsTrigger> {/* Added new tab trigger */}
+                <TabsTrigger value="relatorios">Relatórios</TabsTrigger>
                 <TabsTrigger value="atividades">Atividades</TabsTrigger>
               </TabsList>
 
