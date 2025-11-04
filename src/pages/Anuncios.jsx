@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Filter, MapPin, Grid, List } from "lucide-react";
+import { Search, Filter, MapPin, Grid, List, Locate } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import CardAnuncio from "../components/anuncios/CardAnuncio";
 import {
@@ -39,8 +39,10 @@ export default function Anuncios() {
   const [estadoFiltro, setEstadoFiltro] = useState("");
   const [categoriaFiltro, setCategoriaFiltro] = useState("Todas");
   const [procedimentoFiltro, setProcedimentoFiltro] = useState("");
+  const [tagFiltro, setTagFiltro] = useState("");
   const [paginaAtual, setPaginaAtual] = useState(1);
   const [viewMode, setViewMode] = useState("grid");
+  const [localizando, setLocalizando] = useState(false);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -48,15 +50,51 @@ export default function Anuncios() {
     const estado = urlParams.get('estado');
     const categoria = urlParams.get('categoria');
     const procedimento = urlParams.get('procedimento');
+    const tag = urlParams.get('tag');
     
     if (cidade) setCidadeFiltro(cidade);
     if (estado) setEstadoFiltro(estado);
     if (categoria) setCategoriaFiltro(categoria);
     if (procedimento) setProcedimentoFiltro(procedimento);
+    if (tag) setTagFiltro(tag);
   }, []);
 
+  const usarMinhaLocalizacao = async () => {
+    if (!navigator.geolocation) {
+      alert("Geolocalização não é suportada pelo seu navegador");
+      return;
+    }
+
+    setLocalizando(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+          );
+          const data = await response.json();
+          const cidade = data.address.city || data.address.town || data.address.village || "";
+          const estado = data.address.state_code || data.address.state || "";
+          
+          if (cidade) setCidadeFiltro(cidade);
+          if (estado) setEstadoFiltro(estado.substring(0, 2).toUpperCase());
+          setPaginaAtual(1);
+        } catch (error) {
+          alert("Erro ao obter localização. Tente novamente.");
+        } finally {
+          setLocalizando(false);
+        }
+      },
+      (error) => {
+        alert("Não foi possível obter sua localização. Verifique as permissões.");
+        setLocalizando(false);
+      }
+    );
+  };
+
   const { data: anuncios, isLoading } = useQuery({
-    queryKey: ['anuncios', categoriaFiltro, cidadeFiltro, estadoFiltro, procedimentoFiltro, busca],
+    queryKey: ['anuncios', categoriaFiltro, cidadeFiltro, estadoFiltro, procedimentoFiltro, tagFiltro, busca],
     queryFn: async () => {
       let filtros = { status: 'ativo' };
       
@@ -64,34 +102,51 @@ export default function Anuncios() {
         filtros.categoria = categoriaFiltro;
       }
       
-      let ordem = '-plano,-created_date';
+      const todosAnuncios = await base44.entities.Anuncio.filter(filtros, '-created_date');
       
-      const todosAnuncios = await base44.entities.Anuncio.filter(filtros, ordem);
+      const planoOrdem = { 'premium': 4, 'avancado': 3, 'intermediario': 2, 'basico': 1 };
       
-      return todosAnuncios.filter(anuncio => {
-        const matchCidade = !cidadeFiltro || 
-          anuncio.cidade?.toLowerCase().includes(cidadeFiltro.toLowerCase());
-        
-        const matchEstado = !estadoFiltro ||
-          anuncio.estado?.toLowerCase().includes(estadoFiltro.toLowerCase());
-        
-        const matchProcedimento = !procedimentoFiltro ||
-          anuncio.procedimentos_servicos?.some(p => 
-            p.toLowerCase().includes(procedimentoFiltro.toLowerCase())
-          ) ||
-          anuncio.titulo?.toLowerCase().includes(procedimentoFiltro.toLowerCase()) ||
-          anuncio.descricao?.toLowerCase().includes(procedimentoFiltro.toLowerCase());
-        
-        const matchBusca = !busca || 
-          anuncio.titulo?.toLowerCase().includes(busca.toLowerCase()) ||
-          anuncio.profissional?.toLowerCase().includes(busca.toLowerCase()) ||
-          anuncio.descricao?.toLowerCase().includes(busca.toLowerCase()) ||
-          anuncio.procedimentos_servicos?.some(p => 
-            p.toLowerCase().includes(busca.toLowerCase())
-          );
-        
-        return matchCidade && matchEstado && matchProcedimento && matchBusca;
-      });
+      return todosAnuncios
+        .filter(anuncio => {
+          const matchCidade = !cidadeFiltro || 
+            anuncio.cidade?.toLowerCase().includes(cidadeFiltro.toLowerCase());
+          
+          const matchEstado = !estadoFiltro ||
+            anuncio.estado?.toLowerCase().includes(estadoFiltro.toLowerCase());
+          
+          const matchProcedimento = !procedimentoFiltro ||
+            anuncio.procedimentos_servicos?.some(p => 
+              p.toLowerCase().includes(procedimentoFiltro.toLowerCase())
+            ) ||
+            anuncio.titulo?.toLowerCase().includes(procedimentoFiltro.toLowerCase()) ||
+            anuncio.descricao?.toLowerCase().includes(procedimentoFiltro.toLowerCase());
+          
+          const matchTag = !tagFiltro ||
+            anuncio.tags?.some(t => 
+              t.toLowerCase().includes(tagFiltro.toLowerCase())
+            );
+          
+          const matchBusca = !busca || 
+            anuncio.titulo?.toLowerCase().includes(busca.toLowerCase()) ||
+            anuncio.profissional?.toLowerCase().includes(busca.toLowerCase()) ||
+            anuncio.descricao?.toLowerCase().includes(busca.toLowerCase()) ||
+            anuncio.procedimentos_servicos?.some(p => 
+              p.toLowerCase().includes(busca.toLowerCase())
+            ) ||
+            anuncio.tags?.some(t => 
+              t.toLowerCase().includes(busca.toLowerCase())
+            );
+          
+          return matchCidade && matchEstado && matchProcedimento && matchTag && matchBusca;
+        })
+        .sort((a, b) => {
+          const planoA = planoOrdem[a.plano] || 0;
+          const planoB = planoOrdem[b.plano] || 0;
+          if (planoB !== planoA) {
+            return planoB - planoA;
+          }
+          return new Date(b.created_date) - new Date(a.created_date);
+        });
     },
     initialData: [],
   });
@@ -195,10 +250,34 @@ export default function Anuncios() {
                 className="pl-10 h-12"
               />
             </div>
+            <div className="relative">
+              <Search className="absolute left-3 top-3.5 w-5 h-5 text-gray-400 z-10" />
+              <Input
+                placeholder="Buscar por tag (ex: #microagulhamento #peeling)"
+                value={tagFiltro}
+                onChange={(e) => {
+                  setTagFiltro(e.target.value);
+                  setPaginaAtual(1);
+                }}
+                className="pl-10 h-12"
+              />
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <Button
+              onClick={usarMinhaLocalizacao}
+              disabled={localizando}
+              variant="outline"
+              className="w-full md:w-auto"
+            >
+              <Locate className="w-4 h-4 mr-2" />
+              {localizando ? "Localizando..." : "Usar Minha Localização"}
+            </Button>
           </div>
 
           <div className="flex items-center justify-between mt-4 pt-4 border-t">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <Filter className="w-4 h-4 text-gray-500" />
               <span className="text-sm text-gray-600">
                 {anuncios.length} resultado{anuncios.length !== 1 ? 's' : ''}
@@ -206,6 +285,11 @@ export default function Anuncios() {
               {procedimentoFiltro && (
                 <Badge className="bg-purple-100 text-purple-800">
                   Procedimento: {procedimentoFiltro}
+                </Badge>
+              )}
+              {tagFiltro && (
+                <Badge className="bg-blue-100 text-blue-800">
+                  Tag: {tagFiltro}
                 </Badge>
               )}
             </div>
