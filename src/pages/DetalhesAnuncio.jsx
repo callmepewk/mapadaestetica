@@ -35,6 +35,7 @@ export default function DetalhesAnuncio() {
   const [anuncioId, setAnuncioId] = useState(null);
   const [imagemAtual, setImagemAtual] = useState(0);
   const [user, setUser] = useState(null);
+  const [visualizacaoIncrementada, setVisualizacaoIncrementada] = useState(false); // New state
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -53,16 +54,18 @@ export default function DetalhesAnuncio() {
     fetchUser();
   }, []);
 
-  // CARREGAMENTO INSTANTÂNEO
-  const { data: anuncio, isLoading } = useQuery({
+  // CARREGAMENTO INSTANTÂNEO - CORRIGIDO
+  const { data: anuncio, isLoading, error } = useQuery({
     queryKey: ['anuncio', anuncioId],
     queryFn: async () => {
+      if (!anuncioId) return null; // Added check
       const anuncios = await base44.entities.Anuncio.filter({ id: anuncioId });
+      if (anuncios.length === 0) return null; // Added check
       return anuncios[0];
     },
     enabled: !!anuncioId,
-    staleTime: 15 * 60 * 1000, // 15 minutos
-    cacheTime: 30 * 60 * 1000, // 30 minutos
+    staleTime: 15 * 60 * 1000,
+    cacheTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     refetchOnReconnect: false,
@@ -70,25 +73,24 @@ export default function DetalhesAnuncio() {
 
   const incrementarVisualizacoesMutation = useMutation({
     mutationFn: async () => {
-      if (anuncio) {
+      if (anuncio && anuncio.id) { // Added anuncio.id check
         await base44.entities.Anuncio.update(anuncio.id, {
           visualizacoes: (anuncio.visualizacoes || 0) + 1
         });
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['anuncio', anuncioId]);
-    },
   });
 
+  // CORRIGIDO: Incrementar visualizações apenas UMA VEZ
   useEffect(() => {
-    if (anuncio && !isLoading) {
+    if (anuncio && anuncio.id && !visualizacaoIncrementada) {
       incrementarVisualizacoesMutation.mutate();
+      setVisualizacaoIncrementada(true);
     }
   }, [anuncio?.id]);
 
   // Renderização instantânea com skeleton leve
-  if (!anuncio) {
+  if (isLoading) { // Changed condition
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-6xl mx-auto px-4">
@@ -103,6 +105,28 @@ export default function DetalhesAnuncio() {
             </div>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (error || !anuncio) { // New error/not found handling
+    return (
+      <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
+        <Card className="p-12 text-center max-w-md mx-4">
+          <div className="text-6xl mb-4">😕</div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">
+            Anúncio não encontrado
+          </h3>
+          <p className="text-gray-600 mb-6">
+            O anúncio que você está procurando não existe ou foi removido.
+          </p>
+          <Button
+            onClick={() => navigate(createPageUrl("Anuncios"))}
+            className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
+          >
+            Voltar para Anúncios
+          </Button>
+        </Card>
       </div>
     );
   }

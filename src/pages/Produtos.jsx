@@ -56,6 +56,25 @@ const servicosContrataveis = [
     ],
     em_destaque: true,
     status: 'ativo'
+  },
+  {
+    id: "geracao-imagens-ia",
+    nome: "Geração de Imagens Profissionais com IA",
+    descricao: "Imagens de alta qualidade geradas por inteligência artificial para seu anúncio. Imagens únicas, profissionais e personalizadas para destacar seu negócio.",
+    categoria: "Serviços Contratáveis",
+    preco: 0,
+    preco_texto: "A partir de R$ 50",
+    imagens: ["https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&q=80"],
+    beneficios: [
+      "Até 10 imagens personalizadas",
+      "Alta resolução e qualidade",
+      "Entrega em até 24h",
+      "Revisões ilimitadas",
+      "Imagens exclusivas para seu negócio",
+      "Suporte técnico incluso"
+    ],
+    em_destaque: true,
+    status: 'ativo'
   }
 ];
 
