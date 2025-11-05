@@ -49,9 +49,9 @@ export default function RelatorioPrecoMedio() {
         const userData = await base44.auth.me();
         setUser(userData);
         
-        // Verificar se é admin
+        // Bloquear acesso para não-admins (incluindo testers)
         if (userData.role !== 'admin') {
-          alert("Acesso restrito a administradores");
+          alert("Acesso negado. Apenas administradores podem acessar relatórios de preços.");
           navigate(createPageUrl("Inicio"));
         }
       } catch (error) {
@@ -265,10 +265,21 @@ export default function RelatorioPrecoMedio() {
   if (!user || user.role !== 'admin') {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Verificando permissões...</p>
-        </div>
+        <Card className="p-12 text-center max-w-md">
+          <div className="text-6xl mb-4">🔒</div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">
+            Acesso Restrito
+          </h3>
+          <p className="text-gray-600 mb-6">
+            Apenas administradores podem acessar esta página
+          </p>
+          <Button
+            onClick={() => navigate(createPageUrl("Inicio"))}
+            className="bg-gradient-to-r from-pink-600 to-rose-600"
+          >
+            Voltar ao Início
+          </Button>
+        </Card>
       </div>
     );
   }

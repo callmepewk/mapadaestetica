@@ -284,6 +284,9 @@ export default function CadastrarAnuncio() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // Verificar se é Admin ou Tester para bypass de validações
+    const isAdminOrTester = user?.role === 'admin' || user?.role === 'tester';
+    
     // Validação básica
     if (!formData.titulo || !formData.descricao || !formData.categoria || !formData.cidade || !formData.estado || !formData.profissional) {
       setErro("Por favor, preencha todos os campos obrigatórios: Título, Descrição, Categoria, Profissional, Cidade e Estado");
@@ -314,6 +317,8 @@ export default function CadastrarAnuncio() {
       </div>
     );
   }
+
+  const isAdminOrTester = user?.role === 'admin' || user?.role === 'tester';
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
@@ -369,6 +374,11 @@ export default function CadastrarAnuncio() {
           <p className="text-gray-600">
             Preencha as informações abaixo para criar seu anúncio
           </p>
+          {isAdminOrTester && (
+            <Badge className="mt-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+              ✨ {user.role === 'admin' ? 'Admin' : 'Tester'}: Anúncios, Tags e Especialidades ILIMITADOS
+            </Badge>
+          )}
         </div>
 
         {sucesso && (
@@ -608,7 +618,14 @@ export default function CadastrarAnuncio() {
                 </div>
 
                 <div>
-                  <Label>Tags / Hashtags</Label>
+                  <div className="flex items-center justify-between mb-2">
+                    <Label>Tags / Hashtags</Label>
+                    {isAdminOrTester && (
+                      <Badge className="bg-purple-100 text-purple-800 text-xs">
+                        ∞ Ilimitadas
+                      </Badge>
+                    )}
+                  </div>
                   <div className="flex gap-2 mb-2">
                     <Input
                       value={novaTag}
@@ -620,6 +637,11 @@ export default function CadastrarAnuncio() {
                       <Plus className="w-4 h-4" />
                     </Button>
                   </div>
+                  {!isAdminOrTester && (
+                    <p className="text-xs text-gray-500 mb-2">
+                      Seu plano permite adicionar tags conforme os limites do plano
+                    </p>
+                  )}
                   <div className="flex flex-wrap gap-2">
                     {formData.tags.map((tag, i) => (
                       <Badge key={i} className="bg-pink-100 text-pink-800">
@@ -1214,6 +1236,11 @@ export default function CadastrarAnuncio() {
                   ? 'Seu anúncio será publicado imediatamente' 
                   : 'Seu anúncio será publicado na data selecionada'}
               </p>
+              {isAdminOrTester && (
+                <p className="text-xs text-center mt-2 text-purple-600 font-semibold">
+                  ✨ Como {user.role === 'admin' ? 'Admin' : 'Tester'}, você tem recursos ilimitados!
+                </p>
+              )}
             </CardContent>
           </Card>
         </form>

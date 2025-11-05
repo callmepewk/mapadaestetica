@@ -65,6 +65,7 @@ export default function Layout({ children }) {
   const isPaciente = user?.tipo_usuario === 'paciente';
   const isProfissional = user?.tipo_usuario === 'profissional';
   const isAdmin = user?.role === 'admin'; // Added isAdmin check
+  const isTester = user?.role === 'tester'; // Added isTester check
 
   const navigationItems = [
     { title: "Início", url: createPageUrl("Inicio"), icon: Home },
@@ -190,6 +191,9 @@ export default function Layout({ children }) {
                         <p className="text-xs text-gray-500 truncate">{user?.email}</p>
                         {isAdmin && (
                           <Badge className="mt-1 bg-purple-100 text-purple-800">Admin</Badge>
+                        )}
+                        {isTester && (
+                          <Badge className="mt-1 bg-blue-100 text-blue-800">Tester (7 dias)</Badge>
                         )}
                       </div>
                       <DropdownMenuSeparator />
