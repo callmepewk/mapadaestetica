@@ -270,7 +270,7 @@ export default function Inicio() {
         </>
       )}
 
-      {/* PROFISSIONAIS: TODO O RESTO */}
+      {/* PROFISSIONAIS: Conteúdo específico */}
       {isProfissional && (
         <>
           <SEOStats />
@@ -295,6 +295,86 @@ export default function Inicio() {
           </section>
         </>
       )}
+
+      {/* ANÚNCIOS EM DESTAQUE - AMBOS */}
+      {anunciosDestaque.length > 0 && (
+        <section className="py-12 sm:py-16 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <div className="text-center mb-8 sm:mb-12">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Star className="w-5 h-5 sm:w-6 sm:h-6 text-[#F7D426]" />
+                <span className="text-xs sm:text-sm font-semibold text-[#F7D426] uppercase tracking-wide">
+                  Profissionais em Destaque
+                </span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 px-2">
+                Anúncios Premium
+              </h2>
+              <p className="text-gray-600 text-base sm:text-lg px-4">
+                Profissionais verificados e com os melhores planos
+              </p>
+            </div>
+
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              {anunciosDestaque.slice(0, 6).map((anuncio) => (
+                <CardAnuncio key={anuncio.id} anuncio={anuncio} destaque={true} />
+              ))}
+            </div>
+
+            <div className="text-center mt-8">
+              <Link to={createPageUrl("Anuncios")}>
+                <Button size="lg" variant="outline" className="border-2 border-pink-600 text-pink-600 hover:bg-pink-50">
+                  Ver Todos os Anúncios
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* PATROCINADORES & ANUNCIANTES - AMBOS */}
+      <section className="py-12 sm:py-16 bg-gradient-to-br from-gray-50 to-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-8 sm:mb-12">
+            <Badge className="mb-4 bg-[#F7D426] text-[#2C2C2C] font-bold">
+              Parceiros Oficiais
+            </Badge>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 px-2">
+              Nossos Patrocinadores e Anunciantes
+            </h2>
+            <p className="text-gray-600 text-base sm:text-lg px-4 max-w-2xl mx-auto">
+              Empresas que confiam e investem no Mapa da Estética
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-6">
+            {/* Placeholder para logos dos patrocinadores */}
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <Card key={i} className="aspect-square flex items-center justify-center bg-white hover:shadow-xl transition-shadow border-none">
+                <CardContent className="p-4 flex items-center justify-center w-full h-full">
+                  <div className="text-center">
+                    <div className="text-4xl mb-2">🏢</div>
+                    <p className="text-xs text-gray-500">Patrocinador {i}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <div className="text-center mt-8">
+            <p className="text-gray-600 mb-4">
+              Quer se tornar um patrocinador ou anunciante?
+            </p>
+            <a href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Tenho interesse em ser patrocinador/anunciante do Mapa da Estética!")}`} target="_blank" rel="noopener noreferrer">
+              <Button size="lg" className="bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold border-2 border-[#2C2C2C]">
+                💼 Entre em Contato
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </a>
+          </div>
+        </div>
+      </section>
 
       {/* Blog - AMBOS */}
       <section className="py-12 sm:py-16 bg-gradient-to-br from-pink-50 to-rose-50">
