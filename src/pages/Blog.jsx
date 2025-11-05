@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -7,10 +7,13 @@ import { createPageUrl } from "@/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, TrendingUp, Sparkles, Heart, Eye, Briefcase, Users, ExternalLink } from "lucide-react";
+import { Calendar, Clock, TrendingUp, Sparkles, Heart, Eye, Briefcase, Users, ExternalLink, MessageCircle, Send, AlertCircle, X } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const fontesExternas = [
   {
@@ -53,6 +56,24 @@ const fontesExternas = [
 
 export default function Blog() {
   const navigate = useNavigate();
+  const [artigoSelecionado, setArtigoSelecionado] = useState(null);
+  const [dialogAberto, setDialogAberto] = useState(false);
+  const [user, setUser] = useState(null);
+  const [novoComentario, setNovoComentario] = useState("");
+  const [comentarios, setComentarios] = useState([]);
+  const [erro, setErro] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const userData = await base44.auth.me();
+        setUser(userData);
+      } catch {
+        setUser(null);
+      }
+    };
+    fetchUser();
+  }, []);
 
   const { data: artigos = [], isLoading } = useQuery({
     queryKey: ['artigos-blog'],
@@ -81,7 +102,7 @@ export default function Blog() {
     return colors[categoria] || "bg-gray-100 text-gray-800";
   };
 
-  const handleArtigoClick = (e, artigo) => {
+  const handleArtigoClick = async (e, artigo) => {
     e.preventDefault();
     
     if (!artigo || !artigo.id) {
@@ -89,24 +110,103 @@ export default function Blog() {
       return;
     }
     
-    // Artigos profissionais abrem página interna
-    if (artigo.tipo === 'profissional') {
-      console.log("Navegando para artigo profissional:", artigo.id);
-      const url = `${createPageUrl("ArtigoBlog")}?id=${artigo.id}`;
-      console.log("URL gerada:", url);
-      navigate(url);
-    } 
-    // Artigos gerais redirecionam para fontes externas
-    else if (artigo.tipo === 'geral' && artigo.link_externo) {
-      console.log("Redirecionando para link externo:", artigo.link_externo);
+    // Artigos gerais com link externo abrem em nova aba
+    if (artigo.tipo === 'geral' && artigo.link_externo) {
       window.open(artigo.link_externo, '_blank');
-    } 
-    // Fallback: abre página interna se não tiver link externo
-    else {
-      console.log("Navegando para artigo (fallback):", artigo.id);
-      const url = `${createPageUrl("ArtigoBlog")}?id=${artigo.id}`;
-      console.log("URL gerada:", url);
-      navigate(url);
+      return;
+    }
+    
+    // Artigos profissionais ou sem link externo abrem no dialog
+    try {
+      await base44.entities.ArtigoBlog.update(artigo.id, {
+        visualizacoes: (artigo.visualizacoes || 0) + 1
+      });
+      // Optionally refetch articles to update the count on cards, or just update local state
+      // For simplicity, we'll refetch when the dialog closes or on next mount
+    } catch (err) {
+      console.log("Erro ao incrementar visualizações:", err);
+    }
+
+    // Buscar comentários
+    try {
+      const comentariosData = await base44.entities.ComentarioBlog.filter(
+        { artigo_id: artigo.id, status: 'ativo' },
+        '-created_date',
+        100
+      );
+      setComentarios(comentariosData);
+    } catch (err) {
+      console.log("Erro ao buscar comentários:", err);
+      setComentarios([]);
+    }
+
+    setArtigoSelecionado(artigo);
+    setDialogAberto(true);
+  };
+
+  const handleCurtir = async () => {
+    if (!user) {
+      base44.auth.redirectToLogin(window.location.pathname);
+      return;
+    }
+    if (!artigoSelecionado) return;
+    
+    try {
+      const curtidas = artigoSelecionado.curtidas || [];
+      const jaCurtiu = curtidas.includes(user.email);
+      
+      const novasCurtidas = jaCurtiu
+        ? curtidas.filter(email => email !== user.email)
+        : [...curtidas, user.email];
+      
+      await base44.entities.ArtigoBlog.update(artigoSelecionado.id, {
+        curtidas: novasCurtidas,
+        total_curtidas: novasCurtidas.length
+      });
+
+      setArtigoSelecionado({ 
+        ...artigoSelecionado, 
+        curtidas: novasCurtidas, 
+        total_curtidas: novasCurtidas.length 
+      });
+    } catch (error) {
+      console.error("Erro ao curtir:", error);
+    }
+  };
+
+  const handleComentar = async () => {
+    if (!user) {
+      base44.auth.redirectToLogin(window.location.pathname);
+      return;
+    }
+    
+    if (!novoComentario.trim()) {
+      setErro("Por favor, escreva um comentário");
+      return;
+    }
+    
+    try {
+      await base44.entities.ComentarioBlog.create({
+        artigo_id: artigoSelecionado.id,
+        usuario_nome: user.full_name,
+        usuario_email: user.email,
+        usuario_foto: user.profile_picture || "", // Assuming `profile_picture` for user foto
+        comentario: novoComentario,
+        status: 'pendente' // Comentários podem precisar de moderação
+      });
+
+      const comentariosData = await base44.entities.ComentarioBlog.filter(
+        { artigo_id: artigoSelecionado.id, status: 'ativo' },
+        '-created_date',
+        100
+      );
+      setComentarios(comentariosData);
+      setNovoComentario("");
+      setErro(null);
+      alert("Seu comentário foi enviado para aprovação."); // Informar ao usuário que está pendente
+    } catch (error) {
+      setErro("Erro ao enviar comentário");
+      console.error("Erro ao enviar comentário:", error);
     }
   };
 
@@ -169,6 +269,10 @@ export default function Blog() {
           <div className="text-xs text-gray-400 mt-2">
             {format(new Date(artigo.created_date), "dd/MM/yyyy")}
           </div>
+
+          <Button className="w-full mt-4 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700">
+            {artigo.tipo === 'geral' && artigo.link_externo ? 'Ler no Site Original' : 'Ver Mais'}
+          </Button>
         </CardContent>
       </Card>
     );
@@ -261,51 +365,11 @@ export default function Blog() {
                 </p>
               </Card>
             ) : (
-              <>
-                {artigosGerais[0] && (
-                  <div className="mb-8 md:mb-12 px-4">
-                    <Card 
-                      className="overflow-hidden border-none shadow-2xl bg-gradient-to-br from-pink-500 to-rose-500 text-white cursor-pointer hover:shadow-3xl transition-shadow"
-                      onClick={(e) => handleArtigoClick(e, artigosGerais[0])}
-                    >
-                      <CardContent className="p-6 md:p-12">
-                        <Badge className="mb-4 bg-white/20 text-white border-none">
-                          <Sparkles className="w-3 h-3 mr-1" />
-                          Artigo em Destaque
-                        </Badge>
-                        <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4">
-                          {artigosGerais[0].titulo}
-                        </h2>
-                        <p className="text-base md:text-lg text-white/90 mb-6">
-                          {artigosGerais[0].resumo}
-                        </p>
-                        <div className="flex items-center gap-4 text-sm text-white/80 flex-wrap">
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-4 h-4" />
-                            {format(new Date(artigosGerais[0].created_date), "dd/MM/yyyy")}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Clock className="w-4 h-4" />
-                            {artigosGerais[0].tempo_leitura} min de leitura
-                          </span>
-                          {artigosGerais[0].link_externo && (
-                            <span className="flex items-center gap-1">
-                              <ExternalLink className="w-4 h-4" />
-                              Link externo
-                            </span>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                )}
-
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 px-4">
-                  {artigosGerais.slice(1).map((artigo) => (
-                    <ArtigoCard key={artigo.id} artigo={artigo} />
-                  ))}
-                </div>
-              </>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 px-4">
+                {artigosGerais.map((artigo) => (
+                  <ArtigoCard key={artigo.id} artigo={artigo} />
+                ))}
+              </div>
             )}
           </TabsContent>
 
@@ -336,57 +400,148 @@ export default function Blog() {
                 </p>
               </Card>
             ) : (
-              <>
-                {artigosProfissionais[0] && (
-                  <div className="mb-8 md:mb-12 px-4">
-                    <Card 
-                      className="overflow-hidden border-none shadow-2xl bg-gradient-to-br from-indigo-600 to-purple-600 text-white cursor-pointer hover:shadow-3xl transition-shadow"
-                      onClick={(e) => handleArtigoClick(e, artigosProfissionais[0])}
-                    >
-                      <CardContent className="p-6 md:p-12">
-                        <Badge className="mb-4 bg-white/20 text-white border-none">
-                          <Briefcase className="w-3 h-3 mr-1" />
-                          Artigo Profissional em Destaque
-                        </Badge>
-                        <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4">
-                          {artigosProfissionais[0].titulo}
-                        </h2>
-                        <p className="text-base md:text-lg text-white/90 mb-6">
-                          {artigosProfissionais[0].resumo}
-                        </p>
-                        <div className="flex items-center gap-4 text-sm text-white/80 flex-wrap">
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-4 h-4" />
-                            {format(new Date(artigosProfissionais[0].created_date), "dd/MM/yyyy")}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Clock className="w-4 h-4" />
-                            {artigosProfissionais[0].tempo_leitura} min de leitura
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Eye className="w-4 h-4" />
-                            {artigosProfissionais[0].visualizacoes || 0} visualizações
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Heart className="w-4 h-4 fill-white" />
-                            {artigosProfissionais[0].total_curtidas || 0} curtidas
-                          </span>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                )}
-
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 px-4">
-                  {artigosProfissionais.slice(1).map((artigo) => (
-                    <ArtigoCard key={artigo.id} artigo={artigo} />
-                  ))}
-                </div>
-              </>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 px-4">
+                {artigosProfissionais.map((artigo) => (
+                  <ArtigoCard key={artigo.id} artigo={artigo} />
+                ))}
+              </div>
             )}
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Dialog do Artigo Completo */}
+      <Dialog open={dialogAberto} onOpenChange={setDialogAberto}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
+          <button
+            onClick={() => {
+              setDialogAberto(false);
+              setArtigoSelecionado(null); // Clear selected article on close
+              setComentarios([]); // Clear comments on close
+              setNovoComentario(""); // Clear comment input
+              setErro(null); // Clear errors
+            }}
+            className="absolute top-4 right-4 z-50 w-8 h-8 rounded-full bg-white/90 hover:bg-white flex items-center justify-center shadow-lg"
+          >
+            <X className="w-4 h-4" />
+          </button>
+
+          {artigoSelecionado && (
+            <>
+              <div className="h-48 md:h-96 bg-gradient-to-br from-pink-100 to-rose-100 flex items-center justify-center text-6xl md:text-8xl">
+                {artigoSelecionado.imagem_capa ? (
+                  <img src={artigoSelecionado.imagem_capa} alt={artigoSelecionado.titulo} className="w-full h-full object-cover" />
+                ) : (
+                  "✨"
+                )}
+              </div>
+
+              <div className="p-6 md:p-12">
+                <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+                  <Badge className={getCategoriaColor(artigoSelecionado.categoria)}>
+                    {artigoSelecionado.categoria}
+                  </Badge>
+                  <div className="flex items-center gap-4 text-sm text-gray-500">
+                    <span className="flex items-center gap-1">
+                      <Calendar className="w-4 h-4" />
+                      {format(new Date(artigoSelecionado.created_date), "dd/MM/yyyy")}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-4 h-4" />
+                      {artigoSelecionado.tempo_leitura} min
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleCurtir}
+                      disabled={!user}
+                      className={artigoSelecionado.curtidas?.includes(user?.email) ? "text-red-600 border-red-600 hover:bg-red-50" : ""}
+                    >
+                      <Heart className={`w-4 h-4 mr-2 ${artigoSelecionado.curtidas?.includes(user?.email) ? 'fill-red-600' : ''}`} />
+                      {artigoSelecionado.total_curtidas || 0}
+                    </Button>
+                  </div>
+                </div>
+
+                <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+                  {artigoSelecionado.titulo}
+                </h1>
+                <p className="text-lg md:text-xl text-gray-600 mb-8 leading-relaxed border-l-4 border-pink-500 pl-6 italic">
+                  {artigoSelecionado.resumo}
+                </p>
+
+                <div className="prose prose-lg max-w-none">
+                  {artigoSelecionado.conteudo?.split('\n\n').map((paragrafo, index) => (
+                    <p key={index} className="text-gray-700 mb-6 leading-relaxed text-base md:text-lg">
+                      {paragrafo}
+                    </p>
+                  ))}
+                </div>
+
+                <div className="mt-12 pt-8 border-t">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                    <MessageCircle className="w-6 h-6" />
+                    Comentários ({comentarios.length})
+                  </h3>
+
+                  {erro && (
+                    <Alert variant="destructive" className="mb-6">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>{erro}</AlertDescription>
+                    </Alert>
+                  )}
+
+                  <div className="mb-8">
+                    <Textarea
+                      placeholder={user ? "Escreva seu comentário..." : "Faça login para comentar"}
+                      value={novoComentario}
+                      onChange={(e) => setNovoComentario(e.target.value)}
+                      disabled={!user}
+                      className="mb-3"
+                      rows={4}
+                    />
+                    <Button onClick={handleComentar} disabled={!user || !novoComentario.trim()} className="bg-pink-600 hover:bg-pink-700">
+                      <Send className="w-4 h-4 mr-2" />
+                      Comentar
+                    </Button>
+                  </div>
+
+                  <div className="space-y-6">
+                    {comentarios.length === 0 ? (
+                      <p className="text-gray-500 text-center">Nenhum comentário ainda. Seja o primeiro!</p>
+                    ) : (
+                      comentarios.map((comentario) => (
+                        <div key={comentario.id} className="border-l-2 border-gray-200 pl-4">
+                          <div className="flex items-start gap-3">
+                            <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 font-bold flex-shrink-0">
+                              {comentario.usuario_foto ? (
+                                <img src={comentario.usuario_foto} alt={comentario.usuario_nome} className="w-full h-full rounded-full object-cover" />
+                              ) : (
+                                comentario.usuario_nome.charAt(0).toUpperCase()
+                              )}
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="font-semibold text-gray-900">{comentario.usuario_nome}</span>
+                                <span className="text-xs text-gray-500">
+                                  {format(new Date(comentario.created_date), "dd/MM/yyyy 'às' HH:mm")}
+                                </span>
+                              </div>
+                              <p className="text-gray-700">{comentario.comentario}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
