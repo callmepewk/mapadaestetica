@@ -26,6 +26,7 @@ import {
 export default function CalculadoraLaserSection() {
   const [user, setUser] = useState(null);
   const [mostrarResultados, setMostrarResultados] = useState(false);
+  const [abaAtual, setAbaAtual] = useState("investimento"); // New state for current tab
   const [dados, setDados] = useState({
     modeloLaser: "Ex: CO2 Fracionado",
     marcaLaser: "Ex: Ibramed",
@@ -121,8 +122,11 @@ export default function CalculadoraLaserSection() {
     // The current implementation is a simplified approximation which might not be accurate.
     // For a more robust solution, a financial library or more sophisticated algorithm would be needed.
     // Here, we provide a basic approximation as per the original structure.
-    const tirCompra = investimentoTotal !== 0 ? (vplCompra / investimentoTotal) * 100 : 0;
-    const tirAluguel = (dados.custoAluguel * meses) !== 0 ? (vplAluguel / (dados.custoAluguel * meses)) * 100 : 0;
+    // TIR can be approximated using the VPL. If VPL is positive, TIR is likely higher than the discount rate.
+    // This approximation needs to be handled with care, as it's not a true TIR calculation.
+    // A more accurate TIR would require an iterative solver (e.g., Newton-Raphson method).
+    const tirCompra = investimentoTotal !== 0 ? (vplCompra / investimentoTotal) * 100 : 0; // Simplified
+    const tirAluguel = (dados.custoAluguel * meses) !== 0 ? (vplAluguel / (dados.custoAluguel * meses)) * 100 : 0; // Simplified
 
 
     setResultados({
@@ -149,6 +153,15 @@ export default function CalculadoraLaserSection() {
 
   const handleChangeTexto = (campo, valor) => {
     setDados(prev => ({ ...prev, [campo]: valor }));
+  };
+
+  const handleProximaAba = () => {
+    if (abaAtual === "investimento") {
+      setAbaAtual("operacao");
+    } else if (abaAtual === "operacao") {
+      setAbaAtual("receita");
+    }
+    // No "next" for "receita" tab, as it has the final calculate button.
   };
 
   const formatCurrency = (value) => {
@@ -198,7 +211,7 @@ export default function CalculadoraLaserSection() {
                 Dados de Entrada
               </h3>
 
-              <Tabs defaultValue="investimento" className="w-full">
+              <Tabs value={abaAtual} onValueChange={setAbaAtual} className="w-full"> {/* Controlled by abaAtual */}
                 <TabsList className="grid w-full grid-cols-3 mb-6">
                   <TabsTrigger value="investimento">Investimento</TabsTrigger>
                   <TabsTrigger value="operacao">Operação</TabsTrigger>
@@ -279,6 +292,13 @@ export default function CalculadoraLaserSection() {
                       className="mt-1"
                     />
                   </div>
+
+                  <Button
+                    onClick={handleProximaAba} // Next button
+                    className="w-full mt-6 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 h-12 text-lg font-bold"
+                  >
+                    Próximo
+                  </Button>
                 </TabsContent>
 
                 <TabsContent value="operacao" className="space-y-4">
@@ -327,6 +347,13 @@ export default function CalculadoraLaserSection() {
                       className="mt-1"
                     />
                   </div>
+
+                  <Button
+                    onClick={handleProximaAba} // Next button
+                    className="w-full mt-6 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 h-12 text-lg font-bold"
+                  >
+                    Próximo
+                  </Button>
                 </TabsContent>
 
                 <TabsContent value="receita" className="space-y-4">
@@ -348,16 +375,16 @@ export default function CalculadoraLaserSection() {
                       className="mt-1"
                     />
                   </div>
+
+                  <Button
+                    onClick={calcular} // Calculate button on the last tab
+                    className="w-full mt-6 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 h-12 text-lg font-bold"
+                  >
+                    <Calculator className="w-5 h-5 mr-2" />
+                    Calcular Viabilidade
+                  </Button>
                 </TabsContent>
               </Tabs>
-
-              <Button
-                onClick={calcular}
-                className="w-full mt-6 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 h-12 text-lg font-bold"
-              >
-                <Calculator className="w-5 h-5 mr-2" />
-                Calcular Viabilidade
-              </Button>
             </CardContent>
           </Card>
 
@@ -390,7 +417,7 @@ export default function CalculadoraLaserSection() {
                   </div>
                 </div>
                 <p className="text-xs text-white/70 mt-4 text-center">
-                  Clique em "Calcular Viabilidade" para ver o relatório completo
+                  Preencha as 3 etapas e clique em "Calcular Viabilidade" para ver o relatório completo
                 </p>
               </CardContent>
             </Card>
