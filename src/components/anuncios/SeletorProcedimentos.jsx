@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -327,32 +328,32 @@ export default function SeletorProcedimentos({ open, onClose, onSelect, procedim
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0">
-        <DialogHeader className="p-6 pb-4">
-          <DialogTitle className="text-2xl font-bold">
+      <DialogContent className="max-w-4xl h-[90vh] sm:h-[85vh] flex flex-col p-0 overflow-hidden">
+        <DialogHeader className="p-4 sm:p-6 pb-3 sm:pb-4 flex-shrink-0 border-b">
+          <DialogTitle className="text-xl sm:text-2xl font-bold">
             Selecionar Procedimentos/Serviços
           </DialogTitle>
-          <p className="text-sm text-gray-600 mt-2">
+          <p className="text-xs sm:text-sm text-gray-600 mt-2">
             Escolha procedimentos específicos ou adicione um personalizado. 
             <strong> Total: {todosProcedimentos.length} procedimentos disponíveis</strong>
           </p>
         </DialogHeader>
 
-        <div className="px-6 pb-4 space-y-3">
+        <div className="px-4 sm:px-6 py-3 space-y-3 flex-shrink-0 border-b bg-gray-50">
           <div className="relative">
-            <Search className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-3 top-3 sm:top-3.5 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
             <Input
-              placeholder="Buscar procedimento... (ex: Botox, Limpeza de Pele, Microagulhamento)"
+              placeholder="Buscar procedimento... (ex: Botox, Limpeza de Pele)"
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
-              className="pl-10 h-12 text-base"
+              className="pl-10 h-10 sm:h-12 text-sm sm:text-base"
             />
             {busca && (
               <button
                 onClick={() => setBusca("")}
-                className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600"
+                className="absolute right-3 top-3 sm:top-3.5 text-gray-400 hover:text-gray-600"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             )}
           </div>
@@ -364,34 +365,36 @@ export default function SeletorProcedimentos({ open, onClose, onSelect, procedim
               value={procedimentoCustom}
               onChange={(e) => setProcedimentoCustom(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAdicionarCustom())}
-              className="h-10"
+              className="h-9 sm:h-10 text-sm"
             />
             <Button 
               type="button"
               onClick={handleAdicionarCustom}
               disabled={!procedimentoCustom.trim()}
-              className="bg-green-600 hover:bg-green-700"
+              className="bg-green-600 hover:bg-green-700 h-9 sm:h-10 text-sm"
             >
-              <Plus className="w-4 h-4 mr-2" />
-              Adicionar
+              <Plus className="w-4 h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Adicionar</span>
+              <span className="sm:hidden">+</span>
             </Button>
           </div>
         </div>
 
-        <ScrollArea className="flex-1 px-6 pb-6">
+        {/* ÁREA SCROLLÁVEL - CORRIGIDA */}
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 min-h-0">
           {procedimentosFiltrados ? (
             // Resultado da busca
             <div className="space-y-2">
               {procedimentosFiltrados.length > 0 ? (
                 <>
-                  <p className="text-sm text-gray-600 mb-3">
+                  <p className="text-xs sm:text-sm text-gray-600 mb-3 sticky top-0 bg-white py-2 z-10">
                     {procedimentosFiltrados.length} procedimento(s) encontrado(s)
                   </p>
                   {procedimentosFiltrados.map((proc) => (
                     <button
                       key={proc}
                       onClick={() => handleSelect(proc)}
-                      className="w-full text-left p-4 rounded-lg border-2 border-gray-200 hover:border-[#F7D426] hover:bg-gray-50 transition-all"
+                      className="w-full text-left p-3 sm:p-4 rounded-lg border-2 border-gray-200 hover:border-[#F7D426] hover:bg-gray-50 transition-all text-sm"
                     >
                       {proc}
                     </button>
@@ -399,9 +402,9 @@ export default function SeletorProcedimentos({ open, onClose, onSelect, procedim
                 </>
               ) : (
                 <div className="text-center py-12">
-                  <div className="text-6xl mb-4">🔍</div>
+                  <div className="text-4xl sm:text-6xl mb-4">🔍</div>
                   <p className="text-gray-600">Nenhum procedimento encontrado</p>
-                  <p className="text-sm text-gray-500 mt-2">
+                  <p className="text-xs sm:text-sm text-gray-500 mt-2">
                     Tente buscar com outros termos ou adicione um personalizado acima
                   </p>
                 </div>
@@ -409,13 +412,13 @@ export default function SeletorProcedimentos({ open, onClose, onSelect, procedim
             </div>
           ) : (
             // Lista categorizada - TODAS AS CATEGORIAS
-            <div className="space-y-6">
-              <div className="bg-gradient-to-r from-pink-50 to-purple-50 p-4 rounded-lg border-2 border-pink-200 mb-4">
-                <p className="text-center font-bold text-pink-900">
+            <div className="space-y-4 sm:space-y-6 pb-4">
+              <div className="bg-gradient-to-r from-pink-50 to-purple-50 p-3 sm:p-4 rounded-lg border-2 border-pink-200 mb-4 sticky top-0 z-10">
+                <p className="text-center font-bold text-pink-900 text-sm sm:text-base">
                   📋 {Object.keys(procedimentosPorCategoria).length} Categorias Completas | 
                   {todosProcedimentos.length} Procedimentos Totais
                 </p>
-                <p className="text-center text-sm text-pink-700 mt-1">
+                <p className="text-center text-xs sm:text-sm text-pink-700 mt-1">
                   Clique em qualquer categoria para expandir e ver todos os procedimentos
                 </p>
               </div>
@@ -426,26 +429,26 @@ export default function SeletorProcedimentos({ open, onClose, onSelect, procedim
                     onClick={() => setCategoriaExpandida(
                       categoriaExpandida === categoria ? null : categoria
                     )}
-                    className="w-full text-left mb-3 flex items-center justify-between group p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg hover:from-pink-50 hover:to-purple-50 transition-all"
+                    className="w-full text-left mb-3 flex items-center justify-between group p-2 sm:p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg hover:from-pink-50 hover:to-purple-50 transition-all"
                   >
-                    <h3 className="text-lg font-bold text-gray-900 group-hover:text-[#F7D426] transition-colors">
+                    <h3 className="text-base sm:text-lg font-bold text-gray-900 group-hover:text-[#F7D426] transition-colors">
                       {categoria}
-                      <span className="ml-2 text-sm text-gray-500 font-normal">
+                      <span className="ml-2 text-xs sm:text-sm text-gray-500 font-normal">
                         ({procedimentos.length} procedimentos)
                       </span>
                     </h3>
-                    <span className="text-2xl text-gray-400 group-hover:text-[#F7D426] transition-colors">
+                    <span className="text-xl sm:text-2xl text-gray-400 group-hover:text-[#F7D426] transition-colors">
                       {categoriaExpandida === categoria ? '−' : '+'}
                     </span>
                   </button>
 
                   {categoriaExpandida === categoria ? (
-                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4 p-4 bg-gray-50 rounded-lg">
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 mb-4 p-3 sm:p-4 bg-gray-50 rounded-lg">
                       {procedimentos.map((proc) => (
                         <button
                           key={proc}
                           onClick={() => handleSelect(proc)}
-                          className="text-left p-3 rounded-lg border-2 border-gray-200 hover:border-[#F7D426] hover:bg-white hover:shadow-md transition-all text-sm"
+                          className="text-left p-2 sm:p-3 rounded-lg border-2 border-gray-200 hover:border-[#F7D426] hover:bg-white hover:shadow-md transition-all text-xs sm:text-sm"
                         >
                           {proc}
                         </button>
@@ -469,7 +472,7 @@ export default function SeletorProcedimentos({ open, onClose, onSelect, procedim
                           className="cursor-pointer hover:bg-gray-100 bg-pink-50 text-pink-700 border-pink-300 text-xs font-bold"
                           onClick={() => setCategoriaExpandida(categoria)}
                         >
-                          +{procedimentos.length - 8} mais procedimentos
+                          +{procedimentos.length - 8} mais
                         </Badge>
                       )}
                     </div>
@@ -478,7 +481,7 @@ export default function SeletorProcedimentos({ open, onClose, onSelect, procedim
               ))}
             </div>
           )}
-        </ScrollArea>
+        </div>
       </DialogContent>
     </Dialog>
   );
