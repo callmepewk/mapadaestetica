@@ -376,6 +376,188 @@ export default function Inicio() {
         </div>
       </section>
 
+      {/* PLANOS PARA ANUNCIANTES - AMBOS */}
+      <section className="py-12 sm:py-16 bg-gradient-to-br from-purple-50 via-pink-50 to-rose-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-8 sm:mb-12">
+            <Badge className="mb-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold">
+              💎 Planos Premium
+            </Badge>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 px-2">
+              Planos para Anunciantes
+            </h2>
+            <p className="text-gray-600 text-base sm:text-lg px-4 max-w-2xl mx-auto mb-6">
+              Escolha o plano ideal para promover sua marca no maior portal de estética do Brasil
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6 mb-8">
+            {/* Plano Banner Premium */}
+            <Card className="border-none shadow-xl hover:shadow-2xl transition-all overflow-hidden">
+              <div className="h-32 bg-gradient-to-br from-blue-500 to-cyan-500 p-6 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+                <div className="relative z-10 text-white">
+                  <h3 className="text-2xl font-bold mb-1">Banner Premium</h3>
+                  <p className="text-white/90 text-sm">Destaque na Home</p>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <div className="mb-4">
+                  <p className="text-3xl font-bold text-gray-900">R$ 997<span className="text-lg text-gray-600">/mês</span></p>
+                </div>
+                <ul className="space-y-3 mb-6">
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm">Banner rotativo na página inicial</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm">Até 100.000 impressões/mês</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm">Link direto para seu site/landing page</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm">Relatório mensal de performance</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm">Aparece em todas as páginas</span>
+                  </li>
+                </ul>
+                <a href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Tenho interesse no Plano Banner Premium!")}`} target="_blank" rel="noopener noreferrer">
+                  <Button className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700">
+                    Contratar Agora
+                  </Button>
+                </a>
+              </CardContent>
+            </Card>
+
+            {/* Plano Patrocinador Gold */}
+            <Card className="border-none shadow-xl hover:shadow-2xl transition-all overflow-hidden ring-4 ring-[#F7D426]">
+              <div className="h-32 bg-gradient-to-br from-yellow-500 to-amber-500 p-6 relative overflow-hidden">
+                <div className="absolute top-0 left-0 bg-red-600 text-white text-xs font-bold px-3 py-1">
+                  MAIS POPULAR
+                </div>
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+                <div className="relative z-10 text-white mt-3">
+                  <h3 className="text-2xl font-bold mb-1">Patrocinador Gold</h3>
+                  <p className="text-white/90 text-sm">Visibilidade Total</p>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <div className="mb-4">
+                  <p className="text-3xl font-bold text-gray-900">R$ 1.997<span className="text-lg text-gray-600">/mês</span></p>
+                </div>
+                <ul className="space-y-3 mb-6">
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm font-semibold">Tudo do Banner Premium +</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm">Logo na seção de Patrocinadores</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm">3 Artigos patrocinados no Blog/mês</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm">Destaque em newsletter (10k+ assinantes)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm">Posts nas redes sociais (3x/mês)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm">Analytics detalhados</span>
+                  </li>
+                </ul>
+                <a href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Tenho interesse no Plano Patrocinador Gold!")}`} target="_blank" rel="noopener noreferrer">
+                  <Button className="w-full bg-gradient-to-r from-[#F7D426] to-yellow-500 hover:from-[#E5C215] hover:to-yellow-600 text-[#2C2C2C] font-bold">
+                    Contratar Agora
+                  </Button>
+                </a>
+              </CardContent>
+            </Card>
+
+            {/* Plano Patrocinador Platinum */}
+            <Card className="border-none shadow-xl hover:shadow-2xl transition-all overflow-hidden">
+              <div className="h-32 bg-gradient-to-br from-purple-600 to-pink-600 p-6 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+                <div className="relative z-10 text-white">
+                  <h3 className="text-2xl font-bold mb-1">Patrocinador Platinum</h3>
+                  <p className="text-white/90 text-sm">Exclusividade Total</p>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <div className="mb-4">
+                  <p className="text-3xl font-bold text-gray-900">Sob<span className="text-lg text-gray-600"> Consulta</span></p>
+                </div>
+                <ul className="space-y-3 mb-6">
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm font-semibold">Tudo do Gold +</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm">Patrocínio exclusivo de categoria</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm">Landing page dedicada</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm">Integração com WhatsApp Business</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm">Campanhas personalizadas</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm">Gerente de conta dedicado</span>
+                  </li>
+                </ul>
+                <a href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Tenho interesse no Plano Patrocinador Platinum!")}`} target="_blank" rel="noopener noreferrer">
+                  <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+                    Consultar Valores
+                  </Button>
+                </a>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card className="border-none shadow-xl bg-gradient-to-br from-gray-900 to-gray-800 text-white">
+            <CardContent className="p-8">
+              <div className="grid md:grid-cols-4 gap-6 text-center">
+                <div>
+                  <div className="text-3xl font-bold text-[#F7D426] mb-2">500K+</div>
+                  <p className="text-sm text-gray-300">Visualizações/mês</p>
+                </div>
+                <div>
+                  <div className="text-3xl font-bold text-[#F7D426] mb-2">50K+</div>
+                  <p className="text-sm text-gray-300">Usuários ativos</p>
+                </div>
+                <div>
+                  <div className="text-3xl font-bold text-[#F7D426] mb-2">1.000+</div>
+                  <p className="text-sm text-gray-300">Profissionais cadastrados</p>
+                </div>
+                <div>
+                  <div className="text-3xl font-bold text-[#F7D426] mb-2">95%</div>
+                  <p className="text-sm text-gray-300">Taxa de satisfação</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
       {/* Blog - AMBOS */}
       <section className="py-12 sm:py-16 bg-gradient-to-br from-pink-50 to-rose-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
