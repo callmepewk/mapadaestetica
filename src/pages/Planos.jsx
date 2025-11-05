@@ -502,7 +502,7 @@ export default function Planos() {
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
                   <img
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe4638a2bfe_drbeleza.png"
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/ec64a4c52_drbeleza.png"
                     alt="Dr. Beleza"
                     className="w-full h-full object-cover"
                     onError={(e) => {

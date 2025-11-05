@@ -132,7 +132,7 @@ Responda de forma clara, objetiva e útil.`,
                 className="relative w-16 h-16 rounded-full shadow-2xl border-4 border-[#F7D426] overflow-hidden hover:scale-110 transition-transform duration-300"
               >
                 <img
-                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe4/f54646e8e_drbeleza.png"
+                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/ec64a4c52_drbeleza.png"
                   alt="Dr. Beleza"
                   className="w-full h-full object-cover"
                   onError={(e) => {
