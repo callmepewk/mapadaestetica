@@ -22,14 +22,15 @@ import {
 import { motion } from "framer-motion";
 
 const planosDisponiveis = {
-  free: {
-    nome: "FREE",
-    cor: "from-gray-400 to-gray-500",
+  cobre: {
+    nome: "COBRE",
+    cor: "from-orange-400 to-amber-600",
     icone: Sparkles,
     beneficios: [
       "1 Especialidade cadastrada",
       "1 Anúncio ativo",
       "1 Tag para exposição",
+      "3 dias de exposição",
       "Perfil básico na plataforma",
       "Suporte por email",
       "Estatísticas básicas"
@@ -40,14 +41,15 @@ const planosDisponiveis = {
       tags: 1
     }
   },
-  basico: {
-    nome: "BÁSICO",
-    cor: "from-blue-400 to-cyan-500",
+  prata: {
+    nome: "PRATA",
+    cor: "from-gray-300 to-gray-500",
     icone: Star,
     beneficios: [
       "2 Especialidades cadastradas",
       "10 Anúncios ativos",
       "5 Tags para exposição",
+      "7 dias de exposição",
       "Perfil destacado",
       "Suporte prioritário",
       "Estatísticas avançadas",
@@ -60,46 +62,73 @@ const planosDisponiveis = {
       tags: 5
     }
   },
-  avancado: {
-    nome: "AVANÇADO",
-    cor: "from-purple-500 to-pink-500",
+  ouro: {
+    nome: "OURO",
+    cor: "from-yellow-400 to-amber-500",
+    icone: Crown,
+    beneficios: [
+      "3 Especialidades cadastradas",
+      "15 Anúncios ativos",
+      "10 Tags premium",
+      "14 dias de exposição",
+      "Prioridade alta nas buscas",
+      "Perfil premium com destaque dourado",
+      "Suporte VIP",
+      "Estatísticas completas",
+      "Selo Ouro Verificado",
+      "Aparece em posição privilegiada",
+      "Galeria ampliada"
+    ],
+    limites: {
+      especialidades: 3,
+      anuncios: 15,
+      tags: 10
+    }
+  },
+  diamante: {
+    nome: "DIAMANTE",
+    cor: "from-blue-400 to-cyan-500",
     icone: Zap,
     beneficios: [
       "5 Especialidades cadastradas",
-      "10 Anúncios ativos",
+      "25 Anúncios ativos",
       "20 Tags premium",
+      "21 dias de exposição",
       "Prioridade máxima nas buscas",
-      "Perfil premium com destaque",
-      "Suporte VIP com chat direto",
-      "Estatísticas completas",
-      "Selo de Profissional Verificado",
-      "Aparece no topo dos resultados",
-      "Galeria de fotos ampliada"
+      "Perfil diamante exclusivo",
+      "Suporte VIP 24/7",
+      "Relatórios profissionais completos",
+      "Selo Diamante Verificado",
+      "Destaque na home",
+      "Galeria ilimitada",
+      "WhatsApp Business básico"
     ],
     limites: {
       especialidades: 5,
-      anuncios: 10,
+      anuncios: 25,
       tags: 20
     }
   },
-  premium: {
-    nome: "PREMIUM",
-    cor: "from-yellow-400 to-amber-500",
+  platina: {
+    nome: "PLATINA",
+    cor: "from-purple-500 to-pink-600",
     icone: Crown,
     beneficios: [
       "Especialidades ILIMITADAS",
       "Anúncios ILIMITADOS",
       "100 Tags premium",
-      "Integração com WhatsApp Business",
-      "Assistente com IA integrado",
-      "Prioridade MÁXIMA em todas as buscas",
-      "Destaque permanente na home",
-      "Suporte 24/7 dedicado",
-      "Gerente de conta exclusivo (Géssica)",
+      "30 dias de exposição",
+      "WhatsApp Business API completo",
+      "Assistente IA personalizado",
+      "Prioridade ABSOLUTA",
+      "Destaque permanente exclusivo",
+      "Suporte VIP 24/7 dedicado",
+      "Gerente de conta exclusivo",
       "Analytics profissional completo",
       "Marketing digital incluso",
-      "Selo Premium Exclusivo",
-      "Conteúdo patrocinado mensal"
+      "Selo Platina Premium",
+      "Conteúdo patrocinado mensal",
+      "Campanhas personalizadas"
     ],
     limites: {
       especialidades: "Ilimitadas",
@@ -139,14 +168,15 @@ export default function MeuPlano() {
     );
   }
 
-  const planoAtual = user.plano_ativo || 'free';
+  const planoAtual = user.plano_ativo || 'cobre';
   const planoInfo = planosDisponiveis[planoAtual];
   const IconeAtual = planoInfo.icone;
 
-  const planoNome = planoAtual === 'free' ? 'FREE' :
-                   planoAtual === 'basico' ? 'BÁSICO' :
-                   planoAtual === 'avancado' ? 'AVANÇADO' :
-                   planoAtual === 'premium' ? 'PREMIUM' : 'FREE';
+  const planoNome = planoAtual === 'cobre' ? 'COBRE' :
+                   planoAtual === 'prata' ? 'PRATA' :
+                   planoAtual === 'ouro' ? 'OURO' :
+                   planoAtual === 'diamante' ? 'DIAMANTE' :
+                   planoAtual === 'platina' ? 'PLATINA' : 'COBRE';
 
   const outrosPlanos = Object.entries(planosDisponiveis).filter(([key]) => key !== planoAtual);
 
@@ -236,7 +266,7 @@ export default function MeuPlano() {
                       <div>
                         <p className="font-semibold text-sm mb-1">Vantagens do Plano</p>
                         <p className="text-xs text-gray-600">
-                          {planoAtual === 'avancado' || planoAtual === 'premium' 
+                          {planoAtual === 'diamante' || planoAtual === 'platina' 
                             ? 'Seu anúncio aparece com prioridade nas buscas!' 
                             : 'Faça upgrade para ter prioridade nas buscas'}
                         </p>
@@ -264,7 +294,7 @@ export default function MeuPlano() {
             <div className="grid md:grid-cols-2 gap-8">
               {outrosPlanos.map(([key, plano], index) => {
                 const Icone = plano.icone;
-                const ordem = ['free', 'basico', 'avancado', 'premium'];
+                const ordem = ['cobre', 'prata', 'ouro', 'diamante', 'platina'];
                 const isUpgrade = ordem.indexOf(key) > ordem.indexOf(planoAtual);
                 
                 return (

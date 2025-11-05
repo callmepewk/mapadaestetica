@@ -170,10 +170,11 @@ export default function Perfil() {
   const anunciosExpirados = meusAnuncios.filter(a => a.status === 'expirado').length;
   const totalVisualizacoes = meusAnuncios.reduce((acc, a) => acc + (a.visualizacoes || 0), 0);
 
-  const planoNome = user?.plano_ativo === 'free' ? 'FREE' :
-                   user?.plano_ativo === 'basico' ? 'BÁSICO' :
-                   user?.plano_ativo === 'avancado' ? 'AVANÇADO' :
-                   user?.plano_ativo === 'premium' ? 'PREMIUM' : 'FREE';
+  const planoNome = user?.plano_ativo === 'cobre' ? 'COBRE' :
+                   user?.plano_ativo === 'prata' ? 'PRATA' :
+                   user?.plano_ativo === 'ouro' ? 'OURO' :
+                   user?.plano_ativo === 'diamante' ? 'DIAMANTE' :
+                   user?.plano_ativo === 'platina' ? 'PLATINA' : 'COBRE';
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
@@ -245,7 +246,7 @@ export default function Perfil() {
                 </Card>
 
                 <Card className="border-none shadow-lg">
-                  <CardContent className="p-4 text-center">
+                  <CardContent className="p-4  text-center">
                     <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
                       <TrendingUp className="w-6 h-6 text-blue-600" />
                     </div>

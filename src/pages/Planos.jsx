@@ -3,17 +3,17 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, Sparkles, Star, Zap, Crown, ArrowRight, X } from "lucide-react";
+import { Check, Sparkles, Star, Zap, Crown, Gem, ArrowRight, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
 const planos = [
   {
-    nome: "FREE",
-    tipo: "free",
+    nome: "COBRE",
+    tipo: "cobre",
     preco: "Grátis",
-    cor: "from-gray-400 to-gray-500",
+    cor: "from-orange-400 to-amber-600",
     icone: Sparkles,
     destaque: false,
     limites: {
@@ -42,10 +42,10 @@ const planos = [
     ]
   },
   {
-    nome: "BÁSICO",
-    tipo: "basico",
+    nome: "PRATA",
+    tipo: "prata",
     preco: "R$ 99/mês",
-    cor: "from-blue-400 to-cyan-500",
+    cor: "from-gray-300 to-gray-500",
     icone: Star,
     destaque: false,
     limites: {
@@ -76,29 +76,29 @@ const planos = [
     ]
   },
   {
-    nome: "AVANÇADO",
-    tipo: "avancado",
-    preco: "R$ 297/mês",
-    cor: "from-purple-500 to-pink-500",
-    icone: Zap,
+    nome: "OURO",
+    tipo: "ouro",
+    preco: "R$ 197/mês",
+    cor: "from-yellow-400 to-amber-500",
+    icone: Crown,
     destaque: true,
     limites: {
-      especialidades: 5,
-      anuncios: 10,
-      tags: 20,
+      especialidades: 3,
+      anuncios: 15,
+      tags: 10,
       dias_exposicao: 14
     },
     beneficios: [
-      "5 Especialidades cadastradas",
-      "10 Anúncios ativos",
-      "20 Tags/palavras-chave premium",
+      "3 Especialidades cadastradas",
+      "15 Anúncios ativos",
+      "10 Tags/palavras-chave premium",
       "14 dias de exposição por anúncio",
-      "Prioridade máxima nas buscas",
-      "Perfil premium com destaque",
+      "Prioridade alta nas buscas",
+      "Perfil premium com destaque dourado",
       "Suporte VIP com chat direto",
-      "Relatórios completos (estilo Google Negócios)",
-      "Selo de Profissional Verificado",
-      "Aparece no topo dos resultados",
+      "Relatórios completos",
+      "Selo de Profissional Verificado Ouro",
+      "Aparece em posição privilegiada",
       "Galeria de fotos ampliada"
     ],
     naoInclui: [
@@ -107,16 +107,50 @@ const planos = [
       "Gerente de conta exclusivo",
       "Integração WhatsApp Business API",
       "Assistente IA personalizado",
-      "Conteúdo patrocinado mensal",
       "30 dias de exposição máxima"
     ]
   },
   {
-    nome: "PREMIUM",
-    tipo: "premium",
-    preco: "Consulte",
-    cor: "from-yellow-400 to-amber-500",
-    icone: Crown,
+    nome: "DIAMANTE",
+    tipo: "diamante",
+    preco: "R$ 297/mês",
+    cor: "from-blue-400 to-cyan-500",
+    icone: Gem,
+    destaque: false,
+    limites: {
+      especialidades: 5,
+      anuncios: 25,
+      tags: 20,
+      dias_exposicao: 21
+    },
+    beneficios: [
+      "5 Especialidades cadastradas",
+      "25 Anúncios ativos",
+      "20 Tags/palavras-chave premium",
+      "21 dias de exposição por anúncio",
+      "Prioridade máxima nas buscas",
+      "Perfil diamante com destaque exclusivo",
+      "Suporte VIP 24/7",
+      "Relatórios profissionais completos",
+      "Selo Diamante Verificado",
+      "Destaque na home page",
+      "Galeria de fotos e vídeos ilimitada",
+      "Integração básica WhatsApp Business"
+    ],
+    naoInclui: [
+      "Anúncios ilimitados",
+      "Gerente de conta exclusivo",
+      "Assistente IA personalizado",
+      "Marketing digital incluso",
+      "30 dias de exposição"
+    ]
+  },
+  {
+    nome: "PLATINA",
+    tipo: "platina",
+    preco: "Sob Consulta",
+    cor: "from-purple-500 to-pink-600",
+    icone: Zap,
     destaque: false,
     limites: {
       especialidades: "Ilimitadas",
@@ -129,19 +163,19 @@ const planos = [
       "Anúncios ILIMITADOS",
       "100 Tags/palavras-chave premium",
       "30 dias de exposição por anúncio",
-      "Integração com WhatsApp Business",
-      "Assistente com IA integrado",
-      "Prioridade MÁXIMA em todas as buscas",
-      "Destaque permanente na home",
-      "Suporte 24/7 dedicado",
-      "Gerente de conta exclusivo (Géssica)",
+      "Integração completa WhatsApp Business API",
+      "Assistente com IA personalizado",
+      "Prioridade ABSOLUTA em todas as buscas",
+      "Destaque permanente e exclusivo na home",
+      "Suporte VIP 24/7 dedicado",
+      "Gerente de conta exclusivo",
       "Analytics profissional completo",
       "Marketing digital incluso",
-      "Selo Premium Exclusivo",
-      "Conteúdo patrocinado mensal"
+      "Selo Platina Premium Exclusivo",
+      "Conteúdo patrocinado mensal",
+      "Campanhas personalizadas"
     ],
-    naoInclui: [], // Premium não tem limitações
-    consultePremium: true
+    naoInclui: []
   }
 ];
 
@@ -149,7 +183,7 @@ export default function Planos() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12">
       {/* Header */}
-      <div className="text-center mb-16">
+      <div className="text-center mb-16 px-4">
         <Badge className="mb-4 bg-[#F7D426] text-[#2C2C2C] font-bold">
           Planos Mapa da Estética
         </Badge>
@@ -157,134 +191,134 @@ export default function Planos() {
           Escolha Seu Plano de Anúncios
         </h1>
         <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-          Diferentes opções para atender profissionais de todos os tamanhos
+          5 planos exclusivos para profissionais de todos os portes
         </p>
       </div>
 
-      {/* Plans Comparison */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-        {planos.map((plano, index) => {
-          const IconComponent = plano.icone;
-          return (
-            <motion.div
-              key={plano.tipo}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className={`flex ${plano.destaque ? "lg:-translate-y-4" : ""}`}
-            >
-              <Card className={`relative overflow-hidden border-none shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col w-full ${
-                plano.destaque ? "ring-4 ring-purple-500" : ""
-              }`}>
-                {plano.destaque && (
-                  <div className="absolute top-0 right-0 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-1 text-sm font-semibold z-10">
-                    Mais Popular
-                  </div>
-                )}
-
-                {/* Card Visual */}
-                <div className={`h-48 bg-gradient-to-br ${plano.cor} p-6 relative overflow-hidden flex-shrink-0`}>
-                  <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20"></div>
-                  <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full -ml-16 -mb-16"></div>
-                  
-                  <div className="relative z-10 text-white">
-                    <IconComponent className="w-12 h-12 mb-4" />
-                    <h3 className="text-2xl font-bold mb-2">{plano.nome}</h3>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-bold">{plano.preco}</span>
+      {/* Plans Grid */}
+      <div className="max-w-7xl mx-auto px-4 mb-16">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+          {planos.map((plano, index) => {
+            const IconComponent = plano.icone;
+            return (
+              <motion.div
+                key={plano.tipo}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className={`flex ${plano.destaque ? "lg:-translate-y-4" : ""}`}
+              >
+                <Card className={`relative overflow-hidden border-none shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col w-full ${
+                  plano.destaque ? "ring-4 ring-yellow-500" : ""
+                }`}>
+                  {plano.destaque && (
+                    <div className="absolute top-0 right-0 bg-gradient-to-r from-yellow-500 to-amber-500 text-white px-4 py-1 text-sm font-semibold z-10 rounded-bl-lg">
+                      ⭐ Mais Popular
                     </div>
-                  </div>
-                </div>
+                  )}
 
-                <CardContent className="p-6 flex flex-col flex-1">
-                  <div className="mb-6 p-4 bg-gradient-to-br from-gray-50 to-white rounded-lg border-2 border-gray-200">
-                    <h4 className="font-bold mb-3 text-center">Limites</h4>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Especialidades:</span>
-                        <span className="font-bold">{plano.limites.especialidades}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Anúncios:</span>
-                        <span className="font-bold">{plano.limites.anuncios}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Tags/Keywords:</span>
-                        <span className="font-bold">{plano.limites.tags}</span>
-                      </div>
-                      <div className="flex justify-between border-t pt-2 mt-2">
-                        <span className="text-gray-600">Exposição:</span>
-                        <span className="font-bold text-pink-600">{plano.limites.dias_exposicao} dias</span>
+                  {/* Card Visual */}
+                  <div className={`h-48 bg-gradient-to-br ${plano.cor} p-6 relative overflow-hidden flex-shrink-0`}>
+                    <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20"></div>
+                    <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full -ml-16 -mb-16"></div>
+                    
+                    <div className="relative z-10 text-white">
+                      <IconComponent className="w-12 h-12 mb-4" />
+                      <h3 className="text-2xl font-bold mb-2">{plano.nome}</h3>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-2xl font-bold">{plano.preco}</span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Benefícios Incluídos */}
-                  <div className="mb-4">
-                    <h4 className="font-semibold text-sm mb-2 text-green-700">✓ O que está incluído:</h4>
-                    <div className="space-y-2">
-                      {plano.beneficios.map((beneficio, i) => (
-                        <div key={i} className="flex items-start gap-2">
-                          <div className="flex-shrink-0 w-4 h-4 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
-                            <Check className="w-3 h-3 text-green-600" />
-                          </div>
-                          <span className="text-xs text-gray-600">{beneficio}</span>
+                  <CardContent className="p-6 flex flex-col flex-1">
+                    <div className="mb-6 p-4 bg-gradient-to-br from-gray-50 to-white rounded-lg border-2 border-gray-200">
+                      <h4 className="font-bold mb-3 text-center">Limites</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Especialidades:</span>
+                          <span className="font-bold">{plano.limites.especialidades}</span>
                         </div>
-                      ))}
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Anúncios:</span>
+                          <span className="font-bold">{plano.limites.anuncios}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Tags:</span>
+                          <span className="font-bold">{plano.limites.tags}</span>
+                        </div>
+                        <div className="flex justify-between border-t pt-2 mt-2">
+                          <span className="text-gray-600">Exposição:</span>
+                          <span className="font-bold text-pink-600">{plano.limites.dias_exposicao} dias</span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* O que NÃO está incluído */}
-                  {plano.naoInclui && plano.naoInclui.length > 0 && (
-                    <div className="mb-6 p-3 bg-red-50 rounded-lg">
-                      <h4 className="font-semibold text-sm mb-2 text-red-700">✗ Não incluído neste plano:</h4>
-                      <div className="space-y-1">
-                        {plano.naoInclui.map((item, i) => (
+                    {/* Benefícios */}
+                    <div className="mb-4 flex-1">
+                      <h4 className="font-semibold text-sm mb-2 text-green-700">✓ Incluído:</h4>
+                      <div className="space-y-2 max-h-64 overflow-y-auto">
+                        {plano.beneficios.map((beneficio, i) => (
                           <div key={i} className="flex items-start gap-2">
-                            <X className="w-3 h-3 text-red-500 flex-shrink-0 mt-0.5" />
-                            <span className="text-xs text-gray-600">{item}</span>
+                            <div className="flex-shrink-0 w-4 h-4 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
+                              <Check className="w-3 h-3 text-green-600" />
+                            </div>
+                            <span className="text-xs text-gray-600">{beneficio}</span>
                           </div>
                         ))}
                       </div>
-                      <p className="text-xs text-red-600 mt-2 font-medium">
-                        Faça upgrade para ter acesso a esses recursos!
-                      </p>
                     </div>
-                  )}
 
-                  {plano.consultePremium ? (
-                    <a
-                      href={`https://wa.me/5531972595643?text=${encodeURIComponent(`Olá! Gostaria de informações sobre o plano ${plano.nome} do Mapa da Estética! 💎`)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-auto"
-                    >
-                      <Button
-                        className="w-full bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700"
+                    {/* Não incluído */}
+                    {plano.naoInclui && plano.naoInclui.length > 0 && (
+                      <div className="mb-6 p-3 bg-red-50 rounded-lg">
+                        <h4 className="font-semibold text-sm mb-2 text-red-700">✗ Não incluído:</h4>
+                        <div className="space-y-1">
+                          {plano.naoInclui.slice(0, 3).map((item, i) => (
+                            <div key={i} className="flex items-start gap-2">
+                              <X className="w-3 h-3 text-red-500 flex-shrink-0 mt-0.5" />
+                              <span className="text-xs text-gray-600">{item}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <p className="text-xs text-red-600 mt-2 font-medium">
+                          Faça upgrade!
+                        </p>
+                      </div>
+                    )}
+
+                    {plano.tipo === 'platina' ? (
+                      <a
+                        href={`https://wa.me/5531972595643?text=${encodeURIComponent(`Olá! Gostaria de informações sobre o plano ${plano.nome} do Mapa da Estética! 💎`)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-auto"
                       >
-                        Consulte Mais Informações
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                      </Button>
-                    </a>
-                  ) : (
-                    <Link to={createPageUrl("FaleConosco")} className="mt-auto">
-                      <Button
-                        className={`w-full ${
-                          plano.destaque
-                            ? "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                            : "bg-[#2C2C2C] hover:bg-[#3A3A3A]"
-                        }`}
-                      >
-                        Contratar Plano
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                      </Button>
-                    </Link>
-                  )}
-                </CardContent>
-              </Card>
-            </motion.div>
-          );
-        })}
+                        <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+                          Consultar
+                          <ArrowRight className="w-4 h-4 ml-2" />
+                        </Button>
+                      </a>
+                    ) : (
+                      <Link to={createPageUrl("FaleConosco")} className="mt-auto">
+                        <Button
+                          className={`w-full ${
+                            plano.destaque
+                              ? "bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700"
+                              : "bg-[#2C2C2C] hover:bg-[#3A3A3A]"
+                          }`}
+                        >
+                          Contratar
+                          <ArrowRight className="w-4 h-4 ml-2" />
+                        </Button>
+                      </Link>
+                    )}
+                  </CardContent>
+                </Card>
+              </motion.div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Benefits Section */}
