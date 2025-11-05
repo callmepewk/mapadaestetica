@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, TrendingUp, DollarSign, Search, Eye, Users, ShoppingCart, BarChart3, Download } from "lucide-react";
+import { ArrowLeft, TrendingUp, DollarSign, Search, Eye, Users, ShoppingCart, BarChart3, Download, FileText } from "lucide-react";
 
 export default function Relatorios() {
   const navigate = useNavigate();
@@ -31,7 +31,6 @@ export default function Relatorios() {
   }, [navigate]);
 
   const exportarPDF = (tipoRelatorio) => {
-    // Criar conteúdo HTML do relatório
     const dataAtual = new Date().toLocaleDateString('pt-BR');
     const horaAtual = new Date().toLocaleTimeString('pt-BR');
     
@@ -48,13 +47,13 @@ export default function Relatorios() {
           .logo { max-width: 200px; margin-bottom: 10px; }
           h1 { color: #2C2C2C; margin: 0; font-size: 28px; }
           .subtitle { color: #666; font-size: 14px; margin-top: 5px; }
-          .info-box { background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0; }
+          .info-box { background: #FFF9E6; padding: 15px; border-radius: 8px; margin: 20px 0; border: 2px solid #F7D426; }
           .metric { background: white; border-left: 4px solid #F7D426; padding: 15px; margin: 10px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
           .metric-title { font-weight: bold; color: #2C2C2C; margin-bottom: 5px; }
           .metric-value { font-size: 32px; font-weight: bold; color: #F7D426; }
           .metric-subtitle { color: #666; font-size: 12px; }
           table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-          th { background: #2C2C2C; color: white; padding: 12px; text-align: left; }
+          th { background: #2C2C2C; color: #F7D426; padding: 12px; text-align: left; font-weight: bold; }
           td { padding: 10px; border-bottom: 1px solid #ddd; }
           tr:nth-child(even) { background: #f8f9fa; }
           .footer { margin-top: 40px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #ddd; padding-top: 20px; }
@@ -72,7 +71,7 @@ export default function Relatorios() {
     if (tipoRelatorio === 'SEO Diário') {
       conteudoHTML += `
         <div class="info-box">
-          <h2>Resumo do Dia</h2>
+          <h2>📅 Resumo do Dia</h2>
           <p>Métricas de tráfego e engajamento das últimas 24 horas</p>
         </div>
         
@@ -103,7 +102,7 @@ export default function Relatorios() {
     } else if (tipoRelatorio === 'SEO Mensal') {
       conteudoHTML += `
         <div class="info-box">
-          <h2>Resumo Mensal</h2>
+          <h2>📊 Resumo Mensal</h2>
           <p>Desempenho consolidado do mês</p>
         </div>
         
@@ -137,7 +136,7 @@ export default function Relatorios() {
     } else if (tipoRelatorio === 'SEO Anual') {
       conteudoHTML += `
         <div class="info-box">
-          <h2>Resumo Anual</h2>
+          <h2>📈 Resumo Anual</h2>
           <p>Visão geral do ano completo</p>
         </div>
         
@@ -156,7 +155,7 @@ export default function Relatorios() {
     } else if (tipoRelatorio === 'Transações') {
       conteudoHTML += `
         <div class="info-box">
-          <h2>Resumo de Transações</h2>
+          <h2>💳 Resumo de Transações</h2>
           <p>Todas as transações financeiras da plataforma</p>
         </div>
         
@@ -204,6 +203,50 @@ export default function Relatorios() {
           <div class="metric-title">🛒 Total de Transações</div>
           <div class="metric-value">45</div>
         </div>
+
+        <div class="metric">
+          <div class="metric-title">📊 Ticket Médio</div>
+          <div class="metric-value">R$ 27</div>
+        </div>
+
+        <div class="metric">
+          <div class="metric-title">⭐ Pontos Resgatados</div>
+          <div class="metric-value">2.5K</div>
+        </div>
+      `;
+    } else if (tipoRelatorio === 'Completo') {
+      conteudoHTML += `
+        <div class="info-box">
+          <h2>📋 Relatório Completo do Sistema</h2>
+          <p>Compilação de todos os relatórios em um único documento</p>
+        </div>
+
+        <h2 style="border-bottom: 2px solid #F7D426; padding-bottom: 10px; margin-top: 40px;">💰 PREÇOS MÉDIOS</h2>
+        <div class="metric">
+          <div class="metric-title">Total de Anúncios Ativos</div>
+          <div class="metric-value">Verificar no relatório específico</div>
+        </div>
+
+        <h2 style="border-bottom: 2px solid #F7D426; padding-bottom: 10px; margin-top: 40px;">📈 SEO & TRÁFEGO</h2>
+        <table>
+          <thead><tr><th>Métrica</th><th>Valor Atual</th><th>Crescimento</th></tr></thead>
+          <tbody>
+            <tr><td>Visitas Hoje</td><td class="highlight">1,234</td><td style="color: green;">+15%</td></tr>
+            <tr><td>Novos Usuários</td><td class="highlight">89</td><td style="color: green;">+12%</td></tr>
+            <tr><td>Taxa de Conversão</td><td class="highlight">12.5%</td><td style="color: green;">+5%</td></tr>
+          </tbody>
+        </table>
+
+        <h2 style="border-bottom: 2px solid #F7D426; padding-bottom: 10px; margin-top: 40px;">💳 TRANSAÇÕES</h2>
+        <table>
+          <thead><tr><th>Métrica</th><th>Valor</th></tr></thead>
+          <tbody>
+            <tr><td>Receita Hoje</td><td class="highlight">R$ 1.2K</td></tr>
+            <tr><td>Total de Transações</td><td class="highlight">45</td></tr>
+            <tr><td>Ticket Médio</td><td class="highlight">R$ 27</td></tr>
+            <tr><td>Pontos Resgatados</td><td class="highlight">2.5K</td></tr>
+          </tbody>
+        </table>
       `;
     }
 
@@ -217,7 +260,6 @@ export default function Relatorios() {
       </html>
     `;
 
-    // Criar blob e fazer download
     const blob = new Blob([conteudoHTML], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -244,7 +286,7 @@ export default function Relatorios() {
           </p>
           <Button
             onClick={() => navigate(createPageUrl("Inicio"))}
-            className="bg-gradient-to-r from-pink-600 to-rose-600"
+            className="bg-[#F7D426] text-[#2C2C2C] hover:bg-[#E5C215] border-2 border-[#2C2C2C]"
           >
             Voltar ao Início
           </Button>
@@ -256,17 +298,26 @@ export default function Relatorios() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
       <div className="max-w-7xl mx-auto px-4">
-        <Button
-          variant="ghost"
-          onClick={() => navigate(createPageUrl("Perfil"))}
-          className="mb-6"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Voltar
-        </Button>
+        <div className="flex items-center justify-between mb-6">
+          <Button
+            variant="ghost"
+            onClick={() => navigate(createPageUrl("Perfil"))}
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Voltar
+          </Button>
+
+          <Button 
+            onClick={() => exportarPDF('Completo')}
+            className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] text-[#2C2C2C] hover:from-[#E5C215] hover:to-[#F7D426] border-2 border-[#2C2C2C] font-bold"
+          >
+            <FileText className="w-4 h-4 mr-2" />
+            Gerar Relatório Completo (PDF)
+          </Button>
+        </div>
 
         <div className="mb-8">
-          <Badge className="mb-4 bg-[#F7D426] text-[#2C2C2C] font-bold">
+          <Badge className="mb-4 bg-[#F7D426] text-[#2C2C2C] font-bold border-2 border-[#2C2C2C]">
             Admin - Central de Relatórios
           </Badge>
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
@@ -295,16 +346,19 @@ export default function Relatorios() {
 
           {/* Aba de Preços Médios */}
           <TabsContent value="preco">
-            <Card>
+            <Card className="border-2 border-gray-200">
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Relatório de Preços Médios</CardTitle>
-                <Button onClick={() => navigate(createPageUrl("RelatorioPrecoMedio"))} variant="outline">
+                <Button 
+                  onClick={() => navigate(createPageUrl("RelatorioPrecoMedio"))} 
+                  className="bg-[#2C2C2C] text-[#F7D426] hover:bg-[#3A3A3A]"
+                >
                   Ver Relatório Completo
                 </Button>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600">
-                  Acesse o relatório completo de preços praticados pelos profissionais
+                  Acesse análise detalhada de preços praticados pelos profissionais, distribuição por faixas de preço e procedimentos mais oferecidos.
                 </p>
               </CardContent>
             </Card>
@@ -313,7 +367,7 @@ export default function Relatorios() {
           {/* Aba de SEO & Tráfego */}
           <TabsContent value="seo" className="space-y-6">
             <div className="grid md:grid-cols-4 gap-6">
-              <Card>
+              <Card className="border-2 border-blue-200">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
@@ -327,7 +381,7 @@ export default function Relatorios() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="border-2 border-green-200">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
@@ -341,7 +395,7 @@ export default function Relatorios() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="border-2 border-purple-200">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
@@ -355,7 +409,7 @@ export default function Relatorios() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="border-2 border-orange-200">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
@@ -378,32 +432,32 @@ export default function Relatorios() {
               </TabsList>
 
               <TabsContent value="diario" className="space-y-4">
-                <Card>
+                <Card className="border-2 border-gray-200">
                   <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle>Relatório SEO Diário</CardTitle>
-                    <Button onClick={() => exportarPDF('SEO Diário')} variant="outline" size="sm">
+                    <Button onClick={() => exportarPDF('SEO Diário')} variant="outline" size="sm" className="border-[#F7D426] text-[#2C2C2C]">
                       <Download className="w-4 h-4 mr-2" />
                       Exportar PDF
                     </Button>
                   </CardHeader>
                   <CardContent>
                     <div className="grid md:grid-cols-2 gap-4">
-                      <div className="bg-gray-50 p-4 rounded-lg">
+                      <div className="bg-gray-50 p-4 rounded-lg border-l-4 border-[#F7D426]">
                         <p className="text-sm text-gray-600 mb-1">Total de Visualizações</p>
                         <p className="text-2xl font-bold">1,234</p>
                         <p className="text-xs text-green-600 mt-1">+15% vs ontem</p>
                       </div>
-                      <div className="bg-gray-50 p-4 rounded-lg">
+                      <div className="bg-gray-50 p-4 rounded-lg border-l-4 border-[#F7D426]">
                         <p className="text-sm text-gray-600 mb-1">Páginas Mais Vistas</p>
                         <p className="text-lg font-semibold">Anúncios</p>
                         <p className="text-xs text-gray-500 mt-1">456 visualizações</p>
                       </div>
-                      <div className="bg-gray-50 p-4 rounded-lg">
+                      <div className="bg-gray-50 p-4 rounded-lg border-l-4 border-[#F7D426]">
                         <p className="text-sm text-gray-600 mb-1">Tempo Médio na Página</p>
                         <p className="text-2xl font-bold">3:42</p>
                         <p className="text-xs text-blue-600 mt-1">+8% vs ontem</p>
                       </div>
-                      <div className="bg-gray-50 p-4 rounded-lg">
+                      <div className="bg-gray-50 p-4 rounded-lg border-l-4 border-[#F7D426]">
                         <p className="text-sm text-gray-600 mb-1">Taxa de Rejeição</p>
                         <p className="text-2xl font-bold">24.5%</p>
                         <p className="text-xs text-red-600 mt-1">-3% vs ontem</p>
@@ -414,27 +468,27 @@ export default function Relatorios() {
               </TabsContent>
 
               <TabsContent value="mensal" className="space-y-4">
-                <Card>
+                <Card className="border-2 border-gray-200">
                   <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle>Relatório SEO Mensal</CardTitle>
-                    <Button onClick={() => exportarPDF('SEO Mensal')} variant="outline" size="sm">
+                    <Button onClick={() => exportarPDF('SEO Mensal')} variant="outline" size="sm" className="border-[#F7D426] text-[#2C2C2C]">
                       <Download className="w-4 h-4 mr-2" />
                       Exportar PDF
                     </Button>
                   </CardHeader>
                   <CardContent>
                     <div className="grid md:grid-cols-3 gap-4">
-                      <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-4 rounded-lg">
+                      <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-4 rounded-lg border-2 border-blue-200">
                         <p className="text-sm text-blue-900 mb-1 font-semibold">Total de Visitas</p>
                         <p className="text-3xl font-bold text-blue-600">34,567</p>
                         <p className="text-xs text-blue-700 mt-1">+23% vs mês anterior</p>
                       </div>
-                      <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-lg">
+                      <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-lg border-2 border-green-200">
                         <p className="text-sm text-green-900 mb-1 font-semibold">Novos Usuários</p>
                         <p className="text-3xl font-bold text-green-600">2,345</p>
                         <p className="text-xs text-green-700 mt-1">+18% vs mês anterior</p>
                       </div>
-                      <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-lg">
+                      <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-lg border-2 border-purple-200">
                         <p className="text-sm text-purple-900 mb-1 font-semibold">Conversões</p>
                         <p className="text-3xl font-bold text-purple-600">456</p>
                         <p className="text-xs text-purple-700 mt-1">+31% vs mês anterior</p>
@@ -445,22 +499,22 @@ export default function Relatorios() {
               </TabsContent>
 
               <TabsContent value="anual" className="space-y-4">
-                <Card>
+                <Card className="border-2 border-gray-200">
                   <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle>Relatório SEO Anual</CardTitle>
-                    <Button onClick={() => exportarPDF('SEO Anual')} variant="outline" size="sm">
+                    <Button onClick={() => exportarPDF('SEO Anual')} variant="outline" size="sm" className="border-[#F7D426] text-[#2C2C2C]">
                       <Download className="w-4 h-4 mr-2" />
                       Exportar PDF
                     </Button>
                   </CardHeader>
                   <CardContent>
                     <div className="grid md:grid-cols-2 gap-4">
-                      <div className="bg-gradient-to-br from-yellow-50 to-amber-50 p-6 rounded-lg">
+                      <div className="bg-gradient-to-br from-yellow-50 to-amber-50 p-6 rounded-lg border-2 border-yellow-200">
                         <p className="text-sm text-yellow-900 mb-2 font-semibold">Total de Visitas do Ano</p>
                         <p className="text-4xl font-bold text-yellow-600">456,789</p>
                         <p className="text-xs text-yellow-700 mt-2">Crescimento de 145% vs ano anterior</p>
                       </div>
-                      <div className="bg-gradient-to-br from-pink-50 to-rose-50 p-6 rounded-lg">
+                      <div className="bg-gradient-to-br from-pink-50 to-rose-50 p-6 rounded-lg border-2 border-pink-200">
                         <p className="text-sm text-pink-900 mb-2 font-semibold">Receita Total do Ano</p>
                         <p className="text-4xl font-bold text-pink-600">R$ 287.5K</p>
                         <p className="text-xs text-pink-700 mt-2">Crescimento de 89% vs ano anterior</p>
@@ -475,14 +529,14 @@ export default function Relatorios() {
           {/* Aba de Transações */}
           <TabsContent value="transacoes" className="space-y-6">
             <div className="flex justify-end mb-4">
-              <Button onClick={() => exportarPDF('Transações')} variant="outline">
+              <Button onClick={() => exportarPDF('Transações')} variant="outline" className="border-[#F7D426] text-[#2C2C2C]">
                 <Download className="w-4 h-4 mr-2" />
                 Exportar Transações em PDF
               </Button>
             </div>
 
             <div className="grid md:grid-cols-4 gap-6">
-              <Card>
+              <Card className="border-2 border-green-200">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
@@ -496,7 +550,7 @@ export default function Relatorios() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="border-2 border-blue-200">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
@@ -510,7 +564,7 @@ export default function Relatorios() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="border-2 border-purple-200">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
@@ -524,7 +578,7 @@ export default function Relatorios() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="border-2 border-orange-200">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
@@ -539,13 +593,13 @@ export default function Relatorios() {
               </Card>
             </div>
 
-            <Card>
+            <Card className="border-2 border-gray-200">
               <CardHeader>
                 <CardTitle>Últimas Transações</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border-l-4 border-green-400">
                     <div>
                       <p className="font-semibold">Compra de Produto</p>
                       <p className="text-sm text-gray-600">Beauty Box - Clube da Beleza</p>
@@ -557,7 +611,7 @@ export default function Relatorios() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border-l-4 border-[#F7D426]">
                     <div>
                       <p className="font-semibold">Upgrade de Plano</p>
                       <p className="text-sm text-gray-600">Plano OURO</p>
@@ -569,7 +623,7 @@ export default function Relatorios() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border-l-4 border-purple-400">
                     <div>
                       <p className="font-semibold">Resgate de Pontos</p>
                       <p className="text-sm text-gray-600">Massagem Relaxante 60min</p>
