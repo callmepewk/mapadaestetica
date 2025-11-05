@@ -49,6 +49,7 @@ import {
   Bookmark, // New import for Saved Ads
   Handshake, // New import for Indicações
   DollarSign, // New import for Beauty Coins
+  Briefcase, // New import for Informações Profissionais
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from 'date-fns';
@@ -92,6 +93,11 @@ export default function Perfil() {
           cpf: userData.cpf || "", // New field
           data_nascimento: userData.data_nascimento || "", // New field
           documentos_profissionais: userData.documentos_profissionais || {}, // New nested object
+          tempo_formacao_anos: userData.tempo_formacao_anos || "", // New professional field
+          possui_clinica: userData.possui_clinica || false, // New professional field
+          possui_ar_condicionado: userData.possui_ar_condicionado || false, // New professional field
+          possui_estacionamento: userData.possui_estacionamento || false, // New professional field
+          tem_google_negocios: userData.tem_google_negocios || false, // New professional field
         });
       } catch (error) {
         navigate(createPageUrl("Inicio"));
@@ -172,6 +178,11 @@ export default function Perfil() {
         cpf: userData.cpf || "",
         data_nascimento: userData.data_nascimento || "",
         documentos_profissionais: userData.documentos_profissionais || {},
+        tempo_formacao_anos: userData.tempo_formacao_anos || "",
+        possui_clinica: userData.possui_clinica || false,
+        possui_ar_condicionado: userData.possui_ar_condicionado || false,
+        possui_estacionamento: userData.possui_estacionamento || false,
+        tem_google_negocios: userData.tem_google_negocios || false,
       });
       setEditando(false); // Exit edit mode
       queryClient.invalidateQueries(['user']);
@@ -212,6 +223,11 @@ export default function Perfil() {
       cpf: user?.cpf || "",
       data_nascimento: user?.data_nascimento || "",
       documentos_profissionais: user?.documentos_profissionais || {},
+      tempo_formacao_anos: user?.tempo_formacao_anos || "",
+      possui_clinica: user?.possui_clinica || false,
+      possui_ar_condicionado: user?.possui_ar_condicionado || false,
+      possui_estacionamento: user?.possui_estacionamento || false,
+      tem_google_negocios: user?.tem_google_negocios || false,
     });
   };
 
@@ -231,6 +247,11 @@ export default function Perfil() {
         cpf: user?.cpf || "",
         data_nascimento: user?.data_nascimento || "",
         documentos_profissionais: user?.documentos_profissionais || {},
+        tempo_formacao_anos: user?.tempo_formacao_anos || "",
+        possui_clinica: user?.possui_clinica || false,
+        possui_ar_condicionado: user?.possui_ar_condicionado || false,
+        possui_estacionamento: user?.possui_estacionamento || false,
+        tem_google_negocios: user?.tem_google_negocios || false,
       });
     }
   };
@@ -425,12 +446,6 @@ export default function Perfil() {
                             </a>
                           </div>
                         )}
-                        {isProfissional && user.especialidade && (
-                          <div className="flex items-center gap-2 text-sm">
-                            <Star className="w-4 h-4 text-gray-400" />
-                            <span>Especialidade: {user.especialidade}</span>
-                          </div>
-                        )}
                         {user.cpf && (
                           <div className="flex items-center gap-2 text-sm">
                             <User className="w-4 h-4 text-gray-400" />
@@ -441,6 +456,38 @@ export default function Perfil() {
                           <div className="flex items-center gap-2 text-sm">
                             <Clock className="w-4 h-4 text-gray-400" />
                             <span>Nascimento: {format(new Date(user.data_nascimento), "dd/MM/yyyy")}</span>
+                          </div>
+                        )}
+
+                        {isProfissional && (user.especialidade || user.tempo_formacao_anos > 0 || user.possui_clinica || user.possui_ar_condicionado || user.possui_estacionamento || user.tem_google_negocios) && (
+                          <div className="pt-6 border-t mt-6">
+                            <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                              <Briefcase className="w-5 h-5 text-purple-600" />
+                              Informações Profissionais
+                            </h3>
+                            <div className="space-y-3">
+                              {user.especialidade && (
+                                <div className="flex items-center gap-2 text-sm">
+                                  <Star className="w-4 h-4 text-gray-400" />
+                                  <span>Especialidade: {user.especialidade}</span>
+                                </div>
+                              )}
+                              {user.tempo_formacao_anos > 0 && (
+                                <div className="flex items-center gap-2 text-sm">
+                                  <Clock className="w-4 h-4 text-gray-400" />
+                                  <span>Tempo de Formação: {user.tempo_formacao_anos} anos</span>
+                                </div>
+                              )}
+                              {(user.possui_clinica || user.possui_ar_condicionado || user.possui_estacionamento || user.tem_google_negocios) && (
+                                <div className="space-y-1 mt-2">
+                                  <p className="text-sm font-semibold">Recursos:</p>
+                                  {user.possui_clinica && <p className="text-sm">• Possui clínica própria</p>}
+                                  {user.possui_ar_condicionado && <p className="text-sm">• Ar condicionado</p>}
+                                  {user.possui_estacionamento && <p className="text-sm">• Estacionamento</p>}
+                                  {user.tem_google_negocios && <p className="text-sm">• Tem Google Negócios</p>}
+                                </div>
+                              )}
+                            </div>
                           </div>
                         )}
 
@@ -579,6 +626,75 @@ export default function Perfil() {
                               onChange={(e) => setFormData({ ...formData, especialidade: e.target.value })}
                               className="mt-1"
                             />
+                          </div>
+                        )}
+
+                        {/* Informações Profissionais - PROFISSIONAIS */}
+                        {isProfissional && (
+                          <div className="pt-6 border-t">
+                            <h4 className="font-bold text-lg mb-4 flex items-center gap-2">
+                              <Briefcase className="w-5 h-5 text-purple-600" />
+                              Informações Profissionais Adicionais
+                            </h4>
+                            <div className="space-y-4">
+                              <div>
+                                <Label htmlFor="tempo_formacao">Tempo de Formação (anos)</Label>
+                                <Input
+                                  id="tempo_formacao"
+                                  type="number"
+                                  min="0"
+                                  placeholder="Ex: 5"
+                                  value={formData.tempo_formacao_anos || ""}
+                                  onChange={(e) => setFormData({ ...formData, tempo_formacao_anos: parseInt(e.target.value) || 0 })}
+                                  className="mt-1"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Quantos anos você atua na área?
+                                </p>
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label className="font-semibold">Recursos</Label>
+                                <div className="space-y-2">
+                                  <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                      type="checkbox"
+                                      checked={formData.possui_clinica || false}
+                                      onChange={(e) => setFormData({ ...formData, possui_clinica: e.target.checked })}
+                                      className="w-4 h-4 rounded"
+                                    />
+                                    <span className="text-sm">Possuo clínica própria</span>
+                                  </label>
+                                  <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                      type="checkbox"
+                                      checked={formData.possui_ar_condicionado || false}
+                                      onChange={(e) => setFormData({ ...formData, possui_ar_condicionado: e.target.checked })}
+                                      className="w-4 h-4 rounded"
+                                    />
+                                    <span className="text-sm">Ar condicionado</span>
+                                  </label>
+                                  <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                      type="checkbox"
+                                      checked={formData.possui_estacionamento || false}
+                                      onChange={(e) => setFormData({ ...formData, possui_estacionamento: e.target.checked })}
+                                      className="w-4 h-4 rounded"
+                                    />
+                                    <span className="text-sm">Estacionamento</span>
+                                  </label>
+                                  <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                      type="checkbox"
+                                      checked={formData.tem_google_negocios || false}
+                                      onChange={(e) => setFormData({ ...formData, tem_google_negocios: e.target.checked })}
+                                      className="w-4 h-4 rounded"
+                                    />
+                                    <span className="text-sm">Tenho Google Negócios</span>
+                                  </label>
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         )}
 

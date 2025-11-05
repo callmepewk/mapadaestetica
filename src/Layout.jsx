@@ -321,10 +321,16 @@ export default function Layout({ children }) {
                         </DropdownMenuItem>
                       )}
                       {isAdmin && (
-                        <DropdownMenuItem onClick={() => navigate(createPageUrl("Relatorios"))}>
-                          <TrendingUp className="w-4 h-4 mr-2" />
-                          Relatórios
-                        </DropdownMenuItem>
+                        <>
+                          <DropdownMenuItem onClick={() => navigate(createPageUrl("Relatorios"))}>
+                            <TrendingUp className="w-4 h-4 mr-2" />
+                            Relatórios
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => navigate(createPageUrl("ControlePlanos"))}>
+                            <CreditCard className="w-4 h-4 mr-2" />
+                            Controle de Planos
+                          </DropdownMenuItem>
+                        </>
                       )}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={handleLogout}>
