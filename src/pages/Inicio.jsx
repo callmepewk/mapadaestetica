@@ -15,7 +15,10 @@ import {
   Check,
   MessageCircle,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  CheckCircle, // Added for comparison modal
+  X,            // Added for comparison modal
+  AlertCircle   // Added for comparison modal
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,6 +39,12 @@ import { CardContent } from "@/components/ui/card";
 import CalculadoraLaserSection from "../components/home/CalculadoraLaserSection";
 import SEOStats from "../components/home/SEOStats";
 import OnboardingModal from "../components/home/OnboardingModal";
+import {
+  Dialog, // Added for comparison modal
+  DialogContent, // Added for comparison modal
+  DialogHeader, // Added for comparison modal
+  DialogTitle, // Added for comparison modal
+} from "@/components/ui/dialog"; // Added for comparison modal
 
 const categorias = [
   { nome: "Depilação", cor: "from-pink-500 to-rose-500", icon: "✨" },
@@ -57,6 +66,7 @@ export default function Inicio() {
   const [buscaCidade, setBuscaCidade] = useState("");
   const [buscaCategoria, setBuscaCategoria] = useState("");
   const [mostrarOnboarding, setMostrarOnboarding] = useState(false);
+  const [mostrarComparacao, setMostrarComparacao] = useState(false); // New state variable
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -117,7 +127,6 @@ export default function Inicio() {
       <TermosCondicoes />
       <OnboardingModal open={mostrarOnboarding} onComplete={handleOnboardingComplete} />
 
-      {/* PACIENTES: Hero, Categorias, Dr. Beleza */}
       {(isPaciente || !user) && (
         <>
           {/* Hero Section */}
@@ -263,6 +272,20 @@ export default function Inicio() {
       {isProfissional && (
         <>
           <SEOStats />
+
+          {/* Botão de Comparação */}
+          <div className="py-8 bg-white">
+            <div className="max-w-7xl mx-auto px-4 text-center">
+              <Button
+                onClick={() => setMostrarComparacao(true)}
+                size="lg"
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold shadow-xl"
+              >
+                📊 Veja a Comparação: Mapa da Estética vs Outros Sites
+              </Button>
+            </div>
+          </div>
+
           <Tutorial />
           <CalculadoraLaserSection />
 
@@ -322,7 +345,7 @@ export default function Inicio() {
         </section>
       )}
 
-      {/* PATROCINADORES & ANUNCIANTES - AMBOS */}
+      {/* PATROCINADORES - AMBOS */}
       <section className="py-12 sm:py-16 bg-gradient-to-br from-gray-50 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-8 sm:mb-12">
@@ -330,7 +353,7 @@ export default function Inicio() {
               Parceiros Oficiais
             </Badge>
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 px-2">
-              Nossos Patrocinadores e Anunciantes
+              Nossos Patrocinadores
             </h2>
             <p className="text-gray-600 text-base sm:text-lg px-4 max-w-2xl mx-auto">
               Empresas que confiam e investem no Mapa da Estética
@@ -353,9 +376,9 @@ export default function Inicio() {
 
           <div className="text-center mt-8">
             <p className="text-gray-600 mb-4">
-              Quer se tornar um patrocinador ou anunciante?
+              Quer se tornar um patrocinador?
             </p>
-            <a href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Tenho interesse em ser patrocinador/anunciante do Mapa da Estética!")}`} target="_blank" rel="noopener noreferrer">
+            <a href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Tenho interesse em ser patrocinador do Mapa da Estética!")}`} target="_blank" rel="noopener noreferrer">
               <Button size="lg" className="bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold border-2 border-[#2C2C2C]">
                 💼 Entre em Contato
                 <ArrowRight className="w-4 h-4 ml-2" />
@@ -365,7 +388,7 @@ export default function Inicio() {
         </div>
       </section>
 
-      {/* PLANOS PARA ANUNCIANTES - AMBOS - 5 PLANOS */}
+      {/* PLANOS PARA PATROCINADORES - AMBOS - 5 PLANOS */}
       <section className="py-12 sm:py-16 bg-[#1A1A2E]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-8 sm:mb-12">
@@ -373,7 +396,7 @@ export default function Inicio() {
               Milhões de impressões mensais • Público altamente segmentado • ROI comprovado
             </p>
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 sm:mb-4 px-2">
-              Planos para Anunciantes
+              Planos para Patrocinadores
             </h2>
           </div>
 
@@ -442,7 +465,7 @@ export default function Inicio() {
                   </li>
                 </ul>
 
-                <a href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Tenho interesse no Plano COBRE de Anunciante!")}`} target="_blank" rel="noopener noreferrer">
+                <a href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Tenho interesse no Plano COBRE de Patrocinador!")}`} target="_blank" rel="noopener noreferrer">
                   <Button className="w-full bg-white text-orange-600 hover:bg-gray-100 font-bold">
                     Contratar COBRE
                   </Button>
@@ -521,7 +544,7 @@ export default function Inicio() {
                   </li>
                 </ul>
 
-                <a href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Tenho interesse no Plano PRATA de Anunciante!")}`} target="_blank" rel="noopener noreferrer">
+                <a href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Tenho interesse no Plano PRATA de Patrocinador!")}`} target="_blank" rel="noopener noreferrer">
                   <Button className="w-full bg-white text-gray-700 hover:bg-gray-100 font-bold">
                     Contratar PRATA
                   </Button>
@@ -611,7 +634,7 @@ export default function Inicio() {
                   </li>
                 </ul>
 
-                <a href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Tenho interesse no Plano OURO de Anunciante!")}`} target="_blank" rel="noopener noreferrer">
+                <a href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Tenho interesse no Plano OURO de Patrocinador!")}`} target="_blank" rel="noopener noreferrer">
                   <Button className="w-full bg-[#2C2C2C] text-[#F7D426] hover:bg-[#3A3A3A] font-bold">
                     Contratar OURO
                   </Button>
@@ -709,7 +732,7 @@ export default function Inicio() {
                   </li>
                 </ul>
 
-                <a href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Tenho interesse no Plano DIAMANTE de Anunciante!")}`} target="_blank" rel="noopener noreferrer">
+                <a href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Tenho interesse no Plano DIAMANTE de Patrocinador!")}`} target="_blank" rel="noopener noreferrer">
                   <Button className="w-full bg-white text-cyan-600 hover:bg-gray-100 font-bold">
                     Contratar DIAMANTE
                   </Button>
@@ -811,7 +834,7 @@ export default function Inicio() {
                   </li>
                 </ul>
 
-                <a href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Tenho interesse no Plano PLATINA de Anunciante!")}`} target="_blank" rel="noopener noreferrer">
+                <a href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Tenho interesse no Plano PLATINA de Patrocinador!")}`} target="_blank" rel="noopener noreferrer">
                   <Button className="w-full bg-white text-purple-600 hover:bg-gray-100 font-bold">
                     Contratar PLATINA
                   </Button>
@@ -891,6 +914,334 @@ export default function Inicio() {
           </div>
         </div>
       </section>
+
+      {/* Modal de Comparação */}
+      <Dialog open={mostrarComparacao} onOpenChange={setMostrarComparacao}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              📊 Comparação: Mapa da Estética vs Concorrentes
+            </DialogTitle>
+            <p className="text-gray-600 mt-2">
+              Veja por que somos a melhor escolha para profissionais de estética
+            </p>
+          </DialogHeader>
+
+          <div className="space-y-8 py-4">
+            {/* Tabela Comparativa */}
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+                    <th className="p-4 text-left font-bold">Recurso</th>
+                    <th className="p-4 text-center font-bold">
+                      <div className="flex flex-col items-center">
+                        <span>🏆 Mapa da</span>
+                        <span>Estética</span>
+                      </div>
+                    </th>
+                    <th className="p-4 text-center font-bold">Concorrente A</th>
+                    <th className="p-4 text-center font-bold">Concorrente B</th>
+                    <th className="p-4 text-center font-bold">Concorrente C</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {/* Custo */}
+                  <tr className="border-b hover:bg-gray-50">
+                    <td className="p-4 font-semibold">💰 Custo Mensal</td>
+                    <td className="p-4 text-center bg-green-50">
+                      <span className="text-green-700 font-bold">Grátis - R$ 1.597</span>
+                      <p className="text-xs text-green-600 mt-1">5 planos flexíveis</p>
+                    </td>
+                    <td className="p-4 text-center">
+                      <span className="text-gray-700">R$ 299 - R$ 899</span>
+                      <p className="text-xs text-gray-500 mt-1">3 planos limitados</p>
+                    </td>
+                    <td className="p-4 text-center">
+                      <span className="text-gray-700">R$ 199 - R$ 599</span>
+                      <p className="text-xs text-gray-500 mt-1">Poucos recursos</p>
+                    </td>
+                    <td className="p-4 text-center">
+                      <span className="text-gray-700">R$ 399 - R$ 1.299</span>
+                      <p className="text-xs text-gray-500 mt-1">Recursos básicos</p>
+                    </td>
+                  </tr>
+
+                  {/* Plano Gratuito */}
+                  <tr className="border-b hover:bg-gray-50">
+                    <td className="p-4 font-semibold">🆓 Plano Gratuito</td>
+                    <td className="p-4 text-center bg-green-50">
+                      <CheckCircle className="w-6 h-6 text-green-600 mx-auto" />
+                      <p className="text-xs text-green-600 mt-1">Completo e funcional</p>
+                    </td>
+                    <td className="p-4 text-center">
+                      <X className="w-6 h-6 text-red-500 mx-auto" />
+                      <p className="text-xs text-gray-500 mt-1">Não disponível</p>
+                    </td>
+                    <td className="p-4 text-center">
+                      <AlertCircle className="w-6 h-6 text-yellow-500 mx-auto" />
+                      <p className="text-xs text-gray-500 mt-1">Muito limitado</p>
+                    </td>
+                    <td className="p-4 text-center">
+                      <X className="w-6 h-6 text-red-500 mx-auto" />
+                      <p className="text-xs text-gray-500 mt-1">Não disponível</p>
+                    </td>
+                  </tr>
+
+                  {/* Segmentação */}
+                  <tr className="border-b hover:bg-gray-50">
+                    <td className="p-4 font-semibold">🎯 Segmentação de Público</td>
+                    <td className="p-4 text-center bg-green-50">
+                      <CheckCircle className="w-6 h-6 text-green-600 mx-auto" />
+                      <p className="text-xs text-green-600 mt-1">100% estética</p>
+                    </td>
+                    <td className="p-4 text-center">
+                      <AlertCircle className="w-6 h-6 text-yellow-500 mx-auto" />
+                      <p className="text-xs text-gray-500 mt-1">Público misto</p>
+                    </td>
+                    <td className="p-4 text-center">
+                      <AlertCircle className="w-6 h-6 text-yellow-500 mx-auto" />
+                      <p className="text-xs text-gray-500 mt-1">Público geral</p>
+                    </td>
+                    <td className="p-4 text-center">
+                      <X className="w-6 h-6 text-red-500 mx-auto" />
+                      <p className="text-xs text-gray-500 mt-1">Sem foco</p>
+                    </td>
+                  </tr>
+
+                  {/* Ferramentas IA */}
+                  <tr className="border-b hover:bg-gray-50">
+                    <td className="p-4 font-semibold">🤖 Ferramentas com IA</td>
+                    <td className="p-4 text-center bg-green-50">
+                      <CheckCircle className="w-6 h-6 text-green-600 mx-auto" />
+                      <p className="text-xs text-green-600 mt-1">Dr. Beleza + Assistentes</p>
+                    </td>
+                    <td className="p-4 text-center">
+                      <X className="w-6 h-6 text-red-500 mx-auto" />
+                      <p className="text-xs text-gray-500 mt-1">Não possui</p>
+                    </td>
+                    <td className="p-4 text-center">
+                      <X className="w-6 h-6 text-red-500 mx-auto" />
+                      <p className="text-xs text-gray-500 mt-1">Não possui</p>
+                    </td>
+                    <td className="p-4 text-center">
+                      <X className="w-6 h-6 text-red-500 mx-auto" />
+                      <p className="text-xs text-gray-500 mt-1">Não possui</p>
+                    </td>
+                  </tr>
+
+                  {/* Calculadoras */}
+                  <tr className="border-b hover:bg-gray-50">
+                    <td className="p-4 font-semibold">🧮 Calculadoras Profissionais</td>
+                    <td className="p-4 text-center bg-green-50">
+                      <CheckCircle className="w-6 h-6 text-green-600 mx-auto" />
+                      <p className="text-xs text-green-600 mt-1">Viabilidade + Laser</p>
+                    </td>
+                    <td className="p-4 text-center">
+                      <X className="w-6 h-6 text-red-500 mx-auto" />
+                      <p className="text-xs text-gray-500 mt-1">Não possui</p>
+                    </td>
+                    <td className="p-4 text-center">
+                      <X className="w-6 h-6 text-red-500 mx-auto" />
+                      <p className="text-xs text-gray-500 mt-1">Não possui</p>
+                    </td>
+                    <td className="p-4 text-center">
+                      <X className="w-6 h-6 text-red-500 mx-auto" />
+                      <p className="text-xs text-gray-500 mt-1">Não possui</p>
+                    </td>
+                  </tr>
+
+                  {/* Relatórios de Preço */}
+                  <tr className="border-b hover:bg-gray-50">
+                    <td className="p-4 font-semibold">📊 Relatórios de Preço de Mercado</td>
+                    <td className="p-4 text-center bg-green-50">
+                      <CheckCircle className="w-6 h-6 text-green-600 mx-auto" />
+                      <p className="text-xs text-green-600 mt-1">Completo e detalhado</p>
+                    </td>
+                    <td className="p-4 text-center">
+                      <X className="w-6 h-6 text-red-500 mx-auto" />
+                      <p className="text-xs text-gray-500 mt-1">Não possui</p>
+                    </td>
+                    <td className="p-4 text-center">
+                      <X className="w-6 h-6 text-red-500 mx-auto" />
+                      <p className="text-xs text-gray-500 mt-1">Não possui</p>
+                    </td>
+                    <td className="p-4 text-center">
+                      <X className="w-6 h-6 text-red-500 mx-auto" />
+                      <p className="text-xs text-gray-500 mt-1">Não possui</p>
+                    </td>
+                  </tr>
+
+                  {/* Suporte */}
+                  <tr className="border-b hover:bg-gray-50">
+                    <td className="p-4 font-semibold">🎧 Suporte ao Cliente</td>
+                    <td className="p-4 text-center bg-green-50">
+                      <CheckCircle className="w-6 h-6 text-green-600 mx-auto" />
+                      <p className="text-xs text-green-600 mt-1">WhatsApp + Email + Chat</p>
+                    </td>
+                    <td className="p-4 text-center">
+                      <AlertCircle className="w-6 h-6 text-yellow-500 mx-auto" />
+                      <p className="text-xs text-gray-500 mt-1">Apenas email</p>
+                    </td>
+                    <td className="p-4 text-center">
+                      <AlertCircle className="w-6 h-6 text-yellow-500 mx-auto" />
+                      <p className="text-xs text-gray-500 mt-1">Email lento</p>
+                    </td>
+                    <td className="p-4 text-center">
+                      <X className="w-6 h-6 text-red-500 mx-auto" />
+                      <p className="text-xs text-gray-500 mt-1">Suporte limitado</p>
+                    </td>
+                  </tr>
+
+                  {/* Retenção de Dados */}
+                  <tr className="border-b hover:bg-gray-50">
+                    <td className="p-4 font-semibold">🔒 Seus Dados Protegidos</td>
+                    <td className="p-4 text-center bg-green-50">
+                      <CheckCircle className="w-6 h-6 text-green-600 mx-auto" />
+                      <p className="text-xs text-green-600 mt-1">100% seus, LGPD compliant</p>
+                    </td>
+                    <td className="p-4 text-center">
+                      <AlertCircle className="w-6 h-6 text-yellow-500 mx-auto" />
+                      <p className="text-xs text-gray-500 mt-1">Compartilhamento parcial</p>
+                    </td>
+                    <td className="p-4 text-center">
+                      <X className="w-6 h-6 text-red-500 mx-auto" />
+                      <p className="text-xs text-gray-500 mt-1">Dados compartilhados</p>
+                    </td>
+                    <td className="p-4 text-center">
+                      <X className="w-6 h-6 text-red-500 mx-auto" />
+                      <p className="text-xs text-gray-500 mt-1">Sem garantias</p>
+                    </td>
+                  </tr>
+
+                  {/* Verificação Profissional */}
+                  <tr className="border-b hover:bg-gray-50">
+                    <td className="p-4 font-semibold">✅ Verificação Profissional</td>
+                    <td className="p-4 text-center bg-green-50">
+                      <CheckCircle className="w-6 h-6 text-green-600 mx-auto" />
+                      <p className="text-xs text-green-600 mt-1">3 documentos verificados</p>
+                    </td>
+                    <td className="p-4 text-center">
+                      <AlertCircle className="w-6 h-6 text-yellow-500 mx-auto" />
+                      <p className="text-xs text-gray-500 mt-1">Verificação básica</p>
+                    </td>
+                    <td className="p-4 text-center">
+                      <X className="w-6 h-6 text-red-500 mx-auto" />
+                      <p className="text-xs text-gray-500 mt-1">Sem verificação</p>
+                    </td>
+                    <td className="p-4 text-center">
+                      <X className="w-6 h-6 text-red-500 mx-auto" />
+                      <p className="text-xs text-gray-500 mt-1">Sem verificação</p>
+                    </td>
+                  </tr>
+
+                  {/* Estatísticas em Tempo Real */}
+                  <tr className="border-b hover:bg-gray-50">
+                    <td className="p-4 font-semibold">📈 Estatísticas em Tempo Real</td>
+                    <td className="p-4 text-center bg-green-50">
+                      <CheckCircle className="w-6 h-6 text-green-600 mx-auto" />
+                      <p className="text-xs text-green-600 mt-1">Completas e detalhadas</p>
+                    </td>
+                    <td className="p-4 text-center">
+                      <AlertCircle className="w-6 h-6 text-yellow-500 mx-auto" />
+                      <p className="text-xs text-gray-500 mt-1">Básicas</p>
+                    </td>
+                    <td className="p-4 text-center">
+                      <AlertCircle className="w-6 h-6 text-yellow-500 mx-auto" />
+                      <p className="text-xs text-gray-500 mt-1">Atualizadas com atraso</p>
+                    </td>
+                    <td className="p-4 text-center">
+                      <X className="w-6 h-6 text-red-500 mx-auto" />
+                      <p className="text-xs text-gray-500 mt-1">Não possui</p>
+                    </td>
+                  </tr>
+
+                  {/* ROI */}
+                  <tr className="bg-gradient-to-r from-green-50 to-emerald-50">
+                    <td className="p-4 font-bold text-lg">💎 CUSTO-BENEFÍCIO</td>
+                    <td className="p-4 text-center">
+                      <span className="text-3xl">🏆</span>
+                      <p className="text-green-700 font-bold mt-2">VENCEDOR</p>
+                      <p className="text-xs text-green-600 mt-1">Melhor ROI do mercado</p>
+                    </td>
+                    <td className="p-4 text-center">
+                      <span className="text-2xl">🥈</span>
+                      <p className="text-gray-600 font-semibold mt-2">Médio</p>
+                    </td>
+                    <td className="p-4 text-center">
+                      <span className="text-2xl">🥉</span>
+                      <p className="text-gray-600 font-semibold mt-2">Baixo</p>
+                    </td>
+                    <td className="p-4 text-center">
+                      <span className="text-2xl">❌</span>
+                      <p className="text-gray-600 font-semibold mt-2">Insatisfatório</p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Destaques */}
+            <div className="grid md:grid-cols-3 gap-6">
+              <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50">
+                <CardContent className="p-6 text-center">
+                  <div className="text-5xl mb-4">💰</div>
+                  <h3 className="text-xl font-bold text-purple-900 mb-2">Melhor Custo-Benefício</h3>
+                  <p className="text-gray-700 text-sm">
+                    Do gratuito ao premium, temos o plano perfeito para você. Recursos que os concorrentes cobram caro, aqui você tem inclusos!
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-2 border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">
+                <CardContent className="p-6 text-center">
+                  <div className="text-5xl mb-4">🔒</div>
+                  <h3 className="text-xl font-bold text-green-900 mb-2">100% Seus Dados</h3>
+                  <p className="text-gray-700 text-sm">
+                    Seus clientes são SEUS! Não compartilhamos dados com terceiros. Total conformidade com LGPD e proteção garantida.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-cyan-50">
+                <CardContent className="p-6 text-center">
+                  <div className="text-5xl mb-4">🎯</div>
+                  <h3 className="text-xl font-bold text-blue-900 mb-2">Segmentação Total</h3>
+                  <p className="text-gray-700 text-sm">
+                    100% focado em estética! Enquanto outros misturam categorias, nós somos especialistas no seu segmento.
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* CTA Final */}
+            <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-8 text-center text-white">
+              <h3 className="text-3xl font-bold mb-4">🏆 A Escolha Óbvia</h3>
+              <p className="text-xl mb-6 text-white/90">
+                Junte-se a mais de 500 profissionais que já escolheram o Mapa da Estética
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link to={createPageUrl("CadastrarAnuncio")}>
+                  <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-100 font-bold shadow-xl">
+                    Começar Grátis Agora
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
+                </Link>
+                <a
+                  href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Vi a comparação e quero saber mais sobre os planos do Mapa da Estética!")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white/10">
+                    Falar com Especialista
+                    <MessageCircle className="w-5 h-5 ml-2" />
+                  </Button>
+                </a>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
