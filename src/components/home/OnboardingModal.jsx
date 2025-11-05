@@ -1,84 +1,22 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { User, Briefcase, Check, X, TestTube2 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
+import { User, Briefcase, X, Sparkles } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 
-const categorias = [
-  "Estética Facial - Tratamentos Básicos",
-  "Estética Facial - Rejuvenescimento",
-  "Estética Facial - Tratamento de Condições",
-  "Estética Facial - Harmonização",
-  "Estética Corporal - Redução de Medidas",
-  "Estética Corporal - Celulite e Estrias",
-  "Estética Corporal - Flacidez e Contorno",
-  "Depilação",
-  "Drenagem Linfática",
-  "Estética Capilar e Tricologia",
-  "Transplante Capilar",
-  "Manicure e Pedicure",
-  "Podologia",
-  "Micropigmentação e Design de Sobrancelhas",
-  "Micropigmentação - Olhos e Lábios",
-  "Extensão e Alongamento de Cílios",
-  "Medicina Estética",
-  "Dermatologia",
-  "Cirurgia Plástica",
-  "Fisioterapia Dermato Funcional",
-  "Nutrição Estética",
-  "Psicologia e Coaching de Imagem",
-  "Pilates e Fitness",
-  "Acupuntura Estética",
-  "Terapias Integrativas e Complementares",
-  "Biomedicina Estética",
-  "Enfermagem Estética",
-  "Farmácia Estética",
-  "Odontologia Estética",
-  "Massoterapia",
-  "Barbearia",
-  "Tatuagem e Piercing",
-  "Spa e Bem-Estar",
-  "Longevidade e Medicina Integrativa",
-  "Clínicas e Consultórios",
-  "Salões de Beleza",
-  "Equipamentos - Venda",
-  "Equipamentos - Locação",
-  "Equipamentos - Seminovos",
-  "Cosméticos e Produtos",
-  "Injetáveis e Preenchedores",
-  "Nutracêuticos e Suplementos",
-  "Móveis e Decoração para Clínicas",
-  "Softwares de Gestão",
-  "Uniformes e Vestuário Profissional",
-  "Roupas de Compressão Pós-Cirúrgica",
-  "Alimentação Saudável e Fitness",
-  "Educação - Cursos e Workshops",
-  "Eventos - Congressos e Feiras",
-  "Consultoria e Assessoria",
-  "Franquias",
-  "Turismo de Saúde",
-  "Seguros e Financiamentos",
-  "Marketing e Design",
-  "Outros"
+const estadosBrasil = ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"];
+
+const especialidades = [
+  "Estética Facial", "Estética Corporal", "Depilação", "Micropigmentação",
+  "Harmonização Facial", "Dermatologia", "Medicina Estética", "Cirurgia Plástica",
+  "Biomedicina Estética", "Enfermagem Estética", "Fisioterapia Dermato Funcional",
+  "Massoterapia", "Design de Sobrancelhas", "Manicure e Pedicure", "Podologia",
+  "Estética Capilar", "Transplante Capilar", "Nutrição Estética", "Outros"
 ];
 
 export default function OnboardingModal({ open, onComplete, onClose }) {
@@ -92,22 +30,15 @@ export default function OnboardingModal({ open, onComplete, onClose }) {
     endereco_completo: ""
   });
   const [dadosProfissional, setDadosProfissional] = useState({
-    tem_google_negocios: false,
     especialidade: "",
     categoria: "",
     subcategoria: "",
     possui_clinica: false,
     possui_ar_condicionado: false,
-    possui_estacionamento: false
+    possui_estacionamento: false,
+    tem_google_negocios: false
   });
   const [loading, setLoading] = useState(false);
-
-  const handleGoogleLogin = () => {
-    // Usar o sistema de autenticação do Base44
-    // Redireciona para a página de login que já tem integração com Google
-    const currentPath = window.location.pathname + window.location.search;
-    base44.auth.redirectToLogin(currentPath);
-  };
 
   const handleTipoUsuarioSubmit = () => {
     if (!tipoUsuario) return;
@@ -132,7 +63,7 @@ export default function OnboardingModal({ open, onComplete, onClose }) {
     try {
       const dados = {
         ...dadosBasicos,
-        tipo_usuario: tipoUsuario,
+        tipo_usuario: tipoUsuario === "tester" ? "profissional" : tipoUsuario,
         cadastro_completo: true,
         ...(tipoUsuario === "profissional" || tipoUsuario === "tester" ? dadosProfissional : {}),
         ...(tipoUsuario === "tester" ? {
@@ -142,9 +73,7 @@ export default function OnboardingModal({ open, onComplete, onClose }) {
 
       await base44.auth.updateMe(dados);
 
-      // Se for profissional, mostrar notificação com opções antes de recarregar
       if (tipoUsuario === "profissional" || tipoUsuario === "tester") {
-        // Criar um overlay com notificação
         const overlay = document.createElement('div');
         overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
 
@@ -176,7 +105,6 @@ export default function OnboardingModal({ open, onComplete, onClose }) {
         overlay.appendChild(notification);
         document.body.appendChild(overlay);
 
-        // Aguardar 60 segundos ou clique antes de recarregar automaticamente
         setTimeout(() => {
           if (document.body.contains(overlay)) {
             overlay.remove();
@@ -184,11 +112,9 @@ export default function OnboardingModal({ open, onComplete, onClose }) {
           }
         }, 60000);
       } else {
-        // Paciente: recarregar imediatamente
         window.location.reload();
       }
 
-      // Chamar onComplete se fornecido
       if (onComplete) {
         onComplete();
       }
@@ -199,334 +125,264 @@ export default function OnboardingModal({ open, onComplete, onClose }) {
     }
   };
 
-  const handleClose = (e) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    if (onClose) {
-      onClose();
-    }
-  };
-
-  const handleOpenChange = (isOpen) => {
-    if (!isOpen && onClose) {
-      onClose();
-    }
-  };
-
   return (
     <Dialog 
       open={open} 
-      onOpenChange={handleOpenChange}
+      onOpenChange={(isOpen) => {
+        if (!isOpen && onClose) {
+          onClose();
+        }
+      }}
     >
       <DialogContent 
-        className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto"
-        onEscapeKeyDown={handleClose}
-        onPointerDownOutside={handleClose}
-        onInteractOutside={handleClose}
+        className="sm:max-w-[95vw] md:max-w-[600px] max-h-[90vh] overflow-y-auto p-4 sm:p-6"
+        onPointerDownOutside={(e) => {
+          // Não fazer nada - permitir clique fora para fechar
+        }}
       >
         <button
-          onClick={handleClose}
-          className="absolute top-4 right-4 w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors z-50"
+          onClick={() => {
+            if (onClose) onClose();
+          }}
+          className="absolute top-2 right-2 sm:top-4 sm:right-4 w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors z-50"
           type="button"
           aria-label="Fechar"
         >
           <X className="w-5 h-5" />
         </button>
 
-        <DialogHeader>
-          <DialogTitle className="text-2xl">Bem-vindo ao Mapa da Estética! 🎉</DialogTitle>
-          <DialogDescription>
+        <DialogHeader className="space-y-2">
+          <DialogTitle className="text-xl sm:text-2xl pr-8">Bem-vindo ao Mapa da Estética! 🎉</DialogTitle>
+          <DialogDescription className="text-sm sm:text-base">
             Complete seu cadastro em {tipoUsuario === "paciente" ? "2" : "3"} passos rápidos
           </DialogDescription>
         </DialogHeader>
 
         <AnimatePresence mode="wait">
-          {/* Etapa 1: Tipo de Usuário */}
+          {/* Etapa 1 */}
           {etapa === 1 && (
             <motion.div
               key="etapa1"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="space-y-6 py-4"
+              className="space-y-4 sm:space-y-6 py-2 sm:py-4"
             >
               <div className="text-center">
-                <h3 className="text-xl font-bold mb-2">Você é um paciente, profissional ou quer testar?</h3>
-                <p className="text-sm text-gray-600">Isso nos ajuda a personalizar sua experiência</p>
+                <h3 className="text-lg sm:text-xl font-bold mb-2">Você é um paciente, profissional ou quer testar?</h3>
+                <p className="text-xs sm:text-sm text-gray-600">Isso nos ajuda a personalizar sua experiência</p>
               </div>
 
-              <RadioGroup value={tipoUsuario} onValueChange={setTipoUsuario}>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <label
-                    className={`relative cursor-pointer rounded-xl border-2 p-6 hover:border-pink-500 transition-colors ${
-                      tipoUsuario === "paciente" ? "border-pink-500 bg-pink-50" : "border-gray-200"
-                    }`}
-                  >
-                    <RadioGroupItem value="paciente" id="paciente" className="sr-only" />
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="w-16 h-16 rounded-full bg-pink-100 flex items-center justify-center">
-                        <User className="w-8 h-8 text-pink-600" />
-                      </div>
-                      <div className="text-center">
-                        <p className="font-bold text-lg">Paciente/Cliente</p>
-                        <p className="text-xs text-gray-600">Busco serviços de estética</p>
-                      </div>
+              <RadioGroup value={tipoUsuario} onValueChange={setTipoUsuario} className="space-y-3">
+                <div 
+                  className={`flex items-center space-x-3 p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                    tipoUsuario === 'paciente' ? 'border-pink-500 bg-pink-50' : 'border-gray-200 hover:border-pink-300'
+                  }`}
+                  onClick={() => setTipoUsuario('paciente')}
+                >
+                  <RadioGroupItem value="paciente" id="paciente" />
+                  <Label htmlFor="paciente" className="flex items-center gap-3 cursor-pointer flex-1">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-pink-100 flex items-center justify-center flex-shrink-0">
+                      <User className="w-5 h-5 sm:w-6 sm:h-6 text-pink-600" />
                     </div>
-                    {tipoUsuario === "paciente" && (
-                      <div className="absolute top-2 right-2">
-                        <div className="w-6 h-6 rounded-full bg-pink-600 flex items-center justify-center">
-                          <Check className="w-4 h-4 text-white" />
-                        </div>
-                      </div>
-                    )}
-                  </label>
+                    <div className="flex-1">
+                      <p className="font-semibold text-sm sm:text-base">Paciente/Cliente</p>
+                      <p className="text-xs sm:text-sm text-gray-600">Busco serviços de estética</p>
+                    </div>
+                  </Label>
+                </div>
 
-                  <label
-                    className={`relative cursor-pointer rounded-xl border-2 p-6 hover:border-purple-500 transition-colors ${
-                      tipoUsuario === "profissional" ? "border-purple-500 bg-purple-50" : "border-gray-200"
-                    }`}
-                  >
-                    <RadioGroupItem value="profissional" id="profissional" className="sr-only" />
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center">
-                        <Briefcase className="w-8 h-8 text-purple-600" />
-                      </div>
-                      <div className="text-center">
-                        <p className="font-bold text-lg">Profissional</p>
-                        <p className="text-xs text-gray-600">Ofereço serviços de estética</p>
-                      </div>
+                <div 
+                  className={`flex items-center space-x-3 p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                    tipoUsuario === 'profissional' ? 'border-purple-500 bg-purple-50' : 'border-gray-200 hover:border-purple-300'
+                  }`}
+                  onClick={() => setTipoUsuario('profissional')}
+                >
+                  <RadioGroupItem value="profissional" id="profissional" />
+                  <Label htmlFor="profissional" className="flex items-center gap-3 cursor-pointer flex-1">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+                      <Briefcase className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
                     </div>
-                    {tipoUsuario === "profissional" && (
-                      <div className="absolute top-2 right-2">
-                        <div className="w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center">
-                          <Check className="w-4 h-4 text-white" />
-                        </div>
-                      </div>
-                    )}
-                  </label>
+                    <div className="flex-1">
+                      <p className="font-semibold text-sm sm:text-base">Profissional</p>
+                      <p className="text-xs sm:text-sm text-gray-600">Ofereço serviços de estética</p>
+                    </div>
+                  </Label>
+                </div>
 
-                  <label
-                    className={`relative cursor-pointer rounded-xl border-2 p-6 hover:border-[#F7D426] transition-colors ${
-                      tipoUsuario === "tester" ? "border-[#F7D426] bg-[#FFF9E6]" : "border-gray-200"
-                    }`}
-                  >
-                    <RadioGroupItem value="tester" id="tester" className="sr-only" />
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="w-16 h-16 rounded-full bg-[#FFF9E6] flex items-center justify-center border-2 border-[#F7D426]">
-                        <TestTube2 className="w-8 h-8 text-[#F7D426]" />
-                      </div>
-                      <div className="text-center">
-                        <p className="font-bold text-lg">Teste Grátis</p>
-                        <p className="text-xs text-gray-600">7 dias completos</p>
-                        <Badge className="mt-1 bg-[#F7D426] text-[#2C2C2C] text-xs">
-                          Tudo Ilimitado!
-                        </Badge>
-                      </div>
+                <div 
+                  className={`flex items-center space-x-3 p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                    tipoUsuario === 'tester' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'
+                  }`}
+                  onClick={() => setTipoUsuario('tester')}
+                >
+                  <RadioGroupItem value="tester" id="tester" />
+                  <Label htmlFor="tester" className="flex items-center gap-3 cursor-pointer flex-1">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                      <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
                     </div>
-                    {tipoUsuario === "tester" && (
-                      <div className="absolute top-2 right-2">
-                        <div className="w-6 h-6 rounded-full bg-[#F7D426] flex items-center justify-center">
-                          <Check className="w-4 h-4 text-[#2C2C2C]" />
-                        </div>
-                      </div>
-                    )}
-                  </label>
+                    <div className="flex-1">
+                      <p className="font-semibold text-sm sm:text-base">Teste Grátis (7 dias)</p>
+                      <p className="text-xs sm:text-sm text-gray-600">Experimente como profissional</p>
+                    </div>
+                  </Label>
                 </div>
               </RadioGroup>
 
               {tipoUsuario === "tester" && (
-                <div className="bg-gradient-to-r from-[#FFF9E6] to-[#FFE066] p-4 rounded-lg border-2 border-[#F7D426]">
-                  <p className="text-sm font-medium text-[#2C2C2C] mb-2">
-                    ✨ Teste Grátis por 7 Dias:
-                  </p>
-                  <ul className="text-xs text-[#2C2C2C] space-y-1 list-disc list-inside">
-                    <li>Anúncios ilimitados</li>
-                    <li>Tags e especialidades ilimitadas</li>
-                    <li>Acesso a todas as funcionalidades</li>
-                    <li>Sem necessidade de cartão de crédito</li>
-                  </ul>
-                </div>
+                <Badge className="w-full bg-blue-100 text-blue-800 text-xs sm:text-sm py-2 justify-center">
+                  ⏰ 7 dias de teste com todos os recursos!
+                </Badge>
               )}
 
               <Button
                 onClick={handleTipoUsuarioSubmit}
                 disabled={!tipoUsuario}
-                className="w-full bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
+                className="w-full bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-sm sm:text-base py-5 sm:py-6"
               >
                 Continuar
               </Button>
             </motion.div>
           )}
 
-          {/* Etapa 2: Dados Básicos */}
+          {/* Etapa 2 */}
           {etapa === 2 && (
             <motion.div
               key="etapa2"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="space-y-4 py-4"
+              className="space-y-3 sm:space-y-4 py-2 sm:py-4"
             >
-              <div className="text-center mb-4">
-                <h3 className="text-xl font-bold mb-2">Informações Básicas</h3>
-                <p className="text-sm text-gray-600">Preencha seus dados de contato</p>
-              </div>
+              <h3 className="text-lg sm:text-xl font-bold text-center mb-2 sm:mb-4">Informações Básicas</h3>
 
-              <div className="grid gap-4">
+              <div className="space-y-3">
                 <div>
-                  <Label htmlFor="telefone">Telefone *</Label>
+                  <Label htmlFor="telefone" className="text-sm">Telefone *</Label>
                   <Input
                     id="telefone"
                     placeholder="(00) 00000-0000"
                     value={dadosBasicos.telefone}
-                    onChange={(e) => setDadosBasicos({ ...dadosBasicos, telefone: e.target.value })}
+                    onChange={(e) => setDadosBasicos({...dadosBasicos, telefone: e.target.value})}
+                    className="mt-1"
+                    required
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="whatsapp">WhatsApp</Label>
+                  <Label htmlFor="whatsapp" className="text-sm">WhatsApp</Label>
                   <Input
                     id="whatsapp"
                     placeholder="(00) 00000-0000"
                     value={dadosBasicos.whatsapp}
-                    onChange={(e) => setDadosBasicos({ ...dadosBasicos, whatsapp: e.target.value })}
+                    onChange={(e) => setDadosBasicos({...dadosBasicos, whatsapp: e.target.value})}
+                    className="mt-1"
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <Label htmlFor="cidade">Cidade *</Label>
+                    <Label htmlFor="cidade" className="text-sm">Cidade *</Label>
                     <Input
                       id="cidade"
                       placeholder="Sua cidade"
                       value={dadosBasicos.cidade}
-                      onChange={(e) => setDadosBasicos({ ...dadosBasicos, cidade: e.target.value })}
+                      onChange={(e) => setDadosBasicos({...dadosBasicos, cidade: e.target.value})}
+                      className="mt-1"
+                      required
                     />
                   </div>
-
                   <div>
-                    <Label htmlFor="estado">Estado *</Label>
+                    <Label htmlFor="estado" className="text-sm">Estado *</Label>
                     <Input
                       id="estado"
                       placeholder="UF"
-                      maxLength={2}
                       value={dadosBasicos.estado}
-                      onChange={(e) => setDadosBasicos({ ...dadosBasicos, estado: e.target.value.toUpperCase() })}
+                      onChange={(e) => setDadosBasicos({...dadosBasicos, estado: e.target.value.toUpperCase()})}
+                      maxLength={2}
+                      className="mt-1"
+                      required
                     />
                   </div>
                 </div>
 
                 <div>
-                  <Label htmlFor="endereco">Endereço Completo</Label>
+                  <Label htmlFor="endereco" className="text-sm">Endereço Completo</Label>
                   <Input
                     id="endereco"
                     placeholder="Rua, número, bairro"
                     value={dadosBasicos.endereco_completo}
-                    onChange={(e) => setDadosBasicos({ ...dadosBasicos, endereco_completo: e.target.value })}
+                    onChange={(e) => setDadosBasicos({...dadosBasicos, endereco_completo: e.target.value})}
+                    className="mt-1"
                   />
                 </div>
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-2 pt-2">
                 <Button
-                  variant="outline"
                   onClick={() => setEtapa(1)}
-                  className="flex-1"
+                  variant="outline"
+                  className="w-full sm:flex-1 text-sm"
                 >
                   Voltar
                 </Button>
                 <Button
                   onClick={handleDadosBasicosSubmit}
                   disabled={loading}
-                  className="flex-1 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
+                  className="w-full sm:flex-1 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-sm"
                 >
-                  {tipoUsuario === "paciente" || tipoUsuario === "tester" ? "Finalizar" : "Continuar"}
+                  {loading ? "Salvando..." : (tipoUsuario === "profissional" ? "Continuar" : "Finalizar")}
                 </Button>
               </div>
             </motion.div>
           )}
 
-          {/* Etapa 3: Dados Profissionais (apenas para profissionais e testers) */}
-          {etapa === 3 && (tipoUsuario === "profissional" || tipoUsuario === "tester") && (
+          {/* Etapa 3 */}
+          {etapa === 3 && (
             <motion.div
               key="etapa3"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="space-y-4 py-4"
+              className="space-y-3 sm:space-y-4 py-2 sm:py-4"
             >
-              <div className="text-center mb-4">
-                <h3 className="text-xl font-bold mb-2">Informações Profissionais</h3>
-                <p className="text-sm text-gray-600">Conte-nos sobre seu negócio (opcional)</p>
-              </div>
+              <h3 className="text-lg sm:text-xl font-bold text-center mb-2 sm:mb-4">Informações Profissionais</h3>
 
-              <div className="grid gap-4">
+              <div className="space-y-3">
                 <div>
-                  <Label>Você possui Google Negócios?</Label>
-                  <RadioGroup
-                    value={dadosProfissional.tem_google_negocios.toString()}
-                    onValueChange={(value) => setDadosProfissional({ ...dadosProfissional, tem_google_negocios: value === "true" })}
-                  >
-                    <div className="flex gap-4">
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="true" id="google-sim" />
-                        <Label htmlFor="google-sim">Sim</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="false" id="google-nao" />
-                        <Label htmlFor="google-nao">Não</Label>
-                      </div>
-                    </div>
-                  </RadioGroup>
-                </div>
-
-                <div>
-                  <Label htmlFor="categoria">Categoria Principal</Label>
-                  <Select
-                    value={dadosProfissional.categoria}
-                    onValueChange={(value) => setDadosProfissional({ ...dadosProfissional, categoria: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione uma categoria" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categorias.map((cat) => (
-                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="especialidade">Especialidade</Label>
-                  <Input
+                  <Label htmlFor="especialidade" className="text-sm">Especialidade Principal *</Label>
+                  <select
                     id="especialidade"
-                    placeholder="Ex: Harmonização Facial, Depilação a Laser..."
                     value={dadosProfissional.especialidade}
-                    onChange={(e) => setDadosProfissional({ ...dadosProfissional, especialidade: e.target.value })}
-                  />
+                    onChange={(e) => setDadosProfissional({...dadosProfissional, especialidade: e.target.value})}
+                    className="w-full mt-1 p-2 border rounded-md text-sm"
+                    required
+                  >
+                    <option value="">Selecione...</option>
+                    {especialidades.map(esp => (
+                      <option key={esp} value={esp}>{esp}</option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Seu estabelecimento possui:</Label>
+                  <Label className="text-sm font-semibold">Recursos do Estabelecimento</Label>
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={dadosProfissional.possui_clinica}
-                        onChange={(e) => setDadosProfissional({ ...dadosProfissional, possui_clinica: e.target.checked })}
-                        className="rounded"
+                        onChange={(e) => setDadosProfissional({...dadosProfissional, possui_clinica: e.target.checked})}
+                        className="w-4 h-4 rounded"
                       />
-                      <span className="text-sm">Clínica própria</span>
+                      <span className="text-sm">Possuo clínica própria</span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={dadosProfissional.possui_ar_condicionado}
-                        onChange={(e) => setDadosProfissional({ ...dadosProfissional, possui_ar_condicionado: e.target.checked })}
-                        className="rounded"
+                        onChange={(e) => setDadosProfissional({...dadosProfissional, possui_ar_condicionado: e.target.checked})}
+                        className="w-4 h-4 rounded"
                       />
                       <span className="text-sm">Ar condicionado</span>
                     </label>
@@ -534,29 +390,39 @@ export default function OnboardingModal({ open, onComplete, onClose }) {
                       <input
                         type="checkbox"
                         checked={dadosProfissional.possui_estacionamento}
-                        onChange={(e) => setDadosProfissional({ ...dadosProfissional, possui_estacionamento: e.target.checked })}
-                        className="rounded"
+                        onChange={(e) => setDadosProfissional({...dadosProfissional, possui_estacionamento: e.target.checked})}
+                        className="w-4 h-4 rounded"
                       />
                       <span className="text-sm">Estacionamento</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={dadosProfissional.tem_google_negocios}
+                        onChange={(e) => setDadosProfissional({...dadosProfissional, tem_google_negocios: e.target.checked})}
+                        className="w-4 h-4 rounded"
+                      />
+                      <span className="text-sm">Tenho Google Negócios</span>
                     </label>
                   </div>
                 </div>
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-2 pt-2">
                 <Button
-                  variant="outline"
                   onClick={() => setEtapa(2)}
-                  className="flex-1"
+                  variant="outline"
+                  className="w-full sm:flex-1 text-sm"
+                  disabled={loading}
                 >
                   Voltar
                 </Button>
                 <Button
                   onClick={salvarDados}
-                  disabled={loading}
-                  className="flex-1 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
+                  disabled={loading || !dadosProfissional.especialidade}
+                  className="w-full sm:flex-1 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-sm"
                 >
-                  {loading ? "Salvando..." : "Finalizar Cadastro"}
+                  {loading ? "Finalizando..." : "Finalizar Cadastro"}
                 </Button>
               </div>
             </motion.div>
