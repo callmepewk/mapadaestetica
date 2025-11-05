@@ -21,7 +21,9 @@ import {
   Gift,
   TrendingUp,
   Award,
-  Check
+  Check,
+  ArrowLeft,
+  ArrowRight
 } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
 
@@ -127,6 +129,7 @@ export default function Produtos() {
   const [ordenacao, setOrdenacao] = useState("relevancia");
   const [categoriaSelecionada, setCategoriaSelecionada] = useState("Todas");
   const [user, setUser] = useState(null);
+  const [tipoBusca, setTipoBusca] = useState(null); // null, 'produtos', 'servicos'
 
   React.useEffect(() => {
     const fetchUser = async () => {
@@ -165,7 +168,19 @@ export default function Produtos() {
       produto.descricao?.toLowerCase().includes(busca.toLowerCase()) ||
       produto.marca?.toLowerCase().includes(busca.toLowerCase());
 
-    return matchCategoria && matchBusca;
+    // Filtrar por tipo de busca
+    let matchTipo = true;
+    if (tipoBusca === 'servicos') {
+      matchTipo = produto.categoria === "Serviços Contratáveis" || 
+                  produto.categoria === "Serviços para Pacientes" ||
+                  produto.categoria === "Produtos para Pacientes";
+    } else if (tipoBusca === 'produtos') {
+      matchTipo = produto.categoria !== "Serviços Contratáveis" && 
+                  produto.categoria !== "Serviços para Pacientes" &&
+                  produto.categoria !== "Produtos para Pacientes";
+    }
+
+    return matchCategoria && matchBusca && matchTipo;
   });
 
   const categoriasDisponiveis = [
@@ -181,63 +196,210 @@ export default function Produtos() {
     window.open(url, '_blank');
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
-      <div className="max-w-7xl mx-auto px-4">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <Badge className="mb-4 bg-[#F7D426] text-[#2C2C2C] font-bold">
-            {isPaciente ? "🛍️ Produtos e Serviços para Você" : "💼 Serviços Profissionais"}
-          </Badge>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            {isPaciente ? "Produtos e Serviços" : "Serviços Contratáveis"}
-          </h1>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            {isPaciente
-              ? "Encontre produtos e serviços de qualidade para cuidar da sua beleza e bem-estar"
-              : "Impulsione seu negócio com nossos serviços profissionais"
-            }
-          </p>
-        </div>
+  // Se não escolheu o tipo de busca ainda, mostra a seleção
+  if (tipoBusca === null) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="text-center mb-8">
+            <Badge className="mb-4 bg-[#F7D426] text-[#2C2C2C] font-bold">
+              {isPaciente ? "🛍️ Marketplace" : "💼 Loja Profissional"}
+            </Badge>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              O que você está procurando?
+            </h1>
+            <p className="text-gray-600 max-w-2xl mx-auto mb-8">
+              Selecione uma opção para começar sua busca
+            </p>
+          </div>
 
-        {/* Banner Informativo */}
-        <Card className="mb-8 border-none shadow-lg bg-gradient-to-r from-[#F7D426] to-[#FFE066]">
-          <CardContent className="p-6 md:p-8">
-            <div className="flex flex-col md:flex-row items-center gap-6">
-              <div className="w-16 h-16 bg-[#2C2C2C] rounded-2xl flex items-center justify-center flex-shrink-0">
-                <Award className="w-8 h-8 text-[#F7D426]" />
-              </div>
-              <div className="flex-1 text-center md:text-left">
-                <h2 className="text-2xl font-bold text-[#2C2C2C] mb-2">
-                  Como Funciona o Sistema de Pontos?
-                </h2>
-                <p className="text-[#2C2C2C] mb-3">
-                  Cada compra acumula pontos automaticamente. Troque seus pontos por produtos exclusivos ou descontos especiais!
-                </p>
-                <div className="flex flex-wrap gap-4 justify-center md:justify-start">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-[#2C2C2C] rounded-full flex items-center justify-center text-[#F7D426] font-bold">
-                      ✓
-                    </div>
-                    <span className="text-sm text-[#2C2C2C] font-medium">Ganhe pontos a cada compra</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-[#2C2C2C] rounded-full flex items-center justify-center text-[#F7D426] font-bold">
-                      ✓
-                    </div>
-                    <span className="text-sm text-[#2C2C2C] font-medium">Resgate produtos exclusivos</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-[#2C2C2C] rounded-full flex items-center justify-center text-[#F7D426] font-bold">
-                      ✓
-                    </div>
-                    <span className="text-sm text-[#2C2C2C] font-medium">Descontos especiais</span>
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Card Produtos */}
+            <Card 
+              onClick={() => setTipoBusca('produtos')}
+              className="border-none shadow-xl hover:shadow-2xl transition-all cursor-pointer group overflow-hidden"
+            >
+              <div className="h-48 bg-gradient-to-br from-purple-500 to-pink-500 relative overflow-hidden">
+                <div className="absolute inset-0 bg-white/10 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-white text-center">
+                    <div className="text-6xl mb-4">🛍️</div>
+                    <h3 className="text-2xl font-bold">Produtos</h3>
                   </div>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+              <CardContent className="p-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  Buscar Produtos
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  Encontre produtos de beleza, cosméticos, equipamentos e acessórios
+                </p>
+                <ul className="space-y-2 text-sm text-gray-600">
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-green-600" />
+                    <span>Produtos de qualidade</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-green-600" />
+                    <span>Marcas reconhecidas</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-green-600" />
+                    <span>Ganhe pontos em compras</span>
+                  </li>
+                </ul>
+                <Button className="w-full mt-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+                  Ver Produtos
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Card Serviços */}
+            <Card 
+              onClick={() => setTipoBusca('servicos')}
+              className="border-none shadow-xl hover:shadow-2xl transition-all cursor-pointer group overflow-hidden"
+            >
+              <div className="h-48 bg-gradient-to-br from-blue-500 to-cyan-500 relative overflow-hidden">
+                <div className="absolute inset-0 bg-white/10 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-white text-center">
+                    <div className="text-6xl mb-4">💼</div>
+                    <h3 className="text-2xl font-bold">Serviços</h3>
+                  </div>
+                </div>
+              </div>
+              <CardContent className="p-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  Contratar Serviços
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  {isProfissional 
+                    ? "Serviços profissionais para impulsionar seu negócio"
+                    : "Consultas, tratamentos e serviços especializados"
+                  }
+                </p>
+                <ul className="space-y-2 text-sm text-gray-600">
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-green-600" />
+                    <span>{isProfissional ? "Google Negócios" : "Consultas online"}</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-green-600" />
+                    <span>{isProfissional ? "Geração de imagens" : "Kits personalizados"}</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-green-600" />
+                    <span>Atendimento especializado</span>
+                  </li>
+                </ul>
+                <Button className="w-full mt-4 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700">
+                  Ver Serviços
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Banner Informativo */}
+          <Card className="mt-8 border-none shadow-lg bg-gradient-to-r from-[#F7D426] to-[#FFE066]">
+            <CardContent className="p-6">
+              <div className="flex flex-col md:flex-row items-center gap-4">
+                <div className="w-12 h-12 bg-[#2C2C2C] rounded-full flex items-center justify-center flex-shrink-0">
+                  <Award className="w-6 h-6 text-[#F7D426]" />
+                </div>
+                <div className="flex-1 text-center md:text-left">
+                  <h3 className="text-lg font-bold text-[#2C2C2C] mb-1">
+                    Sistema de Pontos
+                  </h3>
+                  <p className="text-sm text-[#2C2C2C]">
+                    Ganhe pontos em cada compra e troque por produtos exclusivos ou descontos especiais!
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
+      <div className="max-w-7xl mx-auto px-4">
+        {/* Header com botão de voltar */}
+        <div className="mb-6">
+          <Button
+            variant="ghost"
+            onClick={() => setTipoBusca(null)}
+            className="mb-4"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Voltar
+          </Button>
+          
+          <div className="text-center">
+            <Badge className="mb-4 bg-[#F7D426] text-[#2C2C2C] font-bold">
+              {tipoBusca === 'produtos' ? "🛍️ Produtos" : "💼 Serviços"}
+            </Badge>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              {tipoBusca === 'produtos' 
+                ? "Produtos de Beleza e Estética"
+                : isPaciente ? "Serviços e Consultas" : "Serviços Profissionais"
+              }
+            </h1>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              {tipoBusca === 'produtos'
+                ? "Encontre produtos de qualidade para cuidar da sua beleza e bem-estar"
+                : isPaciente
+                  ? "Encontre serviços e consultas de qualidade"
+                  : "Impulsione seu negócio com nossos serviços profissionais"
+              }
+            </p>
+          </div>
+        </div>
+
+        {/* Banner Informativo */}
+        {tipoBusca === 'produtos' && (
+          <Card className="mb-8 border-none shadow-lg bg-gradient-to-r from-[#F7D426] to-[#FFE066]">
+            <CardContent className="p-6 md:p-8">
+              <div className="flex flex-col md:flex-row items-center gap-6">
+                <div className="w-16 h-16 bg-[#2C2C2C] rounded-2xl flex items-center justify-center flex-shrink-0">
+                  <Award className="w-8 h-8 text-[#F7D426]" />
+                </div>
+                <div className="flex-1 text-center md:text-left">
+                  <h2 className="text-2xl font-bold text-[#2C2C2C] mb-2">
+                    Como Funciona o Sistema de Pontos?
+                  </h2>
+                  <p className="text-[#2C2C2C] mb-3">
+                    Cada compra acumula pontos automaticamente. Troque seus pontos por produtos exclusivos ou descontos especiais!
+                  </p>
+                  <div className="flex flex-wrap gap-4 justify-center md:justify-start">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-[#2C2C2C] rounded-full flex items-center justify-center text-[#F7D426] font-bold">
+                        ✓
+                      </div>
+                      <span className="text-sm text-[#2C2C2C] font-medium">Ganhe pontos a cada compra</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-[#2C2C2C] rounded-full flex items-center justify-center text-[#F7D426] font-bold">
+                        ✓
+                      </div>
+                      <span className="text-sm text-[#2C2C2C] font-medium">Resgate produtos exclusivos</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-[#2C2C2C] rounded-full flex items-center justify-center text-[#F7D426] font-bold">
+                        ✓
+                      </div>
+                      <span className="text-sm text-[#2C2C2C] font-medium">Descontos especiais</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Filters */}
         <Card className="p-6 mb-8 shadow-lg border-none">
@@ -330,7 +492,7 @@ export default function Produtos() {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400 text-5xl">
-                      {produto.categoria === "Serviços Contratáveis" ? "💼" : "🛍️"}
+                      {produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" ? "💼" : "🛍️"}
                     </div>
                   )}
 
@@ -376,7 +538,7 @@ export default function Produtos() {
 
                   <div className="flex items-center justify-between pt-3 border-t">
                     <div>
-                      {produto.categoria === "Serviços Contratáveis" ? (
+                      {produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" ? (
                         <p className="text-lg font-bold text-blue-600">
                           {produto.preco_texto || "Consulte"}
                         </p>
@@ -398,16 +560,16 @@ export default function Produtos() {
 
                     <Button
                       size="sm"
-                      onClick={() => produto.categoria === "Serviços Contratáveis"
+                      onClick={() => produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes"
                         ? handleContratar(produto)
                         : null
                       }
-                      className={produto.categoria === "Serviços Contratáveis"
+                      className={produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes"
                         ? "bg-blue-600 hover:bg-blue-700 text-white"
                         : "bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold"
                       }
                     >
-                      {produto.categoria === "Serviços Contratáveis" ? "Contratar" : <ShoppingCart className="w-4 h-4" />}
+                      {produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" ? "Contratar" : <ShoppingCart className="w-4 h-4" />}
                     </Button>
                   </div>
 

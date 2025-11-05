@@ -249,15 +249,39 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
             </div>
           )}
 
+          {/* Faixa de Preço */}
           {anuncio.faixa_preco && (
-            <div className="mb-3">
+            <div className="mb-3 bg-gradient-to-r from-green-50 to-blue-50 p-2 rounded-lg border border-green-200">
               <div className="flex items-center gap-2">
-                <span className={`text-2xl font-bold ${getFaixaPrecoInfo(anuncio.faixa_preco).cor}`}>
+                <span className={`text-xl font-bold ${getFaixaPrecoInfo(anuncio.faixa_preco).cor}`}>
                   {anuncio.faixa_preco}
                 </span>
-                <span className="text-sm text-gray-600">
+                <span className="text-xs text-gray-600">
                   {getFaixaPrecoInfo(anuncio.faixa_preco).texto}
                 </span>
+              </div>
+            </div>
+          )}
+
+          {/* Status de Funcionamento */}
+          {anuncio.status_funcionamento && anuncio.status_funcionamento !== "N/D" && (
+            <div className="mb-2">
+              <Badge className={`${getStatusColor(anuncio.status_funcionamento)} text-xs`}>
+                <Clock className="w-3 h-3 mr-1" />
+                {anuncio.status_funcionamento}
+              </Badge>
+            </div>
+          )}
+
+          {/* Horário de Funcionamento */}
+          {anuncio.horario_funcionamento && (
+            <div className="mb-3 bg-gray-50 p-2 rounded-lg">
+              <div className="flex items-start gap-2">
+                <Clock className="w-4 h-4 text-gray-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-xs font-semibold text-gray-700">Horário:</p>
+                  <p className="text-xs text-gray-600 line-clamp-2">{anuncio.horario_funcionamento}</p>
+                </div>
               </div>
             </div>
           )}
@@ -293,12 +317,6 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
               </div>
             )}
 
-            {anuncio.horario_funcionamento && (
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Clock className="w-4 h-4 flex-shrink-0 text-pink-600" />
-                <span className="line-clamp-1">{anuncio.horario_funcionamento}</span>
-              </div>
-            )}
           </div>
 
           {anuncio.amenidades && (
