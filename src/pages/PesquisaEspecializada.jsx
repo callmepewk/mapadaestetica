@@ -229,14 +229,18 @@ Seja profissional, técnico mas acessível. Use informações baseadas em evidê
         <div className="text-center mb-8">
           <div className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-full flex items-center justify-center shadow-xl overflow-hidden">
             <img
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe2/966d17a8f_drbeleza.png"
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/f54646e8e_drbeleza.png"
               alt="Dr. Beleza"
               className="w-full h-full object-cover"
               onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = 'https://via.placeholder.com/128?text=Dr.+Beleza';
+                e.target.onerror = null; // Prevent infinite loop if the fallback also fails
+                e.target.style.display = 'none';
+                if (e.target.nextSibling) {
+                  e.target.nextSibling.style.display = 'block';
+                }
               }}
             />
+            <div className="hidden text-6xl">🩺</div>
           </div>
           <Badge className="bg-[#F7D426] text-[#2C2C2C] font-bold px-4 py-2 text-base">
             Consulte Tratamentos Agora

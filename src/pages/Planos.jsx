@@ -11,6 +11,8 @@ import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
+import DrBelezaPlanosModal from "../components/home/DrBelezaPlanosModal";
+
 const planos = [
   {
     nome: "COBRE",
@@ -203,6 +205,8 @@ export default function Planos() {
   const [mostrarModalConfirmacao, setMostrarModalConfirmacao] = useState(false);
   const [planoSelecionado, setPlanoSelecionado] = useState(null);
   const [aguardandoConfirmacao, setAguardandoConfirmacao] = useState(false);
+
+  const [mostrarDrBeleza, setMostrarDrBeleza] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -467,8 +471,17 @@ export default function Planos() {
           <Card className="border-2 border-blue-200 hover:border-blue-400 transition-colors">
             <CardContent className="p-6">
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center flex-shrink-0">
-                  <MessageCircle className="w-6 h-6 text-white" />
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
+                  <img
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe4638a2bfe_drbeleza.png"
+                    alt="Dr. Beleza"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                  <MessageCircle className="w-6 h-6 text-white hidden" />
                 </div>
                 <div className="flex-1">
                   <h3 className="text-lg font-bold text-gray-900 mb-2">
@@ -478,7 +491,7 @@ export default function Planos() {
                     Nosso assistente inteligente pode te ajudar a escolher o melhor plano!
                   </p>
                   <Button
-                    onClick={() => navigate(createPageUrl("PesquisaEspecializada"))}
+                    onClick={() => setMostrarDrBeleza(true)}
                     className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
                   >
                     Conversar com Dr. Beleza
@@ -782,6 +795,12 @@ export default function Planos() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Modal Dr. Beleza */}
+      <DrBelezaPlanosModal
+        open={mostrarDrBeleza}
+        onClose={() => setMostrarDrBeleza(false)}
+      />
     </div>
   );
 }

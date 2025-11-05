@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
@@ -103,7 +104,7 @@ Responda de forma clara, objetiva e útil.`,
 
   return (
     <>
-      {/* Botão Flutuante */}
+      {/* Botão Flutuante com Imagem do Dr. Beleza */}
       <AnimatePresence>
         {!isOpen && (
           <motion.div
@@ -112,13 +113,43 @@ Responda de forma clara, objetiva e útil.`,
             exit={{ scale: 0, opacity: 0 }}
             className="fixed bottom-6 right-6 z-50"
           >
-            <Button
-              onClick={() => setIsOpen(true)}
-              className="w-16 h-16 rounded-full bg-gradient-to-r from-[#F7D426] to-[#FFE066] hover:from-[#E5C215] hover:to-[#F7D426] shadow-2xl border-2 border-[#2C2C2C]"
-              size="icon"
-            >
-              <MessageCircle className="w-7 h-7 text-[#2C2C2C]" />
-            </Button>
+            <div className="relative group">
+              {/* Tooltip */}
+              <div className="absolute bottom-full right-0 mb-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                <div className="bg-gray-900 text-white text-sm rounded-lg py-3 px-4 shadow-xl max-w-xs">
+                  <p className="font-bold mb-1">💬 Dr. Beleza - Seu Assistente Virtual</p>
+                  <p className="text-xs text-gray-300">
+                    Posso te ajudar com: procedimentos estéticos, dúvidas sobre tratamentos, 
+                    encontrar profissionais e navegar pela plataforma!
+                  </p>
+                  <div className="absolute -bottom-2 right-4 w-4 h-4 bg-gray-900 transform rotate-45"></div>
+                </div>
+              </div>
+
+              {/* Botão com Imagem */}
+              <button
+                onClick={() => setIsOpen(true)}
+                className="relative w-16 h-16 rounded-full shadow-2xl border-4 border-[#F7D426] overflow-hidden hover:scale-110 transition-transform duration-300"
+              >
+                <img
+                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe4/f54646e8e_drbeleza.png"
+                  alt="Dr. Beleza"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'flex';
+                  }}
+                />
+                <div className="hidden w-full h-full bg-gradient-to-r from-[#F7D426] to-[#FFE066] items-center justify-center">
+                  <MessageCircle className="w-7 h-7 text-[#2C2C2C]" />
+                </div>
+
+                {/* Bolinha Online */}
+                <div className="absolute bottom-0 right-0 w-5 h-5 bg-green-500 rounded-full border-2 border-white">
+                  <div className="absolute inset-0 bg-green-500 rounded-full animate-ping opacity-75"></div>
+                </div>
+              </button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -138,7 +169,7 @@ Responda de forma clara, objetiva e útil.`,
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full overflow-hidden bg-white flex items-center justify-center">
                     <img 
-                      src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/f54646e8e_drbeleza.png" 
+                      src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe4/f54646e8e_drbeleza.png" 
                       alt="Dr. Beleza"
                       className="w-full h-full object-cover"
                       onError={(e) => {
