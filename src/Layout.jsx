@@ -149,6 +149,21 @@ export default function Layout({ children }) {
           -ms-user-select: none;
           user-select: none;
         }
+
+        /* GARANTIR SCROLL SEMPRE DISPONÍVEL */
+        html, body {
+          overflow-x: hidden;
+          overflow-y: auto !important;
+          height: auto !important;
+          min-height: 100vh;
+        }
+
+        /* MOBILE: Garantir que o conteúdo não seja cortado */
+        @media (max-width: 640px) {
+          body {
+            padding-bottom: 80px; /* Espaço para o chatbot */
+          }
+        }
       `}</style>
 
       {/* Passed user and onCompletarCadastro to Chatbot */}
@@ -465,7 +480,7 @@ export default function Layout({ children }) {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 overflow-x-hidden">{children}</main>
 
       {/* Footer */}
       <footer className="bg-[#2C2C2C] text-white mt-12 sm:mt-20">

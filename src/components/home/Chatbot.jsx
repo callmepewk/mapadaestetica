@@ -104,18 +104,18 @@ Responda de forma clara, objetiva e útil.`,
 
   return (
     <>
-      {/* Botão Flutuante com Imagem do Dr. Beleza */}
+      {/* Botão Flutuante - MOBILE OPTIMIZED */}
       <AnimatePresence>
         {!isOpen && (
           <motion.div
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
-            className="fixed bottom-6 right-6 z-50"
+            className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40"
           >
             <div className="relative group">
-              {/* Tooltip */}
-              <div className="absolute bottom-full right-0 mb-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+              {/* Tooltip - ESCONDIDO NO MOBILE */}
+              <div className="hidden sm:block absolute bottom-full right-0 mb-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
                 <div className="bg-gray-900 text-white text-sm rounded-lg py-3 px-4 shadow-xl max-w-xs">
                   <p className="font-bold mb-1">💬 Dr. Beleza - Seu Assistente Virtual</p>
                   <p className="text-xs text-gray-300">
@@ -126,10 +126,10 @@ Responda de forma clara, objetiva e útil.`,
                 </div>
               </div>
 
-              {/* Botão com Imagem */}
+              {/* Botão com Imagem - MENOR NO MOBILE */}
               <button
                 onClick={() => setIsOpen(true)}
-                className="relative w-16 h-16 rounded-full shadow-2xl border-4 border-[#F7D426] overflow-hidden hover:scale-110 transition-transform duration-300"
+                className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full shadow-2xl border-4 border-[#F7D426] overflow-hidden hover:scale-110 transition-transform duration-300"
               >
                 <img
                   src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/ec64a4c52_drbeleza.png"
@@ -141,11 +141,11 @@ Responda de forma clara, objetiva e útil.`,
                   }}
                 />
                 <div className="hidden w-full h-full bg-gradient-to-r from-[#F7D426] to-[#FFE066] items-center justify-center">
-                  <MessageCircle className="w-7 h-7 text-[#2C2C2C]" />
+                  <MessageCircle className="w-6 h-6 sm:w-7 sm:h-7 text-[#2C2C2C]" />
                 </div>
 
-                {/* Bolinha Online */}
-                <div className="absolute bottom-0 right-0 w-5 h-5 bg-green-500 rounded-full border-2 border-white">
+                {/* Bolinha Online - MENOR NO MOBILE */}
+                <div className="absolute bottom-0 right-0 w-4 h-4 sm:w-5 sm:h-5 bg-green-500 rounded-full border-2 border-white">
                   <div className="absolute inset-0 bg-green-500 rounded-full animate-ping opacity-75"></div>
                 </div>
               </button>
@@ -154,32 +154,32 @@ Responda de forma clara, objetiva e útil.`,
         )}
       </AnimatePresence>
 
-      {/* Janela do Chat */}
+      {/* Janela do Chat - MOBILE OPTIMIZED */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
             initial={{ opacity: 0, y: 100 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 100 }}
-            className="fixed bottom-6 right-6 z-50 w-96 max-w-[calc(100vw-3rem)]"
+            className="fixed bottom-0 right-0 left-0 sm:bottom-6 sm:right-6 sm:left-auto z-50 sm:w-96 sm:max-w-[calc(100vw-3rem)]"
           >
-            <Card className="border-none shadow-2xl overflow-hidden">
+            <Card className="border-none shadow-2xl overflow-hidden rounded-t-2xl sm:rounded-2xl h-[80vh] sm:h-auto flex flex-col">
               {/* Header */}
-              <div className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] p-4 flex items-center justify-between border-b-2 border-[#2C2C2C]">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full overflow-hidden bg-white flex items-center justify-center">
+              <div className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] p-3 sm:p-4 flex items-center justify-between border-b-2 border-[#2C2C2C] flex-shrink-0">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden bg-white flex items-center justify-center">
                     <img 
                       src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe4/f54646e8e_drbeleza.png" 
                       alt="Dr. Beleza"
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         e.target.onerror = null;
-                        e.target.innerHTML = '<span class="text-2xl">🩺</span>';
+                        e.target.innerHTML = '<span class="text-xl sm:text-2xl">🩺</span>';
                       }}
                     />
                   </div>
                   <div>
-                    <h3 className="font-bold text-[#2C2C2C]">Dr. Beleza</h3>
+                    <h3 className="font-bold text-[#2C2C2C] text-sm sm:text-base">Dr. Beleza</h3>
                     <p className="text-xs text-[#2C2C2C]/80">Assistente Virtual</p>
                   </div>
                 </div>
@@ -187,38 +187,38 @@ Responda de forma clara, objetiva e útil.`,
                   onClick={() => setIsOpen(false)}
                   variant="ghost"
                   size="icon"
-                  className="text-[#2C2C2C] hover:bg-[#2C2C2C]/10"
+                  className="text-[#2C2C2C] hover:bg-[#2C2C2C]/10 w-8 h-8 sm:w-10 sm:h-10"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4 sm:w-5 sm:h-5" />
                 </Button>
               </div>
 
-              {/* Mensagens */}
-              <div className="h-96 overflow-y-auto p-4 bg-gray-50 space-y-4">
+              {/* Mensagens - SCROLLABLE */}
+              <div className="flex-1 overflow-y-auto p-3 sm:p-4 bg-gray-50 space-y-3 sm:space-y-4 min-h-0">
                 {messages.map((message, index) => (
                   <div
                     key={index}
                     className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`max-w-[80%] rounded-2xl p-3 ${
+                      className={`max-w-[85%] sm:max-w-[80%] rounded-2xl p-2.5 sm:p-3 ${
                         message.type === "user"
                           ? "bg-gradient-to-r from-[#F7D426] to-[#FFE066] text-[#2C2C2C] border-2 border-[#2C2C2C]"
                           : "bg-white shadow-md"
                       }`}
                     >
-                      <p className="text-sm whitespace-pre-wrap">{message.text}</p>
+                      <p className="text-xs sm:text-sm whitespace-pre-wrap break-words">{message.text}</p>
                       
                       {/* Botões de Ação */}
                       {message.action && (
-                        <div className="mt-3">
+                        <div className="mt-2 sm:mt-3">
                           {message.action === "login" && (
                             <Button
                               onClick={() => handleActionClick("login")}
                               size="sm"
-                              className="w-full bg-[#2C2C2C] hover:bg-[#3A3A3A] text-[#F7D426] font-bold"
+                              className="w-full bg-[#2C2C2C] hover:bg-[#3A3A3A] text-[#F7D426] font-bold text-xs sm:text-sm"
                             >
-                              <User className="w-4 h-4 mr-2" />
+                              <User className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                               Fazer Login
                             </Button>
                           )}
@@ -226,9 +226,9 @@ Responda de forma clara, objetiva e útil.`,
                             <Button
                               onClick={() => handleActionClick("completar_cadastro")}
                               size="sm"
-                              className="w-full bg-[#2C2C2C] hover:bg-[#3A3A3A] text-[#F7D426] font-bold"
+                              className="w-full bg-[#2C2C2C] hover:bg-[#3A3A3A] text-[#F7D426] font-bold text-xs sm:text-sm"
                             >
-                              <Sparkles className="w-4 h-4 mr-2" />
+                              <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                               Completar Cadastro
                             </Button>
                           )}
@@ -240,34 +240,35 @@ Responda de forma clara, objetiva e útil.`,
 
                 {loading && (
                   <div className="flex justify-start">
-                    <div className="bg-white shadow-md rounded-2xl p-3">
-                      <div className="flex gap-2">
-                        <div className="w-2 h-2 bg-[#F7D426] rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-[#F7D426] rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
-                        <div className="w-2 h-2 bg-[#F7D426] rounded-full animate-bounce" style={{ animationDelay: "0.4s" }}></div>
+                    <div className="bg-white shadow-md rounded-2xl p-2.5 sm:p-3">
+                      <div className="flex gap-1.5 sm:gap-2">
+                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-[#F7D426] rounded-full animate-bounce"></div>
+                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-[#F7D426] rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-[#F7D426] rounded-full animate-bounce" style={{ animationDelay: "0.4s" }}></div>
                       </div>
                     </div>
                   </div>
                 )}
               </div>
 
-              {/* Input */}
-              <div className="p-4 bg-white border-t">
+              {/* Input - FIXO NO BOTTOM */}
+              <div className="p-3 sm:p-4 bg-white border-t flex-shrink-0">
                 <div className="flex gap-2">
                   <Input
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
                     onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                    placeholder={user && user.cadastro_completo ? "Digite sua mensagem..." : "Faça login para conversar..."}
-                    className="flex-1"
+                    placeholder={user && user.cadastro_completo ? "Digite..." : "Faça login..."}
+                    className="flex-1 text-xs sm:text-sm h-9 sm:h-10"
                     disabled={!user || !user.cadastro_completo}
                   />
                   <Button
                     onClick={handleSendMessage}
                     disabled={loading || !inputMessage.trim() || !user || !user.cadastro_completo}
-                    className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] hover:from-[#E5C215] hover:to-[#F7D426] text-[#2C2C2C] border-2 border-[#2C2C2C]"
+                    className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] hover:from-[#E5C215] hover:to-[#F7D426] text-[#2C2C2C] border-2 border-[#2C2C2C] w-9 h-9 sm:w-10 sm:h-10 p-0"
+                    size="icon"
                   >
-                    <Send className="w-5 h-5" />
+                    <Send className="w-4 h-4 sm:w-5 sm:h-5" />
                   </Button>
                 </div>
               </div>
