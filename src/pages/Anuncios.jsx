@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search, Filter, MapPin, Grid, List, Locate } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card"; // Imported CardContent
 import CardAnuncio from "../components/anuncios/CardAnuncio";
 import {
   Pagination,
@@ -32,6 +32,13 @@ const categorias = [
   "Harmonização Facial", "Maquiagem", "Outros"
 ];
 
+// List of Brazilian states (UF)
+const estados = [
+  "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG",
+  "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"
+];
+
+
 const ITEMS_PER_PAGE = 10; // LIMITADO A 10 ANÚNCIOS POR PÁGINA
 
 export default function Anuncios() {
@@ -45,6 +52,9 @@ export default function Anuncios() {
   const [viewMode, setViewMode] = useState("grid");
   const [localizando, setLocalizando] = useState(false);
   const [ordenacao, setOrdenacao] = useState("mais_recentes"); // New state for sorting
+  const [filtroFaixaPreco, setFiltroFaixaPreco] = useState(""); // New state for price range filter
+  const [filtroTipoAnuncio, setFiltroTipoAnuncio] = useState(""); // New state for ad type filter
+
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -53,14 +63,18 @@ export default function Anuncios() {
     const categoria = urlParams.get('categoria');
     const procedimento = urlParams.get('procedimento');
     const tag = urlParams.get('tag');
-    const ordem = urlParams.get('ordem'); // New: check for order in URL
-    
+    const ordem = urlParams.get('ordem');
+    const faixaPreco = urlParams.get('faixaPreco'); // New: check for faixaPreco in URL
+    const tipoAnuncio = urlParams.get('tipoAnuncio'); // New: check for tipoAnuncio in URL
+
     if (cidade) setCidadeFiltro(cidade);
     if (estado) setEstadoFiltro(estado);
     if (categoria) setCategoriaFiltro(categoria);
     if (procedimento) setProcedimentoFiltro(procedimento);
     if (tag) setTagFiltro(tag);
-    if (ordem) setOrdenacao(ordem); // Apply order from URL
+    if (ordem) setOrdenacao(ordem);
+    if (faixaPreco) setFiltroFaixaPreco(faixaPreco); // Apply faixaPreco from URL
+    if (tipoAnuncio) setFiltroTipoAnuncio(tipoAnuncio); // Apply tipoAnuncio from URL
   }, []);
 
   const usarMinhaLocalizacao = async () => {
@@ -176,7 +190,11 @@ export default function Anuncios() {
         const matchEstado = !estadoFiltro ||
           anuncio.estado?.toLowerCase().includes(estadoFiltro.toLowerCase());
 
-        return matchCidade && matchEstado && matchProcedimento && matchTag && matchBusca;
+        // New client-side filters
+        const matchFaixaPreco = !filtroFaixaPreco || anuncio.faixa_preco === filtroFaixaPreco;
+        const matchTipoAnuncio = !filtroTipoAnuncio || anuncio.tipo_anuncio === filtroTipoAnuncio;
+
+        return matchCidade && matchEstado && matchProcedimento && matchTag && matchBusca && matchFaixaPreco && matchTipoAnuncio;
       })
       .sort((a, b) => {
         // Client-side sort: prioritize by plan (Premium first)
@@ -189,7 +207,7 @@ export default function Anuncios() {
         // This maintains the original client-side sort behavior for same-plan items
         return new Date(b.created_date) - new Date(a.created_date);
       });
-  }, [fetchedAnuncios, busca, procedimentoFiltro, tagFiltro, cidadeFiltro, estadoFiltro]);
+  }, [fetchedAnuncios, busca, procedimentoFiltro, tagFiltro, cidadeFiltro, estadoFiltro, filtroFaixaPreco, filtroTipoAnuncio]);
 
   const totalPaginas = Math.ceil(anuncios.length / ITEMS_PER_PAGE);
   const anunciosPaginados = anuncios.slice(
@@ -200,6 +218,32 @@ export default function Anuncios() {
   const handlePaginaChange = (novaPagina) => {
     setPaginaAtual(novaPagina);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const limparFiltros = () => {
+    setBusca("");
+    setCidadeFiltro("");
+    setEstadoFiltro("");
+    setCategoriaFiltro("Todas"); // Reset to default
+    setProcedimentoFiltro("");
+    setTagFiltro("");
+    setFiltroFaixaPreco("");
+    setFiltroTipoAnuncio("");
+    setPaginaAtual(1);
+    // If there were URL parameters set, clearing them would ideally update the URL,
+    // but the original code doesn't explicitly modify the URL based on filter changes.
+    // So for now, only state is cleared.
+  };
+
+  const getFaixaPrecoInfo = (faixa) => {
+    const info = {
+      "$": { texto: "Até R$ 500", emoji: "💚" },
+      "$$": { texto: "R$ 500 - R$ 1.000", emoji: "💙" },
+      "$$$": { texto: "R$ 1.000 - R$ 2.000", emoji: "💛" },
+      "$$$$": { texto: "R$ 2.000 - R$ 5.000", emoji: "🧡" },
+      "$$$$$": { texto: "Acima de R$ 5.000", emoji: "❤️" }
+    };
+    return info[faixa] || info["$"]; // Default to $ if not found, as per outline
   };
 
   return (
@@ -214,9 +258,11 @@ export default function Anuncios() {
           </p>
         </div>
 
+        {/* Filtros */}
         <Card className="p-6 mb-8 shadow-lg border-none">
-          <div className="grid md:grid-cols-5 gap-4 mb-4">
-            <div className="md:col-span-2">
+          <CardContent className="p-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+              {/* Busca input */}
               <div className="relative">
                 <Search className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
                 <Input
@@ -229,147 +275,239 @@ export default function Anuncios() {
                   className="pl-10 h-12"
                 />
               </div>
-            </div>
 
-            <div className="relative">
-              <MapPin className="absolute left-3 top-3.5 w-5 h-5 text-gray-400 z-10" />
-              <Input
-                placeholder="Cidade"
-                value={cidadeFiltro}
-                onChange={(e) => {
-                  setCidadeFiltro(e.target.value);
-                  setPaginaAtual(1);
-                }}
-                className="pl-10 h-12"
-              />
-            </div>
+              {/* Cidade input */}
+              <div className="relative">
+                <MapPin className="absolute left-3 top-3.5 w-5 h-5 text-gray-400 z-10" />
+                <Input
+                  placeholder="Cidade"
+                  value={cidadeFiltro}
+                  onChange={(e) => {
+                    setCidadeFiltro(e.target.value);
+                    setPaginaAtual(1);
+                  }}
+                  className="pl-10 h-12"
+                />
+              </div>
 
-            <div>
-              <Input
-                placeholder="Estado (UF)"
+              {/* Estado Select */}
+              <Select
                 value={estadoFiltro}
-                onChange={(e) => {
-                  setEstadoFiltro(e.target.value);
+                onValueChange={(value) => {
+                  setEstadoFiltro(value);
                   setPaginaAtual(1);
                 }}
-                className="h-12"
-                maxLength={2}
-              />
-            </div>
+              >
+                <SelectTrigger className="h-12">
+                  <SelectValue placeholder="Estado (UF)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={null}>Todos</SelectItem>
+                  {estados.map((estado) => (
+                    <SelectItem key={estado} value={estado}>{estado}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-            <Select
-              value={categoriaFiltro}
-              onValueChange={(value) => {
-                setCategoriaFiltro(value);
-                setPaginaAtual(1);
-              }}
-            >
-              <SelectTrigger className="h-12">
-                <SelectValue placeholder="Categoria" />
-              </SelectTrigger>
-              <SelectContent>
-                {categorias.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat}
+              {/* Categoria Select */}
+              <Select
+                value={categoriaFiltro}
+                onValueChange={(value) => {
+                  setCategoriaFiltro(value);
+                  setPaginaAtual(1);
+                }}
+              >
+                <SelectTrigger className="h-12">
+                  <SelectValue placeholder="Categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categorias.map((cat) => (
+                    <SelectItem key={cat} value={cat}>
+                      {cat}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Procedimento input */}
+              <div className="relative">
+                <Search className="absolute left-3 top-3.5 w-5 h-5 text-gray-400 z-10" />
+                <Input
+                  placeholder="Buscar por procedimento específico (ex: Botox, Peeling...)"
+                  value={procedimentoFiltro}
+                  onChange={(e) => {
+                    setProcedimentoFiltro(e.target.value);
+                    setPaginaAtual(1);
+                  }}
+                  className="pl-10 h-12"
+                />
+              </div>
+              
+              {/* Tag input */}
+              <div className="relative">
+                <Search className="absolute left-3 top-3.5 w-5 h-5 text-gray-400 z-10" />
+                <Input
+                  placeholder="Buscar por tag (ex: #microagulhamento #peeling)"
+                  value={tagFiltro}
+                  onChange={(e) => {
+                    setTagFiltro(e.target.value);
+                    setPaginaAtual(1);
+                  }}
+                  className="pl-10 h-12"
+                />
+              </div>
+
+              {/* Filtro Faixa de Preço */}
+              <Select
+                value={filtroFaixaPreco}
+                onValueChange={(value) => {
+                  setFiltroFaixaPreco(value);
+                  setPaginaAtual(1);
+                }}
+              >
+                <SelectTrigger className="h-12">
+                  <SelectValue placeholder="Faixa de Preço" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={null}>Todas as faixas</SelectItem>
+                  <SelectItem value="$">
+                    <div className="flex items-center gap-2">
+                      <span>💚 $</span>
+                      <span className="text-xs text-gray-500">Até R$ 500</span>
+                    </div>
                   </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+                  <SelectItem value="$$">
+                    <div className="flex items-center gap-2">
+                      <span>💙 $$</span>
+                      <span className="text-xs text-gray-500">R$ 500 - R$ 1.000</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="$$$">
+                    <div className="flex items-center gap-2">
+                      <span>💛 $$$</span>
+                      <span className="text-xs text-gray-500">R$ 1.000 - R$ 2.000</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="$$$$">
+                    <div className="flex items-center gap-2">
+                      <span>🧡 $$$$</span>
+                      <span className="text-xs text-gray-500">R$ 2.000 - R$ 5.000</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="$$$$$">
+                    <div className="flex items-center gap-2">
+                      <span>❤️ $$$$$</span>
+                      <span className="text-xs text-gray-500">Acima de R$ 5.000</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
 
-          <div className="grid md:grid-cols-2 gap-4 mb-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-3.5 w-5 h-5 text-gray-400 z-10" />
-              <Input
-                placeholder="Buscar por procedimento específico (ex: Botox, Peeling...)"
-                value={procedimentoFiltro}
-                onChange={(e) => {
-                  setProcedimentoFiltro(e.target.value);
+              {/* Filtro Tipo de Anúncio */}
+              <Select
+                value={filtroTipoAnuncio}
+                onValueChange={(value) => {
+                  setFiltroTipoAnuncio(value);
                   setPaginaAtual(1);
                 }}
-                className="pl-10 h-12"
-              />
+              >
+                <SelectTrigger className="h-12">
+                  <SelectValue placeholder="Tipo de Anúncio" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={null}>Todos os tipos</SelectItem>
+                  <SelectItem value="servico">💼 Serviço</SelectItem>
+                  <SelectItem value="procedimento">🔬 Procedimento</SelectItem>
+                  <SelectItem value="tecnica">✨ Técnica</SelectItem>
+                  <SelectItem value="consultorio">🏢 Consultório</SelectItem>
+                  <SelectItem value="clinica">🏥 Clínica</SelectItem>
+                  <SelectItem value="promocao">🎁 Promoção</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            <div className="relative">
-              <Search className="absolute left-3 top-3.5 w-5 h-5 text-gray-400 z-10" />
-              <Input
-                placeholder="Buscar por tag (ex: #microagulhamento #peeling)"
-                value={tagFiltro}
-                onChange={(e) => {
-                  setTagFiltro(e.target.value);
+
+            {/* Conditional Badges and Clear Filters Button */}
+            {(busca || cidadeFiltro || estadoFiltro || categoriaFiltro !== "Todas" || procedimentoFiltro || tagFiltro || filtroFaixaPreco || filtroTipoAnuncio) && (
+              <div className="mt-4 flex items-center justify-between mb-4">
+                <div className="flex flex-wrap gap-2">
+                  {busca && <Badge variant="secondary">Busca: {busca}</Badge>}
+                  {cidadeFiltro && <Badge variant="secondary">Cidade: {cidadeFiltro}</Badge>}
+                  {estadoFiltro && <Badge variant="secondary">Estado: {estadoFiltro}</Badge>}
+                  {categoriaFiltro !== "Todas" && <Badge variant="secondary">Categoria: {categoriaFiltro}</Badge>}
+                  {procedimentoFiltro && <Badge variant="secondary">Procedimento: {procedimentoFiltro}</Badge>}
+                  {tagFiltro && <Badge variant="secondary">Tag: {tagFiltro}</Badge>}
+                  {filtroFaixaPreco && (
+                    <Badge variant="secondary">
+                      {getFaixaPrecoInfo(filtroFaixaPreco).emoji} {getFaixaPrecoInfo(filtroFaixaPreco).texto}
+                    </Badge>
+                  )}
+                  {filtroTipoAnuncio && <Badge variant="secondary">Tipo: {filtroTipoAnuncio}</Badge>}
+                </div>
+                <Button variant="ghost" size="sm" onClick={limparFiltros}>
+                  Limpar Filtros
+                </Button>
+              </div>
+            )}
+
+            {/* Localize button and Ordenacao Select */}
+            <div className="flex flex-col md:flex-row gap-4 items-start md:items-center mb-4">
+              <Button
+                onClick={usarMinhaLocalizacao}
+                disabled={localizando}
+                variant="outline"
+                className="w-full md:w-auto h-12"
+              >
+                <Locate className="w-4 h-4 mr-2" />
+                {localizando ? "Localizando..." : "Usar Minha Localização"}
+              </Button>
+              
+              <Select
+                value={ordenacao}
+                onValueChange={(value) => {
+                  setOrdenacao(value);
                   setPaginaAtual(1);
                 }}
-                className="pl-10 h-12"
-              />
-            </div>
-          </div>
-
-          <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
-            <Button
-              onClick={usarMinhaLocalizacao}
-              disabled={localizando}
-              variant="outline"
-              className="w-full md:w-auto h-12"
-            >
-              <Locate className="w-4 h-4 mr-2" />
-              {localizando ? "Localizando..." : "Usar Minha Localização"}
-            </Button>
-            
-            <Select
-              value={ordenacao}
-              onValueChange={(value) => {
-                setOrdenacao(value);
-                setPaginaAtual(1);
-              }}
-            >
-              <SelectTrigger className="w-full md:w-64 h-12">
-                <SelectValue placeholder="Ordenar por" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="mais_recentes">Mais Recentes</SelectItem>
-                <SelectItem value="mais_visualizados">Mais Visualizados</SelectItem>
-                <SelectItem value="mais_antigos">Mais Antigos</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex items-center justify-between mt-4 pt-4 border-t">
-            <div className="flex items-center gap-2 flex-wrap">
-              <Filter className="w-4 h-4 text-gray-500" />
-              <span className="text-sm text-gray-600">
-                {anuncios.length} resultado{anuncios.length !== 1 ? 's' : ''}
-              </span>
-              {procedimentoFiltro && (
-                <Badge className="bg-purple-100 text-purple-800">
-                  Procedimento: {procedimentoFiltro}
-                </Badge>
-              )}
-              {tagFiltro && (
-                <Badge className="bg-blue-100 text-blue-800">
-                  Tag: {tagFiltro}
-                </Badge>
-              )}
-            </div>
-
-            <div className="flex gap-2">
-              <Button
-                variant={viewMode === "grid" ? "default" : "outline"}
-                size="icon"
-                onClick={() => setViewMode("grid")}
-                className={viewMode === "grid" ? "bg-pink-600 hover:bg-pink-700" : ""}
               >
-                <Grid className="w-4 h-4" />
-              </Button>
-              <Button
-                variant={viewMode === "list" ? "default" : "outline"}
-                size="icon"
-                onClick={() => setViewMode("list")}
-                className={viewMode === "list" ? "bg-pink-600 hover:bg-pink-700" : ""}
-              >
-                <List className="w-4 h-4" />
-              </Button>
+                <SelectTrigger className="w-full md:w-64 h-12">
+                  <SelectValue placeholder="Ordenar por" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="mais_recentes">Mais Recentes</SelectItem>
+                  <SelectItem value="mais_visualizados">Mais Visualizados</SelectItem>
+                  <SelectItem value="mais_antigos">Mais Antigos</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          </div>
+
+            {/* Filter results count and view mode buttons */}
+            <div className="flex items-center justify-between mt-4 pt-4 border-t">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Filter className="w-4 h-4 text-gray-500" />
+                <span className="text-sm text-gray-600">
+                  {anuncios.length} resultado{anuncios.length !== 1 ? 's' : ''}
+                </span>
+              </div>
+
+              <div className="flex gap-2">
+                <Button
+                  variant={viewMode === "grid" ? "default" : "outline"}
+                  size="icon"
+                  onClick={() => setViewMode("grid")}
+                  className={viewMode === "grid" ? "bg-pink-600 hover:bg-pink-700" : ""}
+                >
+                  <Grid className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant={viewMode === "list" ? "default" : "outline"}
+                  size="icon"
+                  onClick={() => setViewMode("list")}
+                  className={viewMode === "list" ? "bg-pink-600 hover:bg-pink-700" : ""}
+                >
+                  <List className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </CardContent>
         </Card>
 
         {isLoading ? (

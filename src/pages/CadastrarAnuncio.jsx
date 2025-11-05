@@ -90,6 +90,7 @@ export default function CadastrarAnuncio() {
   }, []);
 
   const [formData, setFormData] = useState({
+    tipo_anuncio: "servico",
     titulo: "",
     descricao: "",
     categoria: "",
@@ -116,7 +117,7 @@ export default function CadastrarAnuncio() {
     status_funcionamento: "N/D",
     status: "ativo",
     data_agendamento: "",
-    servicos_oferecidos: [], // Added this line
+    servicos_oferecidos: [],
     amenidades: {
       estacionamento: false,
       estacionamento_valet: false,
@@ -392,6 +393,76 @@ export default function CadastrarAnuncio() {
             <CardContent className="p-6">
               <h2 className="text-xl font-semibold mb-4">Informações Básicas</h2>
               <div className="space-y-4">
+                {/* Tipo de Anúncio */}
+                <div>
+                  <Label htmlFor="tipo_anuncio">Tipo de Anúncio *</Label>
+                  <Select
+                    value={formData.tipo_anuncio}
+                    onValueChange={(value) => setFormData({ ...formData, tipo_anuncio: value })}
+                    required
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="servico">
+                        <div className="flex items-center gap-2">
+                          <span>💼</span>
+                          <div>
+                            <p className="font-semibold">Serviço</p>
+                            <p className="text-xs text-gray-500">Serviços gerais de estética</p>
+                          </div>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="procedimento">
+                        <div className="flex items-center gap-2">
+                          <span>🔬</span>
+                          <div>
+                            <p className="font-semibold">Procedimento</p>
+                            <p className="text-xs text-gray-500">Procedimentos específicos</p>
+                          </div>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="tecnica">
+                        <div className="flex items-center gap-2">
+                          <span>✨</span>
+                          <div>
+                            <p className="font-semibold">Técnica</p>
+                            <p className="text-xs text-gray-500">Técnicas especializadas</p>
+                          </div>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="consultorio">
+                        <div className="flex items-center gap-2">
+                          <span>🏢</span>
+                          <div>
+                            <p className="font-semibold">Consultório</p>
+                            <p className="text-xs text-gray-500">Anúncio de consultório</p>
+                          </div>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="clinica">
+                        <div className="flex items-center gap-2">
+                          <span>🏥</span>
+                          <div>
+                            <p className="font-semibold">Clínica</p>
+                            <p className="text-xs text-gray-500">Anúncio de clínica</p>
+                          </div>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="promocao">
+                        <div className="flex items-center gap-2">
+                          <span>🎁</span>
+                          <div>
+                            <p className="font-semibold">Promoção</p>
+                            <p className="text-xs text-gray-500">Ofertas e promoções</p>
+                          </div>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <Label htmlFor="titulo">Título do Anúncio *</Label>
@@ -405,14 +476,14 @@ export default function CadastrarAnuncio() {
                     id="titulo"
                     value={formData.titulo}
                     onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
-                    placeholder="Ex: Harmonização Facial com Resultados Naturais"
+                    placeholder="Ex: Harmonização Facial com Ácido Hialurônico"
                     required
                   />
                 </div>
 
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <Label htmlFor="descricao">Descrição *</Label>
+                    <Label htmlFor="descricao">Descrição Detalhada *</Label>
                     <AssistenteAnuncio 
                       campo="descricao" 
                       valor={formData.descricao}
@@ -423,9 +494,10 @@ export default function CadastrarAnuncio() {
                     id="descricao"
                     value={formData.descricao}
                     onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
-                    placeholder="Descreva seus serviços, diferenciais, experiência..."
+                    placeholder="Descreva detalhadamente seu serviço/procedimento..."
                     className="min-h-[150px]"
                     required
+                    rows={6}
                   />
                 </div>
 
@@ -461,7 +533,7 @@ export default function CadastrarAnuncio() {
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <Label>Faixa de Preço dos Serviços *</Label> {/* Updated Label */}
+                    <Label>Faixa de Preço dos Serviços *</Label>
                     <Select
                       value={formData.faixa_preco}
                       onValueChange={(value) => setFormData({ ...formData, faixa_preco: value })}

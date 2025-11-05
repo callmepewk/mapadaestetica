@@ -55,6 +55,18 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
     return colors[categoria] || "bg-gray-100 text-gray-800";
   };
 
+  const getTipoAnuncioInfo = (tipo) => {
+    const info = {
+      "servico": { texto: "Serviço", emoji: "💼", cor: "bg-blue-100 text-blue-800" },
+      "procedimento": { texto: "Procedimento", emoji: "🔬", cor: "bg-purple-100 text-purple-800" },
+      "tecnica": { texto: "Técnica", emoji: "✨", cor: "bg-pink-100 text-pink-800" },
+      "consultorio": { texto: "Consultório", emoji: "🏢", cor: "bg-gray-100 text-gray-800" },
+      "clinica": { texto: "Clínica", emoji: "🏥", cor: "bg-cyan-100 text-cyan-800" },
+      "promocao": { texto: "Promoção", emoji: "🎁", cor: "bg-red-100 text-red-800" }
+    };
+    return info[tipo] || info["servico"];
+  };
+
   const getFaixaPrecoInfo = (faixa) => {
     const info = {
       "$": { texto: "Até R$ 500", cor: "text-green-600" },
@@ -189,6 +201,11 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
 
         <CardContent className="p-4 flex flex-col flex-1">
           <div className="mb-3 flex items-center gap-2 flex-wrap">
+            {anuncio.tipo_anuncio && (
+              <Badge className={getTipoAnuncioInfo(anuncio.tipo_anuncio).cor}>
+                {getTipoAnuncioInfo(anuncio.tipo_anuncio).emoji} {getTipoAnuncioInfo(anuncio.tipo_anuncio).texto}
+              </Badge>
+            )}
             <Badge className={getCategoriaColor(anuncio.categoria)}>
               {anuncio.categoria}
             </Badge>
@@ -366,6 +383,11 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-3 flex-wrap">
+                      {anuncio.tipo_anuncio && (
+                        <Badge className={getTipoAnuncioInfo(anuncio.tipo_anuncio).cor}>
+                          {getTipoAnuncioInfo(anuncio.tipo_anuncio).emoji} {getTipoAnuncioInfo(anuncio.tipo_anuncio).texto}
+                        </Badge>
+                      )}
                       <Badge className={getCategoriaColor(anuncio.categoria)}>{anuncio.categoria}</Badge>
                       {isPremium && (
                         <Badge className="bg-gradient-to-r from-[#F7D426] to-yellow-500 text-[#2C2C2C]">
