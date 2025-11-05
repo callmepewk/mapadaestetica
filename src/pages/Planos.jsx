@@ -20,7 +20,7 @@ const planos = [
       especialidades: 1,
       anuncios: 1,
       tags: 1,
-      dias_exposicao: 3
+      dias_exposicao: 30
     },
     beneficios: [
       "1 Especialidade cadastrada",
@@ -52,7 +52,7 @@ const planos = [
       especialidades: 2,
       anuncios: 10,
       tags: 5,
-      dias_exposicao: 7
+      dias_exposicao: 30
     },
     beneficios: [
       "2 Especialidades cadastradas",
@@ -86,7 +86,7 @@ const planos = [
       especialidades: 3,
       anuncios: 15,
       tags: 10,
-      dias_exposicao: 14
+      dias_exposicao: 30
     },
     beneficios: [
       "3 Especialidades cadastradas",
@@ -121,7 +121,7 @@ const planos = [
       especialidades: 5,
       anuncios: 25,
       tags: 20,
-      dias_exposicao: 21
+      dias_exposicao: 30
     },
     beneficios: [
       "5 Especialidades cadastradas",
