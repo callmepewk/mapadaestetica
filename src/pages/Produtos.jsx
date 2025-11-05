@@ -36,6 +36,8 @@ import {
   DollarSign
 } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
+import { createPageUrl } from "@/utils";
+import LoginPromptModal from "../components/home/LoginPromptModal";
 
 const categorias = [
   "Todas",
@@ -321,47 +323,6 @@ const servicosContrataveis = [
   }
 ];
 
-// Placeholder for LoginPromptModal, as it's not provided in the outline to be imported.
-// In a real application, this would likely be in its own file and imported.
-const LoginPromptModal = ({ open, onClose, pageName }) => {
-  const navigate = useNavigate();
-  const handleLogin = () => {
-    onClose();
-    base44.auth.redirectToLogin(window.location.pathname);
-  };
-
-  const handleSignUp = () => {
-    onClose();
-    navigate('/cadastro'); // Assuming a signup route
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Acesso Exclusivo</DialogTitle>
-          <DialogDescription>
-            Para prosseguir, você precisa estar logado ou criar uma conta.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="py-4">
-          <p className="text-sm text-gray-700 mb-4">
-            Faça login para {pageName === 'produtos' ? 'comprar este item' : 'contratar este serviço'} ou crie sua conta agora e aproveite todos os benefícios!
-          </p>
-        </div>
-        <DialogFooter className="flex-col sm:flex-row gap-2">
-          <Button variant="outline" onClick={handleSignUp} className="w-full">
-            Criar Conta
-          </Button>
-          <Button onClick={handleLogin} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-            Fazer Login
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-};
-
 export default function Produtos() {
   const navigate = useNavigate();
   const [busca, setBusca] = useState("");
@@ -477,10 +438,6 @@ export default function Produtos() {
       setCategoriaFiltro("Todas");
     }
   }, [tipoBusca, categoriasParaFiltro, categoriaFiltro]);
-
-  const createPageUrl = (pageName) => {
-    return `/${pageName.toLowerCase()}`;
-  };
 
   const handleContratar = (servico) => {
     if (!user) {

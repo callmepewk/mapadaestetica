@@ -337,17 +337,18 @@ export default function DetalhesAnuncio() {
               </CardContent>
             </Card>
 
-            {/* Seção de Perguntas e Respostas - SEMPRE VISÍVEL */}
+            {/* Seção de Perguntas e Respostas */}
             <SecaoPerguntas
               anuncio={anuncio}
               user={user}
               isAutor={isAutor}
             />
 
-            {/* NOVO: Seção de Comentários - Logo após perguntas */}
+            {/* Seção de Comentários - PASSANDO isAutor CORRETAMENTE */}
             <SecaoComentarios
               anuncio={anuncio}
               user={user}
+              isAutor={isAutor}
             />
           </div>
 
