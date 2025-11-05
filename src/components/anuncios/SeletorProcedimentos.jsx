@@ -161,7 +161,7 @@ export default function SeletorProcedimentos({ open, onClose, onSelect, procedim
               )}
             </div>
           ) : (
-            // Lista categorizada
+            // Lista categorizada com ScrollArea
             <div className="space-y-6">
               {Object.entries(procedimentosPorCategoria).map(([categoria, procedimentos]) => (
                 <div key={categoria}>
@@ -183,21 +183,23 @@ export default function SeletorProcedimentos({ open, onClose, onSelect, procedim
                   </button>
 
                   {categoriaExpandida === categoria && (
-                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {procedimentos.map((proc) => (
-                        <button
-                          key={proc}
-                          onClick={() => handleSelect(proc)}
-                          className={`text-left p-3 rounded-lg border-2 transition-all text-sm ${
-                            procedimentoAtual === proc
-                              ? 'border-[#F7D426] bg-[#FFF9E6] font-semibold'
-                              : 'border-gray-200 hover:border-[#F7D426] hover:bg-gray-50'
-                          }`}
-                        >
-                          {proc}
-                        </button>
-                      ))}
-                    </div>
+                    <ScrollArea className="h-[400px] pr-4">
+                      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {procedimentos.map((proc) => (
+                          <button
+                            key={proc}
+                            onClick={() => handleSelect(proc)}
+                            className={`text-left p-3 rounded-lg border-2 transition-all text-sm ${
+                              procedimentoAtual === proc
+                                ? 'border-[#F7D426] bg-[#FFF9E6] font-semibold'
+                                : 'border-gray-200 hover:border-[#F7D426] hover:bg-gray-50'
+                            }`}
+                          >
+                            {proc}
+                          </button>
+                        ))}
+                      </div>
+                    </ScrollArea>
                   )}
 
                   {categoriaExpandida !== categoria && (

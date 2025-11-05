@@ -202,9 +202,7 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
   return (
     <>
       <Card
-        onClick={() => {
-          window.location.href = `/detalhes-anuncio?id=${anuncio.id}`;
-        }}
+        onClick={() => setDialogAberto(true)}
         className={`overflow-hidden group hover:shadow-2xl transition-shadow duration-200 border-none h-full flex flex-col cursor-pointer ${
           isPremium ? 'ring-2 ring-[#F7D426]' : ''
         }`}
@@ -464,7 +462,10 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
           )}
 
           <Button
-            onClick={(e) => { e.stopPropagation(); setDialogAberto(true); }}
+            onClick={(e) => { 
+              e.stopPropagation(); 
+              setDialogAberto(true); 
+            }}
             className="w-full mt-4 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
           >
             Ver Mais Detalhes
