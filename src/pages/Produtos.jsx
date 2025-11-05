@@ -328,9 +328,8 @@ export default function Produtos() {
   const [busca, setBusca] = useState("");
   const [categoriaFiltro, setCategoriaFiltro] = useState("Todas");
   const [ordenacao, setOrdenacao] = useState("relevancia");
-  const [categoriaSelecionada, setCategoriaSelecionada] = useState("Todas");
   const [user, setUser] = useState(null);
-  const [tipoBusca, setTipoBusca] = useState(null); // null, 'produtos', 'servicos'
+  const [tipoBusca, setTipoBusca] = useState('produtos'); // MUDANÇA: Inicia direto em 'produtos'
   const [mostrarLoginPrompt, setMostrarLoginPrompt] = useState(false);
 
   React.useEffect(() => {
@@ -374,7 +373,7 @@ export default function Produtos() {
     initialData: [],
   });
 
-  const isPaciente = user?.tipo_usuario === 'paciente' || !user; // Usuário sem cadastro age como paciente
+  const isPaciente = user?.tipo_usuario === 'paciente' || !user;
   const isProfissional = user?.tipo_usuario === 'profissional';
 
   // Filtrar produtos baseado no tipo de usuário
@@ -510,155 +509,12 @@ export default function Produtos() {
     }
   };
 
-  if (tipoBusca === null) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
-        <div className="max-w-4xl mx-auto px-4">
-          <div className="text-center mb-8">
-            <Badge className="mb-4 bg-[#F7D426] text-[#2C2C2C] font-bold">
-              {isPaciente ? "🛍️ Marketplace" : "💼 Loja Profissional"}
-            </Badge>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              O que você está procurando?
-            </h1>
-            <p className="text-gray-600 max-w-2xl mx-auto mb-8">
-              Selecione uma opção para começar sua busca
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Card Produtos */}
-            <Card
-              onClick={() => setTipoBusca('produtos')}
-              className="border-none shadow-xl hover:shadow-2xl transition-all cursor-pointer group overflow-hidden"
-            >
-              <div className="h-48 bg-gradient-to-br from-purple-500 to-pink-500 relative overflow-hidden">
-                <div className="absolute inset-0 bg-white/10 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-white text-center">
-                    <div className="text-6xl mb-4">🛍️</div>
-                    <h3 className="text-2xl font-bold">Produtos</h3>
-                  </div>
-                </div>
-              </div>
-              <CardContent className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  Buscar Produtos
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  Encontre produtos de beleza, cosméticos, equipamentos e acessórios
-                </p>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-green-600" />
-                    <span>Produtos de qualidade</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-green-600" />
-                    <span>Marcas reconhecidas</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-green-600" />
-                    <span>Ganhe pontos em compras</span>
-                  </li>
-                </ul>
-                <Button className="w-full mt-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
-                  Ver Produtos
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Card Serviços */}
-            <Card
-              onClick={() => setTipoBusca('servicos')}
-              className="border-none shadow-xl hover:shadow-2xl transition-all cursor-pointer group overflow-hidden"
-            >
-              <div className="h-48 bg-gradient-to-br from-blue-500 to-cyan-500 relative overflow-hidden">
-                <div className="absolute inset-0 bg-white/10 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-white text-center">
-                    <div className="text-6xl mb-4">💼</div>
-                    <h3 className="text-2xl font-bold">Serviços</h3>
-                  </div>
-                </div>
-              </div>
-              <CardContent className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  Contratar Serviços
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  {isProfissional
-                    ? "Serviços profissionais para impulsionar seu negócio"
-                    : "Consultas, tratamentos e serviços especializados"
-                  }
-                </p>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-green-600" />
-                    <span>{isProfissional ? "Google Negócios" : "Consultas online"}</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-green-600" />
-                    <span>{isProfissional ? "Geração de imagens" : "Kits personalizados"}</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-green-600" />
-                    <span>Atendimento especializado</span>
-                  </li>
-                </ul>
-                <Button className="w-full mt-4 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700">
-                  Ver Serviços
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Banner Informativo */}
-          <Card className="mt-8 border-none shadow-lg bg-gradient-to-r from-[#F7D426] to-[#FFE066]">
-            <CardContent className="p-6">
-              <div className="flex flex-col md:flex-row items-center gap-4">
-                <div className="w-12 h-12 bg-[#2C2C2C] rounded-full flex items-center justify-center flex-shrink-0">
-                  <Award className="w-6 h-6 text-[#F7D426]" />
-                </div>
-                <div className="flex-1 text-center md:text-left">
-                  <h3 className="text-lg font-bold text-[#2C2C2C] mb-1">
-                    Sistema de Pontos
-                  </h3>
-                  <p className="text-sm text-[#2C2C2C]">
-                    Ganhe pontos em cada compra e troque por produtos exclusivos ou descontos especiais!
-                  </p>
-                </div>
-                <Button
-                  onClick={redirectToLojaPontos}
-                  className="bg-[#2C2C2C] hover:bg-[#3A3A3A] text-[#F7D426] font-bold"
-                >
-                  Ver Loja de Pontos
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
       <div className="max-w-7xl mx-auto px-4">
-        {/* Header com botão de voltar */}
+        {/* Header com toggle de tipo */}
         <div className="mb-6">
-          <Button
-            variant="ghost"
-            onClick={() => setTipoBusca(null)}
-            className="mb-4"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Voltar
-          </Button>
-
-          <div className="text-center">
+          <div className="text-center mb-6">
             <Badge className="mb-4 bg-[#F7D426] text-[#2C2C2C] font-bold">
               {tipoBusca === 'produtos' ? "🛍️ Produtos" : "💼 Serviços"}
             </Badge>
@@ -668,7 +524,7 @@ export default function Produtos() {
                 : isPaciente ? "Serviços e Consultas" : "Serviços Profissionais"
               }
             </h1>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <p className="text-gray-600 max-w-2xl mx-auto mb-6">
               {tipoBusca === 'produtos'
                 ? "Encontre produtos de qualidade para cuidar da sua beleza e bem-estar"
                 : isPaciente
@@ -676,10 +532,32 @@ export default function Produtos() {
                   : "Impulsione seu negócio com nossos serviços profissionais"
               }
             </p>
+
+            {/* Toggle de tipo */}
+            <div className="flex gap-3 justify-center">
+              <Button
+                onClick={() => setTipoBusca('produtos')}
+                variant={tipoBusca === 'produtos' ? 'default' : 'outline'}
+                className={tipoBusca === 'produtos' 
+                  ? "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+                  : "border-2"}
+              >
+                🛍️ Ver Produtos
+              </Button>
+              <Button
+                onClick={() => setTipoBusca('servicos')}
+                variant={tipoBusca === 'servicos' ? 'default' : 'outline'}
+                className={tipoBusca === 'servicos'
+                  ? "bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white"
+                  : "border-2"}
+              >
+                💼 Ver Serviços
+              </Button>
+            </div>
           </div>
         </div>
 
-        {/* Banner Informativo */}
+        {/* Banner Informativo - apenas para produtos */}
         {tipoBusca === 'produtos' && (
           <Card className="mb-8 border-none shadow-lg bg-gradient-to-r from-[#F7D426] to-[#FFE066]">
             <CardContent className="p-6 md:p-8">
@@ -777,18 +655,25 @@ export default function Produtos() {
         {/* Products Grid */}
         {produtosFiltrados.length === 0 ? (
           <Card className="p-12 text-center">
-            <div className="text-6xl mb-4">🛍️</div>
+            <div className="text-6xl mb-4">
+              {tipoBusca === 'produtos' ? "🛍️" : "💼"}
+            </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Em Breve!
+              {tipoBusca === 'produtos' ? "Em Breve!" : "Nenhum serviço encontrado"}
             </h3>
             <p className="text-gray-600 mb-6">
-              Estamos preparando produtos incríveis para você. Volte em breve!
+              {tipoBusca === 'produtos' 
+                ? "Estamos preparando produtos incríveis para você. Volte em breve!"
+                : "Não encontramos serviços com os filtros selecionados."
+              }
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <div className="text-center p-4 bg-gray-50 rounded-lg">
                 <TrendingUp className="w-8 h-8 mx-auto mb-2 text-[#F7D426]" />
                 <p className="font-semibold text-sm">Lançamentos em Breve</p>
-                <p className="text-xs text-gray-500">Produtos exclusivos</p>
+                <p className="text-xs text-gray-500">
+                  {tipoBusca === 'produtos' ? 'Produtos exclusivos' : 'Novos serviços'}
+                </p>
               </div>
               <div className="text-center p-4 bg-gray-50 rounded-lg">
                 <Gift className="w-8 h-8 mx-auto mb-2 text-[#F7D426]" />
