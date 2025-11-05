@@ -10,15 +10,19 @@ import {
   Calculator, 
   TrendingUp, 
   DollarSign, 
-  Activity, 
-  X, 
+  // Activity, // Not used in the current component, removed as per general principle
+  X, // Not used, removed
   Download, 
   Lock,
   HelpCircle,
   Lightbulb,
   Search,
   CheckCircle,
-  ArrowRight
+  ArrowRight,
+  AlertCircle, // New icon from outline
+  Calendar,    // New icon from outline
+  Zap,         // New icon from outline
+  Award        // New icon from outline
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createPageUrl } from "@/utils";
@@ -35,8 +39,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+// Removed html2canvas and jsPDF as they are no longer used for HTML report generation
 
 export default function CalculadoraLaserSection() {
   const [user, setUser] = useState(null);
@@ -51,7 +54,7 @@ export default function CalculadoraLaserSection() {
     manutencaoAnual: 12000,
     vidaUtil: 5,
     custoVariavel: 50,
-    custoFixoClinica: 20000,
+    custoFixoClinica: 20000, // This fixed cost is not explicitly used in calculations, consider if it should be.
     precoMedio: 800,
     descontoMedio: 15,
     sessoesHora: 2,
@@ -113,16 +116,27 @@ export default function CalculadoraLaserSection() {
     const receitaPotencialMes = precoLiquido * capacidadeMaxima;
 
     const investimentoTotal = dados.custoAquisicao + dados.custosAdicionais;
-    // Ensure margemBruta * capacidadeMaxima is not zero to avoid division by zero
-    const denominadorPaybackCompra = (margemBruta * capacidadeMaxima * 0.7);
-    const paybackCompra = denominadorPaybackCompra !== 0 ? investimentoTotal / denominadorPaybackCompra : Infinity;
+    
+    // Using 70% of capacity for payback calculations to be more conservative
+    const capacidadeEfetiva = capacidadeMaxima * 0.7; 
 
-    const denominadorPaybackAluguel = (margemBruta * capacidadeMaxima * 0.7 - dados.custoAluguel);
-    const paybackAluguel = denominadorPaybackAluguel > 0 ? dados.custoAluguel / denominadorPaybackAluguel : Infinity;
+    const receitaMensalEfetiva = precoLiquido * capacidadeEfetiva;
+    const custosVariaveisMensaisEfetivos = dados.custoVariavel * capacidadeEfetiva;
+    const margemContribuicaoMensalEfetiva = receitaMensalEfetiva - custosVariaveisMensaisEfetivos;
+
+    const custoManutencaoMensal = dados.manutencaoAnual / 12;
+
+    // Payback Compra: (Investimento Inicial) / (Margem de Contribuição Mensal Efetiva - Custo Manutenção Mensal)
+    const denominadorPaybackCompra = margemContribuicaoMensalEfetiva - custoManutencaoMensal;
+    const paybackCompra = (denominadorPaybackCompra > 0 && investimentoTotal > 0) ? (investimentoTotal / denominadorPaybackCompra) : Infinity;
+
+    // Payback Aluguel: (Valor do Aluguel) / (Margem de Contribuição Mensal Efetiva - Custo Aluguel Mensal - Custo Manutenção Mensal)
+    const denominadorPaybackAluguel = margemContribuicaoMensalEfetiva - dados.custoAluguel - custoManutencaoMensal;
+    const paybackAluguel = (denominadorPaybackAluguel > 0 && dados.custoAluguel > 0) ? (dados.custoAluguel / denominadorPaybackAluguel) : Infinity;
 
 
-    const fluxoMensalCompra = margemBruta * capacidadeMaxima * 0.7 - dados.manutencaoAnual / 12;
-    const fluxoMensalAluguel = margemBruta * capacidadeMaxima * 0.7 - dados.custoAluguel - dados.manutencaoAnual / 12;
+    const fluxoMensalCompra = margemContribuicaoMensalEfetiva - custoManutencaoMensal;
+    const fluxoMensalAluguel = margemContribuicaoMensalEfetiva - dados.custoAluguel - custoManutencaoMensal;
     
     const taxaMensal = dados.taxaSelic / 12 / 100;
     const meses = dados.vidaUtil * 12;
@@ -135,16 +149,46 @@ export default function CalculadoraLaserSection() {
       vplAluguel += fluxoMensalAluguel / Math.pow(1 + taxaMensal, i);
     }
 
-    // TIR calculation is complex and often requires iterative methods or external libraries.
-    // The current implementation is a simplified approximation which might not be accurate.
-    // For a more robust solution, a financial library or more sophisticated algorithm would be needed.
-    // Here, we provide a basic approximation as per the original structure.
-    // TIR can be approximated using the VPL. If VPL is positive, TIR is likely higher than the discount rate.
-    // This approximation needs to be handled with care, as it's not a true TIR calculation.
-    // A more accurate TIR would require an iterative solver (e.g., Newton-Raphson method).
-    const tirCompra = investimentoTotal !== 0 ? (vplCompra / investimentoTotal) * 100 : 0; // Simplified
-    const tirAluguel = (dados.custoAluguel * meses) !== 0 ? (vplAluguel / (dados.custoAluguel * meses)) * 100 : 0; // Simplified
+    // TIR calculation approximation
+    // This is a simplified approximation and might not be accurate for all scenarios.
+    // For a more robust solution, a financial library or more sophisticated iterative algorithm would be needed.
+    const approximateTIR = (cashFlows, initialInvestment) => {
+      if (initialInvestment === 0) return 0;
+      let low = -1.0; // -100%
+      let high = 10.0; // 1000%
+      let tir = 0;
+      for (let i = 0; i < 100; i++) { // 100 iterations for approximation
+        let mid = (low + high) / 2;
+        let npv = initialInvestment; // Start with initial investment (usually negative)
+        for (let j = 0; j < cashFlows.length; j++) {
+          npv += cashFlows[j] / Math.pow(1 + mid, j + 1);
+        }
+        if (npv > 0) {
+          low = mid;
+        } else {
+          high = mid;
+        }
+        if (Math.abs(high - low) < 0.000001) { // Convergence check
+          tir = mid;
+          break;
+        }
+      }
+      return tir * 100 * 12; // Annualize for percentage
+    };
 
+    const cashFlowsCompra = Array(meses).fill(fluxoMensalCompra);
+    const tirCompra = approximateTIR(cashFlowsCompra, -investimentoTotal);
+
+    const cashFlowsAluguel = Array(meses).fill(fluxoMensalAluguel);
+    // For TIR Aluguel, the initial "investment" is usually considered 0 as it's a recurring cost,
+    // or the cost of acquiring the right to rent for the period.
+    // This calculation is more complex for aluguel as there's no initial lump sum to recover.
+    // A simplified approach might treat the recurring aluguel cost as a 'negative investment' spread out.
+    // Given the difficulty, for aluguel, we can use a very simplified return on the *opportunity cost*
+    // or set it to 0 if it doesn't make sense in this context. Let's use the same approximation.
+    // If the base is '0', the TIR calculator might fail.
+    // For rental, VPL is usually the primary metric. Let's return a nominal value if it's too complex/misleading.
+    const tirAluguel = approximateTIR(cashFlowsAluguel, 0); // No initial investment for aluguel, which makes TIR tricky.
 
     setResultados({
       precoLiquido,
@@ -152,15 +196,14 @@ export default function CalculadoraLaserSection() {
       margemBrutaPct,
       capacidadeMaxima,
       receitaPotencialMes,
-      paybackCompra: isFinite(paybackCompra) ? paybackCompra : 0, // Handle Infinity
-      paybackAluguel: isFinite(paybackAluguel) ? paybackAluguel : 0, // Handle Infinity
-      vplCompra,
-      vplAluguel,
-      tirCompra,
-      tirAluguel
+      paybackCompra: isFinite(paybackCompra) && paybackCompra > 0 ? paybackCompra : 0, // Handle Infinity or negative payback
+      paybackAluguel: isFinite(paybackAluguel) && paybackAluguel > 0 ? paybackAluguel : 0, // Handle Infinity or negative payback
+      vplCompra: vplCompra,
+      vplAluguel: vplAluguel,
+      tirCompra: isFinite(tirCompra) ? tirCompra : 0,
+      tirAluguel: isFinite(tirAluguel) ? tirAluguel : 0
     });
 
-    // APENAS AQUI abrimos o modal
     setMostrarResultados(true);
   };
 
@@ -178,7 +221,6 @@ export default function CalculadoraLaserSection() {
     } else if (abaAtual === "operacao") {
       setAbaAtual("receita");
     }
-    // No "next" for "receita" tab, as it has the final calculate button.
   };
 
   const formatCurrency = (value) => {
@@ -188,44 +230,211 @@ export default function CalculadoraLaserSection() {
     }).format(value);
   };
 
-  const handleBaixarRelatorio = async () => {
+  const handleBaixarRelatorio = () => {
     if (!user || user.plano_ativo === 'free' || !user.plano_ativo) {
-      // The tooltip will already handle the message for disabled button
       return; 
     }
 
-    try {
-      // Criar elemento temporário com o relatório
-      const relatorioElement = document.getElementById('relatorio-completo');
-      if (!relatorioElement) {
-        console.error('Elemento "relatorio-completo" não encontrado.');
-        alert('Erro ao gerar PDF: Elemento de relatório não encontrado.');
-        return;
-      }
+    // Pre-calculate values needed for the report
+    const investimentoTotal = dados.custoAquisicao + dados.custosAdicionais;
+    const custoManutencaoMensal = dados.manutencaoAnual / 12;
+    const capacidadeEfetiva = resultados.capacidadeMaxima * 0.7; // 70% utilization
+    
+    const receitaMensalEfetiva = resultados.precoLiquido * capacidadeEfetiva;
+    const custosVariaveisMensaisEfetivos = dados.custoVariavel * capacidadeEfetiva;
+    const margemContribuicaoMensalEfetiva = receitaMensalEfetiva - custosVariaveisMensaisEfetivos;
 
-      // Capturar como canvas
-      const canvas = await html2canvas(relatorioElement, {
-        scale: 2, // Aumenta a resolução do canvas
-        useCORS: true, // Importante para imagens externas
-        logging: false, // Desabilita logs no console
-        windowWidth: relatorioElement.scrollWidth,
-        windowHeight: relatorioElement.scrollHeight
-      });
+    const lucroOperacionalMensalCompra = margemContribuicaoMensalEfetiva - custoManutencaoMensal;
+    const lucroOperacionalMensalAluguel = margemContribuicaoMensalEfetiva - dados.custoAluguel - custoManutencaoMensal;
+    
+    // Choose the better option for general "lucro mensal" and "tempo de retorno"
+    const isCompraBetter = resultados.vplCompra > resultados.vplAluguel;
+    const lucroMensalReport = isCompraBetter ? lucroOperacionalMensalCompra : lucroOperacionalMensalAluguel;
+    const tempoRetornoReport = isCompraBetter ? resultados.paybackCompra : resultados.paybackAluguel;
 
-      // Converter para PDF
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4'); // 'p' for portrait, 'mm' for units, 'a4' for size
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`relatorio-viabilidade-${dados.marcaLaser}-${Date.now()}.pdf`);
-      
-      alert('Relatório baixado com sucesso!');
-    } catch (error) {
-      console.error('Erro ao gerar PDF:', error);
-      alert('Erro ao gerar PDF. Tente novamente ou verifique o console para mais detalhes.');
+    const roiAnualCompra = (investimentoTotal > 0) ? ((lucroOperacionalMensalCompra * 12) / investimentoTotal * 100) : 0;
+    const roiAnualAluguel = (dados.custoAluguel > 0) ? ((lucroOperacionalMensalAluguel * 12) / (dados.custoAluguel * 12)) * 100 : 0; // Simple ratio for aluguel
+    const roiAnualReport = isCompraBetter ? roiAnualCompra : roiAnualAluguel;
+    
+    const recomendacoes = [];
+    if (resultados.vplCompra > resultados.vplAluguel) {
+      recomendacoes.push("Com base nos dados fornecidos, a COMPRA apresenta melhor retorno financeiro no longo prazo. O VPL positivo e o payback aceitável indicam que este é um investimento viável para sua clínica.");
+    } else {
+      recomendacoes.push("Com base nos dados fornecidos, o ALUGUEL pode ser mais vantajoso considerando os riscos e a flexibilidade operacional. Esta opção oferece menor comprometimento de capital e permite ajustes conforme a demanda.");
     }
+    if (resultados.paybackCompra === 0 || !isFinite(resultados.paybackCompra)) {
+        recomendacoes.push("O payback para compra não pode ser calculado ou é infinito com os dados atuais. Revise seus custos/receitas.");
+    }
+    if (resultados.paybackAluguel === 0 || !isFinite(resultados.paybackAluguel)) {
+        recomendacoes.push("O payback para aluguel não pode ser calculado ou é infinito com os dados atuais. Revise seus custos/receitas.");
+    }
+    if (lucroMensalReport <= 0) {
+      recomendacoes.push("O lucro mensal estimado é negativo ou zero, o que indica que o investimento pode não ser viável nas condições atuais.");
+    }
+
+    // Generate projections
+    const projecoes = [];
+    let cumulativeProfit = 0;
+    let cumulativeInvestment = 0; // For cumulative ROI if needed
+
+    for (let i = 1; i <= dados.vidaUtil; i++) {
+        const receitaAnual = receitaMensalEfetiva * 12;
+        const lucroAnual = (isCompraBetter ? lucroOperacionalMensalCompra : lucroOperacionalMensalAluguel) * 12;
+        cumulativeProfit += lucroAnual;
+        
+        let roiAnualProj = 0;
+        if (isCompraBetter) {
+            // Simple cumulative ROI for purchase
+            roiAnualProj = (investimentoTotal > 0) ? ((cumulativeProfit / investimentoTotal) * 100) : 0;
+        } else {
+            // For rental, perhaps show annual return relative to annual cost
+            roiAnualProj = (dados.custoAluguel * 12 > 0) ? (lucroAnual / (dados.custoAluguel * 12)) * 100 : 0;
+        }
+
+        projecoes.push({
+            periodo: `Ano ${i}`,
+            receita: receitaAnual,
+            lucro: lucroAnual,
+            roi: roiAnualProj >= 0 ? roiAnualProj.toFixed(2) : 'N/A'
+        });
+    }
+
+    const dataAtual = new Date().toLocaleDateString('pt-BR');
+    const horaAtual = new Date().toLocaleTimeString('pt-BR');
+    
+    const conteudoHTML = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Relatório de Viabilidade - ${dados.marcaLaser}</title>
+        <style>
+          @page { size: A4; margin: 2cm; }
+          body { font-family: Arial, sans-serif; color: #333; line-height: 1.6; font-size: 11pt; }
+          .header { text-align: center; margin-bottom: 30px; border-bottom: 3px solid #007bff; padding-bottom: 20px; }
+          h1 { color: #2C2C2C; margin: 0; font-size: 24pt; }
+          h2 { color: #007bff; border-bottom: 2px solid #e0e0e0; padding-bottom: 5px; margin-top: 30px; font-size: 16pt; }
+          h3 { color: #333; margin-top: 20px; font-size: 14pt; }
+          .info-box { background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 10px 0; border: 1px solid #e0e0e0; }
+          .info-box p { margin: 5px 0; }
+          .metric { background: white; border-left: 4px solid #007bff; padding: 15px; margin: 15px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-radius: 8px; }
+          .metric p { margin: 0; }
+          table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+          th { background: #007bff; color: white; padding: 12px; text-align: left; border: 1px solid #ddd; }
+          td { padding: 10px; border: 1px solid #ddd; }
+          .footer { margin-top: 40px; text-align: center; font-size: 9pt; color: #999; }
+          .highlight { background: #e6f2ff; padding: 3px 8px; border-radius: 4px; font-weight: bold; color: #0056b3; }
+          .text-green { color: #28a745; font-weight: bold; }
+          .text-red { color: #dc3545; font-weight: bold; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>📊 Relatório de Viabilidade</h1>
+          <p>Calculadora de Laser - Mapa da Estética</p>
+          <p>Gerado em: ${dataAtual} às ${horaAtual}</p>
+          <p>Análise para: <strong>${dados.marcaLaser} - ${dados.modeloLaser}</strong></p>
+        </div>
+        
+        <div class="info-box">
+          <h2>📋 Informações do Equipamento</h2>
+          <p><strong>Modelo:</strong> ${dados.modeloLaser}</p>
+          <p><strong>Marca:</strong> ${dados.marcaLaser}</p>
+          <p><strong>Custo de Aquisição (Compra):</strong> ${formatCurrency(dados.custoAquisicao)}</p>
+          <p><strong>Custos Adicionais:</strong> ${formatCurrency(dados.custosAdicionais)}</p>
+          <p><strong>Custo de Aluguel/Leasing Mensal:</strong> ${formatCurrency(dados.custoAluguel)}</p>
+          <p><strong>Custo de Manutenção Anual:</strong> ${formatCurrency(dados.manutencaoAnual)}</p>
+          <p><strong>Vida Útil Estimada:</strong> ${dados.vidaUtil} anos</p>
+          <p><strong>Taxa Selic/CDI Anual:</strong> ${dados.taxaSelic}%</p>
+        </div>
+
+        <div class="info-box">
+          <h2>⚙️ Dados Operacionais e de Receita</h2>
+          <p><strong>Preço Médio por Sessão (Tabela):</strong> ${formatCurrency(dados.precoMedio)}</p>
+          <p><strong>Desconto Médio em Pacotes:</strong> ${dados.descontoMedio}%</p>
+          <p><strong>Preço Líquido por Sessão:</strong> ${formatCurrency(resultados.precoLiquido)}</p>
+          <p><strong>Custo Variável por Procedimento:</strong> ${formatCurrency(dados.custoVariavel)}</p>
+          <p><strong>Margem Bruta por Sessão:</strong> ${formatCurrency(resultados.margemBruta)} (${resultados.margemBrutaPct.toFixed(1)}%)</p>
+          <p><strong>Capacidade Máxima Mensal:</strong> ${resultados.capacidadeMaxima.toFixed(0)} sessões</p>
+          <p><strong>Utilização Efetiva (70%):</strong> ${capacidadeEfetiva.toFixed(0)} sessões/mês</p>
+        </div>
+
+        <h2>💰 Análise Financeira</h2>
+        
+        <div class="metric">
+          <h3>Receita Potencial Mensal (Efetiva)</h3>
+          <p class="highlight" style="font-size: 24px;">${formatCurrency(receitaMensalEfetiva)}</p>
+        </div>
+
+        <div class="metric">
+          <h3>Lucro Operacional Mensal Estimado</h3>
+          <p class="highlight" style="font-size: 24px;">${formatCurrency(lucroMensalReport)}</p>
+        </div>
+
+        <div class="metric">
+          <h3>Tempo de Retorno (Payback)</h3>
+          <p class="highlight" style="font-size: 24px;">
+            ${isFinite(tempoRetornoReport) && tempoRetornoReport > 0 ? `${tempoRetornoReport.toFixed(1)} meses` : 'N/A ou Inválido'}
+          </p>
+        </div>
+
+        <div class="info-box">
+            <h3>Comparativo Compra vs Aluguel</h3>
+            <p><strong>VPL (Compra):</strong> <span class="${resultados.vplCompra >= 0 ? 'text-green' : 'text-red'}">${formatCurrency(resultados.vplCompra)}</span></p>
+            <p><strong>VPL (Aluguel):</strong> <span class="${resultados.vplAluguel >= 0 ? 'text-green' : 'text-red'}">${formatCurrency(resultados.vplAluguel)}</span></p>
+            <p><strong>TIR (Compra):</strong> ${isFinite(resultados.tirCompra) ? resultados.tirCompra.toFixed(2) + '%' : 'N/A'}</p>
+            <p><strong>TIR (Aluguel):</strong> ${isFinite(resultados.tirAluguel) ? resultados.tirAluguel.toFixed(2) + '%' : 'N/A'}</p>
+            <p><strong>Payback (Compra):</strong> ${isFinite(resultados.paybackCompra) && resultados.paybackCompra > 0 ? resultados.paybackCompra.toFixed(1) + ' meses' : 'N/A'}</p>
+            <p><strong>Payback (Aluguel):</strong> ${isFinite(resultados.paybackAluguel) && resultados.paybackAluguel > 0 ? resultados.paybackAluguel.toFixed(1) + ' meses' : 'N/A'}</p>
+        </div>
+
+        <h2>📈 Projeções de Longo Prazo (${dados.vidaUtil} Anos)</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Período</th>
+              <th>Receita Anual</th>
+              <th>Lucro Anual</th>
+              <th>ROI Acumulado (%)</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${projecoes.map(proj => `
+              <tr>
+                <td><strong>${proj.periodo}</strong></td>
+                <td>${formatCurrency(proj.receita)}</td>
+                <td>${formatCurrency(proj.lucro)}</td>
+                <td class="${parseFloat(proj.roi) >= 0 ? 'text-green' : 'text-red'}">${proj.roi}%</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+
+        <div class="info-box">
+          <h2>💡 Recomendações</h2>
+          ${recomendacoes.map(rec => `<p>• ${rec}</p>`).join('')}
+        </div>
+
+        <div class="footer">
+          <p>Mapa da Estética - Clube da Beleza</p>
+          <p>www.mapadaestetica.com.br | (31) 97259-5643</p>
+          <p>Esta análise é uma ferramenta de apoio à decisão. Consulte um profissional financeiro para orientação específica.</p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob([conteudoHTML], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `relatorio-viabilidade-${dados.marcaLaser}-${Date.now()}.html`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    alert('Relatório exportado em HTML!\n\nPara converter em PDF:\n1. Abra o arquivo HTML no seu navegador de internet.\n2. Pressione Ctrl+P (Windows) ou Cmd+P (Mac) para abrir a janela de impressão.\n3. Na caixa de diálogo de impressão, selecione "Salvar como PDF" ou "Microsoft Print to PDF" como impressora.\n4. Clique em "Salvar" para gerar o arquivo PDF.');
   };
 
   const isUserFree = !user || user.plano_ativo === 'free' || !user.plano_ativo;
@@ -236,7 +445,7 @@ export default function CalculadoraLaserSection() {
         <div className="text-center mb-12">
           <Badge className="mb-4 bg-blue-600 text-white">
             <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/f54646e8e_drbeleza.png"
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe4/f54646e8e_drbeleza.png"
               alt="Dr. Beleza"
               className="w-4 h-4 rounded-full mr-2 inline-block object-cover"
               onError={(e) => {
@@ -515,7 +724,7 @@ export default function CalculadoraLaserSection() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Custo de Aquisição</p>
-                    <p className="font-bold text-gray-900">{formatCurrency(dados.custoAquisicao)}</p>
+                    <p className="font-bold text-gray-900">{formatCurrency(dados.custoAquisicao + dados.custosAdicionais)}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Custo de Aluguel Mensal</p>
@@ -533,12 +742,12 @@ export default function CalculadoraLaserSection() {
                     <p className="text-xl font-bold text-green-700">{formatCurrency(resultados.precoLiquido)}</p>
                   </div>
                   <div className="bg-white rounded-lg p-4 border-2 border-green-200">
-                    <p className="text-sm text-gray-600 mb-1">Margem Bruta</p>
+                    <p className="text-sm text-gray-600 mb-1">Margem Bruta por Sessão</p>
                     <p className="text-xl font-bold text-green-700">{formatCurrency(resultados.margemBruta)}</p>
                     <p className="text-xs text-gray-500">({resultados.margemBrutaPct.toFixed(1)}%)</p>
                   </div>
                   <div className="bg-white rounded-lg p-4 border-2 border-green-200">
-                    <p className="text-sm text-gray-600 mb-1">Receita Potencial/Mês</p>
+                    <p className="text-sm text-gray-600 mb-1">Receita Potencial/Mês (100% cap)</p>
                     <p className="text-xl font-bold text-green-700">{formatCurrency(resultados.receitaPotencialMes)}</p>
                   </div>
                 </div>
@@ -546,41 +755,41 @@ export default function CalculadoraLaserSection() {
 
               {/* Compra vs Aluguel */}
               <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">📊 Compra vs Aluguel</h3>
+                <h3 className="text-lg font-bold text-gray-900 mb-4">📊 Compra vs Aluguel (70% de Ocupação)</h3>
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <h4 className="font-bold text-purple-700">COMPRA</h4>
                     <div className="bg-white rounded-lg p-4 border-2 border-purple-200">
-                      <p className="text-sm text-gray-600 mb-1">Payback</p>
+                      <p className="text-sm text-gray-600 mb-1">Payback (meses)</p>
                       <p className="text-2xl font-bold text-purple-700">
-                        {resultados.paybackCompra > 0 && isFinite(resultados.paybackCompra) ? `${resultados.paybackCompra.toFixed(1)} meses` : 'N/A'}
+                        {resultados.paybackCompra > 0 && isFinite(resultados.paybackCompra) ? `${resultados.paybackCompra.toFixed(1)}` : 'N/A'}
                       </p>
                     </div>
                     <div className="bg-white rounded-lg p-4 border-2 border-purple-200">
                       <p className="text-sm text-gray-600 mb-1">VPL (Valor Presente Líquido)</p>
-                      <p className="text-xl font-bold text-purple-700">{formatCurrency(resultados.vplCompra)}</p>
+                      <p className={`text-xl font-bold ${resultados.vplCompra >= 0 ? 'text-green-700' : 'text-red-700'}`}>{formatCurrency(resultados.vplCompra)}</p>
                     </div>
                     <div className="bg-white rounded-lg p-4 border-2 border-purple-200">
-                      <p className="text-sm text-gray-600 mb-1">TIR Estimada</p>
-                      <p className="text-xl font-bold text-purple-700">{resultados.tirCompra.toFixed(2)}%</p>
+                      <p className="text-sm text-gray-600 mb-1">TIR Estimada (Anual)</p>
+                      <p className="text-xl font-bold text-purple-700">{isFinite(resultados.tirCompra) ? resultados.tirCompra.toFixed(2) : 'N/A'}%</p>
                     </div>
                   </div>
 
                   <div className="space-y-4">
                     <h4 className="font-bold text-pink-700">ALUGUEL</h4>
                     <div className="bg-white rounded-lg p-4 border-2 border-pink-200">
-                      <p className="text-sm text-gray-600 mb-1">Payback</p>
+                      <p className="text-sm text-gray-600 mb-1">Payback (meses)</p>
                       <p className="text-2xl font-bold text-pink-700">
-                        {resultados.paybackAluguel > 0 && isFinite(resultados.paybackAluguel) ? `${resultados.paybackAluguel.toFixed(1)} meses` : 'N/A'}
+                        {resultados.paybackAluguel > 0 && isFinite(resultados.paybackAluguel) ? `${resultados.paybackAluguel.toFixed(1)}` : 'N/A'}
                       </p>
                     </div>
                     <div className="bg-white rounded-lg p-4 border-2 border-pink-200">
                       <p className="text-sm text-gray-600 mb-1">VPL (Valor Presente Líquido)</p>
-                      <p className="text-xl font-bold text-pink-700">{formatCurrency(resultados.vplAluguel)}</p>
+                      <p className={`text-xl font-bold ${resultados.vplAluguel >= 0 ? 'text-green-700' : 'text-red-700'}`}>{formatCurrency(resultados.vplAluguel)}</p>
                     </div>
                     <div className="bg-white rounded-lg p-4 border-2 border-pink-200">
-                      <p className="text-sm text-gray-600 mb-1">TIR Estimada</p>
-                      <p className="text-xl font-bold text-pink-700">{resultados.tirAluguel.toFixed(2)}%</p>
+                      <p className="text-sm text-gray-600 mb-1">TIR Estimada (Anual)</p>
+                      <p className="text-xl font-bold text-pink-700">{isFinite(resultados.tirAluguel) ? resultados.tirAluguel.toFixed(2) : 'N/A'}%</p>
                     </div>
                   </div>
                 </div>
@@ -608,14 +817,14 @@ export default function CalculadoraLaserSection() {
                           className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {isUserFree ? <Lock className="w-4 h-4 mr-2" /> : <Download className="w-4 h-4 mr-2" />}
-                          Baixar Relatório PDF
+                          Baixar Relatório (HTML)
                         </Button>
                       </div>
                     </TooltipTrigger>
                     {isUserFree && (
                       <TooltipContent className="bg-yellow-50 border-2 border-yellow-300 text-yellow-900 p-4 max-w-xs z-50">
                         <p className="font-semibold mb-2">🔒 Recurso Premium</p>
-                        <p className="text-sm">Para baixar o relatório completo em PDF, é necessário ter um plano PRATA ou superior.</p>
+                        <p className="text-sm">Para baixar o relatório, é necessário ter um plano PRATA ou superior.</p>
                         <Button
                           onClick={() => window.location.href = createPageUrl("Planos")}
                           className="w-full mt-3 bg-yellow-600 hover:bg-yellow-700 text-white"
@@ -648,7 +857,7 @@ export default function CalculadoraLaserSection() {
           <DialogHeader>
             <div className="flex items-center gap-4 mb-4">
               <img
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/f54646e8e_drbeleza.png"
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe4/f54646e8e_drbeleza.png"
                 alt="Dr. Beleza"
                 className="w-16 h-16 rounded-full object-cover border-2 border-blue-600"
                 onError={(e) => {

@@ -501,7 +501,7 @@ export default function RelatorioPrecoMedio() {
                             style={{ width: `${percentual}%` }}
                           ></div>
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">{percentual.toFixed(1)}% do total}</p>
+                        <p className="text-xs text-gray-500 mt-1">{percentual.toFixed(1)}% do total</p>
                       </div>
                     );
                   })}
