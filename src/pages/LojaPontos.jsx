@@ -13,10 +13,31 @@ import {
   Zap,
   ShoppingBag,
   Users,
+  DollarSign, // New import
+  Check,      // New import
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from '@tanstack/react-query';
+
+const pontosPorFaixaPreco = {
+  '$': 1,
+  '$$': 5,
+  '$$$': 10,
+  '$$$$': 50,
+  '$$$$$': 100
+};
+
+const getFaixaPrecoInfo = (faixa) => {
+  const info = {
+    "$": { texto: "Até R$ 500", emoji: "💚", pontos: 1 },
+    "$$": { texto: "R$ 500 - R$ 1.000", emoji: "💙", pontos: 5 },
+    "$$$": { texto: "R$ 1.000 - R$ 2.000", emoji: "💛", pontos: 10 },
+    "$$$$": { texto: "R$ 2.000 - R$ 5.000", emoji: "🧡", pontos: 50 },
+    "$$$$$": { texto: "Acima de R$ 5.000", emoji: "❤️", pontos: 100 }
+  };
+  return info[faixa] || info["$"];
+};
 
 export default function LojaPontos() {
   const navigate = useNavigate();
@@ -133,7 +154,7 @@ export default function LojaPontos() {
       <div className="max-w-7xl mx-auto px-4">
         <Button
           variant="ghost"
-          onClick={() => navigate("/perfil")} // Replaced createPageUrl with direct path
+          onClick={() => navigate("/perfil")} 
           className="mb-6 text-gray-600 hover:text-gray-900"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -153,6 +174,156 @@ export default function LojaPontos() {
             Você tem <span className="font-bold text-[#F7D426] text-2xl">{user?.pontos_acumulados || 0}</span> pontos disponíveis
           </p>
         </div>
+
+        {/* Sistema de Pontos - Explicação Detalhada */}
+        <Card className="mb-8 border-2 border-[#F7D426] bg-gradient-to-br from-[#FFF9E6] to-white shadow-lg">
+          <CardContent className="p-8">
+            <h2 className="text-2xl font-bold text-[#2C2C2C] mb-6 flex items-center justify-center gap-2">
+              <Star className="w-6 h-6 text-[#F7D426] fill-[#F7D426]" />
+              Como Funciona o Sistema de Pontos
+            </h2>
+
+            <div className="grid md:grid-cols-2 gap-6 mb-8">
+              {/* Ganhar Pontos */}
+              <div className="bg-white p-6 rounded-xl border-2 border-[#F7D426]">
+                <h3 className="text-xl font-bold text-[#2C2C2C] mb-4 flex items-center gap-2">
+                  <Zap className="w-5 h-5 text-[#F7D426]" />
+                  Ganhe Pontos
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <ShoppingBag className="w-5 h-5 text-[#F7D426] flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-semibold text-gray-900">Compras na Loja</p>
+                      <p className="text-sm text-gray-600">Ganhe pontos em cada compra baseado na faixa de preço</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Users className="w-5 h-5 text-[#F7D426] flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-semibold text-gray-900">Indicação de Amigos</p>
+                      <p className="text-sm text-gray-600">100 pontos por cada amigo que completar o cadastro</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Crown className="w-5 h-5 text-[#F7D426] flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-semibold text-gray-900">Planos Premium</p>
+                      <p className="text-sm text-gray-600">Pontos mensais ao assinar planos GOLD ou VIP</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Faixas de Preço */}
+              <div className="bg-white p-6 rounded-xl border-2 border-gray-200">
+                <h3 className="text-xl font-bold text-[#2C2C2C] mb-4 flex items-center gap-2">
+                  <DollarSign className="w-5 h-5 text-[#F7D426]" />
+                  Pontos por Faixa de Preço
+                </h3>
+                <div className="space-y-3">
+                  {Object.entries(pontosPorFaixaPreco).map(([faixa, pontos]) => {
+                    const info = getFaixaPrecoInfo(faixa);
+                    return (
+                      <div key={faixa} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl">{info.emoji}</span>
+                          <div>
+                            <p className="font-bold text-gray-900">{faixa}</p>
+                            <p className="text-xs text-gray-600">{info.texto}</p>
+                          </div>
+                        </div>
+                        <Badge className="bg-[#F7D426] text-[#2C2C2C] border-2 border-[#2C2C2C]">
+                          +{pontos} pts
+                        </Badge>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Regras de Indicação */}
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-xl border-2 border-purple-200">
+              <h3 className="text-xl font-bold text-purple-900 mb-4 flex items-center gap-2">
+                <Users className="w-5 h-5" />
+                Programa de Indicação - Regras
+              </h3>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-purple-900">
+                      <strong>100 pontos</strong> por cada amigo que completar o cadastro
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-purple-900">
+                      O amigo precisa permanecer <strong>15 minutos</strong> navegando no site
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-purple-900">
+                      O amigo precisa <strong>completar o cadastro</strong>
+                    </p>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-purple-900">
+                      <strong>Pontos creditados automaticamente</strong> após validação
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-purple-900">
+                      Acompanhe suas indicações no <strong>perfil</strong>
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-purple-900">
+                      Indique <strong>quantos amigos quiser!</strong>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {user?.codigo_indicacao && (
+                <div className="mt-6 p-4 bg-white rounded-lg border-2 border-purple-300">
+                  <p className="text-sm font-semibold text-purple-900 mb-2">Seu Código de Indicação:</p>
+                  <div className="flex items-center gap-2">
+                    <code className="flex-1 bg-purple-100 px-4 py-2 rounded text-purple-900 font-mono font-bold text-lg">
+                      {user.codigo_indicacao}
+                    </code>
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        const link = `${window.location.origin}?ref=${user.codigo_indicacao}`;
+                        navigator.clipboard.writeText(link);
+                        alert("Link copiado! Compartilhe com seus amigos!");
+                      }}
+                      className="bg-purple-600 hover:bg-purple-700"
+                    >
+                      Copiar Link
+                    </Button>
+                  </div>
+                  <div className="mt-3 flex items-center justify-between text-sm">
+                    <span className="text-purple-700">
+                      Amigos indicados: <strong>{user.amigos_indicados_validados || 0}</strong>
+                    </span>
+                    <span className="text-purple-700">
+                      Pontos ganhos: <strong>{user.total_pontos_indicacao || 0}</strong>
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Tabs de Categorias */}
         <div className="mb-8 overflow-x-auto whitespace-nowrap">
@@ -280,12 +451,12 @@ export default function LojaPontos() {
           </Card>
         )}
 
-        {/* Como Ganhar Pontos */}
+        {/* Como Ganhar Pontos - Versão Compacta */}
         <Card className="mt-12 border-2 border-[#F7D426] bg-gradient-to-br from-[#FFF9E6] to-white shadow-lg">
           <CardContent className="p-8">
             <h2 className="text-2xl font-bold text-[#2C2C2C] mb-6 flex items-center justify-center gap-2">
               <Zap className="w-6 h-6 text-[#F7D426]" />
-              Como Ganhar Mais Pontos
+              Mais Formas de Ganhar Pontos
             </h2>
             <div className="grid md:grid-cols-3 gap-6">
               <div className="text-center">
@@ -294,7 +465,7 @@ export default function LojaPontos() {
                 </div>
                 <h3 className="font-bold text-lg mb-2 text-gray-900">Compre Produtos</h3>
                 <p className="text-sm text-gray-600">
-                  Ganhe pontos em cada compra na loja
+                  Ganhe de 1 a 100 pontos por compra, dependendo da faixa de preço
                 </p>
               </div>
 
@@ -304,7 +475,7 @@ export default function LojaPontos() {
                 </div>
                 <h3 className="font-bold text-lg mb-2 text-gray-900">Indique Amigos</h3>
                 <p className="text-sm text-gray-600">
-                  100 pontos por cada amigo que se cadastrar (verifique as regras de indicação na página de perfil)
+                  100 pontos por cada amigo que completar o cadastro e permanecer 15 min
                 </p>
               </div>
 
@@ -314,7 +485,7 @@ export default function LojaPontos() {
                 </div>
                 <h3 className="font-bold text-lg mb-2 text-gray-900">Planos Premium</h3>
                 <p className="text-sm text-gray-600">
-                  Receba pontos mensais ao assinar um plano
+                  GOLD: 100 pts/mês | VIP: 300 pts/mês
                 </p>
               </div>
             </div>
