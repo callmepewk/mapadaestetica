@@ -25,39 +25,9 @@ import {
 } from "@/components/ui/pagination";
 import { Badge } from "@/components/ui/badge";
 import LoginPromptModal from "../components/home/LoginPromptModal";
-import { Label } from "@/components/ui/label"; // Added import for Label
+import { Label } from "@/components/ui/label";
+import MapaEstetica from "../components/anuncios/MapaEstetica";
 
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
-
-// Fix para os ícones do Leaflet
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-});
-
-// Ícone customizado para profissionais verificados (verde)
-const verifiedIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
-
-// Ícone padrão (azul)
-const defaultIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
 
 const categorias = [
   "Todas",
@@ -200,12 +170,12 @@ export default function Anuncios() {
   const [filtroTipoAnuncio, setFiltroTipoAnuncio] = useState("");
   const [filtroStatusFuncionamento, setFiltroStatusFuncionamento] = useState("");
   const [mostrarSeletorProcedimentos, setMostrarSeletorProcedimentos] = useState(false);
-  const [apenasVerificados, setApenasVerificados] = useState(false); // New state
+  const [apenasVerificados, setApenasVerificados] = useState(false);
   
   const [filtroDistancia, setFiltroDistancia] = useState("todas");
   const [filtroTempoFormacao, setFiltroTempoFormacao] = useState("todas");
   const [minhaLocalizacao, setMinhaLocalizacao] = useState(null);
-  const [abaAtiva, setAbaAtiva] = useState("lista"); // "lista" ou "mapa"
+  const [abaAtiva, setAbaAtiva] = useState("lista");
 
   const [user, setUser] = useState(null);
   const [mostrarLoginPrompt, setMostrarLoginPrompt] = useState(false);
@@ -217,7 +187,6 @@ export default function Anuncios() {
         setUser(userData);
       } catch {
         setUser(null);
-        // MOSTRAR MODAL APÓS 1 SEGUNDO
         setTimeout(() => {
           setMostrarLoginPrompt(true);
         }, 1000);
@@ -238,10 +207,8 @@ export default function Anuncios() {
     const tipoAnuncio = urlParams.get('tipoAnuncio');
     const statusFuncionamentoParam = urlParams.get('statusFuncionamento');
     const verificados = urlParams.get('verificados');
-    
     const distancia = urlParams.get('distancia');
     const tempoFormacao = urlParams.get('tempoFormacao');
-
 
     if (cidade) setCidadeFiltro(cidade);
     if (estado) setEstadoFiltro(estado);
@@ -253,7 +220,6 @@ export default function Anuncios() {
     if (tipoAnuncio) setFiltroTipoAnuncio(tipoAnuncio);
     if (statusFuncionamentoParam) setFiltroStatusFuncionamento(statusFuncionamentoParam);
     if (verificados) setApenasVerificados(verificados === 'true');
-    
     if (distancia) setFiltroDistancia(distancia);
     if (tempoFormacao) setFiltroTempoFormacao(tempoFormacao);
   }, []);
@@ -374,9 +340,8 @@ export default function Anuncios() {
         const matchTipoAnuncio = !filtroTipoAnuncio || anuncio.tipo_anuncio === filtroTipoAnuncio;
         const matchStatusFuncionamento = !filtroStatusFuncionamento || anuncio.status_funcionamento === filtroStatusFuncionamento;
         
-        const matchVerificados = !apenasVerificados || anuncio.verificado; // New filter
+        const matchVerificados = !apenasVerificados || anuncio.verificado;
 
-        // Filtro de distância
         let matchDistancia = true;
         if (filtroDistancia !== "todas" && minhaLocalizacao && anuncio.latitude && anuncio.longitude) {
           const distanciaKm = calcularDistancia(
@@ -390,15 +355,13 @@ export default function Anuncios() {
           const min = parseFloat(minStr);
           const max = parseFloat(maxStr);
 
-          // Logic for distance range filtering
-          if (minStr === "0") { // For "Até 500m" (0-0.5)
+          if (minStr === "0") {
             matchDistancia = distanciaKm <= max;
-          } else { // For ranges like "1-2" etc.
+          } else {
             matchDistancia = distanciaKm >= min && distanciaKm <= max;
           }
         }
         
-        // Filtro de tempo de formação
         let matchTempoFormacao = true;
         if (filtroTempoFormacao !== "todas" && anuncio.tempo_formacao_anos !== undefined && anuncio.tempo_formacao_anos !== null) {
           if (filtroTempoFormacao === "20+") {
@@ -455,13 +418,11 @@ export default function Anuncios() {
     setFiltroTempoFormacao("todas");
     setPaginaAtual(1);
 
-    // Remover parâmetros da URL
     const url = new URL(window.location);
     url.search = '';
     window.history.pushState({}, '', url);
   };
 
-  // Verificar se há algum filtro ativo
   const temFiltrosAtivos = 
     categoriaFiltro !== "Todas" ||
     cidadeFiltro !== "" ||
@@ -894,107 +855,33 @@ export default function Anuncios() {
                 </div>
 
                 {anunciosComLocalizacao.length > 0 ? (
-                  <div className="rounded-lg overflow-hidden border-2 border-gray-200" style={{ height: '600px' }}>
-                    <MapContainer
-                      center={
-                        minhaLocalizacao 
-                          ? [minhaLocalizacao.latitude, minhaLocalizacao.longitude]
-                          : [anunciosComLocalizacao[0].latitude, anunciosComLocalizacao[0].longitude]
-                      }
-                      zoom={minhaLocalizacao ? 13 : 12}
-                      style={{ height: '100%', width: '100%' }}
-                    >
-                      <TileLayer
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                      />
-                      
-                      {/* Marker da localização do usuário */}
-                      {minhaLocalizacao && (
-                        <Marker
-                          position={[minhaLocalizacao.latitude, minhaLocalizacao.longitude]}
-                          icon={new L.Icon({
-                            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-                            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-                            iconSize: [25, 41],
-                            iconAnchor: [12, 41],
-                            popupAnchor: [1, -34],
-                            shadowSize: [41, 41]
-                          })}
-                        >
-                          <Popup>
-                            <div className="text-center">
-                              <p className="font-bold text-red-600">📍 Você está aqui</p>
-                              <p className="text-sm">{cidadeFiltro} - {estadoFiltro}</p>
-                            </div>
-                          </Popup>
-                        </Marker>
-                      )}
+                  <>
+                    <MapaEstetica 
+                      anuncios={anunciosComLocalizacao}
+                      minhaLocalizacao={minhaLocalizacao}
+                      cidadeFiltro={cidadeFiltro}
+                      estadoFiltro={estadoFiltro}
+                      calcularDistancia={calcularDistancia}
+                    />
 
-                      {/* Markers dos profissionais */}
-                      {anunciosComLocalizacao.map((anuncio) => (
-                        <Marker
-                          key={anuncio.id}
-                          position={[anuncio.latitude, anuncio.longitude]}
-                          icon={anuncio.verificado ? verifiedIcon : defaultIcon}
-                        >
-                          <Popup maxWidth={300}>
-                            <div className="space-y-2">
-                              {anuncio.logo && (
-                                <img
-                                  src={anuncio.logo}
-                                  alt={anuncio.profissional}
-                                  className="w-full h-32 object-cover rounded-lg"
-                                />
-                              )}
-                              <div>
-                                <h3 className="font-bold text-lg flex items-center gap-2">
-                                  {anuncio.titulo}
-                                  {anuncio.verificado && (
-                                    <Badge className="bg-blue-100 text-blue-800 text-xs">
-                                      ✓ Verificado
-                                    </Badge>
-                                  )}
-                                </h3>
-                                <p className="text-sm text-gray-600 font-semibold">
-                                  {anuncio.profissional}
-                                </p>
-                                <p className="text-xs text-gray-500 mt-1">
-                                  {anuncio.categoria}
-                                </p>
-                                {anuncio.faixa_preco && (
-                                  <p className="text-sm font-bold text-pink-600 mt-1">
-                                    {anuncio.faixa_preco}
-                                  </p>
-                                )}
-                              </div>
-                              
-                              {minhaLocalizacao && (
-                                <p className="text-xs text-gray-500">
-                                  📍 Distância: {calcularDistancia(
-                                    minhaLocalizacao.latitude,
-                                    minhaLocalizacao.longitude,
-                                    anuncio.latitude,
-                                    anuncio.longitude
-                                  ).toFixed(2)} km
-                                </p>
-                              )}
-                              
-                              <Button
-                                size="sm"
-                                className="w-full bg-pink-600 hover:bg-pink-700 text-white"
-                                onClick={() => {
-                                  window.location.href = `/DetalhesAnuncio?id=${anuncio.id}`;
-                                }}
-                              >
-                                Ver Detalhes
-                              </Button>
-                            </div>
-                          </Popup>
-                        </Marker>
-                      ))}
-                    </MapContainer>
-                  </div>
+                    <div className="mt-4 p-4 bg-gray-50 rounded-lg border-2 border-gray-200">
+                      <h4 className="font-semibold mb-2 text-sm">Legenda:</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                          <span>Sua localização</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                          <span>Profissional Verificado ✓</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                          <span>Profissional</span>
+                        </div>
+                      </div>
+                    </div>
+                  </>
                 ) : (
                   <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-gray-200">
                     <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
@@ -1016,34 +903,12 @@ export default function Anuncios() {
                     )}
                   </div>
                 )}
-
-                {/* Legenda */}
-                {anunciosComLocalizacao.length > 0 && (
-                  <div className="mt-4 p-4 bg-gray-50 rounded-lg border-2 border-gray-200">
-                    <h4 className="font-semibold mb-2 text-sm">Legenda:</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                        <span>Sua localização</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                        <span>Profissional Verificado ✓</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                        <span>Profissional</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </CardContent>
             </Card>
           </div>
         )}
       </div>
 
-      {/* Modal de Seletor de Procedimentos (Still relevant if we keep the simple input and want a picker) */}
       <SeletorProcedimentos
         open={mostrarSeletorProcedimentos}
         onClose={() => setMostrarSeletorProcedimentos(false)}
@@ -1054,7 +919,6 @@ export default function Anuncios() {
         procedimentoAtual={procedimentoFiltro}
       />
 
-      {/* Modal de Login Prompt */}
       <LoginPromptModal
         open={mostrarLoginPrompt}
         onClose={() => setMostrarLoginPrompt(false)}
