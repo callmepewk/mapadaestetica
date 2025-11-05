@@ -17,7 +17,8 @@ import {
   LogOut,
   MapPin,
   TrendingUp, // Added for admin reports
-  Star // Added for points store
+  Star, // Added for points store
+  DollarSign // Added for beauty coins
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -251,14 +252,26 @@ export default function Layout({ children }) {
 
               {isAuthenticated ? (
                 <>
-                  {/* Contador de Pontos - SEMPRE VISÍVEL (pacientes e profissionais) */}
-                  <Link to={createPageUrl("LojaPontos")}>
-                    <Button variant="outline" className="flex items-center gap-2 border-[#F7D426] text-[#F7D426] hover:bg-[#FFF9E6]">
-                      <Star className="w-4 h-4" />
-                      <span className="font-bold hidden sm:inline">{user?.pontos_acumulados || 0}</span>
-                      <span className="text-xs hidden md:inline">pts</span>
-                    </Button>
-                  </Link>
+                  {/* Contadores de Pontos e Beauty Coins */}
+                  <div className="flex items-center gap-2">
+                    {/* Contador de Pontos */}
+                    <Link to={createPageUrl("LojaPontos")}>
+                      <Button variant="outline" className="flex items-center gap-2 border-[#F7D426] text-[#F7D426] hover:bg-[#FFF9E6]">
+                        <Star className="w-4 h-4" />
+                        <span className="font-bold hidden sm:inline">{user?.pontos_acumulados || 0}</span>
+                        <span className="text-xs hidden md:inline">pts</span>
+                      </Button>
+                    </Link>
+
+                    {/* Contador de Beauty Coins */}
+                    <Link to={createPageUrl("LojaPontos")}>
+                      <Button variant="outline" className="flex items-center gap-2 border-purple-500 text-purple-600 hover:bg-purple-50">
+                        <DollarSign className="w-4 h-4" />
+                        <span className="font-bold hidden sm:inline">{user?.beauty_coins || 0}</span>
+                        <span className="text-xs hidden md:inline">BC</span>
+                      </Button>
+                    </Link>
+                  </div>
 
                   {isProfissional && (
                     <Link to={createPageUrl("CadastrarAnuncio")} className="hidden md:block">
@@ -323,16 +336,28 @@ export default function Layout({ children }) {
                 </>
               ) : (
                 <>
-                  {/* Mostrar contador de pontos como incentivo para não autenticados */}
-                  <Button 
-                    variant="outline" 
-                    className="flex items-center gap-2 border-[#F7D426] text-[#F7D426] hover:bg-[#FFF9E6]"
-                    onClick={handleLogin}
-                  >
-                    <Star className="w-4 h-4" />
-                    <span className="font-bold hidden sm:inline">0</span>
-                    <span className="text-xs hidden md:inline">pts</span>
-                  </Button>
+                  {/* Mostrar contadores de pontos e Beauty Coins como incentivo para não autenticados */}
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      variant="outline" 
+                      className="flex items-center gap-2 border-[#F7D426] text-[#F7D426] hover:bg-[#FFF9E6]"
+                      onClick={handleLogin}
+                    >
+                      <Star className="w-4 h-4" />
+                      <span className="font-bold hidden sm:inline">0</span>
+                      <span className="text-xs hidden md:inline">pts</span>
+                    </Button>
+                    
+                    <Button 
+                      variant="outline" 
+                      className="flex items-center gap-2 border-purple-500 text-purple-600 hover:bg-purple-50"
+                      onClick={handleLogin}
+                    >
+                      <DollarSign className="w-4 h-4" />
+                      <span className="font-bold hidden sm:inline">0</span>
+                      <span className="text-xs hidden md:inline">BC</span>
+                    </Button>
+                  </div>
                   
                   <Button
                     onClick={handleLogin}
@@ -358,27 +383,49 @@ export default function Layout({ children }) {
           {/* Mobile Navigation */}
           {mobileMenuOpen && (
             <nav className="lg:hidden mt-4 pb-4 space-y-2 border-t pt-4">
-              {/* Loja de Pontos no Mobile - SEMPRE VISÍVEL */}
+              {/* Loja de Pontos e Beauty Coins no Mobile */}
               {isAuthenticated ? (
-                <Link
-                  to={createPageUrl("LojaPontos")}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[#FFF9E6] text-[#2C2C2C] border-l-4 border-[#F7D426] font-medium"
-                >
-                  <Star className="w-5 h-5" />
-                  <span>Loja de Pontos ({user?.pontos_acumulados || 0})</span>
-                </Link>
+                <div className="space-y-2">
+                  <Link
+                    to={createPageUrl("LojaPontos")}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[#FFF9E6] text-[#2C2C2C] border-l-4 border-[#F7D426] font-medium"
+                  >
+                    <Star className="w-5 h-5" />
+                    <span>Pontos: {user?.pontos_acumulados || 0}</span>
+                  </Link>
+                  <Link
+                    to={createPageUrl("LojaPontos")}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg bg-purple-50 text-purple-800 border-l-4 border-purple-500 font-medium"
+                  >
+                    <DollarSign className="w-5 h-5" />
+                    <span>Beauty Coins: {user?.beauty_coins || 0}</span>
+                  </Link>
+                </div>
               ) : (
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    handleLogin();
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-[#FFF9E6] text-[#2C2C2C] border-l-4 border-[#F7D426] font-medium"
-                >
-                  <Star className="w-5 h-5" />
-                  <span>Loja de Pontos (0)</span>
-                </button>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      handleLogin();
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-[#FFF9E6] text-[#2C2C2C] border-l-4 border-[#F7D426] font-medium"
+                  >
+                    <Star className="w-5 h-5" />
+                    <span>Pontos (0)</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      handleLogin();
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-purple-50 text-purple-800 border-l-4 border-purple-500 font-medium"
+                  >
+                    <DollarSign className="w-5 h-5" />
+                    <span>Beauty Coins (0)</span>
+                  </button>
+                </div>
               )}
 
               {navigationItems.map((item) => (

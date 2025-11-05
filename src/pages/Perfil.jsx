@@ -48,6 +48,7 @@ import {
   Loader2,
   Bookmark, // New import for Saved Ads
   Handshake, // New import for Indicações
+  DollarSign, // New import for Beauty Coins
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from 'date-fns';
@@ -764,7 +765,7 @@ export default function Perfil() {
                                 )}
                               </div>
 
-                              <Alert className="bg-blue-50 border-blue-200">
+                              <Alert className="mt-4 bg-blue-50 border-blue-200">
                                 <AlertCircle className="h-4 w-4 text-blue-600" />
                                 <AlertDescription className="text-blue-800 text-sm">
                                   Estes documentos ficarão visíveis no seu perfil público, aumentando a confiança dos clientes.
@@ -1333,9 +1334,35 @@ export default function Perfil() {
                     </Badge>
                     {isProfissional && (
                       <>
-                        <p className="text-sm text-gray-600 mb-4">
-                          Pontos Acumulados: <span className="font-bold">{user.pontos_acumulados || 0}</span>
-                        </p>
+                        <div className="space-y-3 my-4">
+                          <div className="p-3 bg-white rounded-lg border-2 border-[#F7D426]">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Star className="w-5 h-5 text-[#F7D426]" />
+                                <span className="text-sm text-gray-600">Pontos:</span>
+                              </div>
+                              <span className="font-bold text-lg text-[#F7D426]">{user.pontos_acumulados || 0}</span>
+                            </div>
+                          </div>
+                          
+                          <div className="p-3 bg-white rounded-lg border-2 border-purple-500">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <DollarSign className="w-5 h-5 text-purple-600" />
+                                <span className="text-sm text-gray-600">Beauty Coins:</span>
+                              </div>
+                              <span className="font-bold text-lg text-purple-600">{user.beauty_coins || 0}</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <Button
+                          variant="outline"
+                          className="w-full mb-2"
+                          onClick={() => navigate(createPageUrl("LojaPontos"))}
+                        >
+                          Ver Loja de Pontos
+                        </Button>
                         <Button
                           variant="outline"
                           className="w-full"
@@ -1346,9 +1373,40 @@ export default function Perfil() {
                       </>
                     )}
                     {isPaciente && (
-                      <p className="text-sm text-gray-600 mt-2">
-                        Plano gratuito para pacientes
-                      </p>
+                      <>
+                        <div className="space-y-3 my-4">
+                          <div className="p-3 bg-white rounded-lg border-2 border-[#F7D426]">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Star className="w-5 h-5 text-[#F7D426]" />
+                                <span className="text-sm text-gray-600">Pontos:</span>
+                              </div>
+                              <span className="font-bold text-lg text-[#F7D426]">{user.pontos_acumulados || 0}</span>
+                            </div>
+                          </div>
+                          
+                          <div className="p-3 bg-white rounded-lg border-2 border-purple-500">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <DollarSign className="w-5 h-5 text-purple-600" />
+                                <span className="text-sm text-gray-600">Beauty Coins:</span>
+                              </div>
+                              <span className="font-bold text-lg text-purple-600">{user.beauty_coins || 0}</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <Button
+                          variant="outline"
+                          className="w-full"
+                          onClick={() => navigate(createPageUrl("LojaPontos"))}
+                        >
+                          Ver Loja de Pontos
+                        </Button>
+                        <p className="text-sm text-gray-600 mt-2">
+                          Plano gratuito para pacientes
+                        </p>
+                      </>
                     )}
                   </div>
                 </CardContent>

@@ -157,11 +157,15 @@ export default function LojaPontos() {
     if (!confirmar) return;
 
     try {
+      // CORREÇÃO: Credita Beauty Coins no usuário
+      const novosBeautyCoins = (user.beauty_coins || 0) + quantidadeBeautyCoins;
+      
       await base44.auth.updateMe({
-        pontos_acumulados: user.pontos_acumulados - pontosNecessarios
+        pontos_acumulados: user.pontos_acumulados - pontosNecessarios,
+        beauty_coins: novosBeautyCoins
       });
 
-      alert(`✅ Troca realizada com sucesso!\n\nVocê trocou ${pontosNecessarios} pontos por ${quantidadeBeautyCoins} Beauty Coin(s).\n\nOs Beauty Coins foram creditados na sua conta do Clube da Beleza!`);
+      alert(`✅ Troca realizada com sucesso!\n\nVocê trocou ${pontosNecessarios} pontos por ${quantidadeBeautyCoins} Beauty Coin(s).\n\nNovo saldo de Beauty Coins: ${novosBeautyCoins}`);
       
       setMostrarTrocaBeautyCoins(false);
       setQuantidadeBeautyCoins(1);

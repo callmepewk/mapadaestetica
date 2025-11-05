@@ -794,7 +794,7 @@ export default function Produtos() {
                         size="sm"
                         onClick={() => {
                           if (isExclusivoClube) {
-                            navigate('/planos');
+                            navigate(createPageUrl("SobreNos")); // CORREÇÃO: Redireciona para Sobre Nós
                           } else if (produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes") {
                             handleContratar(produto);
                           } else {
