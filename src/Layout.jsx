@@ -300,7 +300,8 @@ export default function Layout({ children }) {
                         <Star className="w-4 h-4 mr-2" />
                         Loja de Pontos ({user?.pontos_acumulados || 0})
                       </DropdownMenuItem>
-                      {isProfissional && (
+                      {/* Meu Plano - DISPONÍVEL PARA PACIENTES E PROFISSIONAIS */}
+                      {(isProfissional || isPaciente) && (
                         <DropdownMenuItem onClick={() => navigate(createPageUrl("MeuPlano"))}>
                           <CreditCard className="w-4 h-4 mr-2" />
                           Meu Plano

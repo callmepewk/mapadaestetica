@@ -89,10 +89,10 @@ export default function Anuncios() {
         setUser(userData);
       } catch {
         setUser(null);
-        // Mostrar prompt de login após 2 segundos para usuários não autenticados
-        setTimeout(() => {
-          setMostrarLoginPrompt(true);
-        }, 2000);
+        // REMOVIDO O TIMEOUT - Agora não abre automaticamente
+        // setTimeout(() => {
+        //   setMostrarLoginPrompt(true);
+        // }, 2000);
       }
     };
     fetchUser();
