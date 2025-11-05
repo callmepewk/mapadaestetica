@@ -40,7 +40,12 @@ import {
   Star,
   AlertCircle,
   MessageCircle,
-  ShoppingCart
+  ShoppingCart,
+  Shield, // New import
+  FileText, // New import
+  CheckCircle, // New import
+  Upload, // New import
+  Loader2, // New import
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from 'date-fns';
@@ -59,12 +64,32 @@ export default function Perfil() {
   const [formData, setFormData] = useState({}); // Replaces perfilEditado, used for editing profile
   const [mostrarOnboarding, setMostrarOnboarding] = useState(false); // For "Preencher Cadastro" button
 
+  // Estados para upload de documentos profissionais
+  const [uploadingDocumentos, setUploadingDocumentos] = useState({
+    licenca_sanitaria: false,
+    alvara_funcionamento: false,
+    registro_profissional: false
+  });
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const userData = await base44.auth.me();
         setUser(userData);
-        setFormData(userData); // Initialize formData with user data
+        // Initialize formData with user data, including new fields and nested objects
+        setFormData({
+          full_name: userData.full_name || "",
+          telefone: userData.telefone || "",
+          whatsapp: userData.whatsapp || "",
+          cidade: userData.cidade || "",
+          estado: userData.estado || "",
+          instagram: userData.instagram || "",
+          facebook: userData.facebook || "",
+          especialidade: userData.especialidade || "",
+          cpf: userData.cpf || "", // New field
+          data_nascimento: userData.data_nascimento || "", // New field
+          documentos_profissionais: userData.documentos_profissionais || {}, // New nested object
+        });
       } catch (error) {
         navigate(createPageUrl("Inicio"));
       }
@@ -113,7 +138,20 @@ export default function Perfil() {
     onSuccess: async () => {
       const userData = await base44.auth.me();
       setUser(userData);
-      setFormData(userData); // Update formData with fresh user data
+      // Update formData with fresh user data, including new fields
+      setFormData({
+        full_name: userData.full_name || "",
+        telefone: userData.telefone || "",
+        whatsapp: userData.whatsapp || "",
+        cidade: userData.cidade || "",
+        estado: userData.estado || "",
+        instagram: userData.instagram || "",
+        facebook: userData.facebook || "",
+        especialidade: userData.especialidade || "",
+        cpf: userData.cpf || "",
+        data_nascimento: userData.data_nascimento || "",
+        documentos_profissionais: userData.documentos_profissionais || {},
+      });
       setEditando(false); // Exit edit mode
       queryClient.invalidateQueries(['user']);
     },
@@ -140,7 +178,7 @@ export default function Perfil() {
 
   const handleCancelar = () => { // New function to cancel editing
     setEditando(false);
-    // Reset formData to the current user state
+    // Reset formData to the current user state, including new fields
     setFormData({
       full_name: user?.full_name || "",
       telefone: user?.telefone || "",
@@ -150,13 +188,16 @@ export default function Perfil() {
       instagram: user?.instagram || "",
       facebook: user?.facebook || "",
       especialidade: user?.especialidade || "",
+      cpf: user?.cpf || "",
+      data_nascimento: user?.data_nascimento || "",
+      documentos_profissionais: user?.documentos_profissionais || {},
     });
   };
 
   const handleToggleEdicao = () => { // New function to toggle edit mode
     setEditando(!editando);
     if (!editando) { // Entering edit mode
-      // Initialize formData with current user data for editing
+      // Initialize formData with current user data for editing, including new fields
       setFormData({
         full_name: user?.full_name || "",
         telefone: user?.telefone || "",
@@ -165,9 +206,54 @@ export default function Perfil() {
         estado: user?.estado || "",
         instagram: user?.instagram || "",
         facebook: user?.facebook || "",
-        especialidade: user?.especialidade || "", // Added as per outline
+        especialidade: user?.especialidade || "",
+        cpf: user?.cpf || "",
+        data_nascimento: user?.data_nascimento || "",
+        documentos_profissionais: user?.documentos_profissionais || {},
       });
     }
+  };
+
+  const handleUploadDocumento = async (tipo, e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploadingDocumentos(prev => ({ ...prev, [tipo]: true }));
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+
+      const documentos = formData.documentos_profissionais || {};
+      const novoDocumento = {
+        url: file_url,
+        data_upload: new Date().toISOString()
+      };
+
+      setFormData(prev => ({
+        ...prev,
+        documentos_profissionais: {
+          ...documentos,
+          [tipo]: novoDocumento
+        }
+      }));
+
+      alert("Documento enviado com sucesso!");
+    } catch (error) {
+      console.error("Erro ao fazer upload:", error);
+      alert("Erro ao fazer upload do documento");
+    } finally {
+      setUploadingDocumentos(prev => ({ ...prev, [tipo]: false }));
+    }
+  };
+
+  const handleRemoverDocumento = (tipo) => {
+    // Create a new object to avoid direct mutation of state
+    const updatedDocumentos = { ...(formData.documentos_profissionais || {}) };
+    delete updatedDocumentos[tipo];
+
+    setFormData(prev => ({
+      ...prev,
+      documentos_profissionais: updatedDocumentos
+    }));
   };
 
   const handleSair = () => {
@@ -319,6 +405,51 @@ export default function Perfil() {
                             <span>Especialidade: {user.especialidade}</span>
                           </div>
                         )}
+                        {user.cpf && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <User className="w-4 h-4 text-gray-400" />
+                            <span>CPF: {user.cpf}</span>
+                          </div>
+                        )}
+                        {user.data_nascimento && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <Clock className="w-4 h-4 text-gray-400" />
+                            <span>Nascimento: {format(new Date(user.data_nascimento), "dd/MM/yyyy")}</span>
+                          </div>
+                        )}
+
+                        {isProfissional && user.documentos_profissionais && Object.keys(user.documentos_profissionais).length > 0 && (
+                          <div className="pt-6 border-t mt-6">
+                            <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                              <Shield className="w-5 h-5 text-blue-600" />
+                              Documentos Profissionais
+                            </h3>
+                            <div className="space-y-3">
+                              {user.documentos_profissionais.licenca_sanitaria?.url && (
+                                <div className="flex items-center gap-2 text-sm">
+                                  <FileText className="w-4 h-4 text-blue-600" />
+                                  <span>Licença Sanitária:</span>
+                                  <a href={user.documentos_profissionais.licenca_sanitaria.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Ver Documento</a>
+                                </div>
+                              )}
+                              {user.documentos_profissionais.alvara_funcionamento?.url && (
+                                <div className="flex items-center gap-2 text-sm">
+                                  <FileText className="w-4 h-4 text-blue-600" />
+                                  <span>Alvará de Funcionamento:</span>
+                                  <a href={user.documentos_profissionais.alvara_funcionamento.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Ver Documento</a>
+                                </div>
+                              )}
+                              {user.documentos_profissionais.registro_profissional?.url && (
+                                <div className="flex items-center gap-2 text-sm">
+                                  <FileText className="w-4 h-4 text-blue-600" />
+                                  <span>Registro Profissional:</span>
+                                  <a href={user.documentos_profissionais.registro_profissional.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Ver Documento</a>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
                       </div>
                     ) : (
                       <div className="space-y-6">
@@ -332,6 +463,31 @@ export default function Perfil() {
                             className="mt-1"
                           />
                         </div>
+
+                        {/* CPF e Data de Nascimento */}
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="cpf">CPF</Label>
+                            <Input
+                              id="cpf"
+                              value={formData.cpf || ""}
+                              onChange={(e) => setFormData({ ...formData, cpf: e.target.value })}
+                              placeholder="000.000.000-00"
+                              className="mt-1"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="data_nascimento">Data de Nascimento</Label>
+                            <Input
+                              id="data_nascimento"
+                              type="date"
+                              value={formData.data_nascimento ? format(new Date(formData.data_nascimento), 'yyyy-MM-dd') : ""}
+                              onChange={(e) => setFormData({ ...formData, data_nascimento: e.target.value })}
+                              className="mt-1"
+                            />
+                          </div>
+                        </div>
+
                         <div>
                           <Label htmlFor="telefone">Telefone</Label>
                           <Input
@@ -397,6 +553,200 @@ export default function Perfil() {
                             />
                           </div>
                         )}
+
+                        {/* NOVA SEÇÃO: Documentos Profissionais */}
+                        {isProfissional && (
+                          <div className="pt-6 border-t">
+                            <h4 className="font-bold text-lg mb-4 flex items-center gap-2">
+                              <Shield className="w-5 h-5 text-blue-600" />
+                              Documentos Profissionais
+                            </h4>
+                            <p className="text-sm text-gray-600 mb-4">
+                              Adicione seus documentos profissionais para exibir no seu perfil e aumentar sua credibilidade
+                            </p>
+
+                            <div className="space-y-4">
+                              {/* Licença Sanitária */}
+                              <div>
+                                <Label className="flex items-center gap-2 mb-2">
+                                  <FileText className="w-4 h-4 text-blue-600" />
+                                  Licença Sanitária
+                                </Label>
+                                {formData.documentos_profissionais?.licenca_sanitaria?.url ? (
+                                  <div className="p-3 bg-green-50 border-2 border-green-200 rounded-lg flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                      <CheckCircle className="w-5 h-5 text-green-600" />
+                                      <span className="text-sm text-green-800">Documento enviado</span>
+                                    </div>
+                                    <div className="flex gap-2">
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => window.open(formData.documentos_profissionais.licenca_sanitaria.url, '_blank')}
+                                      >
+                                        Ver
+                                      </Button>
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handleRemoverDocumento('licenca_sanitaria')}
+                                      >
+                                        Remover
+                                      </Button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div>
+                                    <Label htmlFor="licenca" className="cursor-pointer">
+                                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 transition-colors">
+                                        {uploadingDocumentos.licenca_sanitaria ? (
+                                          <Loader2 className="w-6 h-6 mx-auto animate-spin text-blue-600" />
+                                        ) : (
+                                          <>
+                                            <Upload className="w-6 h-6 mx-auto text-gray-400 mb-2" />
+                                            <span className="text-sm text-blue-600">Clique para enviar</span>
+                                          </>
+                                        )}
+                                      </div>
+                                    </Label>
+                                    <Input
+                                      id="licenca"
+                                      type="file"
+                                      accept=".pdf,.jpg,.jpeg,.png"
+                                      className="hidden"
+                                      onChange={(e) => handleUploadDocumento('licenca_sanitaria', e)}
+                                      disabled={uploadingDocumentos.licenca_sanitaria}
+                                    />
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Alvará de Funcionamento */}
+                              <div>
+                                <Label className="flex items-center gap-2 mb-2">
+                                  <FileText className="w-4 h-4 text-blue-600" />
+                                  Alvará de Funcionamento
+                                </Label>
+                                {formData.documentos_profissionais?.alvara_funcionamento?.url ? (
+                                  <div className="p-3 bg-green-50 border-2 border-green-200 rounded-lg flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                      <CheckCircle className="w-5 h-5 text-green-600" />
+                                      <span className="text-sm text-green-800">Documento enviado</span>
+                                    </div>
+                                    <div className="flex gap-2">
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => window.open(formData.documentos_profissionais.alvara_funcionamento.url, '_blank')}
+                                      >
+                                        Ver
+                                      </Button>
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handleRemoverDocumento('alvara_funcionamento')}
+                                      >
+                                        Remover
+                                      </Button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div>
+                                    <Label htmlFor="alvara" className="cursor-pointer">
+                                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 transition-colors">
+                                        {uploadingDocumentos.alvara_funcionamento ? (
+                                          <Loader2 className="w-6 h-6 mx-auto animate-spin text-blue-600" />
+                                        ) : (
+                                          <>
+                                            <Upload className="w-6 h-6 mx-auto text-gray-400 mb-2" />
+                                            <span className="text-sm text-blue-600">Clique para enviar</span>
+                                          </>
+                                        )}
+                                      </div>
+                                    </Label>
+                                    <Input
+                                      id="alvara"
+                                      type="file"
+                                      accept=".pdf,.jpg,.jpeg,.png"
+                                      className="hidden"
+                                      onChange={(e) => handleUploadDocumento('alvara_funcionamento', e)}
+                                      disabled={uploadingDocumentos.alvara_funcionamento}
+                                    />
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Registro Profissional */}
+                              <div>
+                                <Label className="flex items-center gap-2 mb-2">
+                                  <FileText className="w-4 h-4 text-blue-600" />
+                                  Registro Profissional (CRO, CREFITO, etc)
+                                </Label>
+                                {formData.documentos_profissionais?.registro_profissional?.url ? (
+                                  <div className="p-3 bg-green-50 border-2 border-green-200 rounded-lg flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                      <CheckCircle className="w-5 h-5 text-green-600" />
+                                      <span className="text-sm text-green-800">Documento enviado</span>
+                                    </div>
+                                    <div className="flex gap-2">
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => window.open(formData.documentos_profissionais.registro_profissional.url, '_blank')}
+                                      >
+                                        Ver
+                                      </Button>
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handleRemoverDocumento('registro_profissional')}
+                                      >
+                                        Remover
+                                      </Button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div>
+                                    <Label htmlFor="registro" className="cursor-pointer">
+                                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 transition-colors">
+                                        {uploadingDocumentos.registro_profissional ? (
+                                          <Loader2 className="w-6 h-6 mx-auto animate-spin text-blue-600" />
+                                        ) : (
+                                          <>
+                                            <Upload className="w-6 h-6 mx-auto text-gray-400 mb-2" />
+                                            <span className="text-sm text-blue-600">Clique para enviar</span>
+                                          </>
+                                        )}
+                                      </div>
+                                    </Label>
+                                    <Input
+                                      id="registro"
+                                      type="file"
+                                      accept=".pdf,.jpg,.jpeg,.png"
+                                      className="hidden"
+                                      onChange={(e) => handleUploadDocumento('registro_profissional', e)}
+                                      disabled={uploadingDocumentos.registro_profissional}
+                                    />
+                                  </div>
+                                )}
+                              </div>
+
+                              <Alert className="bg-blue-50 border-blue-200">
+                                <AlertCircle className="h-4 w-4 text-blue-600" />
+                                <AlertDescription className="text-blue-800 text-sm">
+                                  Estes documentos ficarão visíveis no seu perfil público, aumentando a confiança dos clientes.
+                                </AlertDescription>
+                              </Alert>
+                            </div>
+                          </div>
+                        )}
+
                         <div className="flex gap-3 pt-6 border-t">
                           <Button
                             onClick={handleSalvar}
