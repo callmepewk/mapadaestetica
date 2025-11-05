@@ -121,6 +121,10 @@ export default function Inicio() {
     }
   };
 
+  const handleOnboardingClose = () => {
+    setMostrarOnboarding(false);
+  };
+
   const { data: anunciosDestaque = [] } = useQuery({
     queryKey: ['anuncios-destaque'],
     queryFn: async () => {
@@ -177,7 +181,11 @@ export default function Inicio() {
   return (
     <div className="min-h-screen">
       <TermosCondicoes />
-      <OnboardingModal open={mostrarOnboarding} onComplete={handleOnboardingComplete} />
+      <OnboardingModal 
+        open={mostrarOnboarding} 
+        onComplete={handleOnboardingComplete}
+        onClose={handleOnboardingClose}
+      />
 
       {(isPaciente || !user) && (
         <>

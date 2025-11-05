@@ -165,7 +165,7 @@ export default function OnboardingModal({ open, onComplete, onClose }) {
                     style="width:100%;background:linear-gradient(to right, #F7D426, #FFE066);color:#2C2C2C;padding:16px 32px;border-radius:8px;border:none;cursor:pointer;font-weight:bold;">
               🩺 Falar com Dr. Beleza
             </button>
-            <button onclick="this.closest('.relative').remove();window.location.reload();"
+            <button onclick="this.closest('div').parentElement.parentElement.remove();window.location.reload();"
                     style="width:100%;background:transparent;color:#666;padding:12px;border:none;cursor:pointer;text-decoration:underline;margin-top:8px;">
               Continuar sem consultar
             </button>
@@ -186,6 +186,11 @@ export default function OnboardingModal({ open, onComplete, onClose }) {
         // Paciente: recarregar imediatamente
         window.location.reload();
       }
+
+      // Chamar onComplete se fornecido
+      if (onComplete) {
+        onComplete();
+      }
     } catch (error) {
       console.error("Erro ao salvar dados:", error);
       alert("Erro ao salvar seus dados. Tente novamente.");
@@ -200,20 +205,27 @@ export default function OnboardingModal({ open, onComplete, onClose }) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => {
-      if (!isOpen && onClose) {
-        onClose();
-      }
-    }}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto" onPointerDownOutside={(e) => {
-        // Permitir fechar clicando fora
-        if (onClose) {
+    <Dialog 
+      open={open} 
+      onOpenChange={(isOpen) => {
+        if (!isOpen && onClose) {
           onClose();
         }
-      }}>
+      }}
+    >
+      <DialogContent 
+        className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto"
+        onInteractOutside={(e) => {
+          // Permitir fechar clicando fora
+          if (onClose) {
+            onClose();
+          }
+        }}
+      >
         <button
           onClick={handleClose}
           className="absolute top-4 right-4 w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors z-10"
+          type="button"
         >
           <X className="w-4 h-4" />
         </button>
