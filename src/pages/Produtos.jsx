@@ -1,10 +1,10 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -33,23 +33,27 @@ import {
   ArrowLeft,
   ArrowRight,
   Crown,
-  DollarSign
+  DollarSign,
+  Plus // Added Plus icon
 } from "lucide-react";
-import { useNavigate } from 'react-router-dom';
+import { motion } from "framer-motion"; // Added motion import
+import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import LoginPromptModal from "../components/home/LoginPromptModal";
 
 const categorias = [
   "Todas",
   "Cuidados com a Pele",
-  "Maquiagem",
   "Cabelos",
+  "Maquiagem",
   "Perfumaria",
   "Suplementos",
   "Equipamentos",
   "Acessórios",
+  "Outros",
   "Serviços Contratáveis",
-  "Outros"
+  "Serviços para Pacientes",
+  "Produtos para Pacientes"
 ];
 
 const servicosContrataveis = [
@@ -329,10 +333,10 @@ export default function Produtos() {
   const [categoriaFiltro, setCategoriaFiltro] = useState("Todas");
   const [ordenacao, setOrdenacao] = useState("relevancia");
   const [user, setUser] = useState(null);
-  const [tipoBusca, setTipoBusca] = useState('produtos'); // MUDANÇA: Inicia direto em 'produtos'
+  const [tipoBusca, setTipoBusca] = useState('produtos');
   const [mostrarLoginPrompt, setMostrarLoginPrompt] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchUser = async () => {
       try {
         const userData = await base44.auth.me();
@@ -366,15 +370,19 @@ export default function Produtos() {
     return '$$$$$';
   };
 
-  const { data: produtosDatabase = [] } = useQuery({
-    queryKey: ['produtos'],
-    queryFn: () => base44.entities.Produto.filter({ status: 'ativo' }),
+  const { data: produtosDatabase = [], isLoading: loadingProdutos, refetch: refetchProdutos } = useQuery({
+    queryKey: ['produtos-loja'],
+    queryFn: async () => {
+      const allProdutos = await base44.entities.Produto.filter({ status: 'ativo' });
+      console.log("Produtos carregados:", allProdutos); // Debug
+      return allProdutos;
+    },
     staleTime: 5 * 60 * 1000,
-    initialData: [],
   });
 
   const isPaciente = user?.tipo_usuario === 'paciente' || !user;
   const isProfissional = user?.tipo_usuario === 'profissional';
+  const isAdmin = user?.role === 'admin'; // Added isAdmin
 
   // Filtrar produtos baseado no tipo de usuário
   const todosProdutos = [
@@ -460,59 +468,23 @@ export default function Produtos() {
   };
 
   // Função para processar compra de produto
-  const handleComprarProduto = async (produto) => {
+  const handleComprarProduto = (produto) => {
     if (!user) {
       setMostrarLoginPrompt(true);
       return;
     }
 
-    // Verificar se é produto exclusivo do clube (preço = 0)
-    if (produto.preco === 0 || !produto.preco) {
-      alert("Este produto é exclusivo para membros do Clube da Beleza! Assine para ter acesso.");
-      navigate(createPageUrl("Planos"));
-      return;
-    }
-
     const precoFinal = produto.preco_promocional || produto.preco;
-    if (!confirm(`Deseja comprar "${produto.nome}" por R$ ${precoFinal.toFixed(2)}?`)) {
-      return;
-    }
-
-    try {
-      const faixaPreco = determinarFaixaPreco(precoFinal);
-      const pontosGanhos = calcularPontosPorFaixaPreco(faixaPreco);
-
-      // Criar pedido
-      await base44.entities.PedidoProduto.create({
-        usuario_email: user.email,
-        produto_id: produto.id,
-        produto_nome: produto.nome,
-        tipo: 'produto',
-        quantidade: 1,
-        valor_total: precoFinal,
-        status_pedido: 'pago',
-        data_compra: new Date().toISOString()
-      });
-
-      // Atualizar pontos do usuário
-      const novosPontos = (user.pontos_acumulados || 0) + pontosGanhos;
-      await base44.auth.updateMe({ pontos_acumulados: novosPontos });
-
-      // Atualizar estado local
-      setUser({ ...user, pontos_acumulados: novosPontos });
-
-      // Redirecionar para página de agradecimento
-      navigate(createPageUrl("AgradecimentoCompra") + `?tipo=produto&nome=${encodeURIComponent(produto.nome)}&pontos=${pontosGanhos}`);
-    } catch (error) {
-      console.error("Erro ao processar compra:", error);
-      alert("Erro ao processar compra. Tente novamente.");
-    }
+    const mensagem = `Olá! Tenho interesse em comprar: ${produto.nome} - ${precoFinal ? `R$ ${precoFinal.toFixed(2)}` : 'Consultar preço'}`;
+    const whatsapp = "5531972595643";
+    const url = `https://wa.me/${whatsapp}?text=${encodeURIComponent(mensagem)}`;
+    window.open(url, '_blank');
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
       <div className="max-w-7xl mx-auto px-4">
-        {/* Header com toggle de tipo */}
+        {/* Header com toggle de tipo E botão admin */}
         <div className="mb-6">
           <div className="text-center mb-6">
             <Badge className="mb-4 bg-[#F7D426] text-[#2C2C2C] font-bold">
@@ -533,8 +505,8 @@ export default function Produtos() {
               }
             </p>
 
-            {/* Toggle de tipo */}
-            <div className="flex gap-3 justify-center">
+            {/* Toggle de tipo E Botão Admin */}
+            <div className="flex gap-3 justify-center flex-wrap">
               <Button
                 onClick={() => setTipoBusca('produtos')}
                 variant={tipoBusca === 'produtos' ? 'default' : 'outline'}
@@ -553,6 +525,17 @@ export default function Produtos() {
               >
                 💼 Ver Serviços
               </Button>
+
+              {/* BOTÃO ADMIN - Apenas visível para administradores */}
+              {isAdmin && (
+                <Button
+                  onClick={() => navigate(createPageUrl("AdicionarProduto"))}
+                  className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white border-2 border-white"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Adicionar Produto/Serviço
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -607,22 +590,17 @@ export default function Produtos() {
 
         {/* Filters */}
         <Card className="p-6 mb-8 shadow-lg border-none">
-          <div className="grid md:grid-cols-4 gap-4">
-            <div className="md:col-span-2">
-              <div className="relative">
-                <Search className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
-                <Input
-                  placeholder="Buscar produtos..."
-                  value={busca}
-                  onChange={(e) => setBusca(e.target.value)}
-                  className="pl-10 h-12"
-                />
-              </div>
-            </div>
+          <div className="grid md:grid-cols-3 gap-4">
+            <Input
+              placeholder="Buscar produtos..."
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              className="border-2"
+            />
 
             <Select value={categoriaFiltro} onValueChange={setCategoriaFiltro}>
-              <SelectTrigger className="h-12">
-                <SelectValue placeholder="Categoria" />
+              <SelectTrigger className="border-2">
+                <SelectValue placeholder="Todas as categorias" />
               </SelectTrigger>
               <SelectContent>
                 {categoriasParaFiltro.map((cat) => (
@@ -632,24 +610,34 @@ export default function Produtos() {
             </Select>
 
             <Select value={ordenacao} onValueChange={setOrdenacao}>
-              <SelectTrigger className="h-12">
+              <SelectTrigger className="border-2">
                 <SelectValue placeholder="Ordenar por" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="relevancia">Mais Relevantes</SelectItem>
                 <SelectItem value="menor_preco">Menor Preço</SelectItem>
                 <SelectItem value="maior_preco">Maior Preço</SelectItem>
-                <SelectItem value="mais_avaliados">Mais Avaliados</SelectItem>
+                <SelectItem value="novidades">Novidades</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          <div className="flex items-center gap-2 mt-4 pt-4 border-t">
-            <Filter className="w-4 h-4 text-gray-500" />
-            <span className="text-sm text-gray-600">
-              {produtosFiltrados.length} produto{produtosFiltrados.length !== 1 ? 's' : ''} encontrado{produtosFiltrados.length !== 1 ? 's' : ''}
-            </span>
-          </div>
+          {/* Debug info para admin */}
+          {isAdmin && (
+            <div className="mt-4 p-3 bg-purple-50 border-2 border-purple-200 rounded-lg">
+              <p className="text-sm font-semibold text-purple-900">
+                🔧 Debug Admin: {produtosDatabase.length} produtos carregados do banco
+              </p>
+              <Button
+                onClick={() => refetchProdutos()}
+                size="sm"
+                variant="outline"
+                className="mt-2"
+              >
+                Recarregar Produtos
+              </Button>
+            </div>
+          )}
         </Card>
 
         {/* Products Grid */}
@@ -667,6 +655,19 @@ export default function Produtos() {
                 : "Não encontramos serviços com os filtros selecionados."
               }
             </p>
+
+            {/* Debug para admin */}
+            {isAdmin && (
+              <div className="mt-6 p-4 bg-yellow-50 border-2 border-yellow-200 rounded-lg text-left">
+                <p className="font-bold text-yellow-900 mb-2">Debug Info (Admin):</p>
+                <p className="text-sm text-yellow-800">Total produtos DB: {produtosDatabase.length}</p>
+                <p className="text-sm text-yellow-800">Total serviços: {servicosContrataveis.length}</p>
+                <p className="text-sm text-yellow-800">Filtrados: {produtosFiltrados.length}</p>
+                <p className="text-sm text-yellow-800">Categoria filtro: {categoriaFiltro}</p>
+                <p className="text-sm text-yellow-800">Tipo busca: {tipoBusca}</p>
+              </div>
+            )}
+
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <div className="text-center p-4 bg-gray-50 rounded-lg">
                 <TrendingUp className="w-8 h-8 mx-auto mb-2 text-[#F7D426]" />
@@ -701,92 +702,78 @@ export default function Produtos() {
                   className="overflow-hidden hover:shadow-xl transition-all duration-300 border-none cursor-pointer group"
                 >
                   <div className="relative h-48 bg-gray-100">
-                    {produto.imagens && produto.imagens[0] ? (
+                    {produto.imagens && produto.imagens.length > 0 ? (
                       <img
                         src={produto.imagens[0]}
                         alt={produto.nome}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400 text-5xl">
-                        {produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" ? "💼" : "🛍️"}
+                      <div className="w-full h-full flex items-center justify-center text-6xl text-gray-400">
+                        {produto.nome && produto.nome.includes("Beauty Box") ? "💝" : "🎁"}
                       </div>
                     )}
-
                     {produto.em_destaque && (
-                      <Badge className="absolute top-2 left-2 bg-[#F7D426] text-[#2C2C2C] border-none">
+                      <Badge className="absolute top-2 right-2 bg-[#F7D426] text-[#2C2C2C] border-2 border-[#2C2C2C]">
+                        <Star className="w-3 h-3 mr-1 fill-[#2C2C2C]" />
                         Destaque
                       </Badge>
                     )}
-
-                    {produto.preco_promocional && (
-                      <Badge className="absolute top-2 right-2 bg-red-500 text-white border-none">
-                        Promoção
-                      </Badge>
-                    )}
-
                     {isExclusivoClube && (
-                      <Badge className="absolute top-2 right-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white border-none">
+                      <Badge className="absolute top-2 left-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold">
                         <Crown className="w-3 h-3 mr-1" />
-                        Clube+
+                        EXCLUSIVO
                       </Badge>
                     )}
                   </div>
 
                   <CardContent className="p-4">
-                    {produto.marca && (
-                      <p className="text-xs text-gray-500 mb-1">{produto.marca}</p>
-                    )}
-
-                    <h3 className="font-bold text-base mb-2 line-clamp-2 group-hover:text-pink-600 transition-colors">
+                    <Badge variant="outline" className="mb-2 bg-gray-100 text-gray-800 border-gray-300">
+                      {produto.categoria}
+                    </Badge>
+                    
+                    <h3 className="font-bold text-lg mb-2 line-clamp-2">
                       {produto.nome}
                     </h3>
 
-                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                    <p className="text-sm text-gray-600 mb-4 line-clamp-3">
                       {produto.descricao}
                     </p>
+
+                    {produto.marca && (
+                      <p className="text-xs text-gray-500 mb-3">
+                        Marca: {produto.marca}
+                      </p>
+                    )}
 
                     {produto.beneficios && (
                       <div className="mb-3 space-y-1">
                         {produto.beneficios.slice(0, 3).map((beneficio, i) => (
                           <div key={i} className="flex items-start gap-2 text-xs text-gray-600">
-                            <Check className="w-3 h-3 text-green-600 flex-shrink-0 mt-0.5" />
+                            <span className="text-green-600">✓</span>
                             <span>{beneficio}</span>
                           </div>
                         ))}
-                        {produto.beneficios.length > 3 && (
-                          <p className="text-xs text-gray-500">+{produto.beneficios.length - 3} benefícios</p>
-                        )}
                       </div>
                     )}
 
                     <div className="flex items-center justify-between pt-3 border-t">
-                      <div className="flex-1">
-                        {isExclusivoClube ? (
-                          <div>
-                            <p className="text-xs text-purple-600 font-semibold">
-                              <Crown className="w-3 h-3 inline mr-1" />
-                              Exclusivo Clube da Beleza
-                            </p>
-                            <p className="text-xs text-gray-500">Assine para ter acesso</p>
-                          </div>
-                        ) : produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" ? (
-                          <p className="text-lg font-bold text-blue-600">
-                            {produto.preco_texto || "Consulte"}
-                          </p>
-                        ) : produto.preco_promocional ? (
-                          <div>
-                            <p className="text-xs text-gray-500 line-through">
-                              R$ {produto.preco.toFixed(2)}
-                            </p>
-                            <p className="text-lg font-bold text-pink-600">
-                              R$ {produto.preco_promocional.toFixed(2)}
-                            </p>
+                      <div>
+                        {produto.preco > 0 || produto.preco_promocional > 0 ? (
+                          <div className="flex items-baseline gap-2">
+                            <span className="text-2xl font-bold text-gray-900">
+                              R$ {precoEfetivo.toFixed(2)}
+                            </span>
+                            {produto.preco_promocional && produto.preco && (
+                              <span className="text-sm text-gray-500 line-through">
+                                R$ {produto.preco.toFixed(2)}
+                              </span>
+                            )}
                           </div>
                         ) : (
-                          <p className="text-lg font-bold text-gray-900">
-                            R$ {produto.preco.toFixed(2)}
-                          </p>
+                          <span className="text-lg font-bold text-purple-600">
+                            {produto.preco_texto || "Consultar"}
+                          </span>
                         )}
                       </div>
 
@@ -794,8 +781,8 @@ export default function Produtos() {
                         size="sm"
                         onClick={() => {
                           if (isExclusivoClube) {
-                            navigate(createPageUrl("SobreNos")); // CORREÇÃO: Redireciona para Sobre Nós
-                          } else if (produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes") {
+                            navigate(createPageUrl("SobreNos"));
+                          } else if (produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" || produto.categoria === "Produtos para Pacientes") {
                             handleContratar(produto);
                           } else {
                             handleComprarProduto(produto);
@@ -803,7 +790,7 @@ export default function Produtos() {
                         }}
                         className={isExclusivoClube
                           ? "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold"
-                          : produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes"
+                          : (produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" || produto.categoria === "Produtos para Pacientes")
                           ? "bg-blue-600 hover:bg-blue-700 text-white"
                           : "bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold"
                         }
@@ -813,7 +800,7 @@ export default function Produtos() {
                             <Crown className="w-4 h-4 mr-1" />
                             Assinar
                           </>
-                        ) : produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" ? (
+                        ) : (produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" || produto.categoria === "Produtos para Pacientes") ? (
                           "Contratar"
                         ) : (
                           <ShoppingCart className="w-4 h-4" />
@@ -821,31 +808,10 @@ export default function Produtos() {
                       </Button>
                     </div>
 
-                    {/* Mostrar pontos apenas para produtos com preço */}
-                    {!isExclusivoClube && !(produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes") && (
-                      <div className="mt-2 text-xs text-center bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 py-2 rounded-lg border border-green-200">
-                        <div className="flex items-center justify-center gap-1">
-                          <Star className="w-3 h-3 fill-green-600" />
-                          <span className="font-bold">+{pontosGanhos} pontos</span>
-                          <span className="text-gray-600">({faixaPreco})</span>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Info sobre faixa de preço para SERVIÇOS */}
-                    {(produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes") && !isExclusivoClube && produto.preco > 0 && (
-                      <div className="mt-2 text-xs text-center bg-gradient-to-r from-blue-50 to-cyan-50 text-blue-700 py-2 rounded-lg border border-blue-200">
-                        <div className="flex items-center justify-center gap-1">
-                          <DollarSign className="w-3 h-3" />
-                          <span className="font-bold">Faixa {faixaPreco}</span>
-                          <span className="text-gray-600">
-                            ({faixaPreco === "$" ? "Até R$ 500" :
-                              faixaPreco === "$$" ? "R$ 500-1.000" :
-                              faixaPreco === "$$$" ? "R$ 1.000-2.000" :
-                              faixaPreco === "$$$$" ? "R$ 2.000-5.000" :
-                              "Acima de R$ 5.000"})
-                          </span>
-                        </div>
+                    {precoEfetivo && !isExclusivoClube && !(produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes") && (
+                      <div className="mt-3 pt-3 border-t flex items-center justify-between text-xs">
+                        <span className="text-gray-500">Ganhe {pontosGanhos} pontos</span>
+                        <span className="text-gray-400">Faixa {faixaPreco}</span>
                       </div>
                     )}
                   </CardContent>
@@ -856,39 +822,33 @@ export default function Produtos() {
         )}
 
         {/* Info Cards */}
-        <div className="grid md:grid-cols-3 gap-6 mt-12">
-          <Card className="border-none shadow-lg cursor-pointer hover:shadow-xl transition-all" onClick={redirectToLojaPontos}>
+        <div className="mt-12 grid md:grid-cols-3 gap-6">
+          <Card className="border-none shadow-lg">
             <CardContent className="p-6 text-center">
-              <div className="w-12 h-12 bg-[#F7D426] rounded-full flex items-center justify-center mx-auto mb-4">
-                <Gift className="w-6 h-6 text-[#2C2C2C]" />
-              </div>
-              <h3 className="font-bold mb-2">Ganhe Pontos</h3>
+              <Award className="w-12 h-12 text-[#F7D426] mx-auto mb-4" />
+              <h3 className="font-bold mb-2">Qualidade Garantida</h3>
               <p className="text-sm text-gray-600">
-                Acumule pontos em cada compra e troque por produtos
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-none shadow-lg cursor-pointer hover:shadow-xl transition-all" onClick={redirectToLojaPontos}>
-            <CardContent className="p-6 text-center">
-              <div className="w-12 h-12 bg-[#F7D426] rounded-full flex items-center justify-center mx-auto mb-4">
-                <Award className="w-6 h-6 text-[#2C2C2C]" />
-              </div>
-              <h3 className="font-bold mb-2">Descontos Exclusivos</h3>
-              <p className="text-sm text-gray-600">
-                Membros do clube têm descontos especiais
+                Produtos selecionados e testados
               </p>
             </CardContent>
           </Card>
 
           <Card className="border-none shadow-lg">
             <CardContent className="p-6 text-center">
-              <div className="w-12 h-12 bg-[#F7D426] rounded-full flex items-center justify-center mx-auto mb-4">
-                <TrendingUp className="w-6 h-6 text-[#2C2C2C]" />
-              </div>
-              <h3 className="font-bold mb-2">Novidades Sempre</h3>
+              <Star className="w-12 h-12 text-[#F7D426] mx-auto mb-4" />
+              <h3 className="font-bold mb-2">Sistema de Pontos</h3>
               <p className="text-sm text-gray-600">
-                Produtos novos adicionados regularmente
+                Acumule pontos em cada compra
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-none shadow-lg">
+            <CardContent className="p-6 text-center">
+              <Gift className="w-12 h-12 text-[#F7D426] mx-auto mb-4" />
+              <h3 className="font-bold mb-2">Ofertas Exclusivas</h3>
+              <p className="text-sm text-gray-600">
+                Promoções apenas para membros
               </p>
             </CardContent>
           </Card>
