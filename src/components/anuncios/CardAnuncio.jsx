@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { MapPin, Clock, Eye, Star, Crown, Phone, Mail, Globe, Instagram, Facebook, X, Share2, Heart, Copy } from "lucide-react";
 import { format } from "date-fns";
+import { base44 } from "@/api/base44Client";
 
 export default function CardAnuncio({ anuncio, destaque = false }) {
   const [dialogAberto, setDialogAberto] = useState(false);
@@ -20,8 +21,6 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        // Assuming base44 and its auth method are available globally or imported implicitly
-        // If not, you might need an explicit import like: import { base44 } from 'path/to/base44';
         const userData = await base44.auth.me();
         setUser(userData);
       } catch {
@@ -33,9 +32,11 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
 
   if (!anuncio) return null;
 
-  // Admin nunca tem restrição, apenas usuários profissionais com plano cobre
+  // Admin nunca tem restrição
+  // Apenas plano COBRE (gratuito profissional) tem restrição
   const isAdmin = user?.role === 'admin';
-  const isPlanoGratuito = !isAdmin && (!user || user.plano_ativo === 'cobre' || !user.plano_ativo);
+  const isPlanoCobre = user?.tipo_usuario === 'profissional' && (!user.plano_ativo || user.plano_ativo === 'cobre');
+  const temRestricao = !isAdmin && isPlanoCobre;
 
   const getStatusColor = (status) => {
     const colors = {
@@ -86,20 +87,24 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
 
   const handleCurtir = async (e) => {
     e.stopPropagation();
+    
     if (!user) {
       alert("Faça login para curtir anúncios!");
       return;
     }
+
+    if (temRestricao) {
+      alert("Faça upgrade do seu plano para curtir anúncios!");
+      return;
+    }
+    
     setCurtido(!curtido);
     
     try {
       const curtidasAtuais = anuncio.curtidas || 0;
-      const novasCurtidas = curtido ? curtidasAtuais - 1 : curtidasAtuais + 1;
-      // Assuming base44 and its entities method are available globally or imported implicitly
       await base44.entities.Anuncio.update(anuncio.id, {
-        curtidas: novasCurtidas
+        curtidas: curtido ? curtidasAtuais - 1 : curtidasAtuais + 1
       });
-      anuncio.curtidas = novasCurtidas; // Update local anuncio object for immediate UI reflection
     } catch (error) {
       console.error("Erro ao curtir:", error);
       setCurtido(prev => !prev); // Revert state if API call fails
@@ -108,19 +113,33 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
 
   const handleCompartilhar = (e) => {
     e.stopPropagation();
+    
+    if (!user) {
+      alert("Faça login para compartilhar anúncios!");
+      return;
+    }
+
+    if (temRestricao) {
+      alert("Faça upgrade do seu plano para compartilhar anúncios!");
+      return;
+    }
+
     const link = `${window.location.origin}/detalhes-anuncio?id=${anuncio.id}`;
     navigator.clipboard.writeText(link);
     setLinkCopiado(true);
-    setTimeout(() => {
-      setLinkCopiado(false);
-      setCompartilhandoLink(false); // Close sharing options after copying
-    }, 2000);
+    setTimeout(() => setLinkCopiado(false), 2000);
   };
 
   const abrirCompartilhamento = (e, rede) => {
     e.stopPropagation();
+    
+    if (temRestricao) {
+      alert("Faça upgrade do seu plano para compartilhar anúncios!");
+      return;
+    }
+
     const link = `${window.location.origin}/detalhes-anuncio?id=${anuncio.id}`;
-    const texto = encodeURIComponent(`Confira: ${anuncio.titulo} - ${anuncio.profissional}`);
+    const texto = encodeURIComponent(`Confira: ${anuncio.titulo}`);
     const url = encodeURIComponent(link);
     
     const links = {
@@ -130,7 +149,6 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
     };
 
     window.open(links[rede], '_blank', 'width=600,height=400');
-    setCompartilhandoLink(false); // Close sharing options after opening social media
   };
 
   const isPremium = anuncio?.plano === 'premium' || anuncio?.plano === 'platina';
@@ -350,27 +368,33 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
               variant="ghost"
               size="sm"
               onClick={handleCurtir}
-              className={`flex-1 ${curtido ? 'text-red-600' : 'text-gray-600'}`}
+              disabled={temRestricao}
+              className={`flex-1 ${curtido ? 'text-red-600' : 'text-gray-600'} ${temRestricao ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <Heart className={`w-4 h-4 mr-2 ${curtido ? 'fill-red-600' : ''}`} />
-              {curtido ? 'Curtido' : 'Curtir'}
+              {temRestricao ? '🔒 Curtir' : (curtido ? 'Curtido' : 'Curtir')}
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
+                if (temRestricao) {
+                  alert("Faça upgrade do seu plano para compartilhar!");
+                  return;
+                }
                 setCompartilhandoLink(!compartilhandoLink);
               }}
-              className="flex-1 text-blue-600"
+              disabled={temRestricao}
+              className={`flex-1 text-blue-600 ${temRestricao ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <Share2 className="w-4 h-4 mr-2" />
-              {linkCopiado ? 'Link Copiado!' : 'Compartilhar'}
+              {temRestricao ? '🔒 Compartilhar' : (linkCopiado ? 'Link Copiado!' : 'Compartilhar')}
             </Button>
           </div>
 
           {/* Opções de Compartilhamento */}
-          {compartilhandoLink && (
+          {compartilhandoLink && !temRestricao && (
             <div className="mt-3 p-3 bg-gray-50 rounded-lg space-y-2" onClick={(e) => e.stopPropagation()}>
               <div className="flex gap-2">
                 <Button size="sm" variant="outline" onClick={(e) => abrirCompartilhamento(e, 'whatsapp')} className="flex-1 bg-green-50 text-green-700">
@@ -478,7 +502,6 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
                     </div>
                   </div>
 
-                  {/* These buttons are left untouched as per instructions, they don't have onClick events in the original code */}
                   <div className="flex gap-2">
                     <Button variant="outline" size="icon"><Share2 className="w-4 h-4" /></Button>
                     <Button variant="outline" size="icon"><Heart className="w-4 h-4" /></Button>
@@ -579,7 +602,7 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
                 )}
 
                 {anuncio.whatsapp && (
-                  isPlanoGratuito ? (
+                  temRestricao ? (
                     <div className="relative">
                       <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg border-2 border-green-200">
                         <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">

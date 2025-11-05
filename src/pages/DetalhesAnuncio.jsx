@@ -19,6 +19,8 @@ export default function DetalhesAnuncio() {
   const [imagemAtual, setImagemAtual] = useState(0);
   const [user, setUser] = useState(null);
   const [erro, setErro] = useState(null);
+  const [curtido, setCurtido] = useState(false);
+  const [compartilhando, setCompartilhando] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -92,8 +94,63 @@ export default function DetalhesAnuncio() {
 
   const isPaciente = user?.tipo_usuario === 'paciente';
   const isAdmin = user?.role === 'admin';
-  // Admin nunca tem restrição, apenas usuários com plano cobre/free
+  // Admin nunca tem restrição
+  // Apenas plano COBRE tem restrição para WhatsApp
   const isUserFree = !isAdmin && (!user || user.plano_ativo === 'cobre' || !user.plano_ativo);
+  
+  // Para curtir e compartilhar: apenas plano COBRE profissional tem restrição
+  const isPlanoCobre = user?.tipo_usuario === 'profissional' && (!user.plano_ativo || user.plano_ativo === 'cobre');
+  const temRestricaoAcoes = !isAdmin && isPlanoCobre;
+
+  const handleCurtir = async () => {
+    if (!user) {
+      alert("Faça login para curtir!");
+      return;
+    }
+
+    if (temRestricaoAcoes) {
+      alert("Faça upgrade do seu plano para curtir anúncios!");
+      return;
+    }
+
+    const currentCurtidoState = curtido; // Store current state for rollback
+    setCurtido(!currentCurtidoState); // Optimistic UI update
+
+    try {
+      const curtidasAtuais = anuncio.curtidas || 0;
+      const newCurtidas = currentCurtidoState ? curtidasAtuais - 1 : curtidasAtuais + 1;
+      await base44.entities.Anuncio.update(anuncio.id, {
+        curtidas: newCurtidas
+      });
+      // Optionally, update the local anuncio state to reflect the new count,
+      // though the outline primarily focuses on the `curtido` state for the button.
+      setAnuncio(prevAnuncio => ({
+        ...prevAnuncio,
+        curtidas: newCurtidas // Update local announcement state to reflect new count
+      }));
+    } catch (error) {
+      console.error("Erro ao curtir:", error);
+      setCurtido(currentCurtidoState); // Rollback on error
+      alert("Erro ao curtir/descurtir. Tente novamente.");
+    }
+  };
+
+  const handleCompartilhar = () => {
+    if (!user) {
+      alert("Faça login para compartilhar!");
+      return;
+    }
+
+    if (temRestricaoAcoes) {
+      alert("Faça upgrade do seu plano para compartilhar anúncios!");
+      return;
+    }
+
+    const link = `${window.location.origin}${createPageUrl("DetalhesAnuncio")}?id=${anuncio.id}`;
+    navigator.clipboard.writeText(link);
+    setCompartilhando(true);
+    setTimeout(() => setCompartilhando(false), 2000);
+  };
 
   if (loading) {
     return (
@@ -187,10 +244,32 @@ export default function DetalhesAnuncio() {
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="icon"><Share2 className="w-4 h-4" /></Button>
-                    <Button variant="outline" size="icon"><Heart className="w-4 h-4" /></Button>
+                    <Button 
+                      variant="outline" 
+                      size="icon"
+                      onClick={handleCurtir}
+                      disabled={temRestricaoAcoes}
+                      className={curtido ? 'text-red-600 border-red-600' : ''}
+                    >
+                      <Heart className={`w-4 h-4 ${curtido ? 'fill-red-600' : ''}`} />
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="icon"
+                      onClick={handleCompartilhar}
+                      disabled={temRestricaoAcoes}
+                    >
+                      <Share2 className="w-4 h-4" />
+                    </Button>
                   </div>
                 </div>
+                {compartilhando && (
+                  <Alert className="mb-4 bg-green-50 border-green-200">
+                    <AlertDescription className="text-green-800">
+                      Link copiado para área de transferência!
+                    </AlertDescription>
+                  </Alert>
+                )}
                 <Separator className="my-6" />
                 <div className="space-y-4">
                   <div>
