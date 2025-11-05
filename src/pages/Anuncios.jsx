@@ -527,15 +527,26 @@ export default function Anuncios() {
 
                     <div>
                       <Label className="mb-1 sm:mb-2 block font-semibold text-xs sm:text-sm">Procedimento</Label>
-                      <Input
-                        placeholder="Ex: Botox..."
-                        value={procedimentoFiltro}
-                        onChange={(e) => {
-                          setProcedimentoFiltro(e.target.value);
-                          setPaginaAtual(1);
-                        }}
-                        className="h-10 sm:h-12 text-sm"
-                      />
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Ex: Botox..."
+                          value={procedimentoFiltro}
+                          onChange={(e) => {
+                            setProcedimentoFiltro(e.target.value);
+                            setPaginaAtual(1);
+                          }}
+                          className="h-10 sm:h-12 text-sm flex-1"
+                        />
+                        <Button
+                          type="button"
+                          onClick={() => setMostrarSeletorProcedimentos(true)}
+                          variant="outline"
+                          className="h-10 sm:h-12 px-3"
+                          title="Selecionar da lista"
+                        >
+                          <Search className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
 
@@ -915,12 +926,14 @@ export default function Anuncios() {
         )}
       </div>
 
+      {/* Modal de Seletor de Procedimentos */}
       <SeletorProcedimentos
         open={mostrarSeletorProcedimentos}
         onClose={() => setMostrarSeletorProcedimentos(false)}
         onSelect={(procedimento) => {
           setProcedimentoFiltro(procedimento);
           setPaginaAtual(1);
+          setMostrarSeletorProcedimentos(false);
         }}
         procedimentoAtual={procedimentoFiltro}
       />
