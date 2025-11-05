@@ -202,15 +202,15 @@ export default function Layout({ children }) {
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-md">
         <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between gap-4">
-            {/* Logo */}
+            {/* Logo - SEMPRE VISÍVEL */}
             <Link to={createPageUrl("Inicio")} className="flex items-center gap-2 sm:gap-3 group flex-shrink-0">
               <img
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe2/2274d89a4_logo_v1.png"
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/fd230be55_mapaimg.jpg"
                 alt="Mapa da Estética"
                 className="h-12 sm:h-14 md:h-16 w-auto object-contain transform group-hover:scale-105 transition-transform"
                 onError={(e) => {
                   e.target.onerror = null;
-                  e.target.src = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe4/dfd50956f_image.png';
+                  e.target.src = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe2/2274d89a4_logo_v1.png';
                 }}
               />
             </Link>
@@ -237,7 +237,7 @@ export default function Layout({ children }) {
             <div className="flex items-center gap-2 sm:gap-3">
               {isAuthenticated ? (
                 <>
-                  {/* Contador de Pontos */}
+                  {/* Contador de Pontos - SEMPRE ATUALIZADO */}
                   {(isPaciente || isProfissional) && (
                     <Link to={createPageUrl("LojaPontos")}>
                       <Button variant="outline" className="flex items-center gap-2 border-[#F7D426] text-[#F7D426] hover:bg-[#FFF9E6]">
@@ -384,10 +384,15 @@ export default function Layout({ children }) {
         <div className="max-w-7xl mx-auto px-4 py-8 sm:py-12">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
             <div>
+              {/* Logo do Mapa da Estética - SEMPRE VISÍVEL */}
               <img
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe2/2274d89a4_logo_v1.png"
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/fd230be55_mapaimg.jpg"
                 alt="Mapa da Estética"
-                className="h-12 w-auto object-contain mb-4 brightness-0 invert"
+                className="h-16 w-auto object-contain mb-4 brightness-0 invert"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe2/2274d89a4_logo_v1.png';
+                }}
               />
               <p className="text-gray-400 text-sm mb-2">
                 A maior plataforma de profissionais de estética do Brasil.

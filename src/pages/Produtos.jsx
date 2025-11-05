@@ -143,6 +143,28 @@ export default function Produtos() {
     fetchUser();
   }, []);
 
+  // Função para calcular pontos baseado na faixa de preço
+  const calcularPontosPorFaixaPreco = (faixaPreco) => {
+    const pontosPorFaixa = {
+      '$': 1,
+      '$$': 5,
+      '$$$': 10,
+      '$$$$': 50,
+      '$$$$$': 100
+    };
+    return pontosPorFaixa[faixaPreco] || 0;
+  };
+
+  // Função para determinar faixa de preço baseado no valor
+  const determinarFaixaPreco = (preco) => {
+    if (preco === null || preco === undefined || isNaN(preco)) return '';
+    if (preco <= 500) return '$';
+    if (preco <= 1000) return '$$';
+    if (preco <= 2000) return '$$$';
+    if (preco <= 5000) return '$$$$';
+    return '$$$$$';
+  };
+
   const { data: produtosDatabase = [] } = useQuery({
     queryKey: ['produtos'],
     queryFn: () => base44.entities.Produto.filter({ status: 'ativo' }),
@@ -171,11 +193,11 @@ export default function Produtos() {
     // Filtrar por tipo de busca
     let matchTipo = true;
     if (tipoBusca === 'servicos') {
-      matchTipo = produto.categoria === "Serviços Contratáveis" || 
+      matchTipo = produto.categoria === "Serviços Contratáveis" ||
                   produto.categoria === "Serviços para Pacientes" ||
                   produto.categoria === "Produtos para Pacientes";
     } else if (tipoBusca === 'produtos') {
-      matchTipo = produto.categoria !== "Serviços Contratáveis" && 
+      matchTipo = produto.categoria !== "Serviços Contratáveis" &&
                   produto.categoria !== "Serviços para Pacientes" &&
                   produto.categoria !== "Produtos para Pacientes";
     }
@@ -183,11 +205,37 @@ export default function Produtos() {
     return matchCategoria && matchBusca && matchTipo;
   });
 
-  const categoriasDisponiveis = [
-    "Todas",
-    ...(isProfissional ? ["Serviços Contratáveis"] : ["Serviços para Pacientes", "Produtos para Pacientes"]),
-    ...categorias
-  ];
+  // Define available categories for the filter based on tipoBusca and user type
+  const getCategoriasParaFiltro = () => {
+    let allowedCategories = ["Todas"];
+    if (tipoBusca === 'produtos') {
+      // For products, show only "real" product categories
+      const productCategories = categorias.filter(cat =>
+        cat !== "Serviços Contratáveis" &&
+        cat !== "Serviços para Pacientes" &&
+        cat !== "Produtos para Pacientes" &&
+        cat !== "Todas"
+      );
+      allowedCategories = [...allowedCategories, ...productCategories];
+    } else if (tipoBusca === 'servicos') {
+      // For services, show categories relevant to services
+      if (isProfissional) {
+        allowedCategories = [...allowedCategories, "Serviços Contratáveis"];
+      } else { // isPaciente (or default if no user type)
+        allowedCategories = [...allowedCategories, "Serviços para Pacientes", "Produtos para Pacientes"];
+      }
+    }
+    return Array.from(new Set(allowedCategories)); // Ensure uniqueness
+  };
+
+  const categoriasParaFiltro = getCategoriasParaFiltro();
+
+  // Make sure to reset categoriaFiltro if the available categories change
+  React.useEffect(() => {
+    if (!categoriasParaFiltro.includes(categoriaFiltro)) {
+      setCategoriaFiltro("Todas");
+    }
+  }, [tipoBusca, categoriasParaFiltro, categoriaFiltro]); // Added categoriaFiltro to dependencies
 
   const handleContratar = (servico) => {
     const mensagem = `Olá! Tenho interesse em contratar: ${servico.nome}. Gostaria de mais informações sobre valores e como funciona! 💼`;
@@ -199,6 +247,55 @@ export default function Produtos() {
   // Redirecionar menções de pontos para a loja
   const redirectToLojaPontos = () => {
     navigate('/loja-pontos');
+  };
+
+  // Função para processar compra de produto
+  const handleComprarProduto = async (produto) => {
+    if (!user) {
+      alert("Faça login para comprar produtos!");
+      base44.auth.redirectToLogin(window.location.pathname);
+      return;
+    }
+
+    const precoFinal = produto.preco_promocional || produto.preco;
+    if (!confirm(`Deseja comprar "${produto.nome}" por R$ ${precoFinal.toFixed(2)}?`)) {
+      return;
+    }
+
+    try {
+      // Determinar faixa de preço e calcular pontos
+      const faixaPreco = determinarFaixaPreco(precoFinal);
+      const pontosGanhos = calcularPontosPorFaixaPreco(faixaPreco);
+
+      // Criar pedido
+      await base44.entities.PedidoProduto.create({
+        usuario_email: user.email,
+        produto_id: produto.id,
+        produto_nome: produto.nome,
+        tipo: 'produto',
+        quantidade: 1,
+        valor_total: precoFinal,
+        status_pedido: 'pago',
+        data_compra: new Date().toISOString()
+      });
+
+      // Atualizar pontos do usuário
+      const novosPontos = (user.pontos_acumulados || 0) + pontosGanhos;
+      await base44.auth.updateMe({ pontos_acumulados: novosPontos });
+
+      // Atualizar estado local
+      setUser({ ...user, pontos_acumulados: novosPontos });
+
+      // Mostrar mensagem de sucesso
+      alert(`🎉 Compra realizada com sucesso!\n\nVocê ganhou ${pontosGanhos} pontos!\nSaldo atual: ${novosPontos} pontos`);
+
+      // Redirecionar para página de agradecimento
+      navigate('/agradecimento-compra');
+
+    } catch (error) {
+      console.error("Erro ao processar compra:", error);
+      alert("Erro ao processar compra. Tente novamente.");
+    }
   };
 
   // Se não escolheu o tipo de busca ainda, mostra a seleção
@@ -220,7 +317,7 @@ export default function Produtos() {
 
           <div className="grid md:grid-cols-2 gap-6">
             {/* Card Produtos */}
-            <Card 
+            <Card
               onClick={() => setTipoBusca('produtos')}
               className="border-none shadow-xl hover:shadow-2xl transition-all cursor-pointer group overflow-hidden"
             >
@@ -262,7 +359,7 @@ export default function Produtos() {
             </Card>
 
             {/* Card Serviços */}
-            <Card 
+            <Card
               onClick={() => setTipoBusca('servicos')}
               className="border-none shadow-xl hover:shadow-2xl transition-all cursor-pointer group overflow-hidden"
             >
@@ -280,7 +377,7 @@ export default function Produtos() {
                   Contratar Serviços
                 </h3>
                 <p className="text-gray-600 mb-4">
-                  {isProfissional 
+                  {isProfissional
                     ? "Serviços profissionais para impulsionar seu negócio"
                     : "Consultas, tratamentos e serviços especializados"
                   }
@@ -349,13 +446,13 @@ export default function Produtos() {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Voltar
           </Button>
-          
+
           <div className="text-center">
             <Badge className="mb-4 bg-[#F7D426] text-[#2C2C2C] font-bold">
               {tipoBusca === 'produtos' ? "🛍️ Produtos" : "💼 Serviços"}
             </Badge>
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              {tipoBusca === 'produtos' 
+              {tipoBusca === 'produtos'
                 ? "Produtos de Beleza e Estética"
                 : isPaciente ? "Serviços e Consultas" : "Serviços Profissionais"
               }
@@ -439,7 +536,7 @@ export default function Produtos() {
                 <SelectValue placeholder="Categoria" />
               </SelectTrigger>
               <SelectContent>
-                {categorias.map((cat) => (
+                {categoriasParaFiltro.map((cat) => (
                   <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                 ))}
               </SelectContent>
@@ -496,109 +593,120 @@ export default function Produtos() {
           </Card>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {produtosFiltrados.map((produto) => (
-              <Card
-                key={produto.id}
-                className="overflow-hidden hover:shadow-xl transition-all duration-300 border-none cursor-pointer group"
-              >
-                <div className="relative h-48 bg-gray-100">
-                  {produto.imagens && produto.imagens[0] ? (
-                    <img
-                      src={produto.imagens[0]}
-                      alt={produto.nome}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400 text-5xl">
-                      {produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" ? "💼" : "🛍️"}
-                    </div>
-                  )}
+            {produtosFiltrados.map((produto) => {
+              const precoEfetivo = produto.preco_promocional || produto.preco;
+              const faixaPreco = determinarFaixaPreco(precoEfetivo);
+              const pontosGanhos = calcularPontosPorFaixaPreco(faixaPreco);
 
-                  {produto.em_destaque && (
-                    <Badge className="absolute top-2 left-2 bg-[#F7D426] text-[#2C2C2C] border-none">
-                      Destaque
-                    </Badge>
-                  )}
+              return (
+                <Card
+                  key={produto.id}
+                  className="overflow-hidden hover:shadow-xl transition-all duration-300 border-none cursor-pointer group"
+                >
+                  <div className="relative h-48 bg-gray-100">
+                    {produto.imagens && produto.imagens[0] ? (
+                      <img
+                        src={produto.imagens[0]}
+                        alt={produto.nome}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400 text-5xl">
+                        {produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" ? "💼" : "🛍️"}
+                      </div>
+                    )}
 
-                  {produto.preco_promocional && (
-                    <Badge className="absolute top-2 right-2 bg-red-500 text-white border-none">
-                      Promoção
-                    </Badge>
-                  )}
-                </div>
+                    {produto.em_destaque && (
+                      <Badge className="absolute top-2 left-2 bg-[#F7D426] text-[#2C2C2C] border-none">
+                        Destaque
+                      </Badge>
+                    )}
 
-                <CardContent className="p-4">
-                  {produto.marca && (
-                    <p className="text-xs text-gray-500 mb-1">{produto.marca}</p>
-                  )}
-
-                  <h3 className="font-bold text-base mb-2 line-clamp-2 group-hover:text-pink-600 transition-colors">
-                    {produto.nome}
-                  </h3>
-
-                  <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                    {produto.descricao}
-                  </p>
-
-                  {produto.beneficios && (
-                    <div className="mb-3 space-y-1">
-                      {produto.beneficios.slice(0, 3).map((beneficio, i) => (
-                        <div key={i} className="flex items-start gap-2 text-xs text-gray-600">
-                          <Check className="w-3 h-3 text-green-600 flex-shrink-0 mt-0.5" />
-                          <span>{beneficio}</span>
-                        </div>
-                      ))}
-                      {produto.beneficios.length > 3 && (
-                        <p className="text-xs text-gray-500">+{produto.beneficios.length - 3} benefícios</p>
-                      )}
-                    </div>
-                  )}
-
-                  <div className="flex items-center justify-between pt-3 border-t">
-                    <div>
-                      {produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" ? (
-                        <p className="text-lg font-bold text-blue-600">
-                          {produto.preco_texto || "Consulte"}
-                        </p>
-                      ) : produto.preco_promocional ? (
-                        <div>
-                          <p className="text-xs text-gray-500 line-through">
-                            R$ {produto.preco.toFixed(2)}
-                          </p>
-                          <p className="text-lg font-bold text-pink-600">
-                            R$ {produto.preco_promocional.toFixed(2)}
-                          </p>
-                        </div>
-                      ) : (
-                        <p className="text-lg font-bold text-gray-900">
-                          R$ {produto.preco.toFixed(2)}
-                        </p>
-                      )}
-                    </div>
-
-                    <Button
-                      size="sm"
-                      onClick={() => produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes"
-                        ? handleContratar(produto)
-                        : null
-                      }
-                      className={produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes"
-                        ? "bg-blue-600 hover:bg-blue-700 text-white"
-                        : "bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold"
-                      }
-                    >
-                      {produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" ? "Contratar" : <ShoppingCart className="w-4 h-4" />}
-                    </Button>
+                    {produto.preco_promocional && (
+                      <Badge className="absolute top-2 right-2 bg-red-500 text-white border-none">
+                        Promoção
+                      </Badge>
+                    )}
                   </div>
 
-                  {produto.pontos_ganhos > 0 && (
-                    <div className="mt-2 text-xs text-center bg-green-50 text-green-700 py-1 rounded">
-                      +{produto.pontos_ganhos} pontos nesta compra
+                  <CardContent className="p-4">
+                    {produto.marca && (
+                      <p className="text-xs text-gray-500 mb-1">{produto.marca}</p>
+                    )}
+
+                    <h3 className="font-bold text-base mb-2 line-clamp-2 group-hover:text-pink-600 transition-colors">
+                      {produto.nome}
+                    </h3>
+
+                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                      {produto.descricao}
+                    </p>
+
+                    {produto.beneficios && (
+                      <div className="mb-3 space-y-1">
+                        {produto.beneficios.slice(0, 3).map((beneficio, i) => (
+                          <div key={i} className="flex items-start gap-2 text-xs text-gray-600">
+                            <Check className="w-3 h-3 text-green-600 flex-shrink-0 mt-0.5" />
+                            <span>{beneficio}</span>
+                          </div>
+                        ))}
+                        {produto.beneficios.length > 3 && (
+                          <p className="text-xs text-gray-500">+{produto.beneficios.length - 3} benefícios</p>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between pt-3 border-t">
+                      <div>
+                        {produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" ? (
+                          <p className="text-lg font-bold text-blue-600">
+                            {produto.preco_texto || "Consulte"}
+                          </p>
+                        ) : produto.preco_promocional ? (
+                          <div>
+                            <p className="text-xs text-gray-500 line-through">
+                              R$ {produto.preco.toFixed(2)}
+                            </p>
+                            <p className="text-lg font-bold text-pink-600">
+                              R$ {produto.preco_promocional.toFixed(2)}
+                            </p>
+                          </div>
+                        ) : (
+                          <p className="text-lg font-bold text-gray-900">
+                            R$ {produto.preco.toFixed(2)}
+                          </p>
+                        )}
+                      </div>
+
+                      <Button
+                        size="sm"
+                        onClick={() => produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes"
+                          ? handleContratar(produto)
+                          : handleComprarProduto(produto)
+                        }
+                        className={produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes"
+                          ? "bg-blue-600 hover:bg-blue-700 text-white"
+                          : "bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold"
+                        }
+                      >
+                        {produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" ? "Contratar" : <ShoppingCart className="w-4 h-4" />}
+                      </Button>
                     </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
+
+                    {/* Mostrar pontos que serão ganhos */}
+                    {!(produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes") && (
+                      <div className="mt-2 text-xs text-center bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 py-2 rounded-lg border border-green-200">
+                        <div className="flex items-center justify-center gap-1">
+                          <Star className="w-3 h-3 fill-green-600" />
+                          <span className="font-bold">+{pontosGanhos} pontos</span>
+                          <span className="text-gray-600">({faixaPreco})</span>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         )}
 

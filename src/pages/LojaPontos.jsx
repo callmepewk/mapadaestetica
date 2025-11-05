@@ -170,6 +170,24 @@ export default function LojaPontos() {
       }
     };
     fetchUser();
+
+    // Intervalo para atualizar pontos a cada 5 segundos (garantir sincronização)
+    const pontosInterval = setInterval(async () => {
+      try {
+        const userData = await base44.auth.me();
+        setUser(prevUser => ({
+          ...prevUser,
+          pontos_acumulados: userData.pontos_acumulados
+        }));
+      } catch (error) {
+        console.error("Erro ao atualizar pontos:", error);
+      }
+    }, 5000);
+
+    return () => {
+      clearInterval(pontosInterval);
+      Object.values(intervalRefs.current).forEach(clearInterval); // Existing cleanup for referral intervals
+    };
   }, []);
 
   // Effect for referral code checking and time tracking
@@ -239,9 +257,10 @@ export default function LojaPontos() {
       checkReferralCode();
     }
 
-    // Cleanup function for intervals
+    // Cleanup function for intervals (this one is specific to referral tracking, the main one is in the first useEffect)
     return () => {
-      Object.values(intervalRefs.current).forEach(clearInterval);
+      // Not strictly necessary here as the main useEffect cleanup handles all intervalRefs.current
+      // But keeping it for logical separation if this effect were to manage its own intervals.
     };
   }, [user, loading]); // Depend on user and loading to ensure user data is ready
 
@@ -344,7 +363,7 @@ export default function LojaPontos() {
         if (user.email === referrerEmail) {
           setUser(prevUser => ({
             ...prevUser,
-            amigos_indicados_validados: newValidatedReferralsCount,
+            amigos_indicados_valificados: newValidatedReferralsCount,
             total_pontos_indicacao: pointsBonusTotal,
             pontos_acumulados: currentPoints
           }));
@@ -424,7 +443,8 @@ export default function LojaPontos() {
   }
 
   // Calculate progress for referral cycle
-  const currentValidatedReferrals = indicacoes.filter(i => i.validado).length; // Total validated by the current user as referrer
+  // The line below was redundant as `user?.amigos_indicados_validados` directly reflects the count.
+  // const currentValidatedReferrals = indicacoes.filter(i => i.validado).length;
   const progressoIndicacoes = (user?.amigos_indicados_validados || 0) % 5;
   const proximaRecompensa = 5 - progressoIndicacoes;
 
@@ -455,16 +475,16 @@ export default function LojaPontos() {
           </Alert>
         )}
 
-        {/* Card de Saldo */}
+        {/* Card de Saldo - COM ATUALIZAÇÃO EM TEMPO REAL */}
         <Card className="mb-8 border-none shadow-xl bg-gradient-to-r from-[#F7D426] to-[#FFE066] overflow-hidden">
           <CardContent className="p-8">
             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
               <div className="flex items-center gap-6">
-                <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center">
+                <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center animate-pulse">
                   <Star className="w-10 h-10 text-[#F7D426]" />
                 </div>
                 <div>
-                  <p className="text-[#2C2C2C]/70 font-medium mb-1">Seu Saldo</p>
+                  <p className="text-[#2C2C2C]/70 font-medium mb-1">Seu Saldo Atual</p>
                   <p className="text-5xl font-bold text-[#2C2C2C]">
                     {user?.pontos_acumulados || 0}
                   </p>
@@ -473,11 +493,29 @@ export default function LojaPontos() {
               </div>
 
               <div className="text-center md:text-right">
-                <p className="text-[#2C2C2C] font-bold mb-2">Como Ganhar Mais Pontos?</p>
-                <div className="space-y-1 text-sm text-[#2C2C2C]/80">
-                  <p>✓ Comprando produtos na loja</p>
-                  <p>✓ Contratando serviços</p>
-                  <p>✓ Indicando amigos</p>
+                <p className="text-[#2C2C2C] font-bold mb-3">💡 Como Ganhar Mais Pontos?</p>
+                <div className="space-y-2 text-sm text-[#2C2C2C]/80">
+                  <div className="flex items-center gap-2 bg-white/20 px-3 py-2 rounded-lg">
+                    <span className="font-bold text-[#2C2C2C]">$</span>
+                    <span>= 1 ponto (a cada R$10 gastos)</span>
+                  </div>
+                  <div className="flex items-center gap-2 bg-white/20 px-3 py-2 rounded-lg">
+                    <span className="font-bold text-[#2C2C2C]">$$</span>
+                    <span>= 5 pontos (a cada R$50 gastos)</span>
+                  </div>
+                  <div className="flex items-center gap-2 bg-white/20 px-3 py-2 rounded-lg">
+                    <span className="font-bold text-[#2C2C2C]">$$$</span>
+                    <span>= 10 pontos (a cada R$100 gastos)</span>
+                  </div>
+                  <div className="flex items-center gap-2 bg-white/20 px-3 py-2 rounded-lg">
+                    <span className="font-bold text-[#2C2C2C]">$$$$</span>
+                    <span>= 50 pontos (a cada R$500 gastos)</span>
+                  </div>
+                  <div className="flex items-center gap-2 bg-white/20 px-3 py-2 rounded-lg">
+                    <span className="font-bold text-[#2C2C2C]">$$$$$</span>
+                    <span>= 100 pontos (a cada R$1000 gastos)</span>
+                  </div>
+                  <p className="mt-2 text-xs text-[#2C2C2C]/70">✓ Indicando amigos (100 pontos a cada 5 amigos validados)</p>
                 </div>
               </div>
             </div>
