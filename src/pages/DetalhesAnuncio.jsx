@@ -1,9 +1,8 @@
-
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { MapPin, Phone, Mail, Globe, Clock, Instagram, Facebook, ArrowLeft, Share2, Heart, Eye, Calendar, Lock, Crown, TrendingUp } from "lucide-react";
+import { MapPin, Phone, Mail, Globe, Clock, Instagram, Facebook, ArrowLeft, Share2, Heart, Eye, Calendar, Lock, Crown, TrendingUp, CheckCircle, Star, Award, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +13,7 @@ import { format } from "date-fns";
 import SecaoPerguntas from "../components/anuncios/SecaoPerguntas";
 import ImpulsionarAnuncioModal from "../components/anuncios/ImpulsionarAnuncioModal";
 import SecaoComentarios from "../components/anuncios/SecaoComentarios";
+import LoginPromptModal from "../components/home/LoginPromptModal";
 
 export default function DetalhesAnuncio() {
   const navigate = useNavigate();
@@ -25,6 +25,7 @@ export default function DetalhesAnuncio() {
   const [curtido, setCurtido] = useState(false);
   const [compartilhando, setCompartilhando] = useState(false);
   const [mostrarImpulsionar, setMostrarImpulsionar] = useState(false);
+  const [mostrarLoginPrompt, setMostrarLoginPrompt] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -55,17 +56,18 @@ export default function DetalhesAnuncio() {
             }
           }
         } catch {
-          if (mounted) setUser(null);
+          if (mounted) {
+            setUser(null);
+            // USUÁRIO NÃO LOGADO - MOSTRAR MODAL
+            setMostrarLoginPrompt(true);
+            setLoading(false);
+          }
+          return;
         }
 
         // Buscar anúncio pelo ID
-        console.log("Buscando anúncio com ID:", id);
-        
-        // Buscar usando filter com exact match no ID
         const anuncios = await base44.entities.Anuncio.list();
         const anuncioEncontrado = anuncios.find(a => a.id === id);
-        
-        console.log("Anúncio encontrado:", anuncioEncontrado);
         
         if (mounted) {
           if (anuncioEncontrado) {
@@ -106,14 +108,9 @@ export default function DetalhesAnuncio() {
 
   const isPaciente = user?.tipo_usuario === 'paciente';
   const isAdmin = user?.role === 'admin';
-  // Admin nunca tem restrição
-  // Apenas plano COBRE tem restrição para WhatsApp
   const isUserFree = !isAdmin && (!user || user.plano_ativo === 'cobre' || !user.plano_ativo);
-  
-  // Para curtir e compartilhar: apenas plano COBRE profissional tem restrição
   const isPlanoCobre = user?.tipo_usuario === 'profissional' && (!user.plano_ativo || user.plano_ativo === 'cobre');
   const temRestricaoAcoes = !isAdmin && isPlanoCobre;
-
   const isAutor = user && anuncio && user.email === anuncio.created_by;
   const isProfissionalAutor = isAutor && user?.tipo_usuario === 'profissional';
 
@@ -192,6 +189,22 @@ export default function DetalhesAnuncio() {
     );
   }
 
+  // SE NÃO TEM USUÁRIO, MOSTRAR MODAL DE LOGIN
+  if (!user) {
+    return (
+      <>
+        <LoginPromptModal
+          open={mostrarLoginPrompt}
+          onClose={() => {
+            setMostrarLoginPrompt(false);
+            navigate(createPageUrl("Inicio"));
+          }}
+          pageName="anuncios"
+        />
+      </>
+    );
+  }
+
   if (erro || !anuncio) {
     return (
       <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
@@ -214,7 +227,6 @@ export default function DetalhesAnuncio() {
     );
   }
 
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
       <div className="max-w-6xl mx-auto px-4">
@@ -225,6 +237,7 @@ export default function DetalhesAnuncio() {
 
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
+            {/* Card de Imagens */}
             <Card className="overflow-hidden border-none shadow-lg">
               <div className="relative h-96 bg-gray-100">
                 {todasImagens.length > 0 ? (
@@ -251,11 +264,15 @@ export default function DetalhesAnuncio() {
               )}
             </Card>
 
+            {/* Card de Informações Principais */}
             <Card className="border-none shadow-lg">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
                     <Badge className="mb-3 bg-pink-100 text-pink-800">{anuncio.categoria}</Badge>
+                    {anuncio.subcategoria && (
+                      <Badge variant="outline" className="mb-3 ml-2">{anuncio.subcategoria}</Badge>
+                    )}
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">{anuncio.titulo}</h1>
                     <div className="flex items-center gap-2">
                       <Avatar className="w-10 h-10">
@@ -274,7 +291,6 @@ export default function DetalhesAnuncio() {
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    {/* Botão Impulsionar - Apenas para o autor profissional */}
                     {isProfissionalAutor && (
                       <Button
                         onClick={() => setMostrarImpulsionar(true)}
@@ -312,17 +328,66 @@ export default function DetalhesAnuncio() {
                   </Alert>
                 )}
                 <Separator className="my-6" />
-                <div className="space-y-4">
+                
+                {/* TODAS AS INFORMAÇÕES DO CADASTRO */}
+                <div className="space-y-6">
+                  {/* Sobre */}
                   <div>
-                    <h3 className="font-semibold text-lg mb-2">Sobre</h3>
+                    <h3 className="font-semibold text-lg mb-2 flex items-center gap-2">
+                      <Award className="w-5 h-5 text-pink-600" />
+                      Sobre
+                    </h3>
                     <p className="text-gray-600 leading-relaxed">{anuncio.descricao}</p>
                   </div>
+
+                  {/* Tipo de Estabelecimento e Estrelas */}
+                  {(anuncio.tipo_estabelecimento || anuncio.estrelas_estabelecimento) && (
+                    <div className="flex gap-4 flex-wrap">
+                      {anuncio.tipo_estabelecimento && (
+                        <Badge variant="outline" className="text-sm">
+                          🏢 {anuncio.tipo_estabelecimento}
+                        </Badge>
+                      )}
+                      {anuncio.estrelas_estabelecimento && (
+                        <Badge variant="outline" className="text-sm flex items-center gap-1">
+                          {[...Array(anuncio.estrelas_estabelecimento)].map((_, i) => (
+                            <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                          ))}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Faixa de Preço */}
+                  {anuncio.faixa_preco && (
+                    <div className="bg-gradient-to-r from-[#FFF9E6] to-yellow-50 p-4 rounded-lg border-2 border-[#F7D426]">
+                      <div className="flex items-center gap-3">
+                        <DollarSign className="w-6 h-6 text-[#F7D426]" />
+                        <div>
+                          <p className="font-semibold text-gray-900">Faixa de Preço</p>
+                          <p className="text-2xl font-bold text-[#F7D426]">{anuncio.faixa_preco}</p>
+                          <p className="text-xs text-gray-600">
+                            {anuncio.faixa_preco === "$" && "Até R$ 500"}
+                            {anuncio.faixa_preco === "$$" && "R$ 500 - R$ 1.000"}
+                            {anuncio.faixa_preco === "$$$" && "R$ 1.000 - R$ 2.000"}
+                            {anuncio.faixa_preco === "$$$$" && "R$ 2.000 - R$ 5.000"}
+                            {anuncio.faixa_preco === "$$$$$" && "Acima de R$ 5.000"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Serviços Oferecidos */}
                   {anuncio.servicos_oferecidos && anuncio.servicos_oferecidos.length > 0 && (
                     <div>
-                      <h3 className="font-semibold text-lg mb-3">Serviços Oferecidos</h3>
+                      <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                        <CheckCircle className="w-5 h-5 text-pink-600" />
+                        Serviços Oferecidos
+                      </h3>
                       <div className="space-y-2">
                         {anuncio.servicos_oferecidos.map((servico, index) => (
-                          <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                          <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                             <div>
                               <p className="font-medium">{servico.nome}</p>
                               {servico.duracao && <p className="text-sm text-gray-500">Duração: {servico.duracao}</p>}
@@ -330,6 +395,98 @@ export default function DetalhesAnuncio() {
                             {servico.preco && <p className="font-semibold text-pink-600">R$ {servico.preco.toFixed(2)}</p>}
                           </div>
                         ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Procedimentos/Serviços */}
+                  {anuncio.procedimentos_servicos && anuncio.procedimentos_servicos.length > 0 && (
+                    <div>
+                      <h3 className="font-semibold text-lg mb-3">Procedimentos</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {anuncio.procedimentos_servicos.map((proc, index) => (
+                          <Badge key={index} variant="outline" className="text-sm">
+                            {proc}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Tags */}
+                  {anuncio.tags && anuncio.tags.length > 0 && (
+                    <div>
+                      <h3 className="font-semibold text-lg mb-3">Tags</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {anuncio.tags.map((tag, index) => (
+                          <Badge key={index} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+                            #{tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Amenidades */}
+                  {anuncio.amenidades && Object.values(anuncio.amenidades).some(v => v) && (
+                    <div>
+                      <h3 className="font-semibold text-lg mb-3">Comodidades</h3>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        {anuncio.amenidades.estacionamento && (
+                          <div className="flex items-center gap-2 text-sm text-gray-700">
+                            <CheckCircle className="w-4 h-4 text-green-600" />
+                            <span>Estacionamento</span>
+                          </div>
+                        )}
+                        {anuncio.amenidades.estacionamento_valet && (
+                          <div className="flex items-center gap-2 text-sm text-gray-700">
+                            <CheckCircle className="w-4 h-4 text-green-600" />
+                            <span>Valet</span>
+                          </div>
+                        )}
+                        {anuncio.amenidades.aceita_pet && (
+                          <div className="flex items-center gap-2 text-sm text-gray-700">
+                            <CheckCircle className="w-4 h-4 text-green-600" />
+                            <span>Pet Friendly</span>
+                          </div>
+                        )}
+                        {anuncio.amenidades.lounge && (
+                          <div className="flex items-center gap-2 text-sm text-gray-700">
+                            <CheckCircle className="w-4 h-4 text-green-600" />
+                            <span>Lounge</span>
+                          </div>
+                        )}
+                        {anuncio.amenidades.lounge_bar && (
+                          <div className="flex items-center gap-2 text-sm text-gray-700">
+                            <CheckCircle className="w-4 h-4 text-green-600" />
+                            <span>Lounge Bar</span>
+                          </div>
+                        )}
+                        {anuncio.amenidades.musica_ambiente && (
+                          <div className="flex items-center gap-2 text-sm text-gray-700">
+                            <CheckCircle className="w-4 h-4 text-green-600" />
+                            <span>Música Ambiente</span>
+                          </div>
+                        )}
+                        {anuncio.amenidades.seguranca && (
+                          <div className="flex items-center gap-2 text-sm text-gray-700">
+                            <CheckCircle className="w-4 h-4 text-green-600" />
+                            <span>Segurança</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Profissional Verificado */}
+                  {anuncio.profissional_verificado && (
+                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border-2 border-green-300">
+                      <div className="flex items-center gap-3">
+                        <CheckCircle className="w-8 h-8 text-green-600" />
+                        <div>
+                          <p className="font-bold text-green-900">Profissional Verificado ✓</p>
+                          <p className="text-sm text-green-700">Documentação validada pela plataforma</p>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -344,7 +501,7 @@ export default function DetalhesAnuncio() {
               isAutor={isAutor}
             />
 
-            {/* Seção de Comentários - PASSANDO isAutor CORRETAMENTE */}
+            {/* Seção de Comentários */}
             <SecaoComentarios
               anuncio={anuncio}
               user={user}
@@ -367,8 +524,9 @@ export default function DetalhesAnuncio() {
             <Card className="border-none shadow-lg sticky top-24">
               <CardContent className="p-6 space-y-4">
                 <h3 className="font-semibold text-lg mb-4">Informações de Contato</h3>
+                
                 {anuncio.telefone && (
-                  <a href={`tel:${anuncio.telefone}`} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100">
+                  <a href={`tel:${anuncio.telefone}`} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                     <Phone className="w-5 h-5 text-pink-600" />
                     <div>
                       <p className="text-xs text-gray-500">Telefone</p>
@@ -408,7 +566,7 @@ export default function DetalhesAnuncio() {
                       </div>
                     </div>
                   ) : (
-                    <a href={`https://wa.me/${anuncio.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 bg-green-50 rounded-lg hover:bg-green-100">
+                    <a href={`https://wa.me/${anuncio.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
                       <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center"><span className="text-white font-bold">W</span></div>
                       <div>
                         <p className="text-xs text-gray-500">WhatsApp</p>
@@ -418,7 +576,46 @@ export default function DetalhesAnuncio() {
                   )
                 )}
 
-                {/* Horário de Funcionamento */}
+                {anuncio.email && (
+                  <a href={`mailto:${anuncio.email}`} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                    <Mail className="w-5 h-5 text-pink-600" />
+                    <div>
+                      <p className="text-xs text-gray-500">Email</p>
+                      <p className="font-medium text-sm break-all">{anuncio.email}</p>
+                    </div>
+                  </a>
+                )}
+
+                {anuncio.site && (
+                  <a href={anuncio.site} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                    <Globe className="w-5 h-5 text-pink-600" />
+                    <div>
+                      <p className="text-xs text-gray-500">Website</p>
+                      <p className="font-medium text-sm break-all">Visitar site</p>
+                    </div>
+                  </a>
+                )}
+
+                {(anuncio.instagram || anuncio.facebook) && (
+                  <>
+                    <Separator />
+                    <div className="flex gap-3">
+                      {anuncio.instagram && (
+                        <a href={`https://instagram.com/${anuncio.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-2 p-3 bg-gradient-to-br from-pink-500 to-purple-500 text-white rounded-lg hover:opacity-90 transition-opacity">
+                          <Instagram className="w-5 h-5" />
+                          <span className="text-sm font-medium">Instagram</span>
+                        </a>
+                      )}
+                      {anuncio.facebook && (
+                        <a href={anuncio.facebook} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-2 p-3 bg-blue-600 text-white rounded-lg hover:opacity-90 transition-opacity">
+                          <Facebook className="w-5 h-5" />
+                          <span className="text-sm font-medium">Facebook</span>
+                        </a>
+                      )}
+                    </div>
+                  </>
+                )}
+
                 {anuncio.horario_funcionamento && (
                   <>
                     <Separator />
@@ -441,11 +638,13 @@ export default function DetalhesAnuncio() {
                 
                 <Separator />
                 <div>
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <MapPin className="w-5 h-5 text-pink-600" />
+                  <div className="flex items-start gap-2 text-gray-600">
+                    <MapPin className="w-5 h-5 text-pink-600 flex-shrink-0 mt-0.5" />
                     <div>
                       <p className="font-medium">{anuncio.cidade}, {anuncio.estado}</p>
                       {anuncio.endereco && <p className="text-sm text-gray-500">{anuncio.endereco}</p>}
+                      {anuncio.bairro && <p className="text-sm text-gray-500">Bairro: {anuncio.bairro}</p>}
+                      {anuncio.cep && <p className="text-sm text-gray-500">CEP: {anuncio.cep}</p>}
                     </div>
                   </div>
                 </div>
@@ -455,7 +654,6 @@ export default function DetalhesAnuncio() {
         </div>
       </div>
 
-      {/* Modal de Impulsionar Anúncio */}
       {isProfissionalAutor && (
         <ImpulsionarAnuncioModal
           open={mostrarImpulsionar}
