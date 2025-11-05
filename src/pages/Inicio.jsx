@@ -1227,9 +1227,9 @@ export default function Inicio() {
               <p className="text-xl mb-6 text-white/90">
                 Junte-se a mais de 500 profissionais que já escolheram o Mapa da Estética
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="grid sm:grid-cols-2 gap-4 justify-center max-w-2xl mx-auto">
                 <Link to={createPageUrl("CadastrarAnuncio")}>
-                  <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-100 font-bold shadow-xl w-full sm:w-auto text-base">
+                  <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-100 font-bold shadow-xl w-full text-base py-6">
                     Começar Grátis Agora
                     <ArrowRight className="w-5 h-5 ml-2" />
                   </Button>
@@ -1239,7 +1239,7 @@ export default function Inicio() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-100 w-full sm:w-auto font-bold shadow-xl text-base">
+                  <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-100 w-full font-bold shadow-xl text-base py-6">
                     Falar com Especialista
                     <MessageCircle className="w-5 h-5 ml-2" />
                   </Button>
