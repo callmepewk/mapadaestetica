@@ -114,10 +114,10 @@ Responda de forma clara, objetiva e útil.`,
           >
             <Button
               onClick={() => setIsOpen(true)}
-              className="w-16 h-16 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-2xl"
+              className="w-16 h-16 rounded-full bg-gradient-to-r from-[#F7D426] to-[#FFE066] hover:from-[#E5C215] hover:to-[#F7D426] shadow-2xl border-2 border-[#2C2C2C]"
               size="icon"
             >
-              <MessageCircle className="w-7 h-7" />
+              <MessageCircle className="w-7 h-7 text-[#2C2C2C]" />
             </Button>
           </motion.div>
         )}
@@ -134,21 +134,29 @@ Responda de forma clara, objetiva e útil.`,
           >
             <Card className="border-none shadow-2xl overflow-hidden">
               {/* Header */}
-              <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-4 flex items-center justify-between">
+              <div className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] p-4 flex items-center justify-between border-b-2 border-[#2C2C2C]">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                    <Sparkles className="w-6 h-6 text-white" />
+                  <div className="w-10 h-10 rounded-full overflow-hidden bg-white flex items-center justify-center">
+                    <img 
+                      src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/f54646e8e_drbeleza.png" 
+                      alt="Dr. Beleza"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.innerHTML = '<span class="text-2xl">🩺</span>';
+                      }}
+                    />
                   </div>
                   <div>
-                    <h3 className="font-bold text-white">Dr. Beleza</h3>
-                    <p className="text-xs text-white/80">Assistente Virtual</p>
+                    <h3 className="font-bold text-[#2C2C2C]">Dr. Beleza</h3>
+                    <p className="text-xs text-[#2C2C2C]/80">Assistente Virtual</p>
                   </div>
                 </div>
                 <Button
                   onClick={() => setIsOpen(false)}
                   variant="ghost"
                   size="icon"
-                  className="text-white hover:bg-white/20"
+                  className="text-[#2C2C2C] hover:bg-[#2C2C2C]/10"
                 >
                   <X className="w-5 h-5" />
                 </Button>
@@ -164,7 +172,7 @@ Responda de forma clara, objetiva e útil.`,
                     <div
                       className={`max-w-[80%] rounded-2xl p-3 ${
                         message.type === "user"
-                          ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white"
+                          ? "bg-gradient-to-r from-[#F7D426] to-[#FFE066] text-[#2C2C2C] border-2 border-[#2C2C2C]"
                           : "bg-white shadow-md"
                       }`}
                     >
@@ -177,7 +185,7 @@ Responda de forma clara, objetiva e útil.`,
                             <Button
                               onClick={() => handleActionClick("login")}
                               size="sm"
-                              className="w-full bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold"
+                              className="w-full bg-[#2C2C2C] hover:bg-[#3A3A3A] text-[#F7D426] font-bold"
                             >
                               <User className="w-4 h-4 mr-2" />
                               Fazer Login
@@ -187,7 +195,7 @@ Responda de forma clara, objetiva e útil.`,
                             <Button
                               onClick={() => handleActionClick("completar_cadastro")}
                               size="sm"
-                              className="w-full bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold"
+                              className="w-full bg-[#2C2C2C] hover:bg-[#3A3A3A] text-[#F7D426] font-bold"
                             >
                               <Sparkles className="w-4 h-4 mr-2" />
                               Completar Cadastro
@@ -203,9 +211,9 @@ Responda de forma clara, objetiva e útil.`,
                   <div className="flex justify-start">
                     <div className="bg-white shadow-md rounded-2xl p-3">
                       <div className="flex gap-2">
-                        <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
-                        <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: "0.4s" }}></div>
+                        <div className="w-2 h-2 bg-[#F7D426] rounded-full animate-bounce"></div>
+                        <div className="w-2 h-2 bg-[#F7D426] rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+                        <div className="w-2 h-2 bg-[#F7D426] rounded-full animate-bounce" style={{ animationDelay: "0.4s" }}></div>
                       </div>
                     </div>
                   </div>
@@ -226,7 +234,7 @@ Responda de forma clara, objetiva e útil.`,
                   <Button
                     onClick={handleSendMessage}
                     disabled={loading || !inputMessage.trim() || !user || !user.cadastro_completo}
-                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                    className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] hover:from-[#E5C215] hover:to-[#F7D426] text-[#2C2C2C] border-2 border-[#2C2C2C]"
                   >
                     <Send className="w-5 h-5" />
                   </Button>
