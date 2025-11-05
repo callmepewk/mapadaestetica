@@ -117,8 +117,44 @@ const statusFuncionamento = [
   { valor: "N/D", label: "⚪ Não Informado" }
 ];
 
+const faixasDistancia = [
+  { valor: "todas", label: "Todas as distâncias" },
+  { valor: "0-0.5", label: "Até 500m" },
+  { valor: "0.5-1", label: "500m a 1km" },
+  { valor: "1-2", label: "1km a 2km" },
+  { valor: "2-5", label: "2km a 5km" },
+  { valor: "5-10", label: "5km a 10km" },
+  { valor: "10-20", label: "10km a 20km" },
+  { valor: "20-50", label: "20km a 50km" },
+  { valor: "50-100", label: "50km a 100km" },
+  { valor: "100-250", label: "100km a 250km" },
+  { valor: "250-500", label: "250km a 500km" }
+];
+
+const faixasTempoFormacao = [
+  { valor: "todas", label: "Qualquer tempo" },
+  { valor: "0-2", label: "Até 2 anos" },
+  { valor: "2-5", label: "2 a 5 anos" },
+  { valor: "5-10", label: "5 a 10 anos" },
+  { valor: "10-20", label: "10 a 20 anos" },
+  { valor: "20+", label: "Mais de 20 anos" }
+];
+
+// Função para calcular distância entre dois pontos (Haversine)
+function calcularDistancia(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Raio da Terra em km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c; // Distância em km
+}
+
 export default function Anuncios() {
-  const [buscaTexto, setBuscaTexto] = useState(""); // Changed from busca
+  const [buscaTexto, setBuscaTexto] = useState("");
   const [cidadeFiltro, setCidadeFiltro] = useState("");
   const [estadoFiltro, setEstadoFiltro] = useState("");
   const [categoriaFiltro, setCategoriaFiltro] = useState("Todas");
@@ -128,11 +164,16 @@ export default function Anuncios() {
   const [viewMode, setViewMode] = useState("grid");
   const [localizando, setLocalizando] = useState(false);
   const [ordenacao, setOrdenacao] = useState("mais_recentes");
-  const [faixaPrecoFiltro, setFaixaPrecoFiltro] = useState("Todas"); // Changed from filtroFaixaPreco
+  const [faixaPrecoFiltro, setFaixaPrecoFiltro] = useState("Todas");
   const [filtroTipoAnuncio, setFiltroTipoAnuncio] = useState("");
   const [filtroStatusFuncionamento, setFiltroStatusFuncionamento] = useState("");
   const [mostrarSeletorProcedimentos, setMostrarSeletorProcedimentos] = useState(false);
   const [apenasVerificados, setApenasVerificados] = useState(false); // New state
+  
+  const [filtroDistancia, setFiltroDistancia] = useState("todas");
+  const [filtroTempoFormacao, setFiltroTempoFormacao] = useState("todas");
+  const [minhaLocalizacao, setMinhaLocalizacao] = useState(null);
+  const [abaAtiva, setAbaAtiva] = useState("lista"); // "lista" ou "mapa"
 
   const [user, setUser] = useState(null);
   const [mostrarLoginPrompt, setMostrarLoginPrompt] = useState(false);
@@ -165,6 +206,9 @@ export default function Anuncios() {
     const tipoAnuncio = urlParams.get('tipoAnuncio');
     const statusFuncionamentoParam = urlParams.get('statusFuncionamento');
     const verificados = urlParams.get('verificados');
+    
+    const distancia = urlParams.get('distancia');
+    const tempoFormacao = urlParams.get('tempoFormacao');
 
 
     if (cidade) setCidadeFiltro(cidade);
@@ -173,10 +217,13 @@ export default function Anuncios() {
     if (procedimento) setProcedimentoFiltro(procedimento);
     if (tag) setTagFiltro(tag);
     if (ordem) setOrdenacao(ordem);
-    if (faixaPreco) setFaixaPrecoFiltro(faixaPreco); // Changed state here
+    if (faixaPreco) setFaixaPrecoFiltro(faixaPreco);
     if (tipoAnuncio) setFiltroTipoAnuncio(tipoAnuncio);
     if (statusFuncionamentoParam) setFiltroStatusFuncionamento(statusFuncionamentoParam);
-    if (verificados) setApenasVerificados(verificados === 'true'); // New state here
+    if (verificados) setApenasVerificados(verificados === 'true');
+    
+    if (distancia) setFiltroDistancia(distancia);
+    if (tempoFormacao) setFiltroTempoFormacao(tempoFormacao);
   }, []);
 
   const usarMinhaLocalizacao = async () => {
@@ -190,6 +237,8 @@ export default function Anuncios() {
       async (position) => {
         try {
           const { latitude, longitude } = position.coords;
+          setMinhaLocalizacao({ latitude, longitude });
+          
           const response = await fetch(
             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
           );
@@ -270,16 +319,16 @@ export default function Anuncios() {
             t.toLowerCase().includes(tagFiltro.toLowerCase())
           );
         
-        const matchBusca = !buscaTexto || // Changed from busca
-          anuncio.titulo?.toLowerCase().includes(buscaTexto.toLowerCase()) || // Changed from busca
-          anuncio.profissional?.toLowerCase().includes(buscaTexto.toLowerCase()) || // Changed from busca
-          anuncio.descricao?.toLowerCase().includes(buscaTexto.toLowerCase()) || // Changed from busca
-          anuncio.horario_funcionamento?.toLowerCase().includes(buscaTexto.toLowerCase()) || // Changed from busca
+        const matchBusca = !buscaTexto ||
+          anuncio.titulo?.toLowerCase().includes(buscaTexto.toLowerCase()) ||
+          anuncio.profissional?.toLowerCase().includes(buscaTexto.toLowerCase()) ||
+          anuncio.descricao?.toLowerCase().includes(buscaTexto.toLowerCase()) ||
+          anuncio.horario_funcionamento?.toLowerCase().includes(buscaTexto.toLowerCase()) ||
           anuncio.procedimentos_servicos?.some(p => 
-            p.toLowerCase().includes(buscaTexto.toLowerCase()) // Changed from busca
+            p.toLowerCase().includes(buscaTexto.toLowerCase())
           ) ||
           anuncio.tags?.some(t => 
-            t.toLowerCase().includes(buscaTexto.toLowerCase()) // Changed from busca
+            t.toLowerCase().includes(buscaTexto.toLowerCase())
           );
         
         const matchCidade = !cidadeFiltro || 
@@ -288,7 +337,6 @@ export default function Anuncios() {
         const matchEstado = !estadoFiltro ||
           anuncio.estado?.toLowerCase().includes(estadoFiltro.toLowerCase());
 
-        // Changed from filtroFaixaPreco
         const matchFaixaPreco = faixaPrecoFiltro === "Todas" || anuncio.faixa_preco === faixaPrecoFiltro; 
         
         const matchTipoAnuncio = !filtroTipoAnuncio || anuncio.tipo_anuncio === filtroTipoAnuncio;
@@ -296,7 +344,52 @@ export default function Anuncios() {
         
         const matchVerificados = !apenasVerificados || anuncio.verificado; // New filter
 
-        return matchCidade && matchEstado && matchProcedimento && matchTag && matchBusca && matchFaixaPreco && matchTipoAnuncio && matchStatusFuncionamento && matchVerificados; // Added matchVerificados
+        // Filtro de distância
+        let matchDistancia = true;
+        if (filtroDistancia !== "todas" && minhaLocalizacao && anuncio.latitude && anuncio.longitude) {
+          const distanciaKm = calcularDistancia(
+            minhaLocalizacao.latitude,
+            minhaLocalizacao.longitude,
+            anuncio.latitude,
+            anuncio.longitude
+          );
+          
+          const [minStr, maxStr] = filtroDistancia.split('-');
+          const min = parseFloat(minStr);
+          const max = parseFloat(maxStr);
+
+          if (maxStr) { // If there's a range (e.g., "0.5-1")
+            matchDistancia = distanciaKm >= min && distanciaKm <= max;
+          } else { // If it's a single value (e.g., "0-0.5", where max is implied)
+             // For "Até X km" (like "0-0.5") this will work correctly if max is small.
+             // The values for max distance in faixasDistancia define the upper bound.
+             // If filter is "0-0.5", max is 0.5.
+             matchDistancia = distanciaKm <= min; // This implies "até min km" for the single value case.
+                                                   // Re-evaluating faixasDistancia, all values are ranges or "todas".
+                                                   // So 'max' will always exist unless it's "todas".
+                                                   // Corrected logic for max being potentially undefined if it was e.g. "50+"
+             if (minStr === "0") { // For "Até 500m" (0-0.5)
+                matchDistancia = distanciaKm <= max;
+             } else { // For ranges like "1-2" etc.
+                matchDistancia = distanciaKm >= min && distanciaKm <= max;
+             }
+          }
+        }
+        
+        // Filtro de tempo de formação
+        let matchTempoFormacao = true;
+        if (filtroTempoFormacao !== "todas" && anuncio.tempo_formacao_anos !== undefined && anuncio.tempo_formacao_anos !== null) {
+          if (filtroTempoFormacao === "20+") {
+            matchTempoFormacao = anuncio.tempo_formacao_anos >= 20;
+          } else {
+            const [min, max] = filtroTempoFormacao.split('-').map(Number);
+            matchTempoFormacao = anuncio.tempo_formacao_anos >= min && anuncio.tempo_formacao_anos <= max;
+          }
+        }
+        
+        return matchCidade && matchEstado && matchProcedimento && matchTag && matchBusca && 
+               matchFaixaPreco && matchTipoAnuncio && matchStatusFuncionamento && matchVerificados &&
+               matchDistancia && matchTempoFormacao;
       })
       .sort((a, b) => {
         const planoA = planoOrdem[a.plano] || 0;
@@ -306,7 +399,9 @@ export default function Anuncios() {
         }
         return new Date(b.created_date) - new Date(a.created_date);
       });
-  }, [fetchedAnuncios, buscaTexto, procedimentoFiltro, tagFiltro, cidadeFiltro, estadoFiltro, faixaPrecoFiltro, filtroTipoAnuncio, filtroStatusFuncionamento, apenasVerificados]); // Added buscaTexto, apenasVerificados
+  }, [fetchedAnuncios, buscaTexto, procedimentoFiltro, tagFiltro, cidadeFiltro, estadoFiltro, 
+      faixaPrecoFiltro, filtroTipoAnuncio, filtroStatusFuncionamento, apenasVerificados,
+      filtroDistancia, filtroTempoFormacao, minhaLocalizacao]);
 
   const totalPaginas = Math.ceil(anuncios.length / ITEMS_PER_PAGE);
   const anunciosPaginados = anuncios.slice(
@@ -323,13 +418,15 @@ export default function Anuncios() {
     setCategoriaFiltro("Todas");
     setCidadeFiltro("");
     setEstadoFiltro("");
-    setBuscaTexto(""); // Changed from setBusca
+    setBuscaTexto("");
     setProcedimentoFiltro("");
-    setTagFiltro(""); // Keep tagFiltro, though UI for it is removed, it might be set by URL
-    setFaixaPrecoFiltro("Todas"); // Changed from setFiltroFaixaPreco
-    setFiltroTipoAnuncio(""); // Kept, though UI for it is removed, it might be set by URL
-    setFiltroStatusFuncionamento(""); // Kept, though UI for it is removed, it might be set by URL
-    setApenasVerificados(false); // New
+    setTagFiltro("");
+    setFaixaPrecoFiltro("Todas");
+    setFiltroTipoAnuncio("");
+    setFiltroStatusFuncionamento("");
+    setApenasVerificados(false);
+    setFiltroDistancia("todas");
+    setFiltroTempoFormacao("todas");
     setPaginaAtual(1);
 
     // Remover parâmetros da URL
@@ -345,11 +442,13 @@ export default function Anuncios() {
     estadoFiltro !== "" ||
     buscaTexto !== "" ||
     procedimentoFiltro !== "" ||
-    tagFiltro !== "" || // Include tagFiltro
-    filtroTipoAnuncio !== "" || // Include tipoAnuncio
-    filtroStatusFuncionamento !== "" || // Include statusFuncionamento
+    tagFiltro !== "" ||
+    filtroTipoAnuncio !== "" ||
+    filtroStatusFuncionamento !== "" ||
     faixaPrecoFiltro !== "Todas" ||
-    apenasVerificados;
+    apenasVerificados ||
+    filtroDistancia !== "todas" ||
+    filtroTempoFormacao !== "todas";
 
   const getFaixaPrecoInfo = (faixa) => {
     const info = {
@@ -359,7 +458,7 @@ export default function Anuncios() {
       "$$$$": { texto: "R$ 2.000 - R$ 5.000", emoji: "🧡" },
       "$$$$$": { texto: "Acima de R$ 5.000", emoji: "❤️" }
     };
-    return info[faixa]; // Removed || info["$"] as "Todas" is now a valid value
+    return info[faixa];
   };
 
   return (
@@ -374,289 +473,444 @@ export default function Anuncios() {
           </p>
         </div>
 
-        {/* Filtros */}
-        <Card className="p-6 mb-8 shadow-lg border-none">
-          <CardContent className="p-6"> {/* Original CardContent className was "p-6", but outline removes it, keeping it for consistency */}
-            <div className="space-y-4">
-              {/* Primeira linha de filtros */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <Label className="mb-2 block font-semibold">Buscar por nome ou palavra-chave</Label>
-                  <Input
-                    placeholder="Digite aqui..."
-                    value={buscaTexto} // Changed from busca
-                    onChange={(e) => {
-                      setBuscaTexto(e.target.value); // Changed from setBusca
-                      setPaginaAtual(1);
-                    }}
-                    className="w-full h-12"
-                  />
-                </div>
-
-                <div>
-                  <Label className="mb-2 block font-semibold">Categoria</Label>
-                  <Select
-                    value={categoriaFiltro}
-                    onValueChange={(value) => {
-                      setCategoriaFiltro(value);
-                      setPaginaAtual(1);
-                    }}
-                  >
-                    <SelectTrigger className="h-12">
-                      <SelectValue placeholder="Categoria" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categorias.map((cat) => (
-                        <SelectItem key={cat} value={cat}>
-                          {cat}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label className="mb-2 block font-semibold">Procedimento</Label>
-                  <Input
-                    placeholder="Ex: Botox, Preenchimento..."
-                    value={procedimentoFiltro}
-                    onChange={(e) => {
-                      setProcedimentoFiltro(e.target.value);
-                      setPaginaAtual(1);
-                    }}
-                    className="h-12"
-                  />
-                </div>
-              </div>
-
-              {/* Segunda linha de filtros */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                  <Label className="mb-2 block font-semibold">Cidade</Label>
-                  <Input
-                    placeholder="Digite a cidade"
-                    value={cidadeFiltro}
-                    onChange={(e) => {
-                      setCidadeFiltro(e.target.value);
-                      setPaginaAtual(1);
-                    }}
-                    className="h-12"
-                  />
-                </div>
-
-                <div>
-                  <Label className="mb-2 block font-semibold">Estado</Label>
-                  <Select
-                    value={estadoFiltro}
-                    onValueChange={(value) => {
-                      setEstadoFiltro(value);
-                      setPaginaAtual(1);
-                    }}
-                  >
-                    <SelectTrigger className="h-12">
-                      <SelectValue placeholder="Estado (UF)" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={null}>Todos</SelectItem> {/* Changed from null */}
-                      {estados.map((estado) => (
-                        <SelectItem key={estado} value={estado}>{estado}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label className="mb-2 block font-semibold">Faixa de Preço</Label>
-                  <Select
-                    value={faixaPrecoFiltro} // Changed from filtroFaixaPreco
-                    onValueChange={(value) => {
-                      setFaixaPrecoFiltro(value); // Changed from setFiltroFaixaPreco
-                      setPaginaAtual(1);
-                    }}
-                  >
-                    <SelectTrigger className="h-12">
-                      <SelectValue placeholder="Faixa de Preço" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {faixasPreco.map((faixa) => (
-                        <SelectItem key={faixa} value={faixa}>
-                          {faixa === "Todas" ? "Todas as faixas" : getFaixaPrecoInfo(faixa) ? `${getFaixaPrecoInfo(faixa).emoji} ${faixa} - ${getFaixaPrecoInfo(faixa).texto}` : faixa}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label className="mb-2 block font-semibold">Verificação</Label>
-                  <label className="flex items-center gap-2 mt-2 cursor-pointer h-12">
-                    <input
-                      type="checkbox"
-                      checked={apenasVerificados}
-                      onChange={(e) => {
-                        setApenasVerificados(e.target.checked);
-                        setPaginaAtual(1);
-                      }}
-                      className="w-4 h-4 rounded text-pink-600 focus:ring-pink-500"
-                    />
-                    <span className="text-sm text-gray-700">Apenas verificados</span>
-                  </label>
-                </div>
-              </div>
-
-              {/* Botão Limpar Filtros */}
-              {temFiltrosAtivos && (
-                <div className="flex justify-end pt-2">
-                  <Button
-                    onClick={limparFiltros}
-                    variant="outline"
-                    className="border-2 border-gray-300 text-gray-700 hover:bg-gray-100"
-                  >
-                    <X className="w-4 h-4 mr-2" />
-                    Limpar Filtros
-                  </Button>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Existing Localização e Ordenação - Retained for now, though structure changed */}
-        <div className="flex flex-col md:flex-row gap-4 items-start md:items-center mb-4">
+        {/* Abas: Lista e Mapa */}
+        <div className="flex gap-2 mb-6">
           <Button
-            onClick={usarMinhaLocalizacao}
-            disabled={localizando}
-            variant="outline"
-            className="w-full md:w-auto h-12"
+            onClick={() => setAbaAtiva("lista")}
+            variant={abaAtiva === "lista" ? "default" : "outline"}
+            className={abaAtiva === "lista" ? "bg-pink-600 hover:bg-pink-700" : ""}
           >
-            <Locate className="w-4 h-4 mr-2" />
-            {localizando ? "Localizando..." : "Usar Minha Localização"}
+            <List className="w-4 h-4 mr-2" />
+            Lista de Anúncios
           </Button>
-          
-          <Select
-            value={ordenacao}
-            onValueChange={(value) => {
-              setOrdenacao(value);
-              setPaginaAtual(1);
-            }}
+          <Button
+            onClick={() => setAbaAtiva("mapa")}
+            variant={abaAtiva === "mapa" ? "default" : "outline"}
+            className={abaAtiva === "mapa" ? "bg-pink-600 hover:bg-pink-700" : ""}
           >
-            <SelectTrigger className="w-full md:w-64 h-12">
-              <SelectValue placeholder="Ordenar por" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="mais_recentes">Mais Recentes</SelectItem>
-              <SelectItem value="mais_visualizados">Mais Visualizados</SelectItem>
-              <SelectItem value="mais_antigos">Mais Antigos</SelectItem>
-            </SelectContent>
-          </Select>
+            <MapPin className="w-4 h-4 mr-2" />
+            Mapa da Estética
+          </Button>
         </div>
 
-        {/* Badges e Botão de Limpar Filtros (Old section - removing or updating this based on new filter UI) */}
-        {/* Original badges section is completely replaced by new filter UI and temFiltrosAtivos logic above */}
-
-        {/* Resultados e Modo de Visualização */}
-        <div className="flex items-center justify-between mt-4 pt-4 border-t">
-          <div className="flex items-center gap-2 flex-wrap">
-            <Filter className="w-4 h-4 text-gray-500" />
-            <span className="text-sm text-gray-600">
-              {anuncios.length} resultado{anuncios.length !== 1 ? 's' : ''}
-            </span>
-          </div>
-
-          <div className="flex gap-2">
-            <Button
-              variant={viewMode === "grid" ? "default" : "outline"}
-              size="icon"
-              onClick={() => setViewMode("grid")}
-              className={viewMode === "grid" ? "bg-pink-600 hover:bg-pink-700" : ""}
-            >
-              <Grid className="w-4 h-4" />
-            </Button>
-            <Button
-              variant={viewMode === "list" ? "default" : "outline"}
-              size="icon"
-              onClick={() => setViewMode("list")}
-              className={viewMode === "list" ? "bg-pink-600 hover:bg-pink-700" : ""}
-            >
-              <List className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-
-        {isLoading ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
-            {Array(6).fill(0).map((_, i) => (
-              <Card key={i} className="h-96 animate-pulse bg-gray-100" />
-            ))}
-          </div>
-        ) : anuncios.length === 0 ? (
-          <Card className="p-12 text-center mt-8">
-            <div className="text-6xl mb-4">🔍</div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Nenhum anúncio encontrado
-            </h3>
-            <p className="text-gray-600">
-              Tente ajustar os filtros ou fazer uma nova busca
-            </p>
-          </Card>
-        ) : (
+        {abaAtiva === "lista" ? (
           <>
-            <div className={viewMode === "grid" 
-              ? "grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8" 
-              : "space-y-4 mt-8"
-            }>
-              {anunciosPaginados.map((anuncio) => (
-                <CardAnuncio key={anuncio.id} anuncio={anuncio} />
-              ))}
+            {/* Filtros */}
+            <Card className="p-6 mb-8 shadow-lg border-none">
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  {/* Primeira linha de filtros */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Label className="mb-2 block font-semibold">Buscar por nome ou palavra-chave</Label>
+                      <Input
+                        placeholder="Digite aqui..."
+                        value={buscaTexto}
+                        onChange={(e) => {
+                          setBuscaTexto(e.target.value);
+                          setPaginaAtual(1);
+                        }}
+                        className="w-full h-12"
+                      />
+                    </div>
+
+                    <div>
+                      <Label className="mb-2 block font-semibold">Categoria</Label>
+                      <Select
+                        value={categoriaFiltro}
+                        onValueChange={(value) => {
+                          setCategoriaFiltro(value);
+                          setPaginaAtual(1);
+                        }}
+                      >
+                        <SelectTrigger className="h-12">
+                          <SelectValue placeholder="Categoria" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categorias.map((cat) => (
+                            <SelectItem key={cat} value={cat}>
+                              {cat}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label className="mb-2 block font-semibold">Procedimento</Label>
+                      <Input
+                        placeholder="Ex: Botox, Preenchimento..."
+                        value={procedimentoFiltro}
+                        onChange={(e) => {
+                          setProcedimentoFiltro(e.target.value);
+                          setPaginaAtual(1);
+                        }}
+                        className="h-12"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Segunda linha de filtros */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                      <Label className="mb-2 block font-semibold">Cidade</Label>
+                      <Input
+                        placeholder="Digite a cidade"
+                        value={cidadeFiltro}
+                        onChange={(e) => {
+                          setCidadeFiltro(e.target.value);
+                          setPaginaAtual(1);
+                        }}
+                        className="h-12"
+                      />
+                    </div>
+
+                    <div>
+                      <Label className="mb-2 block font-semibold">Estado</Label>
+                      <Select
+                        value={estadoFiltro}
+                        onValueChange={(value) => {
+                          setEstadoFiltro(value);
+                          setPaginaAtual(1);
+                        }}
+                      >
+                        <SelectTrigger className="h-12">
+                          <SelectValue placeholder="Estado (UF)" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={null}>Todos</SelectItem>
+                          {estados.map((estado) => (
+                            <SelectItem key={estado} value={estado}>{estado}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label className="mb-2 block font-semibold">Faixa de Preço</Label>
+                      <Select
+                        value={faixaPrecoFiltro}
+                        onValueChange={(value) => {
+                          setFaixaPrecoFiltro(value);
+                          setPaginaAtual(1);
+                        }}
+                      >
+                        <SelectTrigger className="h-12">
+                          <SelectValue placeholder="Faixa de Preço" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {faixasPreco.map((faixa) => (
+                            <SelectItem key={faixa} value={faixa}>
+                              {faixa === "Todas" ? "Todas as faixas" : getFaixaPrecoInfo(faixa) ? `${getFaixaPrecoInfo(faixa).emoji} ${faixa} - ${getFaixaPrecoInfo(faixa).texto}` : faixa}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label className="mb-2 block font-semibold">Verificação</Label>
+                      <label className="flex items-center gap-2 mt-2 cursor-pointer h-12">
+                        <input
+                          type="checkbox"
+                          checked={apenasVerificados}
+                          onChange={(e) => {
+                            setApenasVerificados(e.target.checked);
+                            setPaginaAtual(1);
+                          }}
+                          className="w-4 h-4 rounded text-pink-600 focus:ring-pink-500"
+                        />
+                        <span className="text-sm text-gray-700">Apenas verificados</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Terceira linha - Novos filtros */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="mb-2 block font-semibold">Distância</Label>
+                      <Select
+                        value={filtroDistancia}
+                        onValueChange={(value) => {
+                          setFiltroDistancia(value);
+                          setPaginaAtual(1);
+                        }}
+                        disabled={!minhaLocalizacao}
+                      >
+                        <SelectTrigger className="h-12">
+                          <SelectValue placeholder={minhaLocalizacao ? "Selecione a distância" : "Use sua localização primeiro"} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {faixasDistancia.map((faixa) => (
+                            <SelectItem key={faixa.valor} value={faixa.valor}>
+                              {faixa.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {!minhaLocalizacao && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Clique em "Usar Minha Localização" para ativar este filtro
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <Label className="mb-2 block font-semibold">Tempo de Formação</Label>
+                      <Select
+                        value={filtroTempoFormacao}
+                        onValueChange={(value) => {
+                          setFiltroTempoFormacao(value);
+                          setPaginaAtual(1);
+                        }}
+                      >
+                        <SelectTrigger className="h-12">
+                          <SelectValue placeholder="Tempo de formação" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {faixasTempoFormacao.map((faixa) => (
+                            <SelectItem key={faixa.valor} value={faixa.valor}>
+                              {faixa.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* Botão Limpar Filtros */}
+                  {temFiltrosAtivos && (
+                    <div className="flex justify-end pt-2">
+                      <Button
+                        onClick={limparFiltros}
+                        variant="outline"
+                        className="border-2 border-gray-300 text-gray-700 hover:bg-gray-100"
+                      >
+                        <X className="w-4 h-4 mr-2" />
+                        Limpar Filtros
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Existing Localização e Ordenação - Retained for now, though structure changed */}
+            <div className="flex flex-col md:flex-row gap-4 items-start md:items-center mb-4">
+              <Button
+                onClick={usarMinhaLocalizacao}
+                disabled={localizando}
+                variant="outline"
+                className="w-full md:w-auto h-12"
+              >
+                <Locate className="w-4 h-4 mr-2" />
+                {localizando ? "Localizando..." : "Usar Minha Localização"}
+              </Button>
+              
+              <Select
+                value={ordenacao}
+                onValueChange={(value) => {
+                  setOrdenacao(value);
+                  setPaginaAtual(1);
+                }}
+              >
+                <SelectTrigger className="w-full md:w-64 h-12">
+                  <SelectValue placeholder="Ordenar por" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="mais_recentes">Mais Recentes</SelectItem>
+                  <SelectItem value="mais_visualizados">Mais Visualizados</SelectItem>
+                  <SelectItem value="mais_antigos">Mais Antigos</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            {totalPaginas > 1 && (
-              <div className="mt-12 flex justify-center">
-                <Pagination>
-                  <PaginationContent>
-                    <PaginationItem>
-                      <PaginationPrevious
-                        onClick={() => paginaAtual > 1 && handlePaginaChange(paginaAtual - 1)}
-                        className={paginaAtual === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                      />
-                    </PaginationItem>
-                    
-                    {Array.from({ length: Math.min(5, totalPaginas) }, (_, i) => {
-                      let pageNum;
-                      if (totalPaginas <= 5) {
-                        pageNum = i + 1;
-                      } else if (paginaAtual <= 3) {
-                        pageNum = i + 1;
-                      } else if (paginaAtual >= totalPaginas - 2) {
-                        pageNum = totalPaginas - 4 + i;
-                      } else {
-                        pageNum = paginaAtual - 2 + i;
-                      }
-                      
-                      return (
-                        <PaginationItem key={pageNum}>
-                          <PaginationLink
-                            onClick={() => handlePaginaChange(pageNum)}
-                            isActive={paginaAtual === pageNum}
-                            className="cursor-pointer"
-                          >
-                            {pageNum}
-                          </PaginationLink>
-                        </PaginationItem>
-                      );
-                    })}
-
-                    <PaginationItem>
-                      <PaginationNext
-                        onClick={() => paginaAtual < totalPaginas && handlePaginaChange(paginaAtual + 1)}
-                        className={paginaAtual === totalPaginas ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                      />
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
+            {/* Resultados e Modo de Visualização */}
+            <div className="flex items-center justify-between mt-4 pt-4 border-t">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Filter className="w-4 h-4 text-gray-500" />
+                <span className="text-sm text-gray-600">
+                  {anuncios.length} resultado{anuncios.length !== 1 ? 's' : ''}
+                </span>
               </div>
+
+              <div className="flex gap-2">
+                <Button
+                  variant={viewMode === "grid" ? "default" : "outline"}
+                  size="icon"
+                  onClick={() => setViewMode("grid")}
+                  className={viewMode === "grid" ? "bg-pink-600 hover:bg-pink-700" : ""}
+                >
+                  <Grid className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant={viewMode === "list" ? "default" : "outline"}
+                  size="icon"
+                  onClick={() => setViewMode("list")}
+                  className={viewMode === "list" ? "bg-pink-600 hover:bg-pink-700" : ""}
+                >
+                  <List className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+
+            {isLoading ? (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+                {Array(6).fill(0).map((_, i) => (
+                  <Card key={i} className="h-96 animate-pulse bg-gray-100" />
+                ))}
+              </div>
+            ) : anuncios.length === 0 ? (
+              <Card className="p-12 text-center mt-8">
+                <div className="text-6xl mb-4">🔍</div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  Nenhum anúncio encontrado
+                </h3>
+                <p className="text-gray-600">
+                  Tente ajustar os filtros ou fazer uma nova busca
+                </p>
+              </Card>
+            ) : (
+              <>
+                <div className={viewMode === "grid" 
+                  ? "grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8" 
+                  : "space-y-4 mt-8"
+                }>
+                  {anunciosPaginados.map((anuncio) => (
+                    <CardAnuncio key={anuncio.id} anuncio={anuncio} />
+                  ))}
+                </div>
+
+                {totalPaginas > 1 && (
+                  <div className="mt-12 flex justify-center">
+                    <Pagination>
+                      <PaginationContent>
+                        <PaginationItem>
+                          <PaginationPrevious
+                            onClick={() => paginaAtual > 1 && handlePaginaChange(paginaAtual - 1)}
+                            className={paginaAtual === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                          />
+                        </PaginationItem>
+                        
+                        {Array.from({ length: Math.min(5, totalPaginas) }, (_, i) => {
+                          let pageNum;
+                          if (totalPaginas <= 5) {
+                            pageNum = i + 1;
+                          } else if (paginaAtual <= 3) {
+                            pageNum = i + 1;
+                          } else if (paginaAtual >= totalPaginas - 2) {
+                            pageNum = totalPaginas - 4 + i;
+                          } else {
+                            pageNum = paginaAtual - 2 + i;
+                          }
+                          
+                          return (
+                            <PaginationItem key={pageNum}>
+                              <PaginationLink
+                                onClick={() => handlePaginaChange(pageNum)}
+                                isActive={paginaAtual === pageNum}
+                                className="cursor-pointer"
+                              >
+                                {pageNum}
+                              </PaginationLink>
+                            </PaginationItem>
+                          );
+                        })}
+
+                        <PaginationItem>
+                          <PaginationNext
+                            onClick={() => paginaAtual < totalPaginas && handlePaginaChange(paginaAtual + 1)}
+                            className={paginaAtual === totalPaginas ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                          />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
+                  </div>
+                )}
+              </>
             )}
           </>
+        ) : (
+          /* MAPA DA ESTÉTICA */
+          <Card className="p-6 shadow-lg border-none">
+            <CardContent className="p-6">
+              <div className="text-center py-12">
+                <MapPin className="w-16 h-16 text-pink-600 mx-auto mb-4" />
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Mapa da Estética
+                </h2>
+                <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+                  Visualize todos os profissionais próximos a você em um mapa interativo.
+                  Integração completa com Google Maps e geolocalização.
+                </p>
+                
+                {minhaLocalizacao ? (
+                  <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 mb-6">
+                    <p className="text-green-800 font-semibold mb-2">
+                      ✓ Sua localização foi detectada
+                    </p>
+                    <p className="text-sm text-green-700">
+                      Latitude: {minhaLocalizacao.latitude.toFixed(6)}<br />
+                      Longitude: {minhaLocalizacao.longitude.toFixed(6)}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4 mb-6">
+                    <p className="text-yellow-800 font-semibold mb-2">
+                      ⚠️ Localização não detectada
+                    </p>
+                    <p className="text-sm text-yellow-700 mb-3">
+                      Para visualizar o mapa e encontrar profissionais próximos, precisamos da sua localização.
+                    </p>
+                    <Button
+                      onClick={usarMinhaLocalizacao}
+                      disabled={localizando}
+                      className="bg-pink-600 hover:bg-pink-700"
+                    >
+                      <Locate className="w-4 h-4 mr-2" />
+                      {localizando ? "Localizando..." : "Permitir Localização"}
+                    </Button>
+                  </div>
+                )}
+
+                <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-6 border-2 border-purple-200">
+                  <h3 className="font-bold text-lg text-purple-900 mb-3">
+                    🗺️ Mapa Interativo em Desenvolvimento
+                  </h3>
+                  <p className="text-purple-700 text-sm mb-4">
+                    Em breve você poderá ver todos os profissionais no mapa com:
+                  </p>
+                  <div className="grid md:grid-cols-2 gap-3 text-left text-sm text-purple-800">
+                    <div className="flex items-start gap-2">
+                      <span className="text-purple-600">✓</span>
+                      <span>Pins personalizados por categoria</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="text-purple-600">✓</span>
+                      <span>Visualização de fotos e avaliações</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="text-purple-600">✓</span>
+                      <span>Rotas e navegação até o local</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="text-purple-600">✓</span>
+                      <span>Filtros por distância em tempo real</span>
+                    </div>
+                  </div>
+                </div>
+
+                {anuncios.filter(a => a.latitude && a.longitude).length > 0 && (
+                  <div className="mt-6">
+                    <p className="text-sm text-gray-600 mb-2">
+                      {anuncios.filter(a => a.latitude && a.longitude).length} profissionais 
+                      com localização cadastrada encontrados
+                    </p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
         )}
       </div>
 
