@@ -26,6 +26,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area"; // NEW IMPORT
 import {
   Sparkles,
   Upload,
@@ -41,7 +42,8 @@ import {
   Shield,
   FileText,
   MessageCircle,
-  MapPin
+  MapPin,
+  Plus // NEW IMPORT
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -78,6 +80,75 @@ const faixasPreco = [
   { valor: "$$$$", label: "$$$$ - R$ 2.000 a R$ 5.000" },
   { valor: "$$$$$", label: "$$$$$ - Acima de R$ 5.000" }
 ];
+
+// NEW: List of common procedures for the selector
+const procedimentosComuns = [
+  "Limpeza de Pele Profunda", "Peeling Químico", "Microagulhamento", "Drenagem Linfática",
+  "Massagem Modeladora", "Massagem Relaxante", "Botox", "Preenchimento Facial",
+  "Fios de PDO", "Bioestimuladores de Colágeno", "Depilação a Laser", "Depilação com Cera",
+  "Design de Sobrancelhas", "Micropigmentação de Sobrancelhas", "Alongamento de Cílios",
+  "Manicure", "Pedicure", "Spa dos Pés", "Spa das Mãos", "Hair Skincare", "Corte de Cabelo",
+  "Hidratação Capilar", "Coloração", "Tratamento para Acne", "Rejuvenescimento Facial",
+  "Contorno Corporal", "Criolipólise", "Radiofrequência", "Ultrassom Microfocado",
+  "Enzimas Injetáveis", "Tratamento para Celulite", "Tratamento para Estrias",
+  "Esmaltação em Gel", "Unha de Fibra", "Reflexologia Podal", "Podoprofilaxia",
+  "Tricologia Capilar", "Consultoria de Imagem", "Maquiagem Profissional", "Pós-operatório"
+];
+
+// NEW: SeletorProcedimentos Component
+const SeletorProcedimentos = ({ open, onClose, onSelect }) => {
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredProcedimentos = procedimentosComuns.filter(proc =>
+    proc.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Selecionar Procedimentos/Serviços</DialogTitle>
+          <DialogDescription>
+            Escolha os procedimentos ou serviços que você oferece para o seu anúncio.
+          </DialogDescription>
+        </DialogHeader>
+
+        <Input
+          placeholder="Buscar procedimento..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="mb-4"
+        />
+
+        <ScrollArea className="h-[300px] pr-4">
+          <div className="grid grid-cols-1 gap-2">
+            {filteredProcedimentos.length > 0 ? (
+              filteredProcedimentos.map((proc) => (
+                <Button
+                  key={proc}
+                  variant="outline"
+                  onClick={() => onSelect(proc)}
+                  className="justify-start hover:bg-blue-50"
+                >
+                  {proc}
+                </Button>
+              ))
+            ) : (
+              <p className="text-gray-500 text-center py-4">Nenhum procedimento encontrado.</p>
+            )}
+          </div>
+        </ScrollArea>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            Fechar
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 
 export default function CadastrarAnuncio() {
   const navigate = useNavigate();
@@ -167,6 +238,9 @@ export default function CadastrarAnuncio() {
 
   // Estado para localização
   const [buscandoLocalizacao, setBuscandoLocalizacao] = useState(false);
+  // NEW STATE: Estado para o seletor de procedimentos
+  const [mostrarSeletorProcedimentos, setMostrarSeletorProcedimentos] = useState(false);
+
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -269,6 +343,25 @@ export default function CadastrarAnuncio() {
     setFormData(prev => ({
       ...prev,
       imagens_galeria: prev.imagens_galeria.filter((_, i) => i !== index)
+    }));
+  };
+
+  // NEW FUNCTION: Adicionar procedimento
+  const handleAdicionarProcedimento = (procedimento) => {
+    if (!formData.procedimentos_servicos.includes(procedimento)) {
+      setFormData(prev => ({
+        ...prev,
+        procedimentos_servicos: [...prev.procedimentos_servicos, procedimento]
+      }));
+    }
+    setMostrarSeletorProcedimentos(false); // Close the selector after selection
+  };
+
+  // NEW FUNCTION: Remover procedimento
+  const handleRemoverProcedimento = (procedimento) => {
+    setFormData(prev => ({
+      ...prev,
+      procedimentos_servicos: prev.procedimentos_servicos.filter(p => p !== procedimento)
     }));
   };
 
@@ -867,6 +960,42 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
                   placeholder="Ex: botox, harmonização, preenchimento"
                 />
               </div>
+
+              {/* NEW: Procedimentos/Serviços */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <Label>Procedimentos/Serviços Oferecidos</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setMostrarSeletorProcedimentos(true)}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Selecionar Procedimentos
+                  </Button>
+                </div>
+                
+                {formData.procedimentos_servicos.length > 0 ? (
+                  <div className="flex flex-wrap gap-2 p-4 bg-gray-50 rounded-lg border-2 border-gray-200">
+                    {formData.procedimentos_servicos.map((proc, index) => (
+                      <Badge key={index} variant="secondary" className="text-sm py-1.5 px-3">
+                        {proc}
+                        <X 
+                          className="w-3 h-3 ml-2 cursor-pointer hover:text-red-600" 
+                          onClick={() => handleRemoverProcedimento(proc)}
+                        />
+                      </Badge>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 text-center">
+                    <p className="text-sm text-gray-500">
+                      Nenhum procedimento adicionado. Clique em "Selecionar Procedimentos" para adicionar.
+                    </p>
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
 
@@ -1159,7 +1288,7 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
             </CardContent>
           </Card>
 
-          {/* Localização */}
+          {/* Localização COM ALERTA */}
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -1186,6 +1315,18 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* ALERTA IMPORTANTE */}
+              {(formData.tipo_anuncio === "clinica" || formData.tipo_anuncio === "consultorio") && (
+                <Alert className="bg-blue-50 border-blue-200">
+                  <MapPin className="h-4 w-4 text-blue-600" />
+                  <AlertDescription className="text-blue-900">
+                    <strong>📍 Importante:</strong> Para garantir que seu estabelecimento apareça no 
+                    <strong> Mapa da Estética</strong>, preencha <strong>todas as informações de endereço</strong> 
+                    (cidade, estado, endereço completo e CEP). Quanto mais completo, melhor sua visibilidade!
+                  </AlertDescription>
+                </Alert>
+              )}
+
               <div className="grid md:grid-cols-3 gap-4">
                 <div>
                   <Label>Cidade *</Label>
@@ -1825,6 +1966,13 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Modal de Seletor de Procedimentos */}
+      <SeletorProcedimentos
+        open={mostrarSeletorProcedimentos}
+        onClose={() => setMostrarSeletorProcedimentos(false)}
+        onSelect={handleAdicionarProcedimento}
+      />
     </div>
   );
 }

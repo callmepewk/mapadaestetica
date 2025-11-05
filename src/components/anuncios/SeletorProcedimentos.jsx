@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search, X } from "lucide-react";
+import { Search, X, Plus } from "lucide-react";
 
 const procedimentosPorCategoria = {
   "Estética Facial": [
@@ -74,6 +74,7 @@ const procedimentosPorCategoria = {
 export default function SeletorProcedimentos({ open, onClose, onSelect, procedimentoAtual }) {
   const [busca, setBusca] = useState("");
   const [categoriaExpandida, setCategoriaExpandida] = useState(null);
+  const [procedimentoCustom, setProcedimentoCustom] = useState("");
 
   const todosProcedimentos = Object.values(procedimentosPorCategoria).flat();
   
@@ -85,7 +86,16 @@ export default function SeletorProcedimentos({ open, onClose, onSelect, procedim
 
   const handleSelect = (procedimento) => {
     onSelect(procedimento);
-    onClose();
+    setBusca("");
+    setProcedimentoCustom("");
+  };
+
+  const handleAdicionarCustom = () => {
+    if (procedimentoCustom.trim()) {
+      onSelect(procedimentoCustom.trim());
+      setProcedimentoCustom("");
+      setBusca("");
+    }
   };
 
   return (
@@ -93,14 +103,14 @@ export default function SeletorProcedimentos({ open, onClose, onSelect, procedim
       <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0">
         <DialogHeader className="p-6 pb-4">
           <DialogTitle className="text-2xl font-bold">
-            Selecionar Procedimento
+            Selecionar Procedimentos/Serviços
           </DialogTitle>
           <p className="text-sm text-gray-600 mt-2">
-            Escolha um procedimento específico para buscar profissionais especializados
+            Escolha procedimentos específicos ou adicione um personalizado
           </p>
         </DialogHeader>
 
-        <div className="px-6 pb-4">
+        <div className="px-6 pb-4 space-y-3">
           <div className="relative">
             <Search className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
             <Input
@@ -119,17 +129,25 @@ export default function SeletorProcedimentos({ open, onClose, onSelect, procedim
             )}
           </div>
 
-          {procedimentoAtual && (
-            <div className="mt-3">
-              <Badge className="bg-purple-100 text-purple-800 text-sm py-1 px-3">
-                Selecionado: {procedimentoAtual}
-                <X 
-                  className="w-3 h-3 ml-2 cursor-pointer" 
-                  onClick={() => onSelect("")}
-                />
-              </Badge>
-            </div>
-          )}
+          {/* Adicionar procedimento customizado */}
+          <div className="flex gap-2">
+            <Input
+              placeholder="Ou digite um procedimento personalizado..."
+              value={procedimentoCustom}
+              onChange={(e) => setProcedimentoCustom(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAdicionarCustom())}
+              className="h-10"
+            />
+            <Button 
+              type="button"
+              onClick={handleAdicionarCustom}
+              disabled={!procedimentoCustom.trim()}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Adicionar
+            </Button>
+          </div>
         </div>
 
         <ScrollArea className="flex-1 px-6 pb-6">
@@ -141,11 +159,7 @@ export default function SeletorProcedimentos({ open, onClose, onSelect, procedim
                   <button
                     key={proc}
                     onClick={() => handleSelect(proc)}
-                    className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
-                      procedimentoAtual === proc
-                        ? 'border-[#F7D426] bg-[#FFF9E6] font-semibold'
-                        : 'border-gray-200 hover:border-[#F7D426] hover:bg-gray-50'
-                    }`}
+                    className="w-full text-left p-4 rounded-lg border-2 border-gray-200 hover:border-[#F7D426] hover:bg-gray-50 transition-all"
                   >
                     {proc}
                   </button>
@@ -155,13 +169,13 @@ export default function SeletorProcedimentos({ open, onClose, onSelect, procedim
                   <div className="text-6xl mb-4">🔍</div>
                   <p className="text-gray-600">Nenhum procedimento encontrado</p>
                   <p className="text-sm text-gray-500 mt-2">
-                    Tente buscar com outros termos
+                    Tente buscar com outros termos ou adicione um personalizado acima
                   </p>
                 </div>
               )}
             </div>
           ) : (
-            // Lista categorizada com ScrollArea
+            // Lista categorizada
             <div className="space-y-6">
               {Object.entries(procedimentosPorCategoria).map(([categoria, procedimentos]) => (
                 <div key={categoria}>
@@ -182,27 +196,19 @@ export default function SeletorProcedimentos({ open, onClose, onSelect, procedim
                     </span>
                   </button>
 
-                  {categoriaExpandida === categoria && (
-                    <ScrollArea className="h-[400px] pr-4">
-                      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                        {procedimentos.map((proc) => (
-                          <button
-                            key={proc}
-                            onClick={() => handleSelect(proc)}
-                            className={`text-left p-3 rounded-lg border-2 transition-all text-sm ${
-                              procedimentoAtual === proc
-                                ? 'border-[#F7D426] bg-[#FFF9E6] font-semibold'
-                                : 'border-gray-200 hover:border-[#F7D426] hover:bg-gray-50'
-                            }`}
-                          >
-                            {proc}
-                          </button>
-                        ))}
-                      </div>
-                    </ScrollArea>
-                  )}
-
-                  {categoriaExpandida !== categoria && (
+                  {categoriaExpandida === categoria ? (
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
+                      {procedimentos.map((proc) => (
+                        <button
+                          key={proc}
+                          onClick={() => handleSelect(proc)}
+                          className="text-left p-3 rounded-lg border-2 border-gray-200 hover:border-[#F7D426] hover:bg-gray-50 transition-all text-sm"
+                        >
+                          {proc}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
                     <div className="flex flex-wrap gap-2">
                       {procedimentos.slice(0, 6).map((proc) => (
                         <Badge
@@ -230,30 +236,6 @@ export default function SeletorProcedimentos({ open, onClose, onSelect, procedim
             </div>
           )}
         </ScrollArea>
-
-        <div className="p-6 pt-4 border-t bg-gray-50">
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              onClick={onClose}
-              className="flex-1"
-            >
-              Cancelar
-            </Button>
-            {procedimentoAtual && (
-              <Button
-                onClick={() => {
-                  onSelect("");
-                  onClose();
-                }}
-                variant="outline"
-                className="flex-1 border-red-300 text-red-700 hover:bg-red-50"
-              >
-                Limpar Seleção
-              </Button>
-            )}
-          </div>
-        </div>
       </DialogContent>
     </Dialog>
   );

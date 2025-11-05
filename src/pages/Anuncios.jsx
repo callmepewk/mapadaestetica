@@ -27,6 +27,38 @@ import { Badge } from "@/components/ui/badge";
 import LoginPromptModal from "../components/home/LoginPromptModal";
 import { Label } from "@/components/ui/label"; // Added import for Label
 
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+// Fix para os ícones do Leaflet
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+// Ícone customizado para profissionais verificados (verde)
+const verifiedIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+// Ícone padrão (azul)
+const defaultIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
 const categorias = [
   "Todas",
   "Estética Facial - Tratamentos Básicos",
@@ -358,21 +390,11 @@ export default function Anuncios() {
           const min = parseFloat(minStr);
           const max = parseFloat(maxStr);
 
-          if (maxStr) { // If there's a range (e.g., "0.5-1")
+          // Logic for distance range filtering
+          if (minStr === "0") { // For "Até 500m" (0-0.5)
+            matchDistancia = distanciaKm <= max;
+          } else { // For ranges like "1-2" etc.
             matchDistancia = distanciaKm >= min && distanciaKm <= max;
-          } else { // If it's a single value (e.g., "0-0.5", where max is implied)
-             // For "Até X km" (like "0-0.5") this will work correctly if max is small.
-             // The values for max distance in faixasDistancia define the upper bound.
-             // If filter is "0-0.5", max is 0.5.
-             matchDistancia = distanciaKm <= min; // This implies "até min km" for the single value case.
-                                                   // Re-evaluating faixasDistancia, all values are ranges or "todas".
-                                                   // So 'max' will always exist unless it's "todas".
-                                                   // Corrected logic for max being potentially undefined if it was e.g. "50+"
-             if (minStr === "0") { // For "Até 500m" (0-0.5)
-                matchDistancia = distanciaKm <= max;
-             } else { // For ranges like "1-2" etc.
-                matchDistancia = distanciaKm >= min && distanciaKm <= max;
-             }
           }
         }
         
@@ -402,6 +424,10 @@ export default function Anuncios() {
   }, [fetchedAnuncios, buscaTexto, procedimentoFiltro, tagFiltro, cidadeFiltro, estadoFiltro, 
       faixaPrecoFiltro, filtroTipoAnuncio, filtroStatusFuncionamento, apenasVerificados,
       filtroDistancia, filtroTempoFormacao, minhaLocalizacao]);
+
+  const anunciosComLocalizacao = useMemo(() => {
+    return anuncios.filter(a => a.latitude && a.longitude);
+  }, [anuncios]);
 
   const totalPaginas = Math.ceil(anuncios.length / ITEMS_PER_PAGE);
   const anunciosPaginados = anuncios.slice(
@@ -481,7 +507,7 @@ export default function Anuncios() {
             className={abaAtiva === "lista" ? "bg-pink-600 hover:bg-pink-700" : ""}
           >
             <List className="w-4 h-4 mr-2" />
-            Lista de Anúncios
+            Lista de Anúncios ({anuncios.length})
           </Button>
           <Button
             onClick={() => setAbaAtiva("mapa")}
@@ -489,7 +515,7 @@ export default function Anuncios() {
             className={abaAtiva === "mapa" ? "bg-pink-600 hover:bg-pink-700" : ""}
           >
             <MapPin className="w-4 h-4 mr-2" />
-            Mapa da Estética
+            Mapa da Estética ({anunciosComLocalizacao.length})
           </Button>
         </div>
 
@@ -831,86 +857,189 @@ export default function Anuncios() {
             )}
           </>
         ) : (
-          /* MAPA DA ESTÉTICA */
-          <Card className="p-6 shadow-lg border-none">
-            <CardContent className="p-6">
-              <div className="text-center py-12">
-                <MapPin className="w-16 h-16 text-pink-600 mx-auto mb-4" />
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                  Mapa da Estética
-                </h2>
-                <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-                  Visualize todos os profissionais próximos a você em um mapa interativo.
-                  Integração completa com Google Maps e geolocalização.
-                </p>
-                
-                {minhaLocalizacao ? (
-                  <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 mb-6">
-                    <p className="text-green-800 font-semibold mb-2">
-                      ✓ Sua localização foi detectada
-                    </p>
-                    <p className="text-sm text-green-700">
-                      Latitude: {minhaLocalizacao.latitude.toFixed(6)}<br />
-                      Longitude: {minhaLocalizacao.longitude.toFixed(6)}
-                    </p>
+          /* MAPA DA ESTÉTICA - INTERATIVO */
+          <div className="space-y-6">
+            <Card className="p-6 shadow-lg border-none">
+              <CardContent className="p-6">
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                        🗺️ Mapa da Estética Interativo
+                      </h2>
+                      <p className="text-gray-600">
+                        Visualize {anunciosComLocalizacao.length} profissionais próximos a você
+                      </p>
+                    </div>
+                    
+                    {!minhaLocalizacao && (
+                      <Button
+                        onClick={usarMinhaLocalizacao}
+                        disabled={localizando}
+                        className="bg-pink-600 hover:bg-pink-700"
+                      >
+                        <Locate className="w-4 h-4 mr-2" />
+                        {localizando ? "Localizando..." : "Minha Localização"}
+                      </Button>
+                    )}
                   </div>
-                ) : (
-                  <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4 mb-6">
-                    <p className="text-yellow-800 font-semibold mb-2">
-                      ⚠️ Localização não detectada
-                    </p>
-                    <p className="text-sm text-yellow-700 mb-3">
-                      Para visualizar o mapa e encontrar profissionais próximos, precisamos da sua localização.
-                    </p>
-                    <Button
-                      onClick={usarMinhaLocalizacao}
-                      disabled={localizando}
-                      className="bg-pink-600 hover:bg-pink-700"
-                    >
-                      <Locate className="w-4 h-4 mr-2" />
-                      {localizando ? "Localizando..." : "Permitir Localização"}
-                    </Button>
-                  </div>
-                )}
 
-                <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-6 border-2 border-purple-200">
-                  <h3 className="font-bold text-lg text-purple-900 mb-3">
-                    🗺️ Mapa Interativo em Desenvolvimento
-                  </h3>
-                  <p className="text-purple-700 text-sm mb-4">
-                    Em breve você poderá ver todos os profissionais no mapa com:
-                  </p>
-                  <div className="grid md:grid-cols-2 gap-3 text-left text-sm text-purple-800">
-                    <div className="flex items-start gap-2">
-                      <span className="text-purple-600">✓</span>
-                      <span>Pins personalizados por categoria</span>
+                  {minhaLocalizacao && (
+                    <div className="bg-green-50 border-2 border-green-200 rounded-lg p-3 mb-4">
+                      <p className="text-sm text-green-800 font-semibold">
+                        ✓ Sua localização: {cidadeFiltro} - {estadoFiltro}
+                      </p>
                     </div>
-                    <div className="flex items-start gap-2">
-                      <span className="text-purple-600">✓</span>
-                      <span>Visualização de fotos e avaliações</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <span className="text-purple-600">✓</span>
-                      <span>Rotas e navegação até o local</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <span className="text-purple-600">✓</span>
-                      <span>Filtros por distância em tempo real</span>
-                    </div>
-                  </div>
+                  )}
                 </div>
 
-                {anuncios.filter(a => a.latitude && a.longitude).length > 0 && (
-                  <div className="mt-6">
-                    <p className="text-sm text-gray-600 mb-2">
-                      {anuncios.filter(a => a.latitude && a.longitude).length} profissionais 
-                      com localização cadastrada encontrados
+                {anunciosComLocalizacao.length > 0 ? (
+                  <div className="rounded-lg overflow-hidden border-2 border-gray-200" style={{ height: '600px' }}>
+                    <MapContainer
+                      center={
+                        minhaLocalizacao 
+                          ? [minhaLocalizacao.latitude, minhaLocalizacao.longitude]
+                          : [anunciosComLocalizacao[0].latitude, anunciosComLocalizacao[0].longitude]
+                      }
+                      zoom={minhaLocalizacao ? 13 : 12}
+                      style={{ height: '100%', width: '100%' }}
+                    >
+                      <TileLayer
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      />
+                      
+                      {/* Marker da localização do usuário */}
+                      {minhaLocalizacao && (
+                        <Marker
+                          position={[minhaLocalizacao.latitude, minhaLocalizacao.longitude]}
+                          icon={new L.Icon({
+                            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+                            iconSize: [25, 41],
+                            iconAnchor: [12, 41],
+                            popupAnchor: [1, -34],
+                            shadowSize: [41, 41]
+                          })}
+                        >
+                          <Popup>
+                            <div className="text-center">
+                              <p className="font-bold text-red-600">📍 Você está aqui</p>
+                              <p className="text-sm">{cidadeFiltro} - {estadoFiltro}</p>
+                            </div>
+                          </Popup>
+                        </Marker>
+                      )}
+
+                      {/* Markers dos profissionais */}
+                      {anunciosComLocalizacao.map((anuncio) => (
+                        <Marker
+                          key={anuncio.id}
+                          position={[anuncio.latitude, anuncio.longitude]}
+                          icon={anuncio.verificado ? verifiedIcon : defaultIcon}
+                        >
+                          <Popup maxWidth={300}>
+                            <div className="space-y-2">
+                              {anuncio.logo && (
+                                <img
+                                  src={anuncio.logo}
+                                  alt={anuncio.profissional}
+                                  className="w-full h-32 object-cover rounded-lg"
+                                />
+                              )}
+                              <div>
+                                <h3 className="font-bold text-lg flex items-center gap-2">
+                                  {anuncio.titulo}
+                                  {anuncio.verificado && (
+                                    <Badge className="bg-blue-100 text-blue-800 text-xs">
+                                      ✓ Verificado
+                                    </Badge>
+                                  )}
+                                </h3>
+                                <p className="text-sm text-gray-600 font-semibold">
+                                  {anuncio.profissional}
+                                </p>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  {anuncio.categoria}
+                                </p>
+                                {anuncio.faixa_preco && (
+                                  <p className="text-sm font-bold text-pink-600 mt-1">
+                                    {anuncio.faixa_preco}
+                                  </p>
+                                )}
+                              </div>
+                              
+                              {minhaLocalizacao && (
+                                <p className="text-xs text-gray-500">
+                                  📍 Distância: {calcularDistancia(
+                                    minhaLocalizacao.latitude,
+                                    minhaLocalizacao.longitude,
+                                    anuncio.latitude,
+                                    anuncio.longitude
+                                  ).toFixed(2)} km
+                                </p>
+                              )}
+                              
+                              <Button
+                                size="sm"
+                                className="w-full bg-pink-600 hover:bg-pink-700 text-white"
+                                onClick={() => {
+                                  window.location.href = `/DetalhesAnuncio?id=${anuncio.id}`;
+                                }}
+                              >
+                                Ver Detalhes
+                              </Button>
+                            </div>
+                          </Popup>
+                        </Marker>
+                      ))}
+                    </MapContainer>
+                  </div>
+                ) : (
+                  <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-gray-200">
+                    <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">
+                      Nenhum profissional com localização encontrado
+                    </h3>
+                    <p className="text-gray-600 mb-4">
+                      Ajuste os filtros para encontrar profissionais próximos a você
                     </p>
+                    {!minhaLocalizacao && (
+                      <Button
+                        onClick={usarMinhaLocalizacao}
+                        disabled={localizando}
+                        className="bg-pink-600 hover:bg-pink-700"
+                      >
+                        <Locate className="w-4 h-4 mr-2" />
+                        {localizando ? "Localizando..." : "Usar Minha Localização"}
+                      </Button>
+                    )}
                   </div>
                 )}
-              </div>
-            </CardContent>
-          </Card>
+
+                {/* Legenda */}
+                {anunciosComLocalizacao.length > 0 && (
+                  <div className="mt-4 p-4 bg-gray-50 rounded-lg border-2 border-gray-200">
+                    <h4 className="font-semibold mb-2 text-sm">Legenda:</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                        <span>Sua localização</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                        <span>Profissional Verificado ✓</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                        <span>Profissional</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         )}
       </div>
 
