@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import {
@@ -18,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { User, Briefcase, MapPin, Phone, Check } from "lucide-react";
+import { User, Briefcase, Check, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const categorias = [
@@ -28,7 +29,7 @@ const categorias = [
   "Dermatologia", "Cirurgia Plástica", "Outros"
 ];
 
-export default function OnboardingModal({ open, onComplete }) {
+export default function OnboardingModal({ open, onComplete, onClose }) {
   const [etapa, setEtapa] = useState(1);
   const [tipoUsuario, setTipoUsuario] = useState("");
   const [dadosBasicos, setDadosBasicos] = useState({
@@ -78,18 +79,36 @@ export default function OnboardingModal({ open, onComplete }) {
       };
 
       await base44.auth.updateMe(dados);
-      onComplete();
+      
+      // Recarregar a página após salvar
+      window.location.reload();
     } catch (error) {
       console.error("Erro ao salvar dados:", error);
       alert("Erro ao salvar seus dados. Tente novamente.");
-    } finally {
       setLoading(false);
     }
   };
 
+  const handleClose = () => {
+    if (onClose) {
+      onClose();
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={() => {}}>
+    <Dialog open={open} onOpenChange={(isOpen) => {
+      if (!isOpen && onClose) {
+        onClose();
+      }
+    }}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+        <button
+          onClick={handleClose}
+          className="absolute top-4 right-4 w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors"
+        >
+          <X className="w-4 h-4" />
+        </button>
+
         <DialogHeader>
           <DialogTitle className="text-2xl">Bem-vindo ao Mapa da Estética! 🎉</DialogTitle>
           <DialogDescription>

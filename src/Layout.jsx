@@ -29,6 +29,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge"; // Added for admin badge
 import Chatbot from "./components/home/Chatbot";
+import OnboardingModal from "./components/home/OnboardingModal"; // Added OnboardingModal import
 
 export default function Layout({ children }) {
   const location = useLocation();
@@ -36,6 +37,7 @@ export default function Layout({ children }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [mostrarOnboarding, setMostrarOnboarding] = useState(false); // Added state for OnboardingModal
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -61,11 +63,23 @@ export default function Layout({ children }) {
     navigate(createPageUrl("Inicio")); // Redirect to home after logout
   };
 
+  // Added functions for OnboardingModal
+  const handleCompletarCadastro = () => {
+    setMostrarOnboarding(true);
+  };
+
+  const handleOnboardingClose = () => {
+    setMostrarOnboarding(false);
+  };
+
   // Definir items de navegação baseado no tipo de usuário
   const isPaciente = user?.tipo_usuario === 'paciente';
   const isProfissional = user?.tipo_usuario === 'profissional';
   const isAdmin = user?.role === 'admin'; // Added isAdmin check
   const isTester = user?.role === 'tester'; // Added isTester check
+
+  // Verificar se cadastro está incompleto
+  const cadastroIncompleto = isAuthenticated && user && !user.cadastro_completo;
 
   const navigationItems = [
     { title: "Início", url: createPageUrl("Inicio"), icon: Home },
@@ -111,7 +125,29 @@ export default function Layout({ children }) {
         }
       `}</style>
 
-      <Chatbot />
+      {/* Passed user and onCompletarCadastro to Chatbot */}
+      <Chatbot user={user} onCompletarCadastro={handleCompletarCadastro} />
+
+      {/* Barra de Alerta - Cadastro Incompleto */}
+      {cadastroIncompleto && (
+        <div className="bg-gradient-to-r from-yellow-400 to-amber-500 text-[#2C2C2C] py-2 px-4 sticky top-0 z-50 shadow-md">
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2 flex-1 text-center sm:text-left">
+              <span className="text-2xl flex-shrink-0">⚠️</span>
+              <p className="text-sm font-semibold">
+                Complete seu cadastro para ter acesso total à plataforma!
+              </p>
+            </div>
+            <Button
+              onClick={handleCompletarCadastro}
+              size="sm"
+              className="bg-[#2C2C2C] hover:bg-[#3A3A3A] text-[#F7D426] font-bold flex-shrink-0 w-full sm:w-auto"
+            >
+              Completar Agora
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Top Bar */}
       <div className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] text-[#2C2C2C] py-2 px-4 shadow-sm">
@@ -133,7 +169,7 @@ export default function Layout({ children }) {
             {/* Logo */}
             <Link to={createPageUrl("Inicio")} className="flex items-center gap-2 sm:gap-3 group flex-shrink-0">
               <img 
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/541c2baf3_mapaimg.jpg" 
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe2/2274d89a4_logo_v1.png" 
                 alt="Mapa da Estética"
                 className="h-12 sm:h-14 md:h-16 w-auto object-contain transform group-hover:scale-105 transition-transform"
                 onError={(e) => {
@@ -284,7 +320,7 @@ export default function Layout({ children }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
             <div>
               <img 
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe4/dfd50956f_image.png" 
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe2/2274d89a4_logo_v1.png" 
                 alt="Mapa da Estética"
                 className="h-12 w-auto object-contain mb-4 brightness-0 invert"
               />
@@ -335,6 +371,12 @@ export default function Layout({ children }) {
           </div>
         </div>
       </footer>
+      
+      {/* Modal de Onboarding - Controlado por Layout */}
+      <OnboardingModal 
+        open={mostrarOnboarding} 
+        onClose={handleOnboardingClose}
+      />
     </div>
   );
 }
