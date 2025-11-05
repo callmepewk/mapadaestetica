@@ -6,7 +6,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calculator, TrendingUp, DollarSign, Activity, X, Download, Lock } from "lucide-react";
+import { 
+  Calculator, 
+  TrendingUp, 
+  DollarSign, 
+  Activity, 
+  X, 
+  Download, 
+  Lock,
+  HelpCircle, // New import
+  Lightbulb,  // New import
+  Search,     // New import
+  CheckCircle, // New import
+  ArrowRight  // New import
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createPageUrl } from "@/utils";
 import {
@@ -58,6 +71,8 @@ export default function CalculadoraLaserSection() {
     tirCompra: 0,
     tirAluguel: 0
   });
+
+  const [mostrarAjuda, setMostrarAjuda] = useState(false); // New state for help dialog
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -188,15 +203,30 @@ export default function CalculadoraLaserSection() {
         <div className="text-center mb-12">
           <Badge className="mb-4 bg-blue-600 text-white">
             <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe2/894287324_drbeleza.png"
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/f54646e8e_drbeleza.png"
               alt="Dr. Beleza"
-              className="w-4 h-4 rounded-full mr-2 inline-block"
+              className="w-4 h-4 rounded-full mr-2 inline-block object-cover"
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = 'https://via.placeholder.com/16?text=Dr';
+              }}
             />
             Ferramenta Exclusiva
           </Badge>
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Calculadora de Viabilidade de Laser
-          </h2>
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+              Calculadora de Viabilidade de Laser
+            </h2>
+            <Button
+              onClick={() => setMostrarAjuda(true)}
+              size="sm"
+              variant="outline"
+              className="border-2 border-blue-600 text-blue-600 hover:bg-blue-50"
+            >
+              <HelpCircle className="w-4 h-4 mr-2" />
+              Preciso de Ajuda
+            </Button>
+          </div>
           <p className="text-gray-600 text-lg max-w-3xl mx-auto">
             Desenvolvida pelo <span className="font-bold text-blue-600">Dr. Jauru Nunes de Freitas</span> - 
             Analise a viabilidade financeira de investir em equipamento de laser para sua clínica
@@ -578,6 +608,194 @@ export default function CalculadoraLaserSection() {
           </p>
         </div>
       </div>
+
+      {/* Modal de Ajuda com Dr. Beleza */}
+      <Dialog open={mostrarAjuda} onOpenChange={setMostrarAjuda}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <div className="flex items-center gap-4 mb-4">
+              <img
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/f54646e8e_drbeleza.png"
+                alt="Dr. Beleza"
+                className="w-16 h-16 rounded-full object-cover border-2 border-blue-600"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = 'https://via.placeholder.com/64?text=Dr';
+                }}
+              />
+              <div>
+                <DialogTitle className="text-2xl">Como Usar a Calculadora de Viabilidade</DialogTitle>
+                <DialogDescription>Dr. Beleza explica tudo para você!</DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <div className="space-y-6">
+            {/* O que é */}
+            <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6 border-2 border-blue-200">
+              <h3 className="text-xl font-bold text-blue-900 mb-3 flex items-center gap-2">
+                <Lightbulb className="w-6 h-6" />
+                O que é esta Calculadora?
+              </h3>
+              <p className="text-gray-700 leading-relaxed">
+                Esta é uma ferramenta profissional desenvolvida pelo <strong>Dr. Jauru Nunes de Freitas</strong> para ajudar você a tomar decisões financeiras inteligentes sobre investir em equipamentos de laser para sua clínica. 
+                <br/><br/>
+                Ela analisa todos os custos envolvidos (compra ou aluguel), projeções de receita, capacidade operacional e retorno sobre investimento, te dando um panorama completo para decidir se vale a pena ou não.
+              </p>
+            </div>
+
+            {/* Como funciona */}
+            <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border-2 border-green-200">
+              <h3 className="text-xl font-bold text-green-900 mb-4 flex items-center gap-2">
+                <Calculator className="w-6 h-6" />
+                Como Funciona?
+              </h3>
+              <p className="text-gray-700 mb-4">A calculadora está dividida em <strong>3 etapas simples</strong>:</p>
+              
+              <div className="space-y-4">
+                <div className="bg-white rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center flex-shrink-0 font-bold">1</div>
+                    <div>
+                      <h4 className="font-bold text-gray-900 mb-2">📊 Investimento</h4>
+                      <p className="text-sm text-gray-600">
+                        Preencha os dados de <strong>custo de compra</strong> ou <strong>aluguel</strong> do equipamento, custos adicionais, manutenção e vida útil esperada.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center flex-shrink-0 font-bold">2</div>
+                    <div>
+                      <h4 className="font-bold text-gray-900 mb-2">⚙️ Operação</h4>
+                      <p className="text-sm text-gray-600">
+                        Informe os <strong>custos variáveis</strong> por procedimento, custos fixos, e sua <strong>capacidade operacional</strong> (quantos procedimentos consegue fazer por dia/mês).
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center flex-shrink-0 font-bold">3</div>
+                    <div>
+                      <h4 className="font-bold text-gray-900 mb-2">💰 Receita</h4>
+                      <p className="text-sm text-gray-600">
+                        Coloque o <strong>preço médio</strong> que você cobra por sessão e eventuais descontos em pacotes.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Onde obter as informações */}
+            <div className="bg-gradient-to-br from-yellow-50 to-amber-50 rounded-xl p-6 border-2 border-yellow-200">
+              <h3 className="text-xl font-bold text-amber-900 mb-4 flex items-center gap-2">
+                <Search className="w-6 h-6" />
+                Onde Obter as Informações?
+              </h3>
+              
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <CheckCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="text-gray-900">Custos do Equipamento:</strong>
+                    <p className="text-sm text-gray-600">Solicite orçamentos de fornecedores (Ibramed, Fotona, Lumenis, etc)</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <CheckCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="text-gray-900">Preços de Mercado:</strong>
+                    <p className="text-sm text-gray-600">Pesquise quanto clínicas similares cobram na sua região (use nosso relatório de preços!)</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <CheckCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="text-gray-900">Capacidade Operacional:</strong>
+                    <p className="text-sm text-gray-600">Calcule quantos procedimentos você consegue fazer por hora/dia considerando sua agenda</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <CheckCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="text-gray-900">Custos Variáveis:</strong>
+                    <p className="text-sm text-gray-600">Some consumíveis, descartáveis, energia e outros custos por procedimento</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* O que você vai descobrir */}
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6 border-2 border-purple-200">
+              <h3 className="text-xl font-bold text-purple-900 mb-4 flex items-center gap-2">
+                <TrendingUp className="w-6 h-6" />
+                O Que Você Vai Descobrir?
+              </h3>
+              
+              <div className="grid md:grid-cols-2 gap-3">
+                <div className="bg-white rounded-lg p-3">
+                  <p className="text-sm font-semibold text-purple-900">💎 Margem de Lucro</p>
+                  <p className="text-xs text-gray-600">Quanto você lucra por procedimento</p>
+                </div>
+                <div className="bg-white rounded-lg p-3">
+                  <p className="text-sm font-semibold text-purple-900">⏱️ Payback</p>
+                  <p className="text-xs text-gray-600">Em quanto tempo recupera o investimento</p>
+                </div>
+                <div className="bg-white rounded-lg p-3">
+                  <p className="text-sm font-semibold text-purple-900">📈 VPL</p>
+                  <p className="text-xs text-gray-600">Valor Presente Líquido do investimento</p>
+                </div>
+                <div className="bg-white rounded-lg p-3">
+                  <p className="text-sm font-semibold text-purple-900">🎯 TIR</p>
+                  <p className="text-xs text-gray-600">Taxa Interna de Retorno</p>
+                </div>
+                <div className="bg-white rounded-lg p-3">
+                  <p className="text-sm font-semibold text-purple-900">💰 Receita Potencial</p>
+                  <p className="text-xs text-gray-600">Quanto pode faturar mensalmente</p>
+                </div>
+                <div className="bg-white rounded-lg p-3">
+                  <p className="text-sm font-semibold text-purple-900">🏆 Comparação</p>
+                  <p className="text-xs text-gray-600">Comprar vs Alugar lado a lado</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Dica Final */}
+            <div className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-xl p-6">
+              <h3 className="text-xl font-bold mb-3 flex items-center gap-2">
+                💡 Dica do Dr. Beleza
+              </h3>
+              <p className="leading-relaxed">
+                Não se preocupe se não tiver todas as informações exatas! Use estimativas conservadoras e 
+                faça diversos cenários (otimista, realista, pessimista). Nenhuma informação é obrigatória, 
+                mas quanto mais dados você preencher, mais precisa será a análise.
+                <br/><br/>
+                <strong>Lembre-se:</strong> Esta ferramenta é um guia de apoio à decisão. Sempre consulte 
+                um contador ou consultor financeiro antes de fazer grandes investimentos! 🚀
+              </p>
+            </div>
+
+            <div className="text-center">
+              <Button
+                onClick={() => setMostrarAjuda(false)}
+                size="lg"
+                className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+              >
+                Entendi! Vamos Calcular
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }

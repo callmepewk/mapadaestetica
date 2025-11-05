@@ -129,8 +129,8 @@ Seja profissional, técnico mas acessível. Use informações baseadas em evidê
     : especialidadesProcedimentos;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
-      <div className="max-w-7xl mx-auto px-4">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-8">
+      <div className="max-w-4xl mx-auto px-4">
         <Button
           variant="ghost"
           onClick={() => navigate(createPageUrl("Inicio"))}
@@ -141,20 +141,21 @@ Seja profissional, técnico mas acessível. Use informações baseadas em evidê
         </Button>
 
         <div className="text-center mb-8">
-          <div className="flex justify-center items-center gap-3 mb-4">
-            <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/894287324_drbeleza.png"
+          <div className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-full flex items-center justify-center shadow-xl overflow-hidden">
+            <img
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/f54646e8e_drbeleza.png"
               alt="Dr. Beleza"
-              className="w-16 h-16 rounded-full object-cover shadow-lg"
+              className="w-full h-full object-cover"
               onError={(e) => {
-                e.target.style.display = 'none';
+                e.target.onerror = null;
+                e.target.src = 'https://via.placeholder.com/128?text=Dr.+Beleza';
               }}
             />
-            <Badge className="bg-[#F7D426] text-[#2C2C2C] font-bold px-4 py-2 text-base">
-              Consulte Tratamentos Agora
-            </Badge>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-[#2C2C2C] mb-3">
+          <Badge className="bg-[#F7D426] text-[#2C2C2C] font-bold px-4 py-2 text-base">
+            Consulte Tratamentos Agora
+          </Badge>
+          <h1 className="text-3xl md:text-4xl font-bold text-[#2C2C2C] mb-3 mt-3">
             Dr. Beleza
           </h1>
           <p className="text-gray-600 text-lg max-w-2xl mx-auto">

@@ -119,6 +119,7 @@ export default function Inicio() {
     window.location.href = createPageUrl("Anuncios") + (params.toString() ? `?${params.toString()}` : '');
   };
 
+  const isAdmin = user?.role === 'admin';
   const isPaciente = user?.tipo_usuario === 'paciente';
   const isProfissional = user?.tipo_usuario === 'profissional';
 
@@ -237,7 +238,7 @@ export default function Inicio() {
                   <div className="flex flex-col md:flex-row items-center gap-6">
                     <div className="w-32 h-32 md:w-40 md:h-40 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg overflow-hidden">
                       <img
-                        src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/acc7e047d_drbeleza.png"
+                        src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/f54646e8e_drbeleza.png"
                         alt="Dr. Beleza"
                         className="w-full h-full object-cover"
                         onError={(e) => {
@@ -311,11 +312,14 @@ export default function Inicio() {
         </>
       )}
 
-      {/* ANÚNCIOS EM DESTAQUE - AMBOS */}
-      {anunciosDestaque.length > 0 && (
+      {/* ANÚNCIOS EM DESTAQUE - APENAS ADMINS VEEM */}
+      {isAdmin && anunciosDestaque.length > 0 && (
         <section className="py-12 sm:py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <div className="text-center mb-8 sm:mb-12">
+              <Badge className="mb-4 bg-purple-100 text-purple-800">
+                👑 Visualização Admin - Anúncios de Exemplo
+              </Badge>
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Star className="w-5 h-5 sm:w-6 sm:h-6 text-[#F7D426]" />
                 <span className="text-xs sm:text-sm font-semibold text-[#F7D426] uppercase tracking-wide">
@@ -326,7 +330,7 @@ export default function Inicio() {
                 Anúncios Premium
               </h2>
               <p className="text-gray-600 text-base sm:text-lg px-4">
-                Profissionais verificados e com os melhores planos
+                Estes anúncios são visíveis apenas para administradores (para demonstrações em feiras e eventos)
               </p>
             </div>
 
@@ -895,7 +899,7 @@ export default function Inicio() {
             >
               <Button size="lg" className="w-full sm:w-auto bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold shadow-xl">
                 <svg className="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073z"/>
                 </svg>
                 Seguir no Instagram
               </Button>

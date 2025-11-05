@@ -1,21 +1,22 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { 
-  MessageCircle, 
-  X, 
-  Send 
+import {
+  MessageCircle,
+  X,
+  Send
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Chatbot({ user, onCompletarCadastro }) {
-  const [aberto, setAberto] = useState(false);
+  const [chatAberto, setChatAberto] = useState(false); // Renamed from 'aberto'
   const [mensagens, setMensagens] = useState([]);
   const [inputMensagem, setInputMensagem] = useState("");
   const [loading, setLoading] = useState(false);
   const [tipoUsuario, setTipoUsuario] = useState(null);
-  const [mostrarTooltip, setMostrarTooltip] = useState(false);
+  // const [mostrarTooltip, setMostrarTooltip] = useState(false); // Removed
   const messagesEndRef = useRef(null);
   const chatRef = useRef(null);
 
@@ -30,26 +31,26 @@ export default function Chatbot({ user, onCompletarCadastro }) {
   // Fechar ao clicar fora
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (aberto && chatRef.current && !chatRef.current.contains(event.target)) {
-        // Verificar se não clicou no botão de abrir
-        const botaoAbrir = document.getElementById('chatbot-button');
-        if (botaoAbrir && !botaoAbrir.contains(event.target)) {
-          setAberto(false);
+      // Check if chat is open, click is outside the chat window, and not on the chatbot button itself
+      if (chatAberto && chatRef.current && !chatRef.current.contains(event.target)) {
+        const chatbotButton = document.getElementById('chatbot-button');
+        if (chatbotButton && !chatbotButton.contains(event.target)) {
+          setChatAberto(false);
         }
       }
     };
 
-    if (aberto) {
+    if (chatAberto) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [aberto]);
+  }, [chatAberto]); // Dependency updated
 
   useEffect(() => {
-    if (aberto && mensagens.length === 0) {
+    if (chatAberto && mensagens.length === 0) { // Dependency updated
       // Verificar se usuário completou cadastro
       if (!user || !user.cadastro_completo) {
         setMensagens([
@@ -74,11 +75,11 @@ export default function Chatbot({ user, onCompletarCadastro }) {
         ]);
       }
     }
-  }, [aberto, mensagens.length, user]);
+  }, [chatAberto, mensagens.length, user]); // Dependency updated
 
   const handleOpcaoInicial = (opcao) => {
     if (opcao.valor === "completar_cadastro") {
-      setAberto(false);
+      setChatAberto(false); // Updated
       onCompletarCadastro();
       return;
     }
@@ -87,7 +88,7 @@ export default function Chatbot({ user, onCompletarCadastro }) {
 
   const handleEscolhaTipo = (tipo) => {
     setTipoUsuario(tipo);
-    
+
     setMensagens(prev => [
       ...prev,
       { tipo: "usuario", conteudo: tipo === "paciente" ? "Sou paciente" : "Sou profissional" }
@@ -202,181 +203,140 @@ export default function Chatbot({ user, onCompletarCadastro }) {
 
   return (
     <>
-      {/* Botão Flutuante - COR AMARELA */}
+      {/* Botão Flutuante */}
       <AnimatePresence>
-        <div 
-          id="chatbot-button"
-          className="fixed bottom-6 right-6 z-50"
-          onMouseEnter={() => setMostrarTooltip(true)}
-          onMouseLeave={() => setMostrarTooltip(false)}
-        >
-          {/* Tooltip/Nuvem Informativa */}
-          <AnimatePresence>
-            {mostrarTooltip && !aberto && (
-              <motion.div
-                initial={{ opacity: 0, x: 20, scale: 0.8 }}
-                animate={{ opacity: 1, x: 0, scale: 1 }}
-                exit={{ opacity: 0, x: 20, scale: 0.8 }}
-                transition={{ type: "spring", damping: 20, stiffness: 300 }}
-                className="absolute right-24 bottom-0 mb-2"
-              >
-                <div className="relative bg-white rounded-2xl shadow-2xl p-4 max-w-xs border-2 border-[#F7D426]">
-                  <div className="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2">
-                    <div className="w-4 h-4 bg-white border-r-2 border-t-2 border-[#F7D426] rotate-45"></div>
-                  </div>
-                  
-                  <div className="flex items-start gap-3">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#F7D426] to-[#FFE066] flex items-center justify-center flex-shrink-0">
-                      <img
-                        src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/acc7e047d_drbeleza.png"
-                        alt="Dr. Beleza"
-                        className="w-full h-full rounded-full object-cover"
-                      />
-                    </div>
-                    <div>
-                      <p className="font-bold text-gray-900 mb-1">Dr. Beleza 🩺✨</p>
-                      <p className="text-sm text-gray-600">
-                        Seu assistente virtual! Tire dúvidas sobre tratamentos, encontre profissionais e muito mais.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
+        {!chatAberto && ( // Only show button if chat is not open
           <motion.button
+            id="chatbot-button" // Keep ID for outside click logic
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={() => setAberto(!aberto)}
-            className="relative w-20 h-20 bg-gradient-to-r from-[#F7D426] to-[#FFE066] rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform overflow-hidden border-2 border-[#2C2C2C]"
+            onClick={() => setChatAberto(true)} // Opens chat
+            className="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-full shadow-2xl flex items-center justify-center z-50 hover:scale-110 transition-transform group"
           >
-            {/* Bolinha de Online - COR AMARELA */}
-            <motion.div
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="absolute top-1 right-1 w-5 h-5 bg-[#F7D426] rounded-full border-4 border-white shadow-lg"
-            ></motion.div>
-
-            {aberto ? (
-              <X className="w-8 h-8 text-[#2C2C2C]" />
-            ) : (
+            <div className="relative">
               <img
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/acc7e047d_drbeleza.png"
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/f54646e8e_drbeleza.png"
                 alt="Dr. Beleza"
-                className="w-full h-full object-cover"
+                className="w-12 h-12 rounded-full object-cover border-2 border-white"
                 onError={(e) => {
-                  e.target.style.display = 'none';
-                  e.target.parentElement.innerHTML = '<svg className="w-8 h-8 text-[#2C2C2C]" fill="currentColor" viewBox="0 0 20 20"><path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"></path><path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"></path></svg>';
+                  e.target.onerror = null;
+                  e.target.src = 'https://via.placeholder.com/48?text=Dr';
                 }}
               />
-            )}
+              <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
+            </div>
+            <span className="absolute -top-10 right-0 bg-white text-gray-800 px-3 py-1 rounded-lg shadow-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+              💬 Fale com Dr. Beleza
+            </span>
           </motion.button>
-        </div>
+        )}
       </AnimatePresence>
 
-      {/* Janela do Chatbot */}
+      {/* Janela do Chat */}
       <AnimatePresence>
-        {aberto && (
+        {chatAberto && ( // Renders if chat is open
           <motion.div
             ref={chatRef}
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            initial={{ opacity: 0, y: 20, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-32 right-6 z-50 w-96 max-w-[calc(100vw-3rem)] shadow-2xl rounded-2xl overflow-hidden"
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            className="fixed bottom-6 right-6 w-96 max-w-[calc(100vw-3rem)] bg-white rounded-2xl shadow-2xl z-50 flex flex-col"
+            style={{ height: '600px', maxHeight: 'calc(100vh - 3rem)' }}
           >
-            <Card className="border-none overflow-hidden">
-              {/* Header - COR AMARELA */}
-              <div className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] p-4 text-[#2C2C2C]">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center overflow-hidden">
-                    <img
-                      src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/acc7e047d_drbeleza.png"
-                      alt="Dr. Beleza"
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = 'https://via.placeholder.com/48?text=Dr';
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <h3 className="font-bold">Dr. Beleza</h3>
-                    <p className="text-xs text-[#2C2C2C]/80">Seu assistente virtual</p>
-                  </div>
+            {/* Header */}
+            <div className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white p-4 rounded-t-2xl flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <img
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/f54646e8e_drbeleza.png"
+                    alt="Dr. Beleza"
+                    className="w-12 h-12 rounded-full border-2 border-white object-cover"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = 'https://via.placeholder.com/48?text=Dr';
+                    }}
+                  />
+                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                </div>
+                <div>
+                  <h3 className="font-bold">Dr. Beleza</h3>
+                  <p className="text-xs text-blue-100">Seu assistente inteligente</p>
                 </div>
               </div>
+              <button
+                onClick={() => setChatAberto(false)} // Closes chat
+                className="text-white hover:bg-white/20 rounded-full p-2 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-              {/* Messages */}
-              <div className="h-96 overflow-y-auto p-4 bg-gray-50 space-y-4">
-                {mensagens.map((msg, index) => (
-                  <div key={index} className={`flex ${msg.tipo === "usuario" ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-[80%] rounded-2xl p-3 ${
-                      msg.tipo === "usuario" 
-                        ? "bg-gradient-to-r from-[#F7D426] to-[#FFE066] text-[#2C2C2C] rounded-br-none" 
-                        : "bg-white shadow-md rounded-bl-none"
-                    }`}>
-                      <p className="text-sm whitespace-pre-line">{msg.conteudo}</p>
-                      
-                      {msg.opcoes && (
-                        <div className="mt-3 space-y-2">
-                          {msg.opcoes.map((opcao, i) => (
-                            <button
-                              key={i}
-                              onClick={() => !tipoUsuario && !user?.cadastro_completo ? handleOpcaoInicial(opcao) : !tipoUsuario ? handleEscolhaTipo(opcao.valor) : handleOpcao(opcao)}
-                              className="w-full text-left px-3 py-2 bg-[#FFF9E6] hover:bg-[#F7D426] rounded-lg transition-colors text-sm font-medium text-[#2C2C2C]"
-                            >
-                              {opcao.texto}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto p-4 bg-gray-50 space-y-4"> {/* Added flex-1 to make it grow */}
+              {mensagens.map((msg, index) => (
+                <div key={index} className={`flex ${msg.tipo === "usuario" ? "justify-end" : "justify-start"}`}>
+                  <div className={`max-w-[80%] rounded-2xl p-3 ${
+                    msg.tipo === "usuario"
+                      ? "bg-gradient-to-r from-[#F7D426] to-[#FFE066] text-[#2C2C2C] rounded-br-none"
+                      : "bg-white shadow-md rounded-bl-none"
+                  }`}>
+                    <p className="text-sm whitespace-pre-line">{msg.conteudo}</p>
 
-                {loading && (
-                  <div className="flex justify-start">
-                    <div className="bg-white shadow-md rounded-2xl rounded-bl-none p-3">
-                      <div className="flex gap-1">
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+                    {msg.opcoes && (
+                      <div className="mt-3 space-y-2">
+                        {msg.opcoes.map((opcao, i) => (
+                          <button
+                            key={i}
+                            onClick={() => !tipoUsuario && !user?.cadastro_completo ? handleOpcaoInicial(opcao) : !tipoUsuario ? handleEscolhaTipo(opcao.valor) : handleOpcao(opcao)}
+                            className="w-full text-left px-3 py-2 bg-[#FFF9E6] hover:bg-[#F7D426] rounded-lg transition-colors text-sm font-medium text-[#2C2C2C]"
+                          >
+                            {opcao.texto}
+                          </button>
+                        ))}
                       </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              {loading && (
+                <div className="flex justify-start">
+                  <div className="bg-white shadow-md rounded-2xl rounded-bl-none p-3">
+                    <div className="flex gap-1">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
                     </div>
                   </div>
-                )}
-                
-                <div ref={messagesEndRef} />
-              </div>
-
-              {/* Input */}
-              {tipoUsuario && user?.cadastro_completo && (
-                <div className="p-4 border-t bg-white">
-                  <form onSubmit={handleEnviarMensagem} className="flex gap-2">
-                    <Input
-                      value={inputMensagem}
-                      onChange={(e) => setInputMensagem(e.target.value)}
-                      placeholder="Digite sua mensagem..."
-                      className="flex-1"
-                      disabled={loading}
-                    />
-                    <Button
-                      type="submit"
-                      size="icon"
-                      disabled={!inputMensagem.trim() || loading}
-                      className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] hover:from-[#E5C215] hover:to-[#F7D426] text-[#2C2C2C]"
-                    >
-                      <Send className="w-4 h-4" />
-                    </Button>
-                  </form>
                 </div>
               )}
-            </Card>
+
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Input */}
+            {tipoUsuario && user?.cadastro_completo && (
+              <div className="p-4 border-t bg-white">
+                <form onSubmit={handleEnviarMensagem} className="flex gap-2">
+                  <Input
+                    value={inputMensagem}
+                    onChange={(e) => setInputMensagem(e.target.value)}
+                    placeholder="Digite sua mensagem..."
+                    className="flex-1"
+                    disabled={loading}
+                  />
+                  <Button
+                    type="submit"
+                    size="icon"
+                    disabled={!inputMensagem.trim() || loading}
+                    className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] hover:from-[#E5C215] hover:to-[#F7D426] text-[#2C2C2C]"
+                  >
+                    <Send className="w-4 h-4" />
+                  </Button>
+                </form>
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
