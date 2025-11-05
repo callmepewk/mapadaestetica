@@ -18,50 +18,94 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 const especialidadesProcedimentos = {
-  "Estética Facial": [
-    "Limpeza de Pele", "Peeling", "Microagulhamento", "Tratamento de Acne",
-    "Harmonização Facial", "Preenchimento", "Botox", "Fios de Sustentação",
-    "Bichectomia", "Skincare", "Máscara Facial", "Drenagem Facial"
+  "Estética Facial - Tratamentos Básicos": [
+    "Limpeza de Pele", "Hidratação Facial", "Esfoliação", "Revitalização Facial"
   ],
-  "Estética Corporal": [
-    "Drenagem Linfática", "Massagem Modeladora", "Criolipólise", 
-    "Radiofrequência", "Ultrassom Estético", "Carboxiterapia",
-    "Endermologia", "Lipocavitação", "Manthus", "Ventosaterapia"
+  "Estética Facial - Rejuvenescimento": [
+    "Microagulhamento", "Skinbooster", "Preenchimento Facial", "Toxina Botulínica",
+    "Peelings Químicos", "Peelings Físicos", "Radiofrequência Facial", "Microdermoabrasão"
+  ],
+  "Estética Facial - Tratamento de Condições": [
+    "Tratamento de Acne", "Tratamento de Melasma", "Tratamento de Manchas",
+    "Tratamento de Olheiras", "Tratamento de Cicatrizes", "Tratamento de Flacidez Facial"
+  ],
+  "Estética Facial - Harmonização": [
+    "Preenchimentos Avançados", "Bioestimuladores de Colágeno", "Fios de Sustentação"
+  ],
+  "Estética Corporal - Redução de Medidas": [
+    "Criolipólise", "Ultracavitação", "Radiofrequência Corporal", "Carboxiterapia",
+    "Lipoenzimática", "Intradermoterapia", "Massagem Modeladora"
+  ],
+  "Estética Corporal - Celulite e Estrias": [
+    "Ondas de Choque", "Subcisão", "Endermologia", "Tratamento Específico para Celulite",
+    "Tratamento Específico para Estrias"
+  ],
+  "Estética Corporal - Flacidez e Contorno": [
+    "Radiofrequência Corporal", "Ultrassom Micro e Macrofocado (HIFU)",
+    "Bioestimuladores", "Correntes Russa/Aussie"
   ],
   "Depilação": [
-    "Depilação a Laser", "Depilação com Cera", "Depilação Egípcia",
-    "Luz Pulsada", "Depilação Definitiva"
+    "Depilação a Laser", "Luz Intensa Pulsada (IPL)", "Depilação a LED",
+    "Depilação com Cera", "Depilação Roll-on"
   ],
-  "Cabelos": [
-    "Tratamento Capilar", "Botox Capilar", "Queratina", "Cauterização",
-    "Hidratação Profunda", "Reconstrução Capilar", "Progressiva"
+  "Drenagem Linfática": [
+    "Drenagem Linfática Manual", "Drenagem Pós-operatória", "Drenagem Gestacional"
   ],
-  "Unhas": [
-    "Manicure", "Pedicure", "Unha em Gel", "Fibra de Vidro",
-    "Alongamento de Unhas", "Nail Art", "Podologia"
+  "Estética Capilar e Tricologia": [
+    "Tratamento de Queda de Cabelo", "Tratamento de Alopécia", "Tratamento de Caspa",
+    "Tratamento de Oleosidade", "Dermatite Seborreica", "Microagulhamento Capilar",
+    "Mesoterapia Capilar", "Laser Capilar", "LED Capilar"
   ],
-  "Sobrancelhas e Cílios": [
-    "Design de Sobrancelhas", "Micropigmentação", "Henna",
-    "Extensão de Cílios", "Laminação de Sobrancelhas", "Lifting de Cílios"
+  "Transplante Capilar": [
+    "Transplante Capilar FUE", "Transplante Capilar FUT", "Implante Capilar"
   ],
-  "Massoterapia": [
-    "Massagem Relaxante", "Massagem Terapêutica", "Shiatsu",
-    "Reflexologia", "Quick Massage", "Massagem com Pedras Quentes"
+  "Manicure e Pedicure": [
+    "Manicure Tradicional", "Pedicure Tradicional", "Estética Avançada dos Pés"
   ],
-  "Acupuntura": [
-    "Acupuntura Estética", "Acupuntura Sistêmica", "Auriculoterapia"
+  "Podologia": [
+    "Tratamento de Unhas Encravadas", "Tratamento de Calosidades", "Tratamento de Micoses",
+    "Tratamento de Pé Diabético"
   ],
-  "Dermatologia": [
-    "Tratamento de Acne", "Tratamento de Manchas", "Dermatite",
-    "Psoríase", "Vitiligo", "Rosácea", "Melasma"
+  "Micropigmentação e Design de Sobrancelhas": [
+    "Design de Sobrancelhas", "Micropigmentação Fio a Fio", "Micropigmentação Shadow",
+    "Microblading"
+  ],
+  "Micropigmentação - Olhos e Lábios": [
+    "Delineador Micropigmentado", "Micropigmentação Labial", "Revitalização Labial"
+  ],
+  "Extensão e Alongamento de Cílios": [
+    "Extensão de Cílios", "Alongamento de Cílios", "Lash Lifting"
   ],
   "Medicina Estética": [
     "Toxina Botulínica", "Preenchimento Facial", "Bioestimuladores",
     "Fios de PDO", "Skinbooster", "Peelings Médicos"
   ],
+  "Dermatologia": [
+    "Tratamento de Acne", "Tratamento de Manchas", "Dermatite",
+    "Psoríase", "Vitiligo", "Rosácea", "Melasma"
+  ],
   "Cirurgia Plástica": [
     "Rinoplastia", "Mamoplastia", "Abdominoplastia", "Lipoaspiração",
     "Blefaroplastia", "Otoplastia", "Ritidoplastia"
+  ],
+  "Fisioterapia Dermato Funcional": [
+    "Pós-operatório", "Cicatrizes", "Queimaduras", "Pilates", "Reabilitação"
+  ],
+  "Nutrição Estética": [
+    "Nutrição Esportiva", "Nutrição Clínica", "Nutrição Funcional",
+    "Emagrecimento", "Nutrição para Pele e Cabelo"
+  ],
+  "Psicologia e Coaching de Imagem": [
+    "Autoestima", "Imagem Corporal", "Comportamento Alimentar"
+  ],
+  "Pilates e Fitness": [
+    "Pilates", "Personal Training", "Fitness Estético", "Treinamento Funcional"
+  ],
+  "Acupuntura Estética": [
+    "Acupuntura Facial", "Acupuntura Sistêmica", "Auriculoterapia"
+  ],
+  "Terapias Integrativas e Complementares": [
+    "Aromaterapia", "Terapias Holísticas", "Reiki", "Florais"
   ],
   "Biomedicina Estética": [
     "Intradermoterapia", "Microagulhamento", "Laser Terapêutico",
@@ -70,6 +114,28 @@ const especialidadesProcedimentos = {
   "Enfermagem Estética": [
     "Aplicação de Injetáveis", "Curativos Estéticos", "Drenagem Linfática",
     "Procedimentos Pós-Operatórios", "Laser Terapêutico"
+  ],
+  "Farmácia Estética": [
+    "Manipulação Cosmética", "Fórmulas Personalizadas", "Cosméticos Magistrais"
+  ],
+  "Odontologia Estética": [
+    "Clareamento Dental", "Facetas", "Lentes de Contato Dental", "Harmonização Orofacial"
+  ],
+  "Massoterapia": [
+    "Massagem Relaxante", "Massagem Terapêutica", "Shiatsu",
+    "Reflexologia", "Quick Massage", "Massagem com Pedras Quentes"
+  ],
+  "Barbearia": [
+    "Corte de Cabelo Masculino", "Barba", "Design de Barba", "Tratamentos Capilares Masculinos"
+  ],
+  "Tatuagem e Piercing": [
+    "Tatuagem", "Piercing", "Remoção de Tatuagem", "Cuidados Pós-Procedimento"
+  ],
+  "Spa e Bem-Estar": [
+    "Massagens", "Terapias", "Day Spa", "Tratamentos Corporais"
+  ],
+  "Longevidade e Medicina Integrativa": [
+    "Medicina Antienvelhecimento", "Terapias de Longevidade", "Medicina Integrativa"
   ]
 };
 

@@ -28,10 +28,61 @@ import LoginPromptModal from "../components/home/LoginPromptModal";
 
 const categorias = [
   "Todas",
-  "Depilação", "Estética Facial", "Estética Corporal", "Massoterapia", "Medicina Estética",
-  "Drenagem Linfática", "Micropigmentação", "Design de Sobrancelhas",
-  "Extensão de Cílios", "Manicure e Pedicure", "Podologia",
-  "Harmonização Facial", "Maquiagem", "Outros"
+  "Estética Facial - Tratamentos Básicos",
+  "Estética Facial - Rejuvenescimento",
+  "Estética Facial - Tratamento de Condições",
+  "Estética Facial - Harmonização",
+  "Estética Corporal - Redução de Medidas",
+  "Estética Corporal - Celulite e Estrias",
+  "Estética Corporal - Flacidez e Contorno",
+  "Depilação",
+  "Drenagem Linfática",
+  "Estética Capilar e Tricologia",
+  "Transplante Capilar",
+  "Manicure e Pedicure",
+  "Podologia",
+  "Micropigmentação e Design de Sobrancelhas",
+  "Micropigmentação - Olhos e Lábios",
+  "Extensão e Alongamento de Cílios",
+  "Medicina Estética",
+  "Dermatologia",
+  "Cirurgia Plástica",
+  "Fisioterapia Dermato Funcional",
+  "Nutrição Estética",
+  "Psicologia e Coaching de Imagem",
+  "Pilates e Fitness",
+  "Acupuntura Estética",
+  "Terapias Integrativas e Complementares",
+  "Biomedicina Estética",
+  "Enfermagem Estética",
+  "Farmácia Estética",
+  "Odontologia Estética",
+  "Massoterapia",
+  "Barbearia",
+  "Tatuagem e Piercing",
+  "Spa e Bem-Estar",
+  "Longevidade e Medicina Integrativa",
+  "Clínicas e Consultórios",
+  "Salões de Beleza",
+  "Equipamentos - Venda",
+  "Equipamentos - Locação",
+  "Equipamentos - Seminovos",
+  "Cosméticos e Produtos",
+  "Injetáveis e Preenchedores",
+  "Nutracêuticos e Suplementos",
+  "Móveis e Decoração para Clínicas",
+  "Softwares de Gestão",
+  "Uniformes e Vestuário Profissional",
+  "Roupas de Compressão Pós-Cirúrgica",
+  "Alimentação Saudável e Fitness",
+  "Educação - Cursos e Workshops",
+  "Eventos - Congressos e Feiras",
+  "Consultoria e Assessoria",
+  "Franquias",
+  "Turismo de Saúde",
+  "Seguros e Financiamentos",
+  "Marketing e Design",
+  "Outros"
 ];
 
 const estados = [
@@ -197,7 +248,7 @@ export default function Anuncios() {
   });
 
   const anuncios = useMemo(() => {
-    const planoOrdem = { 'premium': 5, 'diamante': 4, 'ouro': 3, 'prata': 2, 'cobre': 1 };
+    const planoOrdem = { 'premium': 4, 'avancado': 3, 'intermediario': 2, 'basico': 1 };
     
     return fetchedAnuncios
       .filter(anuncio => {
