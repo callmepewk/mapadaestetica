@@ -24,10 +24,34 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 
 const categorias = [
-  "Estética Facial", "Estética Corporal", "Estética Capilar e Tricologia",
-  "Estética de Mãos e Pés", "Micropigmentação e Design", "Depilação",
-  "Massoterapia e Drenagem", "Harmonização Facial", "Medicina Estética",
-  "Dermatologia", "Cirurgia Plástica", "Outros"
+  "Estética Facial",
+  "Estética Corporal",
+  "Estética Capilar e Tricologia",
+  "Estética de Mãos e Pés",
+  "Micropigmentação e Design",
+  "Depilação",
+  "Massoterapia e Drenagem",
+  "Harmonização Facial",
+  "Medicina Estética",
+  "Dermatologia",
+  "Cirurgia Plástica",
+  "Fisioterapia Dermato Funcional",
+  "Nutrição Estética",
+  "Psicologia da Imagem",
+  "Pilates e Fitness",
+  "Acupuntura Estética",
+  "Terapias Integrativas",
+  "Podologia",
+  "Manicure e Pedicure",
+  "Barbearia",
+  "Tatuagem e Piercing",
+  "Spa e Bem-Estar",
+  "Longevidade",
+  "Biomedicina Estética",
+  "Enfermagem Estética",
+  "Farmácia Estética",
+  "Odontologia Estética",
+  "Outros"
 ];
 
 export default function OnboardingModal({ open, onComplete, onClose }) {
@@ -67,7 +91,7 @@ export default function OnboardingModal({ open, onComplete, onClose }) {
       alert("Por favor, preencha todos os campos obrigatórios");
       return;
     }
-    
+
     if (tipoUsuario === "paciente" || tipoUsuario === "tester") {
       salvarDados();
     } else {
@@ -89,13 +113,13 @@ export default function OnboardingModal({ open, onComplete, onClose }) {
       };
 
       await base44.auth.updateMe(dados);
-      
+
       // Se for profissional, mostrar notificação com opções antes de recarregar
       if (tipoUsuario === "profissional" || tipoUsuario === "tester") {
         // Criar um overlay com notificação
         const overlay = document.createElement('div');
         overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
-        
+
         const notification = document.createElement('div');
         notification.style.cssText = 'background:white;border-radius:16px;padding:32px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3);text-align:center;';
         notification.innerHTML = `
@@ -105,8 +129,8 @@ export default function OnboardingModal({ open, onComplete, onClose }) {
             Escolha como podemos te ajudar:
           </p>
           <div style="display:flex;flex-direction:column;gap:12px;">
-            <a href="https://wa.me/5531972595643?text=${encodeURIComponent('Olá! Acabei de me cadastrar no Mapa da Estética e gostaria de saber qual plano é o melhor para mim! 💼')}" 
-               target="_blank" 
+            <a href="https://wa.me/5531972595643?text=${encodeURIComponent('Olá! Acabei de me cadastrar no Mapa da Estética e gostaria de saber qual plano é o melhor para mim! 💼')}"
+               target="_blank"
                style="display:block;background:linear-gradient(to right, #25D366, #128C7E);color:white;padding:16px 32px;border-radius:8px;text-decoration:none;font-weight:bold;">
               💬 Falar com Especialista
             </a>
@@ -114,16 +138,16 @@ export default function OnboardingModal({ open, onComplete, onClose }) {
                     style="width:100%;background:linear-gradient(to right, #F7D426, #FFE066);color:#2C2C2C;padding:16px 32px;border-radius:8px;border:none;cursor:pointer;font-weight:bold;">
               🩺 Falar com Dr. Beleza
             </button>
-            <button onclick="this.closest('.relative').remove();window.location.reload();" 
+            <button onclick="this.closest('.relative').remove();window.location.reload();"
                     style="width:100%;background:transparent;color:#666;padding:12px;border:none;cursor:pointer;text-decoration:underline;margin-top:8px;">
               Continuar sem consultar
             </button>
           </div>
         `;
-        
+
         overlay.appendChild(notification);
         document.body.appendChild(overlay);
-        
+
         // Aguardar 60 segundos ou clique antes de recarregar automaticamente
         setTimeout(() => {
           if (document.body.contains(overlay)) {

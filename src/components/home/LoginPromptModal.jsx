@@ -1,4 +1,3 @@
-
 import React from "react";
 import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
@@ -11,7 +10,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { UserPlus, Sparkles, ArrowLeft } from "lucide-react";
+import { UserPlus, Sparkles, ArrowLeft, X } from "lucide-react";
 
 export default function LoginPromptModal({ open, onClose, pageName }) {
   const navigate = useNavigate();
@@ -21,8 +20,16 @@ export default function LoginPromptModal({ open, onClose, pageName }) {
   };
 
   const handleVoltarInicio = () => {
-    onClose();
+    if (onClose) {
+      onClose();
+    }
     navigate(createPageUrl("Inicio"));
+  };
+
+  const handleFechar = () => {
+    if (onClose) {
+      onClose();
+    }
   };
 
   const getMensagem = () => {
@@ -45,12 +52,15 @@ export default function LoginPromptModal({ open, onClose, pageName }) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent 
-        className="sm:max-w-md"
-        onPointerDownOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
-      >
+    <Dialog open={open} onOpenChange={handleFechar}>
+      <DialogContent className="sm:max-w-md">
+        <button
+          onClick={handleFechar}
+          className="absolute top-4 right-4 w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors z-10"
+        >
+          <X className="w-4 h-4" />
+        </button>
+
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-2xl">
             <Sparkles className="w-6 h-6 text-[#F7D426]" />

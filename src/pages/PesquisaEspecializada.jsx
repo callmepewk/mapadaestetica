@@ -50,6 +50,26 @@ const especialidadesProcedimentos = {
   ],
   "Acupuntura": [
     "Acupuntura Estética", "Acupuntura Sistêmica", "Auriculoterapia"
+  ],
+  "Dermatologia": [
+    "Tratamento de Acne", "Tratamento de Manchas", "Dermatite",
+    "Psoríase", "Vitiligo", "Rosácea", "Melasma"
+  ],
+  "Medicina Estética": [
+    "Toxina Botulínica", "Preenchimento Facial", "Bioestimuladores",
+    "Fios de PDO", "Skinbooster", "Peelings Médicos"
+  ],
+  "Cirurgia Plástica": [
+    "Rinoplastia", "Mamoplastia", "Abdominoplastia", "Lipoaspiração",
+    "Blefaroplastia", "Otoplastia", "Ritidoplastia"
+  ],
+  "Biomedicina Estética": [
+    "Intradermoterapia", "Microagulhamento", "Laser Terapêutico",
+    "Peelings", "Carboxiterapia", "Ozonioterapia"
+  ],
+  "Enfermagem Estética": [
+    "Aplicação de Injetáveis", "Curativos Estéticos", "Drenagem Linfática",
+    "Procedimentos Pós-Operatórios", "Laser Terapêutico"
   ]
 };
 
@@ -143,7 +163,7 @@ Seja profissional, técnico mas acessível. Use informações baseadas em evidê
         <div className="text-center mb-8">
           <div className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-full flex items-center justify-center shadow-xl overflow-hidden">
             <img
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/966d17a8f_drbeleza.png"
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe2/966d17a8f_drbeleza.png"
               alt="Dr. Beleza"
               className="w-full h-full object-cover"
               onError={(e) => {

@@ -53,11 +53,15 @@ const categorias = [
   { nome: "Depilação", cor: "from-pink-500 to-rose-500", icon: "✨" },
   { nome: "Estética Facial", cor: "from-purple-500 to-pink-500", icon: "💆" },
   { nome: "Estética Corporal", cor: "from-blue-500 to-cyan-500", icon: "💪" },
-  { nome: "Massoterapia", cor: "from-green-500 to-emerald-500", icon: "🌿" },
-  { nome: "Micropigmentação", cor: "from-orange-500 to-amber-500", icon: "🎨" },
-  { nome: "Design de Sobrancelhas", cor: "from-indigo-500 to-purple-500", icon: "👁️" },
+  { nome: "Massoterapia e Drenagem", cor: "from-green-500 to-emerald-500", icon: "🌿" },
+  { nome: "Micropigmentação e Design", cor: "from-orange-500 to-amber-500", icon: "🎨" },
   { nome: "Manicure e Pedicure", cor: "from-red-500 to-pink-500", icon: "💅" },
-  { nome: "Harmonização Facial", cor: "from-violet-500 to-purple-500", icon: "✨" }
+  { nome: "Harmonização Facial", cor: "from-violet-500 to-purple-500", icon: "✨" },
+  { nome: "Dermatologia", cor: "from-teal-500 to-cyan-500", icon: "🩺" },
+  { nome: "Medicina Estética", cor: "from-indigo-500 to-blue-500", icon: "⚕️" },
+  { nome: "Cirurgia Plástica", cor: "from-fuchsia-500 to-pink-500", icon: "🏥" },
+  { nome: "Biomedicina Estética", cor: "from-sky-500 to-blue-500", icon: "🔬" },
+  { nome: "Enfermagem Estética", cor: "from-emerald-500 to-teal-500", icon: "💉" }
 ];
 
 const cidades = [

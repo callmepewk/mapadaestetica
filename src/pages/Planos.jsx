@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check, Sparkles, Star, Zap, Crown, Gem, ArrowRight, X, Link2, Copy } from "lucide-react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // Added useNavigate
 import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -188,10 +188,10 @@ const planos = [
 ];
 
 export default function Planos() {
+  const navigate = useNavigate(); // Added useNavigate hook
   const [user, setUser] = useState(null);
-  const [linkGerado, setLinkGerado] = useState("");
-  const [planoSelecionado, setPlanoSelecionado] = useState("");
-  const [mostrarAlerta, setMostrarAlerta] = useState(false);
+  // SEMPRE MOSTRAR VISÃO PROFISSIONAL
+  const [visao, setVisao] = useState("profissional"); // Always "profissional"
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -207,87 +207,32 @@ export default function Planos() {
 
   const isAdmin = user?.role === 'admin';
 
-  const gerarLinkAcesso = (tipoPlano) => {
-    const baseUrl = window.location.origin;
-    const link = `${baseUrl}${createPageUrl("Planos")}?plano=${tipoPlano}&ref=admin`;
-    setLinkGerado(link);
-    setPlanoSelecionado(tipoPlano);
-    setMostrarAlerta(true);
-    
-    // Copiar automaticamente para a área de transferência
-    navigator.clipboard.writeText(link);
-  };
-
-  const copiarLink = () => {
-    navigator.clipboard.writeText(linkGerado);
-    alert("Link copiado para a área de transferência!");
-  };
+  // SEMPRE USAR PLANOS DE PROFISSIONAIS (which is the 'planos' array in this file)
+  const planosExibidos = planos;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8"> {/* Changed py-12 to py-8 */}
       {/* Header */}
-      <div className="text-center mb-16 px-4">
-        <Badge className="mb-4 bg-[#F7D426] text-[#2C2C2C] font-bold">
-          Planos Mapa da Estética
-        </Badge>
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-          Escolha Seu Plano de Anúncios
-        </h1>
-        <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-4">
-          5 planos exclusivos para profissionais de todos os portes
-        </p>
-        <div className="inline-flex items-center gap-2 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-lg px-4 py-2">
-          <span className="text-xl">💬</span>
-          <p className="text-sm text-gray-700">
-            <span className="font-bold text-green-700">Novidade:</span> A partir do Plano PRATA você tem acesso ao WhatsApp de todos os profissionais!
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="text-center mb-12">
+          <Badge className="mb-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-base px-6 py-2">
+            Planos para Profissionais de Estética
+          </Badge>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            Escolha o Plano Ideal para Você
+          </h1>
+          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+            Aumente sua visibilidade, atraia mais clientes e impulsione seu negócio com nossos planos exclusivos
           </p>
         </div>
       </div>
-
-      {/* Gerador de Link Admin */}
-      {isAdmin && (
-        <div className="max-w-7xl mx-auto px-4 mb-8">
-          <Alert className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-300">
-            <Crown className="h-5 w-5 text-purple-600" />
-            <AlertDescription>
-              <div className="flex flex-col gap-3">
-                <p className="font-bold text-purple-900">👑 Painel Administrativo - Gerador de Link de Acesso</p>
-                <p className="text-sm text-purple-800">
-                  Como administrador, você pode gerar links de acesso direto aos planos para vendas externas. 
-                  O link será copiado automaticamente quando você clicar em "Gerar Link" em qualquer plano.
-                </p>
-                {mostrarAlerta && linkGerado && (
-                  <div className="mt-3 p-3 bg-white rounded-lg border-2 border-purple-300">
-                    <p className="text-sm font-semibold text-purple-900 mb-2">
-                      Link gerado para o plano {planoSelecionado.toUpperCase()}:
-                    </p>
-                    <div className="flex gap-2">
-                      <Input 
-                        value={linkGerado} 
-                        readOnly 
-                        className="text-sm"
-                      />
-                      <Button 
-                        onClick={copiarLink}
-                        size="sm"
-                        className="bg-purple-600 hover:bg-purple-700"
-                      >
-                        <Copy className="w-4 h-4" />
-                      </Button>
-                    </div>
-                    <p className="text-xs text-purple-600 mt-2">✅ Link copiado automaticamente!</p>
-                  </div>
-                )}
-              </div>
-            </AlertDescription>
-          </Alert>
-        </div>
-      )}
+      
+      {/* REMOVED: Gerador de Link Admin block */}
 
       {/* Plans Grid */}
       <div className="max-w-7xl mx-auto px-4 mb-16">
         <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-          {planos.map((plano, index) => {
+          {planosExibidos.map((plano, index) => { // Using planosExibidos
             const IconComponent = plano.icone;
             return (
               <motion.div
@@ -404,18 +349,7 @@ export default function Planos() {
                         </Link>
                       )}
 
-                      {/* Botão Admin - Gerar Link */}
-                      {isAdmin && (
-                        <Button
-                          onClick={() => gerarLinkAcesso(plano.tipo)}
-                          variant="outline"
-                          className="w-full border-2 border-purple-300 text-purple-700 hover:bg-purple-50"
-                          size="sm"
-                        >
-                          <Link2 className="w-4 h-4 mr-2" />
-                          Gerar Link de Acesso
-                        </Button>
-                      )}
+                      {/* REMOVED: Botão Admin - Gerar Link */}
                     </div>
                   </CardContent>
                 </Card>
