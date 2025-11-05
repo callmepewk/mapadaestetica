@@ -229,7 +229,7 @@ export default function CalculadoraLaserSection() {
   };
 
   const handleBaixarRelatorio = () => {
-    if (!user || user.plano_ativo === 'free' || !user.plano_ativo) {
+    if (!user || user.plano_ativo === 'cobre' || !user.plano_ativo) {
       return; 
     }
 
@@ -273,7 +273,6 @@ export default function CalculadoraLaserSection() {
     // Generate projections
     const projecoes = [];
     let cumulativeProfit = 0;
-    let cumulativeInvestment = 0; // For cumulative ROI if needed
 
     for (let i = 1; i <= dados.vidaUtil; i++) {
         const receitaAnual = receitaMensalEfetiva * 12;
@@ -422,20 +421,19 @@ export default function CalculadoraLaserSection() {
       </html>
     `;
 
-    const blob = new Blob([conteudoHTML], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `relatorio-viabilidade-${dados.marcaLaser}-${Date.now()}.html`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    // Criar janela de impressão
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(conteudoHTML);
+    printWindow.document.close();
     
-    alert('Relatório exportado em HTML!\n\nPara converter em PDF:\n1. Abra o arquivo HTML no seu navegador de internet.\n2. Pressione Ctrl+P (Windows) ou Cmd+P (Mac) para abrir a janela de impressão.\n3. Na caixa de diálogo de impressão, selecione "Salvar como PDF" ou "Microsoft Print to PDF" como impressora.\n4. Clique em "Salvar" para gerar o arquivo PDF.');
+    // Aguardar carregar e abrir diálogo de impressão
+    printWindow.onload = function() {
+      printWindow.focus();
+      printWindow.print();
+    };
   };
 
-  const isUserFree = !user || user.plano_ativo === 'free' || !user.plano_ativo;
+  const isUserFree = !user || user.plano_ativo === 'cobre' || !user.plano_ativo;
 
   return (
     <section className="py-16 bg-gradient-to-br from-blue-50 to-cyan-50">
@@ -815,17 +813,17 @@ export default function CalculadoraLaserSection() {
                           className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {isUserFree ? <Lock className="w-4 h-4 mr-2" /> : <FileDown className="w-4 h-4 mr-2" />}
-                          Baixar Relatório (HTML)
+                          Baixar Relatório PDF
                         </Button>
                       </div>
                     </TooltipTrigger>
                     {isUserFree && (
                       <TooltipContent className="bg-yellow-50 border-2 border-yellow-300 text-yellow-900 p-4 max-w-xs z-50">
                         <p className="font-semibold mb-2">🔒 Recurso Premium</p>
-                        <p className="text-sm">Para baixar o relatório, é necessário ter um plano PRATA ou superior.</p>
+                        <p className="text-sm mb-3">Para baixar o relatório em PDF, é necessário ter um plano PRATA ou superior.</p>
                         <Button
                           onClick={() => window.location.href = createPageUrl("Planos")}
-                          className="w-full mt-3 bg-yellow-600 hover:bg-yellow-700 text-white"
+                          className="w-full bg-yellow-600 hover:bg-yellow-700 text-white"
                           size="sm"
                         >
                           Ver Planos

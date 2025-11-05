@@ -1,15 +1,13 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, Sparkles, Star, Zap, Crown, Gem, ArrowRight, X, Link2, Copy } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Check, Sparkles, Star, Zap, Crown, Gem, ArrowRight, X, MessageCircle, Headphones } from "lucide-react";
 import { motion } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom"; // Added useNavigate
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Input } from "@/components/ui/input";
 
 const planos = [
   {
@@ -19,6 +17,7 @@ const planos = [
     cor: "from-orange-400 to-amber-600",
     icone: Sparkles,
     destaque: false,
+    linkPagamento: null,
     limites: {
       especialidades: 1,
       anuncios: 1,
@@ -52,6 +51,7 @@ const planos = [
     cor: "from-gray-300 to-gray-500",
     icone: Star,
     destaque: false,
+    linkPagamento: "https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=ecb3830244194758803318fe45d4cbde",
     limites: {
       especialidades: 2,
       anuncios: 10,
@@ -87,6 +87,7 @@ const planos = [
     cor: "from-yellow-400 to-amber-500",
     icone: Crown,
     destaque: true,
+    linkPagamento: "https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=13c2448777fd4359a6ecd5d545beacd1",
     limites: {
       especialidades: 3,
       anuncios: 15,
@@ -123,6 +124,7 @@ const planos = [
     cor: "from-blue-400 to-cyan-500",
     icone: Gem,
     destaque: false,
+    linkPagamento: "https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=574848385a584cbd9d6b88c6064c07b3",
     limites: {
       especialidades: 5,
       anuncios: 25,
@@ -155,10 +157,11 @@ const planos = [
   {
     nome: "PLATINA",
     tipo: "platina",
-    preco: "Sob Consulta",
+    preco: "R$ 997/mês",
     cor: "from-purple-500 to-pink-600",
     icone: Zap,
     destaque: false,
+    linkPagamento: "https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=9e7d3e30f0304d178d1656299feaf459",
     limites: {
       especialidades: "Ilimitadas",
       anuncios: "Ilimitados",
@@ -188,10 +191,11 @@ const planos = [
 ];
 
 export default function Planos() {
-  const navigate = useNavigate(); // Added useNavigate hook
+  const navigate = useNavigate();
+  const location = useLocation();
   const [user, setUser] = useState(null);
-  // SEMPRE MOSTRAR VISÃO PROFISSIONAL
-  const [visao, setVisao] = useState("profissional"); // Always "profissional"
+  const [mostrarSucesso, setMostrarSucesso] = useState(false);
+  const [planoAtualizado, setPlanoAtualizado] = useState("");
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -205,13 +209,74 @@ export default function Planos() {
     fetchUser();
   }, []);
 
-  const isAdmin = user?.role === 'admin';
+  // Verificar parâmetros de retorno do Mercado Pago
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const status = params.get('status');
+    const plano = params.get('plano');
+    
+    if (status === 'approved' && plano && user) {
+      // Atualizar plano do usuário
+      const atualizarPlano = async () => {
+        try {
+          await base44.auth.updateMe({
+            plano_ativo: plano,
+            data_adesao_plano: new Date().toISOString().split('T')[0]
+          });
+          setPlanoAtualizado(plano.toUpperCase());
+          setMostrarSucesso(true);
+          
+          // Limpar URL
+          window.history.replaceState({}, '', createPageUrl("Planos"));
+          
+          // Recarregar dados do usuário
+          const userData = await base44.auth.me();
+          setUser(userData);
+        } catch (error) {
+          console.error("Erro ao atualizar plano:", error);
+        }
+      };
+      atualizarPlano();
+    }
+  }, [location, user]);
 
-  // SEMPRE USAR PLANOS DE PROFISSIONAIS (which is the 'planos' array in this file)
+  const handleContratarPlano = (plano) => {
+    if (!plano.linkPagamento) {
+      // Plano gratuito - apenas atualizar
+      if (user) {
+        base44.auth.updateMe({
+          plano_ativo: plano.tipo,
+          data_adesao_plano: new Date().toISOString().split('T')[0]
+        });
+        alert("Você já está no plano Cobre gratuito!");
+      }
+      return;
+    }
+
+    // Adicionar parâmetro de retorno com o plano
+    const returnUrl = `${window.location.origin}${createPageUrl("Planos")}?status=approved&plano=${plano.tipo}`;
+    const linkComRetorno = `${plano.linkPagamento}&back_url=${encodeURIComponent(returnUrl)}`;
+    
+    // Redirecionar para Mercado Pago
+    window.location.href = linkComRetorno;
+  };
+
+  const isAdmin = user?.role === 'admin';
   const planosExibidos = planos;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8"> {/* Changed py-12 to py-8 */}
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
+      {/* Alert de Sucesso */}
+      {mostrarSucesso && (
+        <Alert className="max-w-4xl mx-auto mb-6 bg-green-50 border-green-200">
+          <Check className="h-4 w-4 text-green-600" />
+          <AlertDescription className="text-green-800">
+            🎉 <strong>Parabéns!</strong> Seu plano <strong>{planoAtualizado}</strong> foi ativado com sucesso! 
+            Agora você tem acesso a todos os recursos premium.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Header */}
       <div className="max-w-7xl mx-auto px-4">
         <div className="text-center mb-12">
@@ -225,14 +290,66 @@ export default function Planos() {
             Aumente sua visibilidade, atraia mais clientes e impulsione seu negócio com nossos planos exclusivos
           </p>
         </div>
+
+        {/* Seção de Contato - NOVA */}
+        <div className="mb-12 grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+          <Card className="border-2 border-blue-200 hover:border-blue-400 transition-colors">
+            <CardContent className="p-6">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center flex-shrink-0">
+                  <MessageCircle className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">
+                    💬 Fale com o Dr. Beleza
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Nosso assistente inteligente pode te ajudar a escolher o melhor plano!
+                  </p>
+                  <Button
+                    onClick={() => navigate(createPageUrl("PesquisaEspecializada"))}
+                    className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+                  >
+                    Conversar com Dr. Beleza
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-2 border-green-200 hover:border-green-400 transition-colors">
+            <CardContent className="p-6">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Headphones className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">
+                    📞 Central de Vendas
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Fale com nossos especialistas e tire todas as suas dúvidas!
+                  </p>
+                  <a
+                    href="https://wa.me/5531972595643?text=Olá!%20Gostaria%20de%20informações%20sobre%20os%20planos%20do%20Mapa%20da%20Estética!%20💆‍♀️"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700">
+                      WhatsApp: (31) 97259-5643
+                    </Button>
+                  </a>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-      
-      {/* REMOVED: Gerador de Link Admin block */}
 
       {/* Plans Grid */}
       <div className="max-w-7xl mx-auto px-4 mb-16">
         <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-          {planosExibidos.map((plano, index) => { // Using planosExibidos
+          {planosExibidos.map((plano, index) => {
             const IconComponent = plano.icone;
             return (
               <motion.div
@@ -251,7 +368,6 @@ export default function Planos() {
                     </div>
                   )}
 
-                  {/* Card Visual */}
                   <div className={`h-48 bg-gradient-to-br ${plano.cor} p-6 relative overflow-hidden flex-shrink-0`}>
                     <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20"></div>
                     <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full -ml-16 -mb-16"></div>
@@ -288,7 +404,6 @@ export default function Planos() {
                       </div>
                     </div>
 
-                    {/* Benefícios */}
                     <div className="mb-4 flex-1">
                       <h4 className="font-semibold text-sm mb-2 text-green-700">✓ Incluído:</h4>
                       <div className="space-y-2 max-h-64 overflow-y-auto">
@@ -303,7 +418,6 @@ export default function Planos() {
                       </div>
                     </div>
 
-                    {/* Não incluído */}
                     {plano.naoInclui && plano.naoInclui.length > 0 && (
                       <div className="mb-6 p-3 bg-red-50 rounded-lg">
                         <h4 className="font-semibold text-sm mb-2 text-red-700">✗ Não incluído:</h4>
@@ -321,35 +435,18 @@ export default function Planos() {
                       </div>
                     )}
 
-                    {/* Botões de Ação */}
                     <div className="space-y-2 mt-auto">
-                      {plano.tipo === 'platina' ? (
-                        <a
-                          href={`https://wa.me/5531972595643?text=${encodeURIComponent(`Olá! Gostaria de informações sobre o plano ${plano.nome} do Mapa da Estética! 💎`)}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
-                            Consultar
-                            <ArrowRight className="w-4 h-4 ml-2" />
-                          </Button>
-                        </a>
-                      ) : (
-                        <Link to={createPageUrl("FaleConosco")}>
-                          <Button
-                            className={`w-full ${
-                              plano.destaque
-                                ? "bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700"
-                                : "bg-[#2C2C2C] hover:bg-[#3A3A3A]"
-                            }`}
-                          >
-                            Contratar
-                            <ArrowRight className="w-4 h-4 ml-2" />
-                          </Button>
-                        </Link>
-                      )}
-
-                      {/* REMOVED: Botão Admin - Gerar Link */}
+                      <Button
+                        onClick={() => handleContratarPlano(plano)}
+                        className={`w-full ${
+                          plano.destaque
+                            ? "bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700"
+                            : "bg-[#2C2C2C] hover:bg-[#3A3A3A]"
+                        }`}
+                      >
+                        {plano.tipo === 'cobre' ? 'Plano Atual' : 'Contratar Agora'}
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
