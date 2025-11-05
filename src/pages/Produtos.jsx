@@ -23,7 +23,9 @@ import {
   Award,
   Check,
   ArrowLeft,
-  ArrowRight
+  ArrowRight,
+  Crown, // Added
+  DollarSign // Added
 } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
 
@@ -41,6 +43,7 @@ const categorias = [
 ];
 
 const servicosContrataveis = [
+  // SERVIÇOS PARA PROFISSIONAIS
   {
     id: "google-negocios",
     nome: "Criação de Google Negócios Personalizado",
@@ -48,7 +51,7 @@ const servicosContrataveis = [
     categoria: "Serviços Contratáveis",
     tipo_publico: "profissional",
     preco: 0,
-    preco_texto: "Consulte",
+    preco_texto: "Recurso de Assinantes Clube da Beleza",
     imagens: ["https://images.unsplash.com/photo-1573164713988-8665fc963095?w=800&q=80"],
     beneficios: [
       "Criação completa do perfil",
@@ -59,7 +62,8 @@ const servicosContrataveis = [
       "Suporte pós-criação"
     ],
     em_destaque: true,
-    status: 'ativo'
+    status: 'ativo',
+    requer_assinatura: true
   },
   {
     id: "geracao-imagens",
@@ -69,7 +73,7 @@ const servicosContrataveis = [
     tipo_publico: "profissional",
     preco: 50,
     preco_texto: "A partir de R$ 50",
-    imagens: ["https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/f0cb8c67e_geraodeimagem.png"],
+    imagens: ["https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe2/f0cb8c67e_geraodeimagem.png"],
     beneficios: [
       "Até 10 imagens personalizadas",
       "Alta resolução e qualidade",
@@ -79,9 +83,74 @@ const servicosContrataveis = [
       "Suporte técnico incluso"
     ],
     em_destaque: true,
-    status: 'ativo'
+    status: 'ativo',
+    requer_assinatura: false
   },
-  // Produtos para PACIENTES
+  {
+    id: "marketing-digital",
+    nome: "Gestão de Marketing Digital",
+    descricao: "Gerenciamento completo das suas redes sociais e estratégias de marketing digital para alavancar seu negócio.",
+    categoria: "Serviços Contratáveis",
+    tipo_publico: "profissional",
+    preco: 0,
+    preco_texto: "Recurso de Assinantes Clube da Beleza",
+    imagens: ["https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80"],
+    beneficios: [
+      "Gestão de Instagram e Facebook",
+      "Criação de posts profissionais",
+      "Stories e reels semanais",
+      "Estratégia de conteúdo",
+      "Relatórios mensais",
+      "Suporte dedicado"
+    ],
+    em_destaque: false,
+    status: 'ativo',
+    requer_assinatura: true
+  },
+  {
+    id: "site-profissional",
+    nome: "Desenvolvimento de Site Profissional",
+    descricao: "Site profissional personalizado com design moderno, responsivo e otimizado para conversão de clientes.",
+    categoria: "Serviços Contratáveis",
+    tipo_publico: "profissional",
+    preco: 0,
+    preco_texto: "Recurso de Assinantes Clube da Beleza",
+    imagens: ["https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?w=800&q=80"],
+    beneficios: [
+      "Design personalizado e responsivo",
+      "Integração com redes sociais",
+      "Formulário de contato",
+      "SEO otimizado",
+      "Certificado SSL incluso",
+      "Manutenção por 6 meses"
+    ],
+    em_destaque: false,
+    status: 'ativo',
+    requer_assinatura: true
+  },
+  {
+    id: "fotografia-profissional",
+    nome: "Sessão de Fotografia Profissional",
+    descricao: "Sessão fotográfica profissional para capturar seus trabalhos e criar um portfólio impecável.",
+    categoria: "Serviços Contratáveis",
+    tipo_publico: "profissional",
+    preco: 300,
+    preco_texto: "R$ 300,00",
+    imagens: ["https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=800&q=80"],
+    beneficios: [
+      "Até 50 fotos editadas",
+      "Fotógrafo especializado",
+      "Edição profissional",
+      "Alta resolução",
+      "Entrega em até 7 dias",
+      "Direitos de uso comercial"
+    ],
+    em_destaque: false,
+    status: 'ativo',
+    requer_assinatura: false
+  },
+  
+  // SERVIÇOS PARA PACIENTES
   {
     id: "consulta-estetica",
     nome: "Consulta Estética Online",
@@ -99,7 +168,8 @@ const servicosContrataveis = [
       "Certificado de consulta"
     ],
     em_destaque: true,
-    status: 'ativo'
+    status: 'ativo',
+    requer_assinatura: false
   },
   {
     id: "kit-skincare",
@@ -118,7 +188,128 @@ const servicosContrataveis = [
       "Suporte dermatológico"
     ],
     em_destaque: false,
-    status: 'ativo'
+    status: 'ativo',
+    requer_assinatura: false
+  },
+  {
+    id: "massagem-relaxante",
+    nome: "Massagem Relaxante (60min)",
+    descricao: "Sessão completa de massagem relaxante com profissional qualificado para aliviar tensões e estresse.",
+    categoria: "Serviços para Pacientes",
+    tipo_publico: "paciente",
+    preco: 180,
+    preco_texto: "R$ 180,00",
+    imagens: ["https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800&q=80"],
+    beneficios: [
+      "Duração de 60 minutos",
+      "Profissional certificado",
+      "Óleos essenciais inclusos",
+      "Ambiente climatizado",
+      "Música relaxante"
+    ],
+    em_destaque: false,
+    status: 'ativo',
+    requer_assinatura: false
+  },
+  {
+    id: "massagem-terapeutica",
+    nome: "Massagem Terapêutica (60min)",
+    descricao: "Massagem terapêutica focada em aliviar dores musculares e melhorar a circulação sanguínea.",
+    categoria: "Serviços para Pacientes",
+    tipo_publico: "paciente",
+    preco: 200,
+    preco_texto: "R$ 200,00",
+    imagens: ["https://images.unsplash.com/photo-1519824145371-296894a0daa9?w=800&q=80"],
+    beneficios: [
+      "Duração de 60 minutos",
+      "Técnicas específicas",
+      "Alívio de dores",
+      "Melhora da postura",
+      "Profissional especializado"
+    ],
+    em_destaque: false,
+    status: 'ativo',
+    requer_assinatura: false
+  },
+  {
+    id: "drenagem-linfatica",
+    nome: "Drenagem Linfática (60min)",
+    descricao: "Sessão de drenagem linfática para reduzir inchaços, eliminar toxinas e melhorar a circulação.",
+    categoria: "Serviços para Pacientes",
+    tipo_publico: "paciente",
+    preco: 150,
+    preco_texto: "R$ 150,00",
+    imagens: ["https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800&q=80"],
+    beneficios: [
+      "Duração de 60 minutos",
+      "Reduz inchaços",
+      "Elimina toxinas",
+      "Melhora circulação",
+      "Resultados visíveis"
+    ],
+    em_destaque: false,
+    status: 'ativo',
+    requer_assinatura: false
+  },
+  {
+    id: "reflexologia",
+    nome: "Sessão de Reflexologia (45min)",
+    descricao: "Técnica terapêutica que estimula pontos específicos dos pés para promover bem-estar geral.",
+    categoria: "Serviços para Pacientes",
+    tipo_publico: "paciente",
+    preco: 120,
+    preco_texto: "R$ 120,00",
+    imagens: ["https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=800&q=80"],
+    beneficios: [
+      "Duração de 45 minutos",
+      "Alívio de tensões",
+      "Melhora do sono",
+      "Redução do estresse",
+      "Técnica milenar"
+    ],
+    em_destaque: false,
+    status: 'ativo',
+    requer_assinatura: false
+  },
+  {
+    id: "quick-massage",
+    nome: "Quick Massage (30min)",
+    descricao: "Massagem rápida focada em áreas específicas de tensão, perfeita para o dia a dia corrido.",
+    categoria: "Serviços para Pacientes",
+    tipo_publico: "paciente",
+    preco: 90,
+    preco_texto: "R$ 90,00",
+    imagens: ["https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=800&q=80"],
+    beneficios: [
+      "Duração de 30 minutos",
+      "Foco em áreas de tensão",
+      "Alívio rápido",
+      "Ideal para intervalos",
+      "Sem necessidade de trocar de roupa"
+    ],
+    em_destaque: false,
+    status: 'ativo',
+    requer_assinatura: false
+  },
+  {
+    id: "shiatsu",
+    nome: "Massagem Shiatsu (60min)",
+    descricao: "Técnica japonesa que utiliza pressão dos dedos para equilibrar a energia do corpo.",
+    categoria: "Serviços para Pacientes",
+    tipo_publico: "paciente",
+    preco: 190,
+    preco_texto: "R$ 190,00",
+    imagens: ["https://images.unsplash.com/photo-1573590330099-d6c7355ec595?w=800&q=80"],
+    beneficios: [
+      "Duração de 60 minutos",
+      "Técnica japonesa autêntica",
+      "Equilíbrio energético",
+      "Alívio de dores",
+      "Profissional certificado"
+    ],
+    em_destaque: false,
+    status: 'ativo',
+    requer_assinatura: false
   }
 ];
 
@@ -612,7 +803,7 @@ export default function Produtos() {
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gray-400 text-5xl">
-                        {produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" ? "💼" : "🛍️"}
+                        {produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" || produto.categoria === "Produtos para Pacientes" ? "💼" : "🛍️"}
                       </div>
                     )}
 
@@ -625,6 +816,13 @@ export default function Produtos() {
                     {produto.preco_promocional && (
                       <Badge className="absolute top-2 right-2 bg-red-500 text-white border-none">
                         Promoção
+                      </Badge>
+                    )}
+
+                    {produto.requer_assinatura && (
+                      <Badge className="absolute top-2 right-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white border-none">
+                        <Crown className="w-3 h-3 mr-1" />
+                        Clube+
                       </Badge>
                     )}
                   </div>
@@ -657,8 +855,16 @@ export default function Produtos() {
                     )}
 
                     <div className="flex items-center justify-between pt-3 border-t">
-                      <div>
-                        {produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" ? (
+                      <div className="flex-1">
+                        {produto.requer_assinatura ? (
+                          <div>
+                            <p className="text-xs text-purple-600 font-semibold">
+                              <Crown className="w-3 h-3 inline mr-1" />
+                              Assinantes Clube+
+                            </p>
+                            <p className="text-xs text-gray-500">Benefício exclusivo</p>
+                          </div>
+                        ) : produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" || produto.categoria === "Produtos para Pacientes" ? (
                           <p className="text-lg font-bold text-blue-600">
                             {produto.preco_texto || "Consulte"}
                           </p>
@@ -680,26 +886,43 @@ export default function Produtos() {
 
                       <Button
                         size="sm"
-                        onClick={() => produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes"
+                        onClick={() => produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" || produto.categoria === "Produtos para Pacientes"
                           ? handleContratar(produto)
                           : handleComprarProduto(produto)
                         }
-                        className={produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes"
+                        className={produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" || produto.categoria === "Produtos para Pacientes"
                           ? "bg-blue-600 hover:bg-blue-700 text-white"
                           : "bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold"
                         }
                       >
-                        {produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" ? "Contratar" : <ShoppingCart className="w-4 h-4" />}
+                        {produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" || produto.categoria === "Produtos para Pacientes" ? "Contratar" : <ShoppingCart className="w-4 h-4" />}
                       </Button>
                     </div>
 
-                    {/* Mostrar pontos que serão ganhos */}
-                    {!(produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes") && (
+                    {/* Mostrar pontos que serão ganhos - APENAS PARA PRODUTOS */}
+                    {!(produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" || produto.categoria === "Produtos para Pacientes") && !produto.requer_assinatura && (
                       <div className="mt-2 text-xs text-center bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 py-2 rounded-lg border border-green-200">
                         <div className="flex items-center justify-center gap-1">
                           <Star className="w-3 h-3 fill-green-600" />
                           <span className="font-bold">+{pontosGanhos} pontos</span>
                           <span className="text-gray-600">({faixaPreco})</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Info sobre faixa de preço para SERVIÇOS */}
+                    {(produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" || produto.categoria === "Produtos para Pacientes") && !produto.requer_assinatura && produto.preco > 0 && (
+                      <div className="mt-2 text-xs text-center bg-gradient-to-r from-blue-50 to-cyan-50 text-blue-700 py-2 rounded-lg border border-blue-200">
+                        <div className="flex items-center justify-center gap-1">
+                          <DollarSign className="w-3 h-3" />
+                          <span className="font-bold">Faixa {faixaPreco}</span>
+                          <span className="text-gray-600">
+                            ({faixaPreco === "$" ? "Até R$ 500" :
+                              faixaPreco === "$$" ? "R$ 500-1.000" :
+                              faixaPreco === "$$$" ? "R$ 1.000-2.000" :
+                              faixaPreco === "$$$$" ? "R$ 2.000-5.000" :
+                              "Acima de R$ 5.000"})
+                          </span>
                         </div>
                       </div>
                     )}
