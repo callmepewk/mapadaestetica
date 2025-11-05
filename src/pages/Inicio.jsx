@@ -333,6 +333,46 @@ export default function Inicio() {
         </>
       )}
 
+      {/* ANÚNCIOS EM DESTAQUE - VISÍVEL PARA TODOS COMO EXEMPLOS */}
+      {anunciosDestaque.length > 0 && (
+        <section className="py-12 sm:py-16 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <div className="text-center mb-8 sm:mb-12">
+              <Badge className="mb-4 bg-purple-100 text-purple-800">
+                ⭐ Profissionais em Destaque
+              </Badge>
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Star className="w-5 h-5 sm:w-6 sm:h-6 text-[#F7D426]" />
+                <span className="text-xs sm:text-sm font-semibold text-[#F7D426] uppercase tracking-wide">
+                  Exemplos de Sucesso
+                </span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 px-2">
+                Veja Como Profissionais Se Destacam
+              </h2>
+              <p className="text-gray-600 text-base sm:text-lg px-4">
+                Conheça profissionais de sucesso que usam nossa plataforma
+              </p>
+            </div>
+
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              {anunciosDestaque.slice(0, 6).map((anuncio) => (
+                <CardAnuncio key={anuncio.id} anuncio={anuncio} destaque={true} />
+              ))}
+            </div>
+
+            <div className="text-center mt-8">
+              <Link to={createPageUrl("Anuncios")}>
+                <Button size="lg" variant="outline" className="border-2 border-pink-600 text-pink-600 hover:bg-pink-50">
+                  Ver Todos os Anúncios
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* PROFISSIONAIS: Conteúdo específico */}
       {isProfissional && (
         <>
@@ -470,46 +510,6 @@ export default function Inicio() {
             </div>
           </section>
         </>
-      )}
-
-      {/* ANÚNCIOS EM DESTAQUE - APENAS ADMINS VEEM */}
-      {isAdmin && anunciosDestaque.length > 0 && (
-        <section className="py-12 sm:py-16 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6">
-            <div className="text-center mb-8 sm:mb-12">
-              <Badge className="mb-4 bg-purple-100 text-purple-800">
-                👑 Visualização Admin - Anúncios de Exemplo
-              </Badge>
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <Star className="w-5 h-5 sm:w-6 sm:h-6 text-[#F7D426]" />
-                <span className="text-xs sm:text-sm font-semibold text-[#F7D426] uppercase tracking-wide">
-                  Profissionais em Destaque
-                </span>
-              </div>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 px-2">
-                Anúncios Premium
-              </h2>
-              <p className="text-gray-600 text-base sm:text-lg px-4">
-                Estes anúncios são visíveis apenas para administradores (para demonstrações em feiras e eventos)
-              </p>
-            </div>
-
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {anunciosDestaque.slice(0, 6).map((anuncio) => (
-                <CardAnuncio key={anuncio.id} anuncio={anuncio} destaque={true} />
-              ))}
-            </div>
-
-            <div className="text-center mt-8">
-              <Link to={createPageUrl("Anuncios")}>
-                <Button size="lg" variant="outline" className="border-2 border-pink-600 text-pink-600 hover:bg-pink-50">
-                  Ver Todos os Anúncios
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </section>
       )}
 
       {/* PATROCINADORES - AMBOS */}
