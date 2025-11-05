@@ -593,7 +593,7 @@ export default function Inicio() {
                     <p className="font-bold">Email + Telefone dos leads qualificados</p>
                   </div>
                   <div className="bg-white/50 p-3 rounded-lg">
-                    <p className="text-xs text-[#2C2C2C]/70">Impressões:</p>
+                    <p className="text-xs text-white/70">Impressões:</p>
                     <p className="font-bold">Até 500.000 impressões/mês</p>
                   </div>
                 </div>
@@ -1229,7 +1229,7 @@ export default function Inicio() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link to={createPageUrl("CadastrarAnuncio")}>
-                  <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-100 font-bold shadow-xl w-full sm:w-auto">
+                  <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-100 font-bold shadow-xl w-full sm:w-auto text-base">
                     Começar Grátis Agora
                     <ArrowRight className="w-5 h-5 ml-2" />
                   </Button>
@@ -1239,7 +1239,7 @@ export default function Inicio() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white/10 w-full sm:w-auto font-semibold">
+                  <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-100 w-full sm:w-auto font-bold shadow-xl text-base">
                     Falar com Especialista
                     <MessageCircle className="w-5 h-5 ml-2" />
                   </Button>
