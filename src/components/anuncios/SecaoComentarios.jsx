@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -17,7 +17,6 @@ export default function SecaoComentarios({ anuncio, user, isAutor }) {
   const [erro, setErro] = useState(null);
   const [comentariosLocal, setComentariosLocal] = useState(anuncio.comentarios || []);
 
-  // Atualizar quando anuncio muda
   useEffect(() => {
     setComentariosLocal(anuncio.comentarios || []);
   }, [anuncio.comentarios]);
@@ -44,10 +43,9 @@ export default function SecaoComentarios({ anuncio, user, isAutor }) {
       return novoComentarioObj;
     },
     onSuccess: (novoComentarioObj) => {
-      setComentariosLocal([...comentariosLocal, novoComentarioObj]);
+      setComentariosLocal(prev => [...prev, novoComentarioObj]);
       setNovoComentario("");
       setErro(null);
-      alert("Comentário enviado com sucesso!");
     },
     onError: (error) => {
       setErro("Erro ao enviar comentário");
@@ -137,7 +135,6 @@ export default function SecaoComentarios({ anuncio, user, isAutor }) {
     fixarComentarioMutation.mutate(comentarioId);
   };
 
-  // Ordenar: fixados primeiro, depois por data
   const comentariosOrdenados = [...comentariosLocal].sort((a, b) => {
     if (a.fixado && !b.fixado) return -1;
     if (!a.fixado && b.fixado) return 1;
@@ -153,7 +150,6 @@ export default function SecaoComentarios({ anuncio, user, isAutor }) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Área para fazer comentários */}
         <div className="bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
           <p className="font-semibold text-blue-900 mb-3">
             Deixe seu comentário:
@@ -184,7 +180,6 @@ export default function SecaoComentarios({ anuncio, user, isAutor }) {
           </Button>
         </div>
 
-        {/* Prompt para usuários não logados */}
         {!user && (
           <div className="bg-yellow-50 p-4 rounded-lg border-2 border-yellow-200">
             <p className="font-semibold text-yellow-900 mb-2">
@@ -202,7 +197,6 @@ export default function SecaoComentarios({ anuncio, user, isAutor }) {
           </div>
         )}
 
-        {/* Lista de comentários */}
         {comentariosOrdenados.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             <MessageCircle className="w-12 h-12 mx-auto text-gray-300 mb-2" />
