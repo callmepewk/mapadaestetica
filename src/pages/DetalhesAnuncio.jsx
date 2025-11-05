@@ -13,6 +13,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
 import SecaoPerguntas from "../components/anuncios/SecaoPerguntas";
 import ImpulsionarAnuncioModal from "../components/anuncios/ImpulsionarAnuncioModal";
+import SecaoComentarios from "../components/anuncios/SecaoComentarios";
 
 export default function DetalhesAnuncio() {
   const navigate = useNavigate();
@@ -342,6 +343,12 @@ export default function DetalhesAnuncio() {
               user={user}
               isAutor={isAutor}
             />
+
+            {/* NOVO: Seção de Comentários - Logo após perguntas */}
+            <SecaoComentarios
+              anuncio={anuncio}
+              user={user}
+            />
           </div>
 
           <div className="space-y-6">
@@ -368,17 +375,36 @@ export default function DetalhesAnuncio() {
                     </div>
                   </a>
                 )}
+                
                 {anuncio.whatsapp && (
-                  (isUserFree || isPaciente) ? (
+                  (isUserFree && !isAdmin) ? (
                     <div className="relative">
-                      <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                      <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg border-2 border-green-200">
                         <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center"><span className="text-white font-bold">W</span></div>
                         <div>
                           <p className="text-xs text-gray-500">WhatsApp</p>
-                          <p className="font-medium text-green-700 blur-sm">({anuncio.whatsapp.substring(0, 2)}) *****-****</p>
+                          <p className="font-medium text-green-700 blur-sm select-none">({anuncio.whatsapp.substring(0, 2)}) *****-****</p>
                         </div>
                       </div>
-                      <div className="mt-2 text-xs text-center text-gray-600"><Lock className="w-3 h-3 inline mr-1" />{isPaciente ? "Upgrade de conta" : "Upgrade de plano"}</div>
+                      <div className="mt-3 p-3 bg-gradient-to-r from-yellow-50 to-amber-50 border-2 border-yellow-300 rounded-lg">
+                        <div className="flex items-start gap-2">
+                          <Lock className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-semibold text-sm text-yellow-900 mb-1">🔒 Plano Gratuito</p>
+                            <p className="text-xs text-yellow-800 mb-3">
+                              Faça upgrade do seu plano para visualizar o WhatsApp e contatar diretamente os profissionais!
+                            </p>
+                            <Button 
+                              onClick={() => navigate(createPageUrl("Planos"))}
+                              size="sm" 
+                              className="w-full bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700"
+                            >
+                              <Crown className="w-4 h-4 mr-2" />
+                              Ver Planos
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   ) : (
                     <a href={`https://wa.me/${anuncio.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 bg-green-50 rounded-lg hover:bg-green-100">
@@ -390,6 +416,28 @@ export default function DetalhesAnuncio() {
                     </a>
                   )
                 )}
+
+                {/* Horário de Funcionamento */}
+                {anuncio.horario_funcionamento && (
+                  <>
+                    <Separator />
+                    <div>
+                      <div className="flex items-start gap-2 mb-2">
+                        <Clock className="w-5 h-5 text-pink-600 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1">
+                          <p className="font-semibold text-sm mb-1">Horário de Funcionamento</p>
+                          <p className="text-sm text-gray-600">{anuncio.horario_funcionamento}</p>
+                          {anuncio.status_funcionamento && anuncio.status_funcionamento !== "N/D" && (
+                            <Badge className={`mt-2 ${getStatusColor(anuncio.status_funcionamento)}`}>
+                              {anuncio.status_funcionamento}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+                
                 <Separator />
                 <div>
                   <div className="flex items-center gap-2 text-gray-600">
@@ -416,4 +464,14 @@ export default function DetalhesAnuncio() {
       )}
     </div>
   );
+
+  function getStatusColor(status) {
+    const colors = {
+      "Aberto Agora": "bg-green-100 text-green-800 border-green-200",
+      "Fechado": "bg-red-100 text-red-800 border-red-200",
+      "Sempre Aberto": "bg-blue-100 text-blue-800 border-blue-200",
+      "N/D": "bg-gray-100 text-gray-800 border-gray-200"
+    };
+    return colors[status] || colors["N/D"];
+  }
 }
