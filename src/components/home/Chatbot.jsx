@@ -197,7 +197,7 @@ export default function Chatbot({ user, onCompletarCadastro }) {
           >
             <div className="relative">
               <img
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe4/f54646e8e_drbeleza.png"
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/966d17a8f_drbeleza.png"
                 alt="Dr. Beleza"
                 className="w-12 h-12 rounded-full object-cover border-2 border-[#2C2C2C]"
                 onError={(e) => {
@@ -244,7 +244,7 @@ export default function Chatbot({ user, onCompletarCadastro }) {
               <div className="flex items-center gap-3">
                 <div className="relative">
                   <img
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe4/f54646e8e_drbeleza.png"
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/966d17a8f_drbeleza.png"
                     alt="Dr. Beleza"
                     className="w-12 h-12 rounded-full border-2 border-[#2C2C2C] object-cover"
                     onError={(e) => {
