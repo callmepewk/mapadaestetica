@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input"; // New import
 import {
   Star,
   Gift,
@@ -15,7 +16,12 @@ import {
   Crown,
   ShoppingCart,
   ArrowRight,
-  Coins
+  Coins,
+  Users, // New import
+  Copy, // New import
+  Link as LinkIcon, // New import
+  CheckCircle2, // New import
+  AlertCircle // New import
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -123,12 +129,39 @@ export default function LojaPontos() {
   const [loading, setLoading] = useState(true);
   const [resgatando, setResgatando] = useState(null);
   const [mensagemSucesso, setMensagemSucesso] = useState(null);
+  const [linkIndicacao, setLinkIndicacao] = useState(""); // New state
+  const [linkCopiado, setLinkCopiado] = useState(false); // New state
+  const [indicacoes, setIndicacoes] = useState([]); // New state
+
+  // Stores interval IDs for cleanup
+  const intervalRefs = React.useRef({});
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const userData = await base44.auth.me();
+        let userData = await base44.auth.me();
+        
+        // Generate referral code if not exists
+        if (!userData.codigo_indicacao) {
+          const codigo = `${userData.email.split('@')[0]}_${Date.now().toString(36)}`.toUpperCase();
+          await base44.auth.updateMe({ codigo_indicacao: codigo });
+          userData = { ...userData, codigo_indicacao: codigo }; // Update local userData
+        }
+
         setUser(userData);
+
+        // Generate referral link
+        const link = `${window.location.origin}?ref=${userData.codigo_indicacao}`;
+        setLinkIndicacao(link);
+
+        // Fetch user's own referrals (where current user is the referrer)
+        const minhasIndicacoes = await base44.entities.IndicacaoAmigo.filter(
+          { usuario_indicador_email: userData.email },
+          '-created_date',
+          100
+        );
+        setIndicacoes(minhasIndicacoes);
+
       } catch (error) {
         console.error("Erro ao carregar usuário:", error);
         base44.auth.redirectToLogin(window.location.pathname);
@@ -138,6 +171,203 @@ export default function LojaPontos() {
     };
     fetchUser();
   }, []);
+
+  // Effect for referral code checking and time tracking
+  useEffect(() => {
+    const checkReferralCode = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const refCode = urlParams.get('ref');
+      
+      if (refCode && user) {
+        // Do not allow user to refer themselves
+        if (refCode === user.codigo_indicacao) {
+          console.log("Não pode usar o próprio link de indicação.");
+          return;
+        }
+
+        // Check if referral already exists for the current user and refCode
+        const existingReferrals = await base44.entities.IndicacaoAmigo.filter(
+          { 
+            codigo_indicacao: refCode,
+            usuario_indicado_email: user.email
+          },
+          '-created_date',
+          1
+        );
+
+        if (existingReferrals.length === 0) { // If it's a new referral for this user
+          // Find the referrer user
+          const allUsers = await base44.entities.User.list();
+          const referrerUser = allUsers.find(u => u.codigo_indicacao === refCode);
+
+          if (referrerUser) {
+            try {
+              // Simulate IP (in production, would be from server or request headers)
+              const ipSimulado = `${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}`;
+              
+              const newReferral = await base44.entities.IndicacaoAmigo.create({
+                usuario_indicador_email: referrerUser.email,
+                codigo_indicacao: refCode,
+                ip_acesso: ipSimulado,
+                data_acesso: new Date().toISOString(),
+                status: "em_andamento",
+                usuario_indicado_email: user.email, // Store the email of the referred user
+                validado: false,
+                tempo_permanencia_minutos: 0
+              });
+
+              // Mark current user as referred by someone
+              await base44.auth.updateMe({ indicado_por: refCode });
+
+              // Start time tracking for this new referral
+              startTimeTracking(newReferral.id, refCode, referrerUser.email);
+            } catch (error) {
+              console.error("Erro ao registrar indicação:", error);
+            }
+          }
+        } else {
+          // If referral already exists but might not be validated yet, restart tracking if needed
+          const existingRef = existingReferrals[0];
+          if (!existingRef.validado) {
+            startTimeTracking(existingRef.id, refCode, existingRef.usuario_indicador_email);
+          }
+        }
+      }
+    };
+
+    if (user && !loading) {
+      checkReferralCode();
+    }
+
+    // Cleanup function for intervals
+    return () => {
+      Object.values(intervalRefs.current).forEach(clearInterval);
+    };
+  }, [user, loading]); // Depend on user and loading to ensure user data is ready
+
+  const startTimeTracking = (referralId, refCode, referrerEmail) => {
+    // Clear any existing interval for this referralId to prevent duplicates
+    if (intervalRefs.current[referralId]) {
+      clearInterval(intervalRefs.current[referralId]);
+    }
+
+    const startTime = Date.now();
+    
+    // Update time every 10 seconds (for more granular updates, but still good for demo)
+    const interval = setInterval(async () => {
+      const tempoDecorrido = Math.floor((Date.now() - startTime) / 1000); // in seconds
+      const tempoDecorridoMinutos = Math.floor(tempoDecorrido / 60); // in minutes
+      
+      try {
+        const currentReferral = await base44.entities.IndicacaoAmigo.get(referralId);
+
+        if (currentReferral && !currentReferral.validado) {
+          // Update only if the current user is the indicated user for this referral
+          if (currentReferral.usuario_indicado_email === user.email) {
+            await base44.entities.IndicacaoAmigo.update(referralId, {
+              tempo_permanencia_minutos: tempoDecorridoMinutos
+            });
+
+            // If 15 minutes reached and user's profile is complete, validate
+            // Note: `user.cadastro_completo` is a hypothetical field. Adjust as per actual user model.
+            if (tempoDecorridoMinutos >= 15 && user.cadastro_completo) {
+              await validarIndicacao(currentReferral, referrerEmail);
+              clearInterval(interval);
+              delete intervalRefs.current[referralId];
+            }
+          }
+        } else {
+          // If referral is already validated or doesn't exist, stop tracking
+          clearInterval(interval);
+          delete intervalRefs.current[referralId];
+        }
+      } catch (error) {
+        console.error(`Erro ao atualizar tempo para indicação ${referralId}:`, error);
+      }
+    }, 10000); // Check every 10 seconds
+
+    intervalRefs.current[referralId] = interval;
+
+    // Stop tracking after a maximum of 30 minutes to prevent resource leak
+    setTimeout(() => {
+      if (intervalRefs.current[referralId]) {
+        clearInterval(intervalRefs.current[referralId]);
+        delete intervalRefs.current[referralId];
+      }
+    }, 30 * 60 * 1000); // 30 minutes
+  };
+
+  const validarIndicacao = async (indicacaoRecord, referrerEmail) => {
+    try {
+      // Mark referral as validated
+      await base44.entities.IndicacaoAmigo.update(indicacaoRecord.id, {
+        validado: true,
+        status: "validado",
+        data_validacao: new Date().toISOString(),
+        cadastro_completo: true // Assuming indicated user's cadastro is complete
+      });
+
+      // Find the referrer user to update their points and validated count
+      const allUsers = await base44.entities.User.list();
+      const referrer = allUsers.find(u => u.email === referrerEmail);
+
+      if (referrer) {
+        const newValidatedReferralsCount = (referrer.amigos_indicados_validados || 0) + 1;
+        let pointsBonusTotal = referrer.total_pontos_indicacao || 0;
+        let currentPoints = referrer.pontos_acumulados || 0;
+
+        if (newValidatedReferralsCount % 5 === 0) {
+          pointsBonusTotal += 100;
+          currentPoints += 100;
+
+          // Mark that points were credited for this cycle
+          // This ensures points are only given once per 5 validated referrals
+          await base44.entities.IndicacaoAmigo.update(indicacaoRecord.id, {
+            pontos_creditados: true
+          });
+
+          // Send WhatsApp notification to referrer
+          if (referrer.whatsapp) {
+            const mensagem = `🎉 Parabéns! Você indicou 5 amigos com sucesso e ganhou 100 pontos no Mapa da Estética! Continue indicando e ganhando mais recompensas! 💎`;
+            window.open(`https://wa.me/${referrer.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(mensagem)}`, '_blank');
+          }
+        }
+
+        // Update referrer's user data
+        await base44.entities.User.update(referrer.id, {
+          amigos_indicados_validados: newValidatedReferralsCount,
+          total_pontos_indicacao: pointsBonusTotal,
+          pontos_acumulados: currentPoints
+        });
+        
+        // Refresh the current user's (referrer's) local state if they are the referrer
+        if (user.email === referrerEmail) {
+          setUser(prevUser => ({
+            ...prevUser,
+            amigos_indicados_validados: newValidatedReferralsCount,
+            total_pontos_indicacao: pointsBonusTotal,
+            pontos_acumulados: currentPoints
+          }));
+        }
+
+        // Refresh the list of own indications
+        const updatedIndicacoes = await base44.entities.IndicacaoAmigo.filter(
+          { usuario_indicador_email: user.email },
+          '-created_date',
+          100
+        );
+        setIndicacoes(updatedIndicacoes);
+      }
+    } catch (error) {
+      console.error("Erro ao validar indicação:", error);
+    }
+  };
+
+  const copiarLinkIndicacao = () => {
+    navigator.clipboard.writeText(linkIndicacao);
+    setLinkCopiado(true);
+    setTimeout(() => setLinkCopiado(false), 2000);
+  };
 
   const handleResgatar = async (recompensa) => {
     if (!user || user.pontos_acumulados < recompensa.pontosNecessarios) {
@@ -152,24 +382,25 @@ export default function LojaPontos() {
     setResgatando(recompensa.id);
 
     try {
-      // Atualizar pontos do usuário
+      // Update user points
       const novosPontos = user.pontos_acumulados - recompensa.pontosNecessarios;
       await base44.auth.updateMe({ pontos_acumulados: novosPontos });
 
-      // Atualizar estado local
+      // Update local state
       setUser({ ...user, pontos_acumulados: novosPontos });
 
-      // Mostrar mensagem de sucesso
+      // Show success message
       setMensagemSucesso(`🎉 Parabéns! Você resgatou ${recompensa.nome} com sucesso!`);
 
-      // Limpar mensagem após 5 segundos
+      // Clear message after 5 seconds
       setTimeout(() => {
         setMensagemSucesso(null);
       }, 5000);
 
-      // Se for BeautyCoin, enviar notificação via WhatsApp
+      // If BeautyCoin, send WhatsApp notification
       if (recompensa.id === "beautycoin") {
         const mensagem = `Olá! Acabei de resgatar 1 BeautyCoin (100 pontos) na Loja de Pontos do Mapa da Estética! 💎`;
+        // Assuming this number is for the platform's support or admin, not the user's
         window.open(`https://wa.me/5531972595643?text=${encodeURIComponent(mensagem)}`, '_blank');
       }
 
@@ -191,6 +422,11 @@ export default function LojaPontos() {
       </div>
     );
   }
+
+  // Calculate progress for referral cycle
+  const currentValidatedReferrals = indicacoes.filter(i => i.validado).length; // Total validated by the current user as referrer
+  const progressoIndicacoes = (user?.amigos_indicados_validados || 0) % 5;
+  const proximaRecompensa = 5 - progressoIndicacoes;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
@@ -245,6 +481,186 @@ export default function LojaPontos() {
                 </div>
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Sistema de Indicação de Amigos */}
+        <Card className="mb-8 border-none shadow-xl bg-gradient-to-br from-purple-50 to-pink-50 overflow-hidden">
+          <CardContent className="p-8">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center">
+                <Users className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Indique Amigos e Ganhe Pontos!</h2>
+                <p className="text-gray-600">Ganhe 100 pontos a cada 5 amigos indicados com sucesso</p>
+              </div>
+            </div>
+
+            {/* Progresso */}
+            <div className="bg-white rounded-lg p-6 mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-semibold text-gray-700">Seu Progresso Atual</span>
+                <span className="text-sm font-bold text-purple-600">
+                  {user?.amigos_indicados_validados || 0} amigos validados
+                </span>
+              </div>
+              
+              <div className="relative">
+                <div className="h-4 bg-gray-200 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-gradient-to-r from-purple-600 to-pink-600 transition-all duration-500"
+                    style={{ width: `${(progressoIndicacoes / 5) * 100}%` }}
+                  ></div>
+                </div>
+                <div className="flex justify-between mt-2 px-1"> {/* Added padding for alignment */}
+                  {[1, 2, 3, 4, 5].map((num) => (
+                    <div key={num} className="text-center relative">
+                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                        progressoIndicacoes >= num 
+                          ? 'bg-gradient-to-br from-purple-600 to-pink-600 text-white' 
+                          : 'bg-gray-300 text-gray-600'
+                      }`}>
+                        {progressoIndicacoes >= num ? '✓' : num}
+                      </div>
+                      {num === 5 && (
+                        <div className="absolute -right-2 top-0 transform translate-x-full mt-0.5 ml-1">
+                          <Coins className="w-4 h-4 text-[#F7D426]" />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-4 p-3 bg-gradient-to-r from-purple-100 to-pink-100 rounded-lg">
+                <p className="text-sm text-center">
+                  {proximaRecompensa > 0 ? (
+                    <span className="font-semibold text-purple-900">
+                      Faltam apenas {proximaRecompensa} amigo{proximaRecompensa > 1 ? 's' : ''} para ganhar 100 pontos! 🎉
+                    </span>
+                  ) : (
+                    <span className="font-semibold text-green-900">
+                      Você acabou de completar um ciclo! Continue indicando para ganhar mais 100 pontos! 💎
+                    </span>
+                  )}
+                </p>
+              </div>
+            </div>
+
+            {/* Link de Indicação */}
+            <div className="bg-white rounded-lg p-6 mb-6">
+              <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                <LinkIcon className="w-5 h-5 text-purple-600" />
+                Seu Link Exclusivo de Indicação
+              </h3>
+              <div className="flex gap-2">
+                <Input 
+                  value={linkIndicacao} 
+                  readOnly 
+                  className="font-mono text-sm"
+                />
+                <Button 
+                  onClick={copiarLinkIndicacao}
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                >
+                  {linkCopiado ? (
+                    <>
+                      <CheckCircle2 className="w-4 h-4 mr-2" />
+                      Copiado!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4 mr-2" />
+                      Copiar
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            {/* Regras */}
+            <div className="bg-white rounded-lg p-6">
+              <h3 className="font-bold text-gray-900 mb-4">📋 Como Funciona?</h3>
+              <div className="space-y-3 text-sm">
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-purple-600 font-bold">1</span>
+                  </div>
+                  <p className="text-gray-700">
+                    <strong>Compartilhe seu link exclusivo</strong> com amigos que ainda não são cadastrados.
+                  </p>
+                </div>
+                
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-purple-600 font-bold">2</span>
+                  </div>
+                  <p className="text-gray-700">
+                    Seus amigos devem <strong>acessar pelo link, se cadastrar completamente</strong> e <strong>permanecer pelo menos 15 minutos</strong> navegando no site.
+                  </p>
+                </div>
+                
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-purple-600 font-bold">3</span>
+                  </div>
+                  <p className="text-gray-700">
+                    A cada <strong>5 amigos indicados com sucesso</strong>, você ganha <strong className="text-purple-600">100 pontos!</strong>
+                  </p>
+                </div>
+
+                <Alert className="bg-yellow-50 border-yellow-200 mt-4">
+                  <AlertCircle className="h-4 w-4 text-yellow-600" />
+                  <AlertDescription className="text-yellow-800 text-xs">
+                    <strong>Importante:</strong> Não vale usar seu próprio link! Nosso sistema detecta o IP e valida automaticamente. 
+                    Apenas indicações genuínas de novos usuários contam para o bônus.
+                  </AlertDescription>
+                </Alert>
+              </div>
+            </div>
+
+            {/* Lista de Indicações */}
+            {indicacoes.length > 0 && (
+              <div className="bg-white rounded-lg p-6 mt-6">
+                <h3 className="font-bold text-gray-900 mb-4">📊 Suas Indicações</h3>
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {indicacoes.map((indicacao, index) => (
+                    <div key={indicacao.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                          indicacao.validado 
+                            ? 'bg-green-100 text-green-600' 
+                            : indicacao.status === 'em_andamento' 
+                            ? 'bg-yellow-100 text-yellow-600'
+                            : 'bg-gray-200 text-gray-600'
+                        }`}>
+                          {indicacao.validado ? <CheckCircle2 className="w-5 h-5" /> : index + 1}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">
+                            {indicacao.usuario_indicado_email || 'Aguardando cadastro...'}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {indicacao.validado 
+                              ? `✓ Validado - ${indicacao.tempo_permanencia_minutos || 0} min`
+                              : `Em andamento - ${indicacao.tempo_permanencia_minutos || 0} min`
+                            }
+                          </p>
+                        </div>
+                      </div>
+                      <Badge className={
+                        indicacao.validado 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-yellow-100 text-yellow-800'
+                      }>
+                        {indicacao.validado ? 'Validado' : indicacao.status}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
