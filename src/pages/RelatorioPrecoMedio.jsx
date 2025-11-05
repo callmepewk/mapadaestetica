@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -265,7 +266,7 @@ export default function RelatorioPrecoMedio() {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
     
-    alert('Relatório exportado! Abra o arquivo HTML e use Ctrl+P (ou Cmd+P no Mac) para salvar como PDF.');
+    alert('Relatório exportado em HTML! Para converter em PDF:\n\n1. Abra o arquivo HTML no seu navegador\n2. Pressione Ctrl+P (Windows) ou Cmd+P (Mac)\n3. Selecione "Salvar como PDF" como destino\n4. Clique em "Salvar"\n\nO arquivo será salvo como PDF no seu computador.');
   };
 
   if (!user || user.role !== 'admin') {
@@ -500,7 +501,7 @@ export default function RelatorioPrecoMedio() {
                             style={{ width: `${percentual}%` }}
                           ></div>
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">{percentual.toFixed(1)}% do total</p>
+                        <p className="text-xs text-gray-500 mt-1">{percentual.toFixed(1)}% do total}</p>
                       </div>
                     );
                   })}

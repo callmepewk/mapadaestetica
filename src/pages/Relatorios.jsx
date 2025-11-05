@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -30,7 +31,7 @@ export default function Relatorios() {
     checkAdmin();
   }, [navigate]);
 
-  const exportarPDF = (tipoRelatorio) => {
+  const exportarPDF = async (tipoRelatorio) => {
     const dataAtual = new Date().toLocaleDateString('pt-BR');
     const horaAtual = new Date().toLocaleTimeString('pt-BR');
     
@@ -58,6 +59,7 @@ export default function Relatorios() {
           tr:nth-child(even) { background: #f8f9fa; }
           .footer { margin-top: 40px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #ddd; padding-top: 20px; }
           .highlight { background: #FFF9E6; padding: 3px 8px; border-radius: 4px; font-weight: bold; }
+          .page-break { page-break-after: always; }
         </style>
       </head>
       <body>
@@ -215,39 +217,159 @@ export default function Relatorios() {
         </div>
       `;
     } else if (tipoRelatorio === 'Completo') {
-      conteudoHTML += `
-        <div class="info-box">
-          <h2>📋 Relatório Completo do Sistema</h2>
-          <p>Compilação de todos os relatórios em um único documento</p>
-        </div>
+      // Buscar dados reais de preços médios
+      try {
+        const anuncios = await base44.entities.Anuncio.filter({ status: 'ativo' });
+        
+        const distribuicao = {
+          "$": anuncios.filter(a => a.faixa_preco === "$").length,
+          "$$": anuncios.filter(a => a.faixa_preco === "$$").length,
+          "$$$": anuncios.filter(a => a.faixa_preco === "$$$").length,
+          "$$$$": anuncios.filter(a => a.faixa_preco === "$$$$").length,
+          "$$$$$": anuncios.filter(a => a.faixa_preco === "$$$$$").length,
+        };
 
-        <h2 style="border-bottom: 2px solid #F7D426; padding-bottom: 10px; margin-top: 40px;">💰 PREÇOS MÉDIOS</h2>
-        <div class="metric">
-          <div class="metric-title">Total de Anúncios Ativos</div>
-          <div class="metric-value">Verificar no relatório específico</div>
-        </div>
+        const procedimentosMap = {};
+        anuncios.forEach(anuncio => {
+          anuncio.procedimentos_servicos?.forEach(proc => {
+            procedimentosMap[proc] = (procedimentosMap[proc] || 0) + 1;
+          });
+        });
 
-        <h2 style="border-bottom: 2px solid #F7D426; padding-bottom: 10px; margin-top: 40px;">📈 SEO & TRÁFEGO</h2>
-        <table>
-          <thead><tr><th>Métrica</th><th>Valor Atual</th><th>Crescimento</th></tr></thead>
-          <tbody>
-            <tr><td>Visitas Hoje</td><td class="highlight">1,234</td><td style="color: green;">+15%</td></tr>
-            <tr><td>Novos Usuários</td><td class="highlight">89</td><td style="color: green;">+12%</td></tr>
-            <tr><td>Taxa de Conversão</td><td class="highlight">12.5%</td><td style="color: green;">+5%</td></tr>
-          </tbody>
-        </table>
+        const procedimentosComuns = Object.entries(procedimentosMap)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 10);
 
-        <h2 style="border-bottom: 2px solid #F7D426; padding-bottom: 10px; margin-top: 40px;">💳 TRANSAÇÕES</h2>
-        <table>
-          <thead><tr><th>Métrica</th><th>Valor</th></tr></thead>
-          <tbody>
-            <tr><td>Receita Hoje</td><td class="highlight">R$ 1.2K</td></tr>
-            <tr><td>Total de Transações</td><td class="highlight">45</td></tr>
-            <tr><td>Ticket Médio</td><td class="highlight">R$ 27</td></tr>
-            <tr><td>Pontos Resgatados</td><td class="highlight">2.5K</td></tr>
-          </tbody>
-        </table>
-      `;
+        conteudoHTML += `
+          <div class="info-box">
+            <h2>📋 Relatório Completo do Sistema</h2>
+            <p>Compilação de todos os relatórios em um único documento</p>
+          </div>
+
+          <h2 style="border-bottom: 2px solid #F7D426; padding-bottom: 10px; margin-top: 40px;">💰 PREÇOS MÉDIOS</h2>
+          
+          <div class="metric">
+            <div class="metric-title">📊 Total de Anúncios Ativos</div>
+            <div class="metric-value">${anuncios.length}</div>
+            <div class="metric-subtitle">Profissionais cadastrados na plataforma</div>
+          </div>
+
+          <h3 style="margin-top: 30px;">Distribuição por Faixa de Preço</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Faixa</th>
+                <th>Valor</th>
+                <th>Quantidade</th>
+                <th>Percentual</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>$</strong></td>
+                <td>Até R$ 500</td>
+                <td class="highlight">${distribuicao["$"]}</td>
+                <td>${anuncios.length > 0 ? ((distribuicao["$"] / anuncios.length) * 100).toFixed(1) : 0}%</td>
+              </tr>
+              <tr>
+                <td><strong>$$</strong></td>
+                <td>R$ 500 - R$ 1.000</td>
+                <td class="highlight">${distribuicao["$$"]}</td>
+                <td>${anuncios.length > 0 ? ((distribuicao["$$"] / anuncios.length) * 100).toFixed(1) : 0}%</td>
+              </tr>
+              <tr>
+                <td><strong>$$$</strong></td>
+                <td>R$ 1.000 - R$ 2.000</td>
+                <td class="highlight">${distribuicao["$$$"]}</td>
+                <td>${anuncios.length > 0 ? ((distribuicao["$$$"] / anuncios.length) * 100).toFixed(1) : 0}%</td>
+              </tr>
+              <tr>
+                <td><strong>$$$$</strong></td>
+                <td>R$ 2.000 - R$ 5.000</td>
+                <td class="highlight">${distribuicao["$$$$"]}</td>
+                <td>${anuncios.length > 0 ? ((distribuicao["$$$$"] / anuncios.length) * 100).toFixed(1) : 0}%</td>
+              </tr>
+              <tr>
+                <td><strong>$$$$$</strong></td>
+                <td>Acima de R$ 5.000</td>
+                <td class="highlight">${distribuicao["$$$$$"]}</td>
+                <td>${anuncios.length > 0 ? ((distribuicao["$$$$$"] / anuncios.length) * 100).toFixed(1) : 0}%</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3 style="margin-top: 30px;">Top 10 Procedimentos Mais Oferecidos</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Procedimento</th>
+                <th>Profissionais</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${procedimentosComuns.length > 0 ? procedimentosComuns.map(([proc, count], index) => `
+                <tr>
+                  <td><strong>${index + 1}º</strong></td>
+                  <td>${proc}</td>
+                  <td class="highlight">${count}</td>
+                </tr>
+              `).join('') : `<tr><td colspan="3">Nenhum procedimento encontrado.</td></tr>`}
+            </tbody>
+          </table>
+
+          <div class="page-break"></div>
+
+          <h2 style="border-bottom: 2px solid #F7D426; padding-bottom: 10px; margin-top: 40px;">📈 SEO & TRÁFEGO</h2>
+          <table>
+            <thead><tr><th>Métrica</th><th>Valor Atual</th><th>Crescimento</th></tr></thead>
+            <tbody>
+              <tr><td>Visitas Hoje</td><td class="highlight">1,234</td><td style="color: green;">+15%</td></tr>
+              <tr><td>Novos Usuários</td><td class="highlight">89</td><td style="color: green;">+12%</td></tr>
+              <tr><td>Taxa de Conversão</td><td class="highlight">12.5%</td><td style="color: green;">+5%</td></tr>
+            </tbody>
+          </table>
+
+          <h2 style="border-bottom: 2px solid #F7D426; padding-bottom: 10px; margin-top: 40px;">💳 TRANSAÇÕES</h2>
+          <table>
+            <thead><tr><th>Métrica</th><th>Valor</th></tr></thead>
+            <tbody>
+              <tr><td>Receita Hoje</td><td class="highlight">R$ 1.2K</td></tr>
+              <tr><td>Total de Transações</td><td class="highlight">45</td></tr>
+              <tr><td>Ticket Médio</td><td class="highlight">R$ 27</td></tr>
+              <tr><td>Pontos Resgatados</td><td class="highlight">2.5K</td></tr>
+            </tbody>
+          </table>
+        `;
+      } catch (error) {
+        console.error("Erro ao buscar dados para o relatório completo:", error);
+        conteudoHTML += `
+          <div class="info-box">
+            <h2>📋 Relatório Completo do Sistema</h2>
+            <p>Erro ao carregar dados. Por favor, tente novamente.</p>
+          </div>
+          <h2 style="border-bottom: 2px solid #F7D426; padding-bottom: 10px; margin-top: 40px;">📈 SEO & TRÁFEGO</h2>
+          <table>
+            <thead><tr><th>Métrica</th><th>Valor Atual</th><th>Crescimento</th></tr></thead>
+            <tbody>
+              <tr><td>Visitas Hoje</td><td class="highlight">1,234</td><td style="color: green;">+15%</td></tr>
+              <tr><td>Novos Usuários</td><td class="highlight">89</td><td style="color: green;">+12%</td></tr>
+              <tr><td>Taxa de Conversão</td><td class="highlight">12.5%</td><td style="color: green;">+5%</td></tr>
+            </tbody>
+          </table>
+
+          <h2 style="border-bottom: 2px solid #F7D426; padding-bottom: 10px; margin-top: 40px;">💳 TRANSAÇÕES</h2>
+          <table>
+            <thead><tr><th>Métrica</th><th>Valor</th></tr></thead>
+            <tbody>
+              <tr><td>Receita Hoje</td><td class="highlight">R$ 1.2K</td></tr>
+              <tr><td>Total de Transações</td><td class="highlight">45</td></tr>
+              <tr><td>Ticket Médio</td><td class="highlight">R$ 27</td></tr>
+              <tr><td>Pontos Resgatados</td><td class="highlight">2.5K</td></tr>
+            </tbody>
+          </table>
+        `;
+      }
     }
 
     conteudoHTML += `
@@ -270,7 +392,7 @@ export default function Relatorios() {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
     
-    alert('Relatório exportado! Abra o arquivo HTML e use Ctrl+P (ou Cmd+P no Mac) para salvar como PDF.');
+    alert('Relatório exportado em HTML! Para converter em PDF:\n\n1. Abra o arquivo HTML no seu navegador\n2. Pressione Ctrl+P (Windows) ou Cmd+P (Mac)\n3. Selecione "Salvar como PDF" como destino\n4. Clique em "Salvar"\n\nO arquivo será salvo como PDF no seu computador.');
   };
 
   if (!user || user.role !== 'admin') {
@@ -312,7 +434,7 @@ export default function Relatorios() {
             className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] text-[#2C2C2C] hover:from-[#E5C215] hover:to-[#F7D426] border-2 border-[#2C2C2C] font-bold"
           >
             <FileText className="w-4 h-4 mr-2" />
-            Gerar Relatório Completo (PDF)
+            Gerar Relatório Completo (HTML para PDF)
           </Button>
         </div>
 

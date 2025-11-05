@@ -41,6 +41,11 @@ export default function Layout({ children }) {
   const [mostrarOnboarding, setMostrarOnboarding] = useState(false);
   const [testeExpirado, setTesteExpirado] = useState(false);
 
+  // Scroll para o topo ao mudar de página
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
   useEffect(() => {
     const checkAuth = async () => {
       try {

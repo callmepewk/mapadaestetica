@@ -28,29 +28,10 @@ export default function Chatbot({ user, onCompletarCadastro }) {
     scrollToBottom();
   }, [mensagens]);
 
-  // Fechar ao clicar fora
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      // Check if chat is open, click is outside the chat window, and not on the chatbot button itself
-      if (chatAberto && chatRef.current && !chatRef.current.contains(event.target)) {
-        const chatbotButton = document.getElementById('chatbot-button');
-        if (chatbotButton && !chatbotButton.contains(event.target)) {
-          setChatAberto(false);
-        }
-      }
-    };
-
-    if (chatAberto) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [chatAberto]); // Dependency updated
+  // The previous useEffect for handleClickOutside is removed as the overlay now handles this.
 
   useEffect(() => {
-    if (chatAberto && mensagens.length === 0) { // Dependency updated
+    if (chatAberto && mensagens.length === 0) {
       // Verificar se usuário completou cadastro
       if (!user || !user.cadastro_completo) {
         setMensagens([
@@ -75,7 +56,7 @@ export default function Chatbot({ user, onCompletarCadastro }) {
         ]);
       }
     }
-  }, [chatAberto, mensagens.length, user]); // Dependency updated
+  }, [chatAberto, mensagens.length, user]);
 
   const handleOpcaoInicial = (opcao) => {
     if (opcao.valor === "completar_cadastro") {
@@ -207,7 +188,7 @@ export default function Chatbot({ user, onCompletarCadastro }) {
       <AnimatePresence>
         {!chatAberto && ( // Only show button if chat is not open
           <motion.button
-            id="chatbot-button" // Keep ID for outside click logic
+            id="chatbot-button" // Keep ID for outside click logic (though now less critical due to overlay)
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
@@ -216,7 +197,7 @@ export default function Chatbot({ user, onCompletarCadastro }) {
           >
             <div className="relative">
               <img
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/f54646e8e_drbeleza.png"
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe4/f54646e8e_drbeleza.png"
                 alt="Dr. Beleza"
                 className="w-12 h-12 rounded-full object-cover border-2 border-[#2C2C2C]"
                 onError={(e) => {
@@ -233,6 +214,19 @@ export default function Chatbot({ user, onCompletarCadastro }) {
         )}
       </AnimatePresence>
 
+      {/* Overlay para fechar ao clicar fora */}
+      <AnimatePresence>
+        {chatAberto && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setChatAberto(false)}
+            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
+          />
+        )}
+      </AnimatePresence>
+
       {/* Janela do Chat */}
       <AnimatePresence>
         {chatAberto && ( // Renders if chat is open
@@ -241,6 +235,7 @@ export default function Chatbot({ user, onCompletarCadastro }) {
             initial={{ opacity: 0, y: 20, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            onClick={(e) => e.stopPropagation()} // Prevents clicks inside chat from closing overlay
             className="fixed bottom-6 right-6 w-96 max-w-[calc(100vw-3rem)] bg-white rounded-2xl shadow-2xl z-50 flex flex-col border-2 border-[#F7D426]"
             style={{ height: '600px', maxHeight: 'calc(100vh - 3rem)' }}
           >
@@ -249,7 +244,7 @@ export default function Chatbot({ user, onCompletarCadastro }) {
               <div className="flex items-center gap-3">
                 <div className="relative">
                   <img
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/f54646e8e_drbeleza.png"
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe4/f54646e8e_drbeleza.png"
                     alt="Dr. Beleza"
                     className="w-12 h-12 rounded-full border-2 border-[#2C2C2C] object-cover"
                     onError={(e) => {
