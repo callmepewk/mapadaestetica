@@ -93,6 +93,11 @@ export default function Layout({ children }) {
     setMostrarOnboarding(false);
   };
 
+  const handleLogin = () => {
+    const currentPath = location.pathname + location.search;
+    base44.auth.redirectToLogin(currentPath);
+  };
+
   // Definir items de navegação baseado no tipo de usuário
   const isPaciente = user?.tipo_usuario === 'paciente' || !user; // Usuário sem cadastro age como paciente
   const isProfissional = user?.tipo_usuario === 'profissional';
@@ -324,18 +329,18 @@ export default function Layout({ children }) {
               ) : (
                 <>
                   {/* Mostrar contador de pontos como incentivo para não autenticados */}
-                  <Button
-                    variant="outline"
+                  <Button 
+                    variant="outline" 
                     className="flex items-center gap-2 border-[#F7D426] text-[#F7D426] hover:bg-[#FFF9E6]"
-                    onClick={() => base44.auth.redirectToLogin(location.pathname)}
+                    onClick={handleLogin}
                   >
                     <Star className="w-4 h-4" />
                     <span className="font-bold hidden sm:inline">0</span>
                     <span className="text-xs hidden md:inline">pts</span>
                   </Button>
-
+                  
                   <Button
-                    onClick={() => base44.auth.redirectToLogin(location.pathname)}
+                    onClick={handleLogin}
                     className="bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold text-sm border-2 border-[#2C2C2C]"
                     size="sm"
                   >
@@ -358,7 +363,7 @@ export default function Layout({ children }) {
           {/* Mobile Navigation */}
           {mobileMenuOpen && (
             <nav className="lg:hidden mt-4 pb-4 space-y-2 border-t pt-4">
-              {/* Loja de Pontos no Mobile - VISÍVEL PARA TODOS */}
+              {/* Loja de Pontos no Mobile - SEMPRE VISÍVEL */}
               {isAuthenticated ? (
                 (isPaciente || isProfissional) && (
                   <Link
@@ -374,7 +379,7 @@ export default function Layout({ children }) {
                 <button
                   onClick={() => {
                     setMobileMenuOpen(false);
-                    base44.auth.redirectToLogin(location.pathname);
+                    handleLogin();
                   }}
                   className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-[#FFF9E6] text-[#2C2C2C] border-l-4 border-[#F7D426] font-medium"
                 >
