@@ -448,6 +448,13 @@ export default function Produtos() {
       return;
     }
 
+    // Verificar se é produto exclusivo do clube (preço = 0 ou não definido)
+    if (produto.preco === 0 || !produto.preco) {
+      alert("Este produto é exclusivo para membros do Clube da Beleza! Assine para ter acesso.");
+      navigate('/planos');
+      return;
+    }
+
     const precoFinal = produto.preco_promocional || produto.preco;
     if (!confirm(`Deseja comprar "${produto.nome}" por R$ ${precoFinal.toFixed(2)}?`)) {
       return;
@@ -477,11 +484,8 @@ export default function Produtos() {
       // Atualizar estado local
       setUser({ ...user, pontos_acumulados: novosPontos });
 
-      // Mostrar mensagem de sucesso
-      alert(`🎉 Compra realizada com sucesso!\n\nVocê ganhou ${pontosGanhos} pontos!\nSaldo atual: ${novosPontos} pontos`);
-
       // Redirecionar para página de agradecimento
-      navigate('/agradecimento-compra');
+      navigate('/agradecimento-compra' + `?tipo=produto&nome=${encodeURIComponent(produto.nome)}&pontos=${pontosGanhos}`);
 
     } catch (error) {
       console.error("Erro ao processar compra:", error);
@@ -788,6 +792,7 @@ export default function Produtos() {
               const precoEfetivo = produto.preco_promocional || produto.preco;
               const faixaPreco = determinarFaixaPreco(precoEfetivo);
               const pontosGanhos = calcularPontosPorFaixaPreco(faixaPreco);
+              const isExclusivoClube = produto.preco === 0 || !produto.preco;
 
               return (
                 <Card
@@ -803,7 +808,7 @@ export default function Produtos() {
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gray-400 text-5xl">
-                        {produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" || produto.categoria === "Produtos para Pacientes" ? "💼" : "🛍️"}
+                        {produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" ? "💼" : "🛍️"}
                       </div>
                     )}
 
@@ -819,7 +824,7 @@ export default function Produtos() {
                       </Badge>
                     )}
 
-                    {produto.requer_assinatura && (
+                    {isExclusivoClube && (
                       <Badge className="absolute top-2 right-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white border-none">
                         <Crown className="w-3 h-3 mr-1" />
                         Clube+
@@ -856,15 +861,15 @@ export default function Produtos() {
 
                     <div className="flex items-center justify-between pt-3 border-t">
                       <div className="flex-1">
-                        {produto.requer_assinatura ? (
+                        {isExclusivoClube ? (
                           <div>
                             <p className="text-xs text-purple-600 font-semibold">
                               <Crown className="w-3 h-3 inline mr-1" />
-                              Assinantes Clube+
+                              Exclusivo Clube da Beleza
                             </p>
-                            <p className="text-xs text-gray-500">Benefício exclusivo</p>
+                            <p className="text-xs text-gray-500">Assine para ter acesso</p>
                           </div>
-                        ) : produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" || produto.categoria === "Produtos para Pacientes" ? (
+                        ) : produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" ? (
                           <p className="text-lg font-bold text-blue-600">
                             {produto.preco_texto || "Consulte"}
                           </p>
@@ -886,21 +891,37 @@ export default function Produtos() {
 
                       <Button
                         size="sm"
-                        onClick={() => produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" || produto.categoria === "Produtos para Pacientes"
-                          ? handleContratar(produto)
-                          : handleComprarProduto(produto)
-                        }
-                        className={produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" || produto.categoria === "Produtos para Pacientes"
+                        onClick={() => {
+                          if (isExclusivoClube) {
+                            navigate('/planos');
+                          } else if (produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes") {
+                            handleContratar(produto);
+                          } else {
+                            handleComprarProduto(produto);
+                          }
+                        }}
+                        className={isExclusivoClube
+                          ? "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold"
+                          : produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes"
                           ? "bg-blue-600 hover:bg-blue-700 text-white"
                           : "bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold"
                         }
                       >
-                        {produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" || produto.categoria === "Produtos para Pacientes" ? "Contratar" : <ShoppingCart className="w-4 h-4" />}
+                        {isExclusivoClube ? (
+                          <>
+                            <Crown className="w-4 h-4 mr-1" />
+                            Assinar
+                          </>
+                        ) : produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" ? (
+                          "Contratar"
+                        ) : (
+                          <ShoppingCart className="w-4 h-4" />
+                        )}
                       </Button>
                     </div>
 
-                    {/* Mostrar pontos que serão ganhos - APENAS PARA PRODUTOS */}
-                    {!(produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" || produto.categoria === "Produtos para Pacientes") && !produto.requer_assinatura && (
+                    {/* Mostrar pontos apenas para produtos com preço */}
+                    {!isExclusivoClube && !(produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes") && (
                       <div className="mt-2 text-xs text-center bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 py-2 rounded-lg border border-green-200">
                         <div className="flex items-center justify-center gap-1">
                           <Star className="w-3 h-3 fill-green-600" />
@@ -911,7 +932,7 @@ export default function Produtos() {
                     )}
 
                     {/* Info sobre faixa de preço para SERVIÇOS */}
-                    {(produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" || produto.categoria === "Produtos para Pacientes") && !produto.requer_assinatura && produto.preco > 0 && (
+                    {(produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes") && !isExclusivoClube && produto.preco > 0 && (
                       <div className="mt-2 text-xs text-center bg-gradient-to-r from-blue-50 to-cyan-50 text-blue-700 py-2 rounded-lg border border-blue-200">
                         <div className="flex items-center justify-center gap-1">
                           <DollarSign className="w-3 h-3" />
