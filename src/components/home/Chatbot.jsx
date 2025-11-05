@@ -1,337 +1,238 @@
-
-import React, { useState, useEffect, useRef } from "react";
-import { Card } from "@/components/ui/card";
+import React, { useState, useEffect } from "react";
+import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  MessageCircle,
-  X,
-  Send
-} from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { MessageCircle, X, Send, Sparkles, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Chatbot({ user, onCompletarCadastro }) {
-  const [chatAberto, setChatAberto] = useState(false); // Renamed from 'aberto'
-  const [mensagens, setMensagens] = useState([]);
-  const [inputMensagem, setInputMensagem] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [tipoUsuario, setTipoUsuario] = useState(null);
-  // const [mostrarTooltip, setMostrarTooltip] = useState(false); // Removed
-  const messagesEndRef = useRef(null);
-  const chatRef = useRef(null);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [mensagens]);
-
-  // The previous useEffect for handleClickOutside is removed as the overlay now handles this.
-
-  useEffect(() => {
-    if (chatAberto && mensagens.length === 0) {
-      // Verificar se usuário completou cadastro
-      if (!user || !user.cadastro_completo) {
-        setMensagens([
-          {
-            tipo: "bot",
-            conteudo: "Olá! Sou o Dr. Beleza 🩺✨, seu assistente virtual!\n\nPara começar, preciso que você complete seu cadastro. É rápido e fácil!",
-            opcoes: [
-              { texto: "✅ Completar Cadastro", valor: "completar_cadastro" }
-            ]
-          }
-        ]);
-      } else {
-        setMensagens([
-          {
-            tipo: "bot",
-            conteudo: "Olá! Sou o Dr. Beleza 🩺✨, seu assistente virtual!\n\nPara que eu possa te ajudar melhor, você é:",
-            opcoes: [
-              { texto: "👤 Paciente/Cliente", valor: "paciente" },
-              { texto: "💼 Profissional da Estética", valor: "profissional" }
-            ]
-          }
-        ]);
-      }
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState([
+    {
+      type: "bot",
+      text: user 
+        ? `Olá ${user.full_name?.split(' ')[0] || 'amigo'}! 👋 Sou o Dr. Beleza, seu assistente virtual. Como posso te ajudar hoje?`
+        : "Olá! 👋 Sou o Dr. Beleza, seu assistente virtual. Para continuar, por favor faça login ou crie sua conta gratuita!"
     }
-  }, [chatAberto, mensagens.length, user]);
+  ]);
+  const [inputMessage, setInputMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleOpcaoInicial = (opcao) => {
-    if (opcao.valor === "completar_cadastro") {
-      setChatAberto(false); // Updated
-      onCompletarCadastro();
+  const handleSendMessage = async () => {
+    if (!inputMessage.trim()) return;
+
+    // Verificar se usuário está logado
+    if (!user) {
+      setMessages(prev => [...prev, 
+        { type: "user", text: inputMessage },
+        { 
+          type: "bot", 
+          text: "Para usar o chat, você precisa fazer login ou criar uma conta gratuita! 🔐",
+          action: "login"
+        }
+      ]);
+      setInputMessage("");
       return;
     }
-    handleEscolhaTipo(opcao.valor);
-  };
 
-  const handleEscolhaTipo = (tipo) => {
-    setTipoUsuario(tipo);
-
-    setMensagens(prev => [
-      ...prev,
-      { tipo: "usuario", conteudo: tipo === "paciente" ? "Sou paciente" : "Sou profissional" }
-    ]);
-
-    if (tipo === "paciente") {
-      setTimeout(() => {
-        setMensagens(prev => [
-          ...prev,
-          {
-            tipo: "bot",
-            conteudo: "Perfeito! Como posso te ajudar hoje?",
-            opcoes: [
-              { texto: "🔍 Encontrar profissionais", valor: "encontrar_profissionais" },
-              { texto: "💆 Saber sobre tratamentos", valor: "tratamentos" },
-              { texto: "📍 Profissionais perto de mim", valor: "perto_de_mim" },
-              { texto: "❓ Tirar dúvidas", valor: "duvidas_paciente" }
-            ]
-          }
-        ]);
-      }, 500);
-    } else {
-      setTimeout(() => {
-        setMensagens(prev => [
-          ...prev,
-          {
-            tipo: "bot",
-            conteudo: "Ótimo! Como posso ajudar seu negócio?",
-            opcoes: [
-              { texto: "📢 Criar anúncio", valor: "criar_anuncio" },
-              { texto: "📊 Ver meus anúncios", valor: "meus_anuncios" },
-              { texto: "💎 Conhecer planos", valor: "planos" },
-              { texto: "🎯 Marketing digital", valor: "marketing" },
-              { texto: "❓ Suporte técnico", valor: "suporte" }
-            ]
-          }
-        ]);
-      }, 500);
+    // Verificar se cadastro está completo
+    if (!user.cadastro_completo) {
+      setMessages(prev => [...prev,
+        { type: "user", text: inputMessage },
+        {
+          type: "bot",
+          text: "Para usar o chat, você precisa completar seu cadastro primeiro! 📝",
+          action: "completar_cadastro"
+        }
+      ]);
+      setInputMessage("");
+      return;
     }
-  };
 
-  const handleOpcao = async (opcao) => {
-    setMensagens(prev => [
-      ...prev,
-      { tipo: "usuario", conteudo: opcao.texto }
-    ]);
-
+    const userMessage = inputMessage;
+    setInputMessage("");
+    setMessages(prev => [...prev, { type: "user", text: userMessage }]);
     setLoading(true);
 
-    let resposta = "";
+    try {
+      const response = await base44.integrations.Core.InvokeLLM({
+        prompt: `Você é o Dr. Beleza, um assistente especializado em estética e beleza para a plataforma Mapa da Estética.
+        
+Contexto do usuário:
+- Nome: ${user.full_name}
+- Tipo: ${user.tipo_usuario === 'profissional' ? 'Profissional de estética' : 'Cliente/Paciente'}
+- Cidade: ${user.cidade || 'não informada'}
+- Estado: ${user.estado || 'não informado'}
 
-    if (tipoUsuario === "paciente") {
-      switch (opcao.valor) {
-        case "encontrar_profissionais":
-          resposta = "Você pode encontrar profissionais de várias formas:\n\n1. Use a busca na página inicial\n2. Navegue pelas categorias\n3. Veja profissionais em destaque\n\nQue tipo de profissional você procura?";
-          break;
-        case "tratamentos":
-          resposta = "Temos informações sobre diversos tratamentos:\n\n• Harmonização Facial\n• Depilação a Laser\n• Micropigmentação\n• Limpeza de Pele\n• E muito mais!\n\nVisite nosso Blog para saber mais sobre cada tratamento.";
-          break;
-        case "perto_de_mim":
-          resposta = "Para encontrar profissionais perto de você:\n\n1. Informe sua cidade na busca\n2. Ative a localização do navegador\n3. Veja os profissionais mais próximos\n\nQual sua cidade?";
-          break;
-        case "duvidas_paciente":
-          resposta = "Posso te ajudar com:\n\n• Como funciona a plataforma\n• Como encontrar profissionais\n• Informações sobre tratamentos\n• Contato com profissionais\n\nSobre o que você tem dúvida?";
-          break;
-        default:
-          resposta = "Desculpe, não entendi. Poderia escolher uma das opções acima?";
-          break;
-      }
-    } else {
-      switch (opcao.valor) {
-        case "criar_anuncio":
-          resposta = "Para criar seu anúncio:\n\n1. Clique em 'Cadastrar Anúncio'\n2. Preencha suas informações\n3. Adicione fotos\n4. Publique!\n\n✨ Comece GRÁTIS agora!";
-          break;
-        case "meus_anuncios":
-          resposta = "Acesse 'Meu Perfil' para:\n\n• Ver seus anúncios ativos\n• Editar informações\n• Ver estatísticas\n• Gerenciar contatos\n\nVocê já criou seu primeiro anúncio?";
-          break;
-        case "planos":
-          resposta = "Temos 5 planos incríveis:\n\n🥉 COBRE - Grátis\n🥈 PRATA - R$ 99/mês\n🥇 OURO - R$ 197/mês (Mais Popular!)\n💎 DIAMANTE - R$ 297/mês\n👑 PLATINA - Sob Consulta\n\nQuer saber mais sobre algum plano específico?";
-          break;
-        case "marketing":
-          resposta = "Oferecemos:\n\n• Criação de Google Negócios\n• Geração de imagens profissionais\n• Otimização SEO\n• Destaque nos resultados\n• Criação de vídeos profissionais\n\nQual serviço te interessa?";
-          break;
-        case "suporte":
-          resposta = "Precisa de ajuda? Entre em contato:\n\n📞 Central: (31) 97259-5643\n💻 Suporte: (54) 99155-4136\n📧 Email: Fale Conosco\n\nComo posso ajudar?";
-          break;
-        default:
-          resposta = "Desculpe, não entendi. Poderia escolher uma das opções acima?";
-          break;
-      }
-    }
+Sua missão: Ajudar o usuário com dúvidas sobre:
+1. Procedimentos estéticos (como funcionam, indicações, contraindicações)
+2. Encontrar profissionais qualificados
+3. Navegar pela plataforma
+4. Tirar dúvidas sobre tratamentos
 
-    setTimeout(() => {
-      setMensagens(prev => [
-        ...prev,
-        { tipo: "bot", conteudo: resposta }
-      ]);
+Seja amigável, profissional e sempre incentive o usuário a consultar profissionais qualificados.
+
+Pergunta do usuário: ${userMessage}
+
+Responda de forma clara, objetiva e útil.`,
+      });
+
+      setMessages(prev => [...prev, { type: "bot", text: response }]);
+    } catch (error) {
+      setMessages(prev => [...prev, { 
+        type: "bot", 
+        text: "Desculpe, tive um problema ao processar sua mensagem. Tente novamente!" 
+      }]);
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
-  const handleEnviarMensagem = (e) => {
-    e.preventDefault();
-    if (!inputMensagem.trim() || loading) return;
-
-    setMensagens(prev => [...prev, {
-      tipo: "usuario",
-      conteudo: inputMensagem,
-    }]);
-    setInputMensagem("");
+  const handleActionClick = (action) => {
+    if (action === "login") {
+      base44.auth.redirectToLogin(window.location.pathname);
+    } else if (action === "completar_cadastro") {
+      setIsOpen(false);
+      if (onCompletarCadastro) {
+        onCompletarCadastro();
+      }
+    }
   };
 
   return (
     <>
       {/* Botão Flutuante */}
       <AnimatePresence>
-        {!chatAberto && ( // Only show button if chat is not open
-          <motion.button
-            id="chatbot-button" // Keep ID for outside click logic (though now less critical due to overlay)
+        {!isOpen && (
+          <motion.div
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
-            onClick={() => setChatAberto(true)} // Opens chat
-            className="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-br from-[#F7D426] to-[#FFE066] rounded-full shadow-2xl flex items-center justify-center z-50 hover:scale-110 transition-transform group border-2 border-[#2C2C2C]"
+            className="fixed bottom-6 right-6 z-50"
           >
-            <div className="relative">
-              <img
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/966d17a8f_drbeleza.png"
-                alt="Dr. Beleza"
-                className="w-12 h-12 rounded-full object-cover border-2 border-[#2C2C2C]"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = 'https://via.placeholder.com/48?text=Dr';
-                }}
-              />
-              <div className="absolute bottom-0 right-0 w-3 h-3 bg-[#F7D426] rounded-full border-2 border-[#2C2C2C] animate-pulse"></div>
-            </div>
-            <span className="absolute -top-10 right-0 bg-[#2C2C2C] text-[#F7D426] px-3 py-1 rounded-lg shadow-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity font-bold border-2 border-[#F7D426]">
-              💬 Fale com Dr. Beleza
-            </span>
-          </motion.button>
-        )}
-      </AnimatePresence>
-
-      {/* Overlay para fechar ao clicar fora */}
-      <AnimatePresence>
-        {chatAberto && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setChatAberto(false)}
-            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
-          />
+            <Button
+              onClick={() => setIsOpen(true)}
+              className="w-16 h-16 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-2xl"
+              size="icon"
+            >
+              <MessageCircle className="w-7 h-7" />
+            </Button>
+          </motion.div>
         )}
       </AnimatePresence>
 
       {/* Janela do Chat */}
       <AnimatePresence>
-        {chatAberto && ( // Renders if chat is open
+        {isOpen && (
           <motion.div
-            ref={chatRef}
-            initial={{ opacity: 0, y: 20, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            onClick={(e) => e.stopPropagation()} // Prevents clicks inside chat from closing overlay
-            className="fixed bottom-6 right-6 w-96 max-w-[calc(100vw-3rem)] bg-white rounded-2xl shadow-2xl z-50 flex flex-col border-2 border-[#F7D426]"
-            style={{ height: '600px', maxHeight: 'calc(100vh - 3rem)' }}
+            initial={{ opacity: 0, y: 100 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 100 }}
+            className="fixed bottom-6 right-6 z-50 w-96 max-w-[calc(100vw-3rem)]"
           >
-            {/* Header */}
-            <div className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] text-[#2C2C2C] p-4 rounded-t-2xl flex items-center justify-between border-b-2 border-[#2C2C2C]">
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <img
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/966d17a8f_drbeleza.png"
-                    alt="Dr. Beleza"
-                    className="w-12 h-12 rounded-full border-2 border-[#2C2C2C] object-cover"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = 'https://via.placeholder.com/48?text=Dr';
-                    }}
-                  />
-                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-[#F7D426] rounded-full border-2 border-[#2C2C2C]"></div>
-                </div>
-                <div>
-                  <h3 className="font-bold">Dr. Beleza</h3>
-                  <p className="text-xs text-[#2C2C2C]/80">Seu assistente inteligente</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setChatAberto(false)} // Closes chat
-                className="text-[#2C2C2C] hover:bg-[#2C2C2C] hover:text-[#F7D426] rounded-full p-2 transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 bg-gray-50 space-y-4"> {/* Added flex-1 to make it grow */}
-              {mensagens.map((msg, index) => (
-                <div key={index} className={`flex ${msg.tipo === "usuario" ? "justify-end" : "justify-start"}`}>
-                  <div className={`max-w-[80%] rounded-2xl p-3 ${
-                    msg.tipo === "usuario"
-                      ? "bg-gradient-to-r from-[#F7D426] to-[#FFE066] text-[#2C2C2C] rounded-br-none"
-                      : "bg-white shadow-md rounded-bl-none"
-                  }`}>
-                    <p className="text-sm whitespace-pre-line">{msg.conteudo}</p>
-
-                    {msg.opcoes && (
-                      <div className="mt-3 space-y-2">
-                        {msg.opcoes.map((opcao, i) => (
-                          <button
-                            key={i}
-                            onClick={() => !tipoUsuario && !user?.cadastro_completo ? handleOpcaoInicial(opcao) : !tipoUsuario ? handleEscolhaTipo(opcao.valor) : handleOpcao(opcao)}
-                            className="w-full text-left px-3 py-2 bg-[#FFF9E6] hover:bg-[#F7D426] rounded-lg transition-colors text-sm font-medium text-[#2C2C2C]"
-                          >
-                            {opcao.texto}
-                          </button>
-                        ))}
-                      </div>
-                    )}
+            <Card className="border-none shadow-2xl overflow-hidden">
+              {/* Header */}
+              <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                    <Sparkles className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-white">Dr. Beleza</h3>
+                    <p className="text-xs text-white/80">Assistente Virtual</p>
                   </div>
                 </div>
-              ))}
+                <Button
+                  onClick={() => setIsOpen(false)}
+                  variant="ghost"
+                  size="icon"
+                  className="text-white hover:bg-white/20"
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
 
-              {loading && (
-                <div className="flex justify-start">
-                  <div className="bg-white shadow-md rounded-2xl rounded-bl-none p-3">
-                    <div className="flex gap-1">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+              {/* Mensagens */}
+              <div className="h-96 overflow-y-auto p-4 bg-gray-50 space-y-4">
+                {messages.map((message, index) => (
+                  <div
+                    key={index}
+                    className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}
+                  >
+                    <div
+                      className={`max-w-[80%] rounded-2xl p-3 ${
+                        message.type === "user"
+                          ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white"
+                          : "bg-white shadow-md"
+                      }`}
+                    >
+                      <p className="text-sm whitespace-pre-wrap">{message.text}</p>
+                      
+                      {/* Botões de Ação */}
+                      {message.action && (
+                        <div className="mt-3">
+                          {message.action === "login" && (
+                            <Button
+                              onClick={() => handleActionClick("login")}
+                              size="sm"
+                              className="w-full bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold"
+                            >
+                              <User className="w-4 h-4 mr-2" />
+                              Fazer Login
+                            </Button>
+                          )}
+                          {message.action === "completar_cadastro" && (
+                            <Button
+                              onClick={() => handleActionClick("completar_cadastro")}
+                              size="sm"
+                              className="w-full bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold"
+                            >
+                              <Sparkles className="w-4 h-4 mr-2" />
+                              Completar Cadastro
+                            </Button>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
-                </div>
-              )}
+                ))}
 
-              <div ref={messagesEndRef} />
-            </div>
+                {loading && (
+                  <div className="flex justify-start">
+                    <div className="bg-white shadow-md rounded-2xl p-3">
+                      <div className="flex gap-2">
+                        <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce"></div>
+                        <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+                        <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: "0.4s" }}></div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
 
-            {/* Input */}
-            {tipoUsuario && user?.cadastro_completo && (
-              <div className="p-4 border-t bg-white">
-                <form onSubmit={handleEnviarMensagem} className="flex gap-2">
+              {/* Input */}
+              <div className="p-4 bg-white border-t">
+                <div className="flex gap-2">
                   <Input
-                    value={inputMensagem}
-                    onChange={(e) => setInputMensagem(e.target.value)}
-                    placeholder="Digite sua mensagem..."
+                    value={inputMessage}
+                    onChange={(e) => setInputMessage(e.target.value)}
+                    onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                    placeholder={user && user.cadastro_completo ? "Digite sua mensagem..." : "Faça login para conversar..."}
                     className="flex-1"
-                    disabled={loading}
+                    disabled={!user || !user.cadastro_completo}
                   />
                   <Button
-                    type="submit"
-                    size="icon"
-                    disabled={!inputMensagem.trim() || loading}
-                    className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] hover:from-[#E5C215] hover:to-[#F7D426] text-[#2C2C2C]"
+                    onClick={handleSendMessage}
+                    disabled={loading || !inputMessage.trim() || !user || !user.cadastro_completo}
+                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
                   >
-                    <Send className="w-4 h-4" />
+                    <Send className="w-5 h-5" />
                   </Button>
-                </form>
+                </div>
               </div>
-            )}
+            </Card>
           </motion.div>
         )}
       </AnimatePresence>
