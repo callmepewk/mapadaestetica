@@ -378,7 +378,7 @@ export default function MeuPlano() {
           </div>
         )}
 
-        {/* Help Section */}
+        {/* Help Section - CORRIGIDO: Adicionado botão para Sobre Nós */}
         <Card className="mt-12 border-none shadow-xl bg-gradient-to-br from-blue-50 to-cyan-50">
           <CardContent className="p-8 text-center">
             <h3 className="text-xl font-bold mb-3">Precisa de Ajuda?</h3>
@@ -394,6 +394,11 @@ export default function MeuPlano() {
               <Link to={createPageUrl("Planos")}>
                 <Button size="lg" variant="outline">
                   Ver Todos os Planos
+                </Button>
+              </Link>
+              <Link to={createPageUrl("SobreNos")}>
+                <Button size="lg" className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] hover:from-[#E5C215] hover:to-[#F7D426] text-[#2C2C2C] font-bold">
+                  Conteúdo Exclusivo Clube da Beleza
                 </Button>
               </Link>
             </div>

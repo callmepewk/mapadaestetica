@@ -44,6 +44,8 @@ export default function LojaPontos() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [categoriaSelecionada, setCategoriaSelecionada] = useState("Todos");
+  const [mostrarTrocaBeautyCoins, setMostrarTrocaBeautyCoins] = useState(false);
+  const [quantidadeBeautyCoins, setQuantidadeBeautyCoins] = useState(1);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -138,6 +140,38 @@ export default function LojaPontos() {
     }
   };
 
+  const handleTrocarBeautyCoins = async () => {
+    if (!user) return;
+
+    const pontosNecessarios = quantidadeBeautyCoins * 1000;
+
+    if (user.pontos_acumulados < pontosNecessarios) {
+      alert(`Você precisa de ${pontosNecessarios} pontos para trocar por ${quantidadeBeautyCoins} Beauty Coin(s). Você tem apenas ${user.pontos_acumulados} pontos.`);
+      return;
+    }
+
+    const confirmar = window.confirm(
+      `Confirmar troca:\n\n${quantidadeBeautyCoins} Beauty Coin(s) = ${pontosNecessarios} pontos\n\nSeus pontos atuais: ${user.pontos_acumulados}\nSeus pontos após troca: ${user.pontos_acumulados - pontosNecessarios}\n\nDeseja continuar?`
+    );
+
+    if (!confirmar) return;
+
+    try {
+      await base44.auth.updateMe({
+        pontos_acumulados: user.pontos_acumulados - pontosNecessarios
+      });
+
+      alert(`✅ Troca realizada com sucesso!\n\nVocê trocou ${pontosNecessarios} pontos por ${quantidadeBeautyCoins} Beauty Coin(s).\n\nOs Beauty Coins foram creditados na sua conta do Clube da Beleza!`);
+      
+      setMostrarTrocaBeautyCoins(false);
+      setQuantidadeBeautyCoins(1);
+      window.location.reload();
+    } catch (error) {
+      console.error("Erro ao trocar Beauty Coins:", error);
+      alert("Erro ao realizar a troca. Tente novamente.");
+    }
+  };
+
   if (loading || loadingProdutos) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -174,6 +208,117 @@ export default function LojaPontos() {
             Você tem <span className="font-bold text-[#F7D426] text-2xl">{user?.pontos_acumulados || 0}</span> pontos disponíveis
           </p>
         </div>
+
+        {/* NOVO: Card de Troca de Beauty Coins */}
+        <Card className="mb-8 border-2 border-[#F7D426] bg-gradient-to-br from-[#FFF9E6] to-white shadow-xl">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-[#F7D426] rounded-full flex items-center justify-center border-2 border-[#2C2C2C]">
+                  <DollarSign className="w-6 h-6 text-[#2C2C2C]" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-[#2C2C2C]">Trocar por Beauty Coins</h2>
+                  <p className="text-sm text-gray-600">1000 pontos = 1 Beauty Coin</p>
+                </div>
+              </div>
+              <Button
+                onClick={() => setMostrarTrocaBeautyCoins(!mostrarTrocaBeautyCoins)}
+                className="bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] border-2 border-[#2C2C2C] font-bold"
+              >
+                {mostrarTrocaBeautyCoins ? 'Fechar' : 'Trocar Agora'}
+              </Button>
+            </div>
+
+            {mostrarTrocaBeautyCoins && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="border-t-2 border-[#F7D426] pt-4"
+              >
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="bg-white p-6 rounded-xl border-2 border-gray-200">
+                    <h3 className="font-bold mb-4 text-gray-900">Quantos Beauty Coins deseja?</h3>
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-4">
+                        <Button
+                          onClick={() => setQuantidadeBeautyCoins(Math.max(1, quantidadeBeautyCoins - 1))}
+                          variant="outline"
+                          size="sm"
+                          className="border-2"
+                        >
+                          -
+                        </Button>
+                        <div className="flex-1 text-center">
+                          <p className="text-4xl font-bold text-[#F7D426]">{quantidadeBeautyCoins}</p>
+                          <p className="text-sm text-gray-600">Beauty Coin(s)</p>
+                        </div>
+                        <Button
+                          onClick={() => setQuantidadeBeautyCoins(quantidadeBeautyCoins + 1)}
+                          variant="outline"
+                          size="sm"
+                          className="border-2"
+                        >
+                          +
+                        </Button>
+                      </div>
+
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <div className="flex justify-between text-sm mb-2">
+                          <span className="text-gray-600">Pontos necessários:</span>
+                          <span className="font-bold text-gray-900">{quantidadeBeautyCoins * 1000}</span>
+                        </div>
+                        <div className="flex justify-between text-sm mb-2">
+                          <span className="text-gray-600">Seus pontos atuais:</span>
+                          <span className="font-bold text-[#F7D426]">{user?.pontos_acumulados || 0}</span>
+                        </div>
+                        <div className="border-t pt-2 mt-2 flex justify-between">
+                          <span className="text-gray-600 font-semibold">Pontos após troca:</span>
+                          <span className={`font-bold ${(user?.pontos_acumulados || 0) - (quantidadeBeautyCoins * 1000) < 0 ? 'text-red-600' : 'text-green-600'}`}>
+                            {(user?.pontos_acumulados || 0) - (quantidadeBeautyCoins * 1000)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-xl border-2 border-purple-200">
+                    <h3 className="font-bold mb-4 text-purple-900">O que são Beauty Coins?</h3>
+                    <div className="space-y-3 text-sm text-purple-900">
+                      <div className="flex items-start gap-2">
+                        <Check className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
+                        <p>Moeda exclusiva do <strong>Clube da Beleza</strong></p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Check className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
+                        <p>Use em <strong>qualquer estabelecimento parceiro</strong></p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Check className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
+                        <p><strong>Sem data de validade</strong> - use quando quiser</p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Check className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
+                        <p>Acumule e resgate <strong>descontos exclusivos</strong></p>
+                      </div>
+                    </div>
+
+                    <Button
+                      onClick={handleTrocarBeautyCoins}
+                      disabled={!user || (user.pontos_acumulados < (quantidadeBeautyCoins * 1000))}
+                      className="w-full mt-6 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold"
+                    >
+                      Confirmar Troca
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Sistema de Pontos - Explicação Detalhada */}
         <Card className="mb-8 border-2 border-[#F7D426] bg-gradient-to-br from-[#FFF9E6] to-white shadow-lg">
