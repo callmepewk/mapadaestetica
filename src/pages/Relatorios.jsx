@@ -4,12 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, TrendingUp, DollarSign, Calendar, Search, Eye, Users, ShoppingCart, BarChart3 } from "lucide-react";
+import { ArrowLeft, TrendingUp, DollarSign, Search, Eye, Users, ShoppingCart, BarChart3, Download } from "lucide-react";
 
 export default function Relatorios() {
   const navigate = useNavigate();
@@ -21,7 +19,6 @@ export default function Relatorios() {
         const userData = await base44.auth.me();
         setUser(userData);
         
-        // Bloquear acesso para não-admins
         if (userData.role !== 'admin') {
           alert("Acesso negado. Apenas administradores podem acessar relatórios.");
           navigate(createPageUrl("Inicio"));
@@ -32,6 +29,207 @@ export default function Relatorios() {
     };
     checkAdmin();
   }, [navigate]);
+
+  const exportarPDF = (tipoRelatorio) => {
+    // Criar conteúdo HTML do relatório
+    const dataAtual = new Date().toLocaleDateString('pt-BR');
+    const horaAtual = new Date().toLocaleTimeString('pt-BR');
+    
+    let conteudoHTML = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Relatório ${tipoRelatorio} - Mapa da Estética</title>
+        <style>
+          @page { size: A4; margin: 2cm; }
+          body { font-family: Arial, sans-serif; color: #333; line-height: 1.6; }
+          .header { text-align: center; margin-bottom: 30px; border-bottom: 3px solid #F7D426; padding-bottom: 20px; }
+          .logo { max-width: 200px; margin-bottom: 10px; }
+          h1 { color: #2C2C2C; margin: 0; font-size: 28px; }
+          .subtitle { color: #666; font-size: 14px; margin-top: 5px; }
+          .info-box { background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0; }
+          .metric { background: white; border-left: 4px solid #F7D426; padding: 15px; margin: 10px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+          .metric-title { font-weight: bold; color: #2C2C2C; margin-bottom: 5px; }
+          .metric-value { font-size: 32px; font-weight: bold; color: #F7D426; }
+          .metric-subtitle { color: #666; font-size: 12px; }
+          table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+          th { background: #2C2C2C; color: white; padding: 12px; text-align: left; }
+          td { padding: 10px; border-bottom: 1px solid #ddd; }
+          tr:nth-child(even) { background: #f8f9fa; }
+          .footer { margin-top: 40px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #ddd; padding-top: 20px; }
+          .highlight { background: #FFF9E6; padding: 3px 8px; border-radius: 4px; font-weight: bold; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>📊 Relatório ${tipoRelatorio}</h1>
+          <p class="subtitle">Mapa da Estética - Clube da Beleza</p>
+          <p class="subtitle">Gerado em: ${dataAtual} às ${horaAtual}</p>
+        </div>
+    `;
+
+    if (tipoRelatorio === 'SEO Diário') {
+      conteudoHTML += `
+        <div class="info-box">
+          <h2>Resumo do Dia</h2>
+          <p>Métricas de tráfego e engajamento das últimas 24 horas</p>
+        </div>
+        
+        <div class="metric">
+          <div class="metric-title">👁️ Total de Visualizações</div>
+          <div class="metric-value">1,234</div>
+          <div class="metric-subtitle">+15% comparado a ontem</div>
+        </div>
+        
+        <div class="metric">
+          <div class="metric-title">📄 Páginas Mais Vistas</div>
+          <div class="metric-value">Anúncios</div>
+          <div class="metric-subtitle">456 visualizações</div>
+        </div>
+        
+        <div class="metric">
+          <div class="metric-title">⏱️ Tempo Médio na Página</div>
+          <div class="metric-value">3:42</div>
+          <div class="metric-subtitle">+8% comparado a ontem</div>
+        </div>
+        
+        <div class="metric">
+          <div class="metric-title">📊 Taxa de Rejeição</div>
+          <div class="metric-value">24.5%</div>
+          <div class="metric-subtitle">-3% comparado a ontem</div>
+        </div>
+      `;
+    } else if (tipoRelatorio === 'SEO Mensal') {
+      conteudoHTML += `
+        <div class="info-box">
+          <h2>Resumo Mensal</h2>
+          <p>Desempenho consolidado do mês</p>
+        </div>
+        
+        <table>
+          <thead>
+            <tr>
+              <th>Métrica</th>
+              <th>Valor</th>
+              <th>Crescimento</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Total de Visitas</strong></td>
+              <td class="highlight">34,567</td>
+              <td style="color: green;">+23% vs mês anterior</td>
+            </tr>
+            <tr>
+              <td><strong>Novos Usuários</strong></td>
+              <td class="highlight">2,345</td>
+              <td style="color: green;">+18% vs mês anterior</td>
+            </tr>
+            <tr>
+              <td><strong>Conversões</strong></td>
+              <td class="highlight">456</td>
+              <td style="color: green;">+31% vs mês anterior</td>
+            </tr>
+          </tbody>
+        </table>
+      `;
+    } else if (tipoRelatorio === 'SEO Anual') {
+      conteudoHTML += `
+        <div class="info-box">
+          <h2>Resumo Anual</h2>
+          <p>Visão geral do ano completo</p>
+        </div>
+        
+        <div class="metric">
+          <div class="metric-title">🎯 Total de Visitas do Ano</div>
+          <div class="metric-value">456,789</div>
+          <div class="metric-subtitle">Crescimento de 145% vs ano anterior</div>
+        </div>
+        
+        <div class="metric">
+          <div class="metric-title">💰 Receita Total do Ano</div>
+          <div class="metric-value">R$ 287.5K</div>
+          <div class="metric-subtitle">Crescimento de 89% vs ano anterior</div>
+        </div>
+      `;
+    } else if (tipoRelatorio === 'Transações') {
+      conteudoHTML += `
+        <div class="info-box">
+          <h2>Resumo de Transações</h2>
+          <p>Todas as transações financeiras da plataforma</p>
+        </div>
+        
+        <table>
+          <thead>
+            <tr>
+              <th>Tipo</th>
+              <th>Descrição</th>
+              <th>Cliente</th>
+              <th>Valor</th>
+              <th>Data/Hora</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Produto</strong></td>
+              <td>Beauty Box - Clube da Beleza</td>
+              <td>user@example.com</td>
+              <td style="color: green; font-weight: bold;">R$ 149,90</td>
+              <td>Hoje, 14:32</td>
+            </tr>
+            <tr>
+              <td><strong>Upgrade</strong></td>
+              <td>Plano OURO</td>
+              <td>profissional@example.com</td>
+              <td style="color: green; font-weight: bold;">R$ 597,00</td>
+              <td>Hoje, 11:15</td>
+            </tr>
+            <tr>
+              <td><strong>Resgate</strong></td>
+              <td>Massagem Relaxante 60min</td>
+              <td>cliente@example.com</td>
+              <td style="color: purple; font-weight: bold;">800 pontos</td>
+              <td>Ontem, 16:45</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <div class="metric">
+          <div class="metric-title">💵 Receita Hoje</div>
+          <div class="metric-value">R$ 1.2K</div>
+        </div>
+        
+        <div class="metric">
+          <div class="metric-title">🛒 Total de Transações</div>
+          <div class="metric-value">45</div>
+        </div>
+      `;
+    }
+
+    conteudoHTML += `
+        <div class="footer">
+          <p><strong>Mapa da Estética - Clube da Beleza</strong></p>
+          <p>CNPJ: 46.792.168/0001-88</p>
+          <p>www.mapadaestetica.com.br | (31) 97259-5643</p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    // Criar blob e fazer download
+    const blob = new Blob([conteudoHTML], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Relatorio_${tipoRelatorio.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.html`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    alert('Relatório exportado! Abra o arquivo HTML e use Ctrl+P (ou Cmd+P no Mac) para salvar como PDF.');
+  };
 
   if (!user || user.role !== 'admin') {
     return (
@@ -79,7 +277,6 @@ export default function Relatorios() {
           </p>
         </div>
 
-        {/* Tabs principais */}
         <Tabs defaultValue="preco" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="preco">
@@ -99,23 +296,22 @@ export default function Relatorios() {
           {/* Aba de Preços Médios */}
           <TabsContent value="preco">
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Relatório de Preços Médios</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 mb-4">
-                  Análise de preços praticados pelos profissionais da plataforma
-                </p>
-                <Button onClick={() => navigate(createPageUrl("RelatorioPrecoMedio"))}>
+                <Button onClick={() => navigate(createPageUrl("RelatorioPrecoMedio"))} variant="outline">
                   Ver Relatório Completo
                 </Button>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">
+                  Acesse o relatório completo de preços praticados pelos profissionais
+                </p>
               </CardContent>
             </Card>
           </TabsContent>
 
           {/* Aba de SEO & Tráfego */}
           <TabsContent value="seo" className="space-y-6">
-            {/* Cards de Métricas */}
             <div className="grid md:grid-cols-4 gap-6">
               <Card>
                 <CardContent className="p-6">
@@ -174,7 +370,6 @@ export default function Relatorios() {
               </Card>
             </div>
 
-            {/* Tabs Secundários: Diário, Mensal, Anual */}
             <Tabs defaultValue="diario">
               <TabsList>
                 <TabsTrigger value="diario">Diário</TabsTrigger>
@@ -184,32 +379,34 @@ export default function Relatorios() {
 
               <TabsContent value="diario" className="space-y-4">
                 <Card>
-                  <CardHeader>
+                  <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle>Relatório SEO Diário</CardTitle>
+                    <Button onClick={() => exportarPDF('SEO Diário')} variant="outline" size="sm">
+                      <Download className="w-4 h-4 mr-2" />
+                      Exportar PDF
+                    </Button>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                          <p className="text-sm text-gray-600 mb-1">Total de Visualizações</p>
-                          <p className="text-2xl font-bold">1,234</p>
-                          <p className="text-xs text-green-600 mt-1">+15% vs ontem</p>
-                        </div>
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                          <p className="text-sm text-gray-600 mb-1">Páginas Mais Vistas</p>
-                          <p className="text-lg font-semibold">Anúncios</p>
-                          <p className="text-xs text-gray-500 mt-1">456 visualizações</p>
-                        </div>
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                          <p className="text-sm text-gray-600 mb-1">Tempo Médio na Página</p>
-                          <p className="text-2xl font-bold">3:42</p>
-                          <p className="text-xs text-blue-600 mt-1">+8% vs ontem</p>
-                        </div>
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                          <p className="text-sm text-gray-600 mb-1">Taxa de Rejeição</p>
-                          <p className="text-2xl font-bold">24.5%</p>
-                          <p className="text-xs text-red-600 mt-1">-3% vs ontem</p>
-                        </div>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <p className="text-sm text-gray-600 mb-1">Total de Visualizações</p>
+                        <p className="text-2xl font-bold">1,234</p>
+                        <p className="text-xs text-green-600 mt-1">+15% vs ontem</p>
+                      </div>
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <p className="text-sm text-gray-600 mb-1">Páginas Mais Vistas</p>
+                        <p className="text-lg font-semibold">Anúncios</p>
+                        <p className="text-xs text-gray-500 mt-1">456 visualizações</p>
+                      </div>
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <p className="text-sm text-gray-600 mb-1">Tempo Médio na Página</p>
+                        <p className="text-2xl font-bold">3:42</p>
+                        <p className="text-xs text-blue-600 mt-1">+8% vs ontem</p>
+                      </div>
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <p className="text-sm text-gray-600 mb-1">Taxa de Rejeição</p>
+                        <p className="text-2xl font-bold">24.5%</p>
+                        <p className="text-xs text-red-600 mt-1">-3% vs ontem</p>
                       </div>
                     </div>
                   </CardContent>
@@ -218,27 +415,29 @@ export default function Relatorios() {
 
               <TabsContent value="mensal" className="space-y-4">
                 <Card>
-                  <CardHeader>
+                  <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle>Relatório SEO Mensal</CardTitle>
+                    <Button onClick={() => exportarPDF('SEO Mensal')} variant="outline" size="sm">
+                      <Download className="w-4 h-4 mr-2" />
+                      Exportar PDF
+                    </Button>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      <div className="grid md:grid-cols-3 gap-4">
-                        <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-4 rounded-lg">
-                          <p className="text-sm text-blue-900 mb-1 font-semibold">Total de Visitas</p>
-                          <p className="text-3xl font-bold text-blue-600">34,567</p>
-                          <p className="text-xs text-blue-700 mt-1">+23% vs mês anterior</p>
-                        </div>
-                        <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-lg">
-                          <p className="text-sm text-green-900 mb-1 font-semibold">Novos Usuários</p>
-                          <p className="text-3xl font-bold text-green-600">2,345</p>
-                          <p className="text-xs text-green-700 mt-1">+18% vs mês anterior</p>
-                        </div>
-                        <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-lg">
-                          <p className="text-sm text-purple-900 mb-1 font-semibold">Conversões</p>
-                          <p className="text-3xl font-bold text-purple-600">456</p>
-                          <p className="text-xs text-purple-700 mt-1">+31% vs mês anterior</p>
-                        </div>
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-4 rounded-lg">
+                        <p className="text-sm text-blue-900 mb-1 font-semibold">Total de Visitas</p>
+                        <p className="text-3xl font-bold text-blue-600">34,567</p>
+                        <p className="text-xs text-blue-700 mt-1">+23% vs mês anterior</p>
+                      </div>
+                      <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-lg">
+                        <p className="text-sm text-green-900 mb-1 font-semibold">Novos Usuários</p>
+                        <p className="text-3xl font-bold text-green-600">2,345</p>
+                        <p className="text-xs text-green-700 mt-1">+18% vs mês anterior</p>
+                      </div>
+                      <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-lg">
+                        <p className="text-sm text-purple-900 mb-1 font-semibold">Conversões</p>
+                        <p className="text-3xl font-bold text-purple-600">456</p>
+                        <p className="text-xs text-purple-700 mt-1">+31% vs mês anterior</p>
                       </div>
                     </div>
                   </CardContent>
@@ -247,22 +446,24 @@ export default function Relatorios() {
 
               <TabsContent value="anual" className="space-y-4">
                 <Card>
-                  <CardHeader>
+                  <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle>Relatório SEO Anual</CardTitle>
+                    <Button onClick={() => exportarPDF('SEO Anual')} variant="outline" size="sm">
+                      <Download className="w-4 h-4 mr-2" />
+                      Exportar PDF
+                    </Button>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div className="bg-gradient-to-br from-yellow-50 to-amber-50 p-6 rounded-lg">
-                          <p className="text-sm text-yellow-900 mb-2 font-semibold">Total de Visitas do Ano</p>
-                          <p className="text-4xl font-bold text-yellow-600">456,789</p>
-                          <p className="text-xs text-yellow-700 mt-2">Crescimento de 145% vs ano anterior</p>
-                        </div>
-                        <div className="bg-gradient-to-br from-pink-50 to-rose-50 p-6 rounded-lg">
-                          <p className="text-sm text-pink-900 mb-2 font-semibold">Receita Total do Ano</p>
-                          <p className="text-4xl font-bold text-pink-600">R$ 287.5K</p>
-                          <p className="text-xs text-pink-700 mt-2">Crescimento de 89% vs ano anterior</p>
-                        </div>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="bg-gradient-to-br from-yellow-50 to-amber-50 p-6 rounded-lg">
+                        <p className="text-sm text-yellow-900 mb-2 font-semibold">Total de Visitas do Ano</p>
+                        <p className="text-4xl font-bold text-yellow-600">456,789</p>
+                        <p className="text-xs text-yellow-700 mt-2">Crescimento de 145% vs ano anterior</p>
+                      </div>
+                      <div className="bg-gradient-to-br from-pink-50 to-rose-50 p-6 rounded-lg">
+                        <p className="text-sm text-pink-900 mb-2 font-semibold">Receita Total do Ano</p>
+                        <p className="text-4xl font-bold text-pink-600">R$ 287.5K</p>
+                        <p className="text-xs text-pink-700 mt-2">Crescimento de 89% vs ano anterior</p>
                       </div>
                     </div>
                   </CardContent>
@@ -273,7 +474,13 @@ export default function Relatorios() {
 
           {/* Aba de Transações */}
           <TabsContent value="transacoes" className="space-y-6">
-            {/* Cards de Métricas */}
+            <div className="flex justify-end mb-4">
+              <Button onClick={() => exportarPDF('Transações')} variant="outline">
+                <Download className="w-4 h-4 mr-2" />
+                Exportar Transações em PDF
+              </Button>
+            </div>
+
             <div className="grid md:grid-cols-4 gap-6">
               <Card>
                 <CardContent className="p-6">
@@ -332,7 +539,6 @@ export default function Relatorios() {
               </Card>
             </div>
 
-            {/* Histórico de Transações */}
             <Card>
               <CardHeader>
                 <CardTitle>Últimas Transações</CardTitle>

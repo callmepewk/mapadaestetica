@@ -26,29 +26,37 @@ export default function DetalhesAnuncio() {
     let mounted = true;
 
     const carregarDados = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const id = urlParams.get('id');
+
+      if (!id) {
+        if (mounted) {
+          setErro("ID do anúncio não fornecido");
+          setLoading(false);
+        }
+        return;
+      }
+
       try {
         // Buscar usuário
         try {
           const userData = await base44.auth.me();
-          if (mounted) setUser(userData);
+          if (mounted) {
+            setUser(userData);
+            
+            // Verificar se já curtiu
+            const anunciosCurtidos = userData.anuncios_curtidos || [];
+            if (anunciosCurtidos.includes(id)) {
+              setCurtido(true);
+            }
+          }
         } catch {
           if (mounted) setUser(null);
         }
 
         // Buscar anúncio pelo ID
-        const urlParams = new URLSearchParams(window.location.search);
-        const id = urlParams.get('id');
-        
         console.log("Buscando anúncio com ID:", id);
         
-        if (!id) {
-          if (mounted) {
-            setErro("ID do anúncio não fornecido");
-            setLoading(false);
-          }
-          return;
-        }
-
         // Buscar usando filter com exact match no ID
         const anuncios = await base44.entities.Anuncio.list();
         const anuncioEncontrado = anuncios.find(a => a.id === id);
@@ -113,24 +121,38 @@ export default function DetalhesAnuncio() {
       return;
     }
 
-    const currentCurtidoState = curtido; // Store current state for rollback
-    setCurtido(!currentCurtidoState); // Optimistic UI update
+    const novoCurtidoState = !curtido;
+    setCurtido(novoCurtidoState);
 
     try {
-      const curtidasAtuais = anuncio.curtidas || 0;
-      const newCurtidas = currentCurtidoState ? curtidasAtuais - 1 : curtidasAtuais + 1;
+      const usuarios_curtiram = anuncio.usuarios_curtiram || [];
+      const novosUsuarios = novoCurtidoState 
+        ? [...usuarios_curtiram, user.email]
+        : usuarios_curtiram.filter(email => email !== user.email);
+      
+      const novasCurtidas = novoCurtidoState ? (anuncio.curtidas || 0) + 1 : Math.max((anuncio.curtidas || 0) - 1, 0);
+      
       await base44.entities.Anuncio.update(anuncio.id, {
-        curtidas: newCurtidas
+        curtidas: novasCurtidas,
+        usuarios_curtiram: novosUsuarios
       });
-      // Optionally, update the local anuncio state to reflect the new count,
-      // though the outline primarily focuses on the `curtido` state for the button.
+
+      const anuncios_curtidos = user.anuncios_curtidos || [];
+      const novosAnunciosCurtidos = novoCurtidoState
+        ? [...anuncios_curtidos, anuncio.id]
+        : anuncios_curtidos.filter(id => id !== anuncio.id);
+      
+      await base44.auth.updateMe({ anuncios_curtidos: novosAnunciosCurtidos });
+      
+      setUser({ ...user, anuncios_curtidos: novosAnunciosCurtidos });
       setAnuncio(prevAnuncio => ({
         ...prevAnuncio,
-        curtidas: newCurtidas // Update local announcement state to reflect new count
+        curtidas: novasCurtidas,
+        usuarios_curtiram: novosUsuarios
       }));
     } catch (error) {
       console.error("Erro ao curtir:", error);
-      setCurtido(currentCurtidoState); // Rollback on error
+      setCurtido(!novoCurtidoState);
       alert("Erro ao curtir/descurtir. Tente novamente.");
     }
   };

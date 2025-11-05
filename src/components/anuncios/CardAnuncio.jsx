@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { MapPin, Clock, Eye, Star, Crown, Phone, Mail, Globe, Instagram, Facebook, X, Share2, Heart, Copy } from "lucide-react";
+import { MapPin, Clock, Eye, Star, Crown, Phone, Mail, Globe, Instagram, Facebook, X, Share2, Heart, Copy, Twitter } from "lucide-react";
 import { format } from "date-fns";
 import { base44 } from "@/api/base44Client";
 
@@ -26,7 +26,8 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
         setUser(userData);
         
         // Verificar se usuário já curtiu este anúncio
-        if (userData.anuncios_curtidos && userData.anuncios_curtidos.includes(anuncio.id)) {
+        const anunciosCurtidos = userData.anuncios_curtidos || [];
+        if (anunciosCurtidos.includes(anuncio.id)) {
           setCurtido(true);
         }
       } catch {
@@ -75,7 +76,13 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
       "tecnica": { texto: "Técnica", emoji: "✨", cor: "bg-pink-100 text-pink-800" },
       "consultorio": { texto: "Consultório", emoji: "🏢", cor: "bg-gray-100 text-gray-800" },
       "clinica": { texto: "Clínica", emoji: "🏥", cor: "bg-cyan-100 text-cyan-800" },
-      "promocao": { texto: "Promoção", emoji: "🎁", cor: "bg-red-100 text-red-800" }
+      "promocao": { texto: "Promoção", emoji: "🎁", cor: "bg-red-100 text-red-800" },
+      "venda_produto": { texto: "Venda de Produto", emoji: "🛍️", cor: "bg-green-100 text-green-800" },
+      "venda_aparelho": { texto: "Venda de Aparelho", emoji: "⚙️", cor: "bg-indigo-100 text-indigo-800" },
+      "aluguel_produto": { texto: "Aluguel de Produto", emoji: "📦", cor: "bg-yellow-100 text-yellow-800" },
+      "aluguel_aparelho": { texto: "Aluguel de Aparelho", emoji: "🔧", cor: "bg-orange-100 text-orange-800" },
+      "troca_produto": { texto: "Troca de Produto", emoji: "🔄", cor: "bg-teal-100 text-teal-800" },
+      "troca_aparelho": { texto: "Troca de Aparelho", emoji: "♻️", cor: "bg-lime-100 text-lime-800" }
     };
     return info[tipo] || info["servico"];
   };
@@ -113,25 +120,27 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
     try {
       // Atualizar anúncio
       const usuarios_curtiram = anuncio.usuarios_curtiram || [];
-      const novosUsuariosCurtiramAnuncio = novoCurtidoState 
+      const novosUsuarios = novoCurtidoState 
         ? [...usuarios_curtiram, user.email]
         : usuarios_curtiram.filter(email => email !== user.email);
       
+      const novasCurtidas = novoCurtidoState ? (anuncio.curtidas || 0) + 1 : Math.max((anuncio.curtidas || 0) - 1, 0);
+      
       await base44.entities.Anuncio.update(anuncio.id, {
-        curtidas: novoCurtidoState ? (anuncio.curtidas || 0) + 1 : (anuncio.curtidas || 0) - 1,
-        usuarios_curtiram: novosUsuariosCurtiramAnuncio
+        curtidas: novasCurtidas,
+        usuarios_curtiram: novosUsuarios
       });
 
       // Atualizar lista de curtidas do usuário
-      const anuncios_curtidos_usuario = user.anuncios_curtidos || [];
-      const novosAnunciosCurtidosUsuario = novoCurtidoState
-        ? [...anuncios_curtidos_usuario, anuncio.id]
-        : anuncios_curtidos_usuario.filter(id => id !== anuncio.id);
+      const anuncios_curtidos = user.anuncios_curtidos || [];
+      const novosAnunciosCurtidos = novoCurtidoState
+        ? [...anuncios_curtidos, anuncio.id]
+        : anuncios_curtidos.filter(id => id !== anuncio.id);
       
-      await base44.auth.updateMe({ anuncios_curtidos: novosAnunciosCurtidosUsuario });
+      await base44.auth.updateMe({ anuncios_curtidos: novosAnunciosCurtidos });
       
       // Atualizar estado local do usuário
-      setUser({ ...user, anuncios_curtidos: novosAnunciosCurtidosUsuario });
+      setUser({ ...user, anuncios_curtidos: novosAnunciosCurtidos });
     } catch (error) {
       console.error("Erro ao curtir:", error);
       // Reverter estado em caso de erro
@@ -174,11 +183,17 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
     
     const links = {
       whatsapp: `https://wa.me/?text=${texto}%20${url}`,
+      instagram: `https://www.instagram.com/`, // Instagram não tem compartilhamento direto por URL params como os outros
       facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
       twitter: `https://twitter.com/intent/tweet?text=${texto}&url=${url}`
     };
 
-    window.open(links[rede], '_blank', 'width=600,height=400');
+    if (rede === 'instagram') {
+      navigator.clipboard.writeText(link);
+      alert("Link copiado! Cole no Instagram para compartilhar.");
+    } else {
+      window.open(links[rede], '_blank', 'width=600,height=400');
+    }
   };
 
   const isPremium = anuncio?.plano === 'premium' || anuncio?.plano === 'platina';
@@ -426,14 +441,18 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
           {/* Opções de Compartilhamento */}
           {compartilhandoLink && !temRestricao && (
             <div className="mt-3 p-3 bg-gray-50 rounded-lg space-y-2" onClick={(e) => e.stopPropagation()}>
-              <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={(e) => abrirCompartilhamento(e, 'whatsapp')} className="flex-1 bg-green-50 text-green-700">
+              <div className="grid grid-cols-2 gap-2">
+                <Button size="sm" variant="outline" onClick={(e) => abrirCompartilhamento(e, 'whatsapp')} className="bg-green-50 text-green-700 hover:bg-green-100">
                   WhatsApp
                 </Button>
-                <Button size="sm" variant="outline" onClick={(e) => abrirCompartilhamento(e, 'facebook')} className="flex-1 bg-blue-50 text-blue-700">
+                <Button size="sm" variant="outline" onClick={(e) => abrirCompartilhamento(e, 'instagram')} className="bg-gradient-to-r from-purple-50 to-pink-50 text-purple-700 hover:from-purple-100 hover:to-pink-100">
+                  <Instagram className="w-4 h-4 mr-1" />
+                  Instagram
+                </Button>
+                <Button size="sm" variant="outline" onClick={(e) => abrirCompartilhamento(e, 'facebook')} className="bg-blue-50 text-blue-700 hover:bg-blue-100">
                   Facebook
                 </Button>
-                <Button size="sm" variant="outline" onClick={(e) => abrirCompartilhamento(e, 'twitter')} className="flex-1 bg-sky-50 text-sky-700">
+                <Button size="sm" variant="outline" onClick={(e) => abrirCompartilhamento(e, 'twitter')} className="bg-sky-50 text-sky-700 hover:bg-sky-100">
                   Twitter
                 </Button>
               </div>
