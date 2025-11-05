@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Filter, MapPin, Grid, List, Locate, Sparkles } from "lucide-react";
+import { Search, Filter, MapPin, Grid, List, Locate, Sparkles, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import CardAnuncio from "../components/anuncios/CardAnuncio";
 import SeletorProcedimentos from "../components/anuncios/SeletorProcedimentos";
@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/pagination";
 import { Badge } from "@/components/ui/badge";
 import LoginPromptModal from "../components/home/LoginPromptModal";
+import { Label } from "@/components/ui/label"; // Added import for Label
 
 const categorias = [
   "Todas",
@@ -90,6 +91,8 @@ const estados = [
   "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"
 ];
 
+const faixasPreco = ["Todas", "$", "$$", "$$$", "$$$$", "$$$$$"];
+
 const ITEMS_PER_PAGE = 10;
 
 const tiposAnuncio = [
@@ -115,7 +118,7 @@ const statusFuncionamento = [
 ];
 
 export default function Anuncios() {
-  const [busca, setBusca] = useState("");
+  const [buscaTexto, setBuscaTexto] = useState(""); // Changed from busca
   const [cidadeFiltro, setCidadeFiltro] = useState("");
   const [estadoFiltro, setEstadoFiltro] = useState("");
   const [categoriaFiltro, setCategoriaFiltro] = useState("Todas");
@@ -125,10 +128,11 @@ export default function Anuncios() {
   const [viewMode, setViewMode] = useState("grid");
   const [localizando, setLocalizando] = useState(false);
   const [ordenacao, setOrdenacao] = useState("mais_recentes");
-  const [filtroFaixaPreco, setFiltroFaixaPreco] = useState("");
+  const [faixaPrecoFiltro, setFaixaPrecoFiltro] = useState("Todas"); // Changed from filtroFaixaPreco
   const [filtroTipoAnuncio, setFiltroTipoAnuncio] = useState("");
   const [filtroStatusFuncionamento, setFiltroStatusFuncionamento] = useState("");
   const [mostrarSeletorProcedimentos, setMostrarSeletorProcedimentos] = useState(false);
+  const [apenasVerificados, setApenasVerificados] = useState(false); // New state
 
   const [user, setUser] = useState(null);
   const [mostrarLoginPrompt, setMostrarLoginPrompt] = useState(false);
@@ -160,6 +164,7 @@ export default function Anuncios() {
     const faixaPreco = urlParams.get('faixaPreco');
     const tipoAnuncio = urlParams.get('tipoAnuncio');
     const statusFuncionamentoParam = urlParams.get('statusFuncionamento');
+    const verificados = urlParams.get('verificados');
 
 
     if (cidade) setCidadeFiltro(cidade);
@@ -168,9 +173,10 @@ export default function Anuncios() {
     if (procedimento) setProcedimentoFiltro(procedimento);
     if (tag) setTagFiltro(tag);
     if (ordem) setOrdenacao(ordem);
-    if (faixaPreco) setFiltroFaixaPreco(faixaPreco);
+    if (faixaPreco) setFaixaPrecoFiltro(faixaPreco); // Changed state here
     if (tipoAnuncio) setFiltroTipoAnuncio(tipoAnuncio);
     if (statusFuncionamentoParam) setFiltroStatusFuncionamento(statusFuncionamentoParam);
+    if (verificados) setApenasVerificados(verificados === 'true'); // New state here
   }, []);
 
   const usarMinhaLocalizacao = async () => {
@@ -264,16 +270,16 @@ export default function Anuncios() {
             t.toLowerCase().includes(tagFiltro.toLowerCase())
           );
         
-        const matchBusca = !busca || 
-          anuncio.titulo?.toLowerCase().includes(busca.toLowerCase()) ||
-          anuncio.profissional?.toLowerCase().includes(busca.toLowerCase()) ||
-          anuncio.descricao?.toLowerCase().includes(busca.toLowerCase()) ||
-          anuncio.horario_funcionamento?.toLowerCase().includes(busca.toLowerCase()) ||
+        const matchBusca = !buscaTexto || // Changed from busca
+          anuncio.titulo?.toLowerCase().includes(buscaTexto.toLowerCase()) || // Changed from busca
+          anuncio.profissional?.toLowerCase().includes(buscaTexto.toLowerCase()) || // Changed from busca
+          anuncio.descricao?.toLowerCase().includes(buscaTexto.toLowerCase()) || // Changed from busca
+          anuncio.horario_funcionamento?.toLowerCase().includes(buscaTexto.toLowerCase()) || // Changed from busca
           anuncio.procedimentos_servicos?.some(p => 
-            p.toLowerCase().includes(busca.toLowerCase())
+            p.toLowerCase().includes(buscaTexto.toLowerCase()) // Changed from busca
           ) ||
           anuncio.tags?.some(t => 
-            t.toLowerCase().includes(busca.toLowerCase())
+            t.toLowerCase().includes(buscaTexto.toLowerCase()) // Changed from busca
           );
         
         const matchCidade = !cidadeFiltro || 
@@ -282,12 +288,15 @@ export default function Anuncios() {
         const matchEstado = !estadoFiltro ||
           anuncio.estado?.toLowerCase().includes(estadoFiltro.toLowerCase());
 
-        const matchFaixaPreco = !filtroFaixaPreco || anuncio.faixa_preco === filtroFaixaPreco;
+        // Changed from filtroFaixaPreco
+        const matchFaixaPreco = faixaPrecoFiltro === "Todas" || anuncio.faixa_preco === faixaPrecoFiltro; 
+        
         const matchTipoAnuncio = !filtroTipoAnuncio || anuncio.tipo_anuncio === filtroTipoAnuncio;
         const matchStatusFuncionamento = !filtroStatusFuncionamento || anuncio.status_funcionamento === filtroStatusFuncionamento;
+        
+        const matchVerificados = !apenasVerificados || anuncio.verificado; // New filter
 
-
-        return matchCidade && matchEstado && matchProcedimento && matchTag && matchBusca && matchFaixaPreco && matchTipoAnuncio && matchStatusFuncionamento;
+        return matchCidade && matchEstado && matchProcedimento && matchTag && matchBusca && matchFaixaPreco && matchTipoAnuncio && matchStatusFuncionamento && matchVerificados; // Added matchVerificados
       })
       .sort((a, b) => {
         const planoA = planoOrdem[a.plano] || 0;
@@ -297,7 +306,7 @@ export default function Anuncios() {
         }
         return new Date(b.created_date) - new Date(a.created_date);
       });
-  }, [fetchedAnuncios, busca, procedimentoFiltro, tagFiltro, cidadeFiltro, estadoFiltro, filtroFaixaPreco, filtroTipoAnuncio, filtroStatusFuncionamento]);
+  }, [fetchedAnuncios, buscaTexto, procedimentoFiltro, tagFiltro, cidadeFiltro, estadoFiltro, faixaPrecoFiltro, filtroTipoAnuncio, filtroStatusFuncionamento, apenasVerificados]); // Added buscaTexto, apenasVerificados
 
   const totalPaginas = Math.ceil(anuncios.length / ITEMS_PER_PAGE);
   const anunciosPaginados = anuncios.slice(
@@ -311,17 +320,36 @@ export default function Anuncios() {
   };
 
   const limparFiltros = () => {
-    setBusca("");
+    setCategoriaFiltro("Todas");
     setCidadeFiltro("");
     setEstadoFiltro("");
-    setCategoriaFiltro("Todas");
+    setBuscaTexto(""); // Changed from setBusca
     setProcedimentoFiltro("");
-    setTagFiltro("");
-    setFiltroFaixaPreco("");
-    setFiltroTipoAnuncio("");
-    setFiltroStatusFuncionamento("");
+    setTagFiltro(""); // Keep tagFiltro, though UI for it is removed, it might be set by URL
+    setFaixaPrecoFiltro("Todas"); // Changed from setFiltroFaixaPreco
+    setFiltroTipoAnuncio(""); // Kept, though UI for it is removed, it might be set by URL
+    setFiltroStatusFuncionamento(""); // Kept, though UI for it is removed, it might be set by URL
+    setApenasVerificados(false); // New
     setPaginaAtual(1);
+
+    // Remover parâmetros da URL
+    const url = new URL(window.location);
+    url.search = '';
+    window.history.pushState({}, '', url);
   };
+
+  // Verificar se há algum filtro ativo
+  const temFiltrosAtivos = 
+    categoriaFiltro !== "Todas" ||
+    cidadeFiltro !== "" ||
+    estadoFiltro !== "" ||
+    buscaTexto !== "" ||
+    procedimentoFiltro !== "" ||
+    tagFiltro !== "" || // Include tagFiltro
+    filtroTipoAnuncio !== "" || // Include tipoAnuncio
+    filtroStatusFuncionamento !== "" || // Include statusFuncionamento
+    faixaPrecoFiltro !== "Todas" ||
+    apenasVerificados;
 
   const getFaixaPrecoInfo = (faixa) => {
     const info = {
@@ -331,7 +359,7 @@ export default function Anuncios() {
       "$$$$": { texto: "R$ 2.000 - R$ 5.000", emoji: "🧡" },
       "$$$$$": { texto: "Acima de R$ 5.000", emoji: "❤️" }
     };
-    return info[faixa] || info["$"];
+    return info[faixa]; // Removed || info["$"] as "Todas" is now a valid value
   };
 
   return (
@@ -342,284 +370,227 @@ export default function Anuncios() {
             Encontre Profissionais de Estética
           </h1>
           <p className="text-gray-600">
-            {anuncios.length} profissional{anuncios.length !== 1 ? 'is' : ''} encontrado{anuncios.length !== 1 ? 's' : ''}
+            Explore os melhores profissionais de estética perto de você
           </p>
         </div>
 
         {/* Filtros */}
         <Card className="p-6 mb-8 shadow-lg border-none">
-          <CardContent className="p-6">
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-              {/* Busca input */}
-              <div className="relative">
-                <Search className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
-                <Input
-                  placeholder="Buscar por nome, profissional..."
-                  value={busca}
-                  onChange={(e) => {
-                    setBusca(e.target.value);
-                    setPaginaAtual(1);
-                  }}
-                  className="pl-10 h-12"
-                />
-              </div>
-
-              {/* Cidade input */}
-              <div className="relative">
-                <MapPin className="absolute left-3 top-3.5 w-5 h-5 text-gray-400 z-10" />
-                <Input
-                  placeholder="Cidade"
-                  value={cidadeFiltro}
-                  onChange={(e) => {
-                    setCidadeFiltro(e.target.value);
-                    setPaginaAtual(1);
-                  }}
-                  className="pl-10 h-12"
-                />
-              </div>
-
-              {/* Estado Select */}
-              <Select
-                value={estadoFiltro}
-                onValueChange={(value) => {
-                  setEstadoFiltro(value);
-                  setPaginaAtual(1);
-                }}
-              >
-                <SelectTrigger className="h-12">
-                  <SelectValue placeholder="Estado (UF)" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={null}>Todos</SelectItem>
-                  {estados.map((estado) => (
-                    <SelectItem key={estado} value={estado}>{estado}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              {/* Categoria Select */}
-              <Select
-                value={categoriaFiltro}
-                onValueChange={(value) => {
-                  setCategoriaFiltro(value);
-                  setPaginaAtual(1);
-                }}
-              >
-                <SelectTrigger className="h-12">
-                  <SelectValue placeholder="Categoria" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categorias.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-              {/* NOVO: Botão para abrir seletor de procedimentos */}
-              <div className="md:col-span-2">
-                <Button
-                  onClick={() => setMostrarSeletorProcedimentos(true)}
-                  variant="outline"
-                  className="w-full h-12 border-2 border-purple-300 text-purple-700 hover:bg-purple-50 hover:border-purple-400"
-                >
-                  <Sparkles className="w-5 h-5 mr-2" />
-                  {procedimentoFiltro 
-                    ? `Procedimento: ${procedimentoFiltro}` 
-                    : "Selecionar Procedimento Específico"}
-                </Button>
-              </div>
-
-              {/* Tag input */}
-              <div className="relative md:col-span-2">
-                <Search className="absolute left-3 top-3.5 w-5 h-5 text-gray-400 z-10" />
-                <Input
-                  placeholder="Buscar por palavra-chave (ex: #microagulhamento)"
-                  value={tagFiltro}
-                  onChange={(e) => {
-                    setTagFiltro(e.target.value);
-                    setPaginaAtual(1);
-                  }}
-                  className="pl-10 h-12"
-                />
-              </div>
-
-              {/* Filtro Faixa de Preço */}
-              <Select
-                value={filtroFaixaPreco}
-                onValueChange={(value) => {
-                  setFiltroFaixaPreco(value);
-                  setPaginaAtual(1);
-                }}
-              >
-                <SelectTrigger className="h-12">
-                  <SelectValue placeholder="Faixa de Preço" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={null}>Todas as faixas</SelectItem>
-                  <SelectItem value="$">💚 $ - Até R$ 500</SelectItem>
-                  <SelectItem value="$$">💙 $$ - R$ 500 - R$ 1.000</SelectItem>
-                  <SelectItem value="$$$">💛 $$$ - R$ 1.000 - R$ 2.000</SelectItem>
-                  <SelectItem value="$$$$">🧡 $$$$ - R$ 2.000 - R$ 5.000</SelectItem>
-                  <SelectItem value="$$$$$">❤️ $$$$$ - Acima de R$ 5.000</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {/* NOVO: Filtro Tipo de Anúncio */}
-              <div>
-                <Select
-                  value={filtroTipoAnuncio}
-                  onValueChange={(value) => {
-                    setFiltroTipoAnuncio(value);
-                    setPaginaAtual(1);
-                  }}
-                >
-                  <SelectTrigger className="h-12">
-                    <SelectValue placeholder="Tipo de Anúncio" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={null}>Todos os tipos</SelectItem>
-                    {tiposAnuncio.map(tipo => (
-                      <SelectItem key={tipo.valor} value={tipo.valor}>
-                        {tipo.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Status de Funcionamento */}
-              <div>
-                <Select
-                  value={filtroStatusFuncionamento}
-                  onValueChange={(value) => {
-                    setFiltroStatusFuncionamento(value);
-                    setPaginaAtual(1);
-                  }}
-                >
-                  <SelectTrigger className="h-12">
-                    <SelectValue placeholder="Status de Funcionamento" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={null}>Todos os status</SelectItem>
-                    {statusFuncionamento.map(status => (
-                      <SelectItem key={status.valor} value={status.valor}>
-                        {status.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Badges e Botão de Limpar Filtros */}
-            {(busca || cidadeFiltro || estadoFiltro || categoriaFiltro !== "Todas" || procedimentoFiltro || tagFiltro || filtroFaixaPreco || filtroTipoAnuncio || filtroStatusFuncionamento) && (
-              <div className="mt-4 flex items-center justify-between mb-4">
-                <div className="flex flex-wrap gap-2">
-                  {busca && <Badge variant="secondary">Busca: {busca}</Badge>}
-                  {cidadeFiltro && <Badge variant="secondary">Cidade: {cidadeFiltro}</Badge>}
-                  {estadoFiltro && <Badge variant="secondary">Estado: {estadoFiltro}</Badge>}
-                  {categoriaFiltro !== "Todas" && <Badge variant="secondary">Categoria: {categoriaFiltro}</Badge>}
-                  {procedimentoFiltro && (
-                    <Badge className="bg-purple-100 text-purple-800">
-                      Procedimento: {procedimentoFiltro}
-                    </Badge>
-                  )}
-                  {tagFiltro && <Badge variant="secondary">Palavra-chave: {tagFiltro}</Badge>}
-                  {filtroFaixaPreco && (
-                    <Badge variant="secondary">
-                      {getFaixaPrecoInfo(filtroFaixaPreco).emoji} {getFaixaPrecoInfo(filtroFaixaPreco).texto}
-                    </Badge>
-                  )}
-                  {filtroTipoAnuncio && (
-                    <Badge variant="secondary">
-                      Tipo: {tiposAnuncio.find(t => t.valor === filtroTipoAnuncio)?.label || filtroTipoAnuncio}
-                    </Badge>
-                  )}
-                  {filtroStatusFuncionamento && (
-                    <Badge variant="secondary">
-                      Status: {statusFuncionamento.find(s => s.valor === filtroStatusFuncionamento)?.label || filtroStatusFuncionamento}
-                    </Badge>
-                  )}
+          <CardContent className="p-6"> {/* Original CardContent className was "p-6", but outline removes it, keeping it for consistency */}
+            <div className="space-y-4">
+              {/* Primeira linha de filtros */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label className="mb-2 block font-semibold">Buscar por nome ou palavra-chave</Label>
+                  <Input
+                    placeholder="Digite aqui..."
+                    value={buscaTexto} // Changed from busca
+                    onChange={(e) => {
+                      setBuscaTexto(e.target.value); // Changed from setBusca
+                      setPaginaAtual(1);
+                    }}
+                    className="w-full h-12"
+                  />
                 </div>
-                <Button variant="ghost" size="sm" onClick={limparFiltros}>
-                  Limpar Filtros
-                </Button>
-              </div>
-            )}
 
-            {/* Localização e Ordenação */}
-            <div className="flex flex-col md:flex-row gap-4 items-start md:items-center mb-4">
-              <Button
-                onClick={usarMinhaLocalizacao}
-                disabled={localizando}
-                variant="outline"
-                className="w-full md:w-auto h-12"
-              >
-                <Locate className="w-4 h-4 mr-2" />
-                {localizando ? "Localizando..." : "Usar Minha Localização"}
-              </Button>
-              
-              <Select
-                value={ordenacao}
-                onValueChange={(value) => {
-                  setOrdenacao(value);
-                  setPaginaAtual(1);
-                }}
-              >
-                <SelectTrigger className="w-full md:w-64 h-12">
-                  <SelectValue placeholder="Ordenar por" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="mais_recentes">Mais Recentes</SelectItem>
-                  <SelectItem value="mais_visualizados">Mais Visualizados</SelectItem>
-                  <SelectItem value="mais_antigos">Mais Antigos</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+                <div>
+                  <Label className="mb-2 block font-semibold">Categoria</Label>
+                  <Select
+                    value={categoriaFiltro}
+                    onValueChange={(value) => {
+                      setCategoriaFiltro(value);
+                      setPaginaAtual(1);
+                    }}
+                  >
+                    <SelectTrigger className="h-12">
+                      <SelectValue placeholder="Categoria" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categorias.map((cat) => (
+                        <SelectItem key={cat} value={cat}>
+                          {cat}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-            {/* Resultados e Modo de Visualização */}
-            <div className="flex items-center justify-between mt-4 pt-4 border-t">
-              <div className="flex items-center gap-2 flex-wrap">
-                <Filter className="w-4 h-4 text-gray-500" />
-                <span className="text-sm text-gray-600">
-                  {anuncios.length} resultado{anuncios.length !== 1 ? 's' : ''}
-                </span>
+                <div>
+                  <Label className="mb-2 block font-semibold">Procedimento</Label>
+                  <Input
+                    placeholder="Ex: Botox, Preenchimento..."
+                    value={procedimentoFiltro}
+                    onChange={(e) => {
+                      setProcedimentoFiltro(e.target.value);
+                      setPaginaAtual(1);
+                    }}
+                    className="h-12"
+                  />
+                </div>
               </div>
 
-              <div className="flex gap-2">
-                <Button
-                  variant={viewMode === "grid" ? "default" : "outline"}
-                  size="icon"
-                  onClick={() => setViewMode("grid")}
-                  className={viewMode === "grid" ? "bg-pink-600 hover:bg-pink-700" : ""}
-                >
-                  <Grid className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant={viewMode === "list" ? "default" : "outline"}
-                  size="icon"
-                  onClick={() => setViewMode("list")}
-                  className={viewMode === "list" ? "bg-pink-600 hover:bg-pink-700" : ""}
-                >
-                  <List className="w-4 h-4" />
-                </Button>
+              {/* Segunda linha de filtros */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                  <Label className="mb-2 block font-semibold">Cidade</Label>
+                  <Input
+                    placeholder="Digite a cidade"
+                    value={cidadeFiltro}
+                    onChange={(e) => {
+                      setCidadeFiltro(e.target.value);
+                      setPaginaAtual(1);
+                    }}
+                    className="h-12"
+                  />
+                </div>
+
+                <div>
+                  <Label className="mb-2 block font-semibold">Estado</Label>
+                  <Select
+                    value={estadoFiltro}
+                    onValueChange={(value) => {
+                      setEstadoFiltro(value);
+                      setPaginaAtual(1);
+                    }}
+                  >
+                    <SelectTrigger className="h-12">
+                      <SelectValue placeholder="Estado (UF)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={null}>Todos</SelectItem> {/* Changed from null */}
+                      {estados.map((estado) => (
+                        <SelectItem key={estado} value={estado}>{estado}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label className="mb-2 block font-semibold">Faixa de Preço</Label>
+                  <Select
+                    value={faixaPrecoFiltro} // Changed from filtroFaixaPreco
+                    onValueChange={(value) => {
+                      setFaixaPrecoFiltro(value); // Changed from setFiltroFaixaPreco
+                      setPaginaAtual(1);
+                    }}
+                  >
+                    <SelectTrigger className="h-12">
+                      <SelectValue placeholder="Faixa de Preço" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {faixasPreco.map((faixa) => (
+                        <SelectItem key={faixa} value={faixa}>
+                          {faixa === "Todas" ? "Todas as faixas" : getFaixaPrecoInfo(faixa) ? `${getFaixaPrecoInfo(faixa).emoji} ${faixa} - ${getFaixaPrecoInfo(faixa).texto}` : faixa}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label className="mb-2 block font-semibold">Verificação</Label>
+                  <label className="flex items-center gap-2 mt-2 cursor-pointer h-12">
+                    <input
+                      type="checkbox"
+                      checked={apenasVerificados}
+                      onChange={(e) => {
+                        setApenasVerificados(e.target.checked);
+                        setPaginaAtual(1);
+                      }}
+                      className="w-4 h-4 rounded text-pink-600 focus:ring-pink-500"
+                    />
+                    <span className="text-sm text-gray-700">Apenas verificados</span>
+                  </label>
+                </div>
               </div>
+
+              {/* Botão Limpar Filtros */}
+              {temFiltrosAtivos && (
+                <div className="flex justify-end pt-2">
+                  <Button
+                    onClick={limparFiltros}
+                    variant="outline"
+                    className="border-2 border-gray-300 text-gray-700 hover:bg-gray-100"
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    Limpar Filtros
+                  </Button>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
 
+        {/* Existing Localização e Ordenação - Retained for now, though structure changed */}
+        <div className="flex flex-col md:flex-row gap-4 items-start md:items-center mb-4">
+          <Button
+            onClick={usarMinhaLocalizacao}
+            disabled={localizando}
+            variant="outline"
+            className="w-full md:w-auto h-12"
+          >
+            <Locate className="w-4 h-4 mr-2" />
+            {localizando ? "Localizando..." : "Usar Minha Localização"}
+          </Button>
+          
+          <Select
+            value={ordenacao}
+            onValueChange={(value) => {
+              setOrdenacao(value);
+              setPaginaAtual(1);
+            }}
+          >
+            <SelectTrigger className="w-full md:w-64 h-12">
+              <SelectValue placeholder="Ordenar por" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="mais_recentes">Mais Recentes</SelectItem>
+              <SelectItem value="mais_visualizados">Mais Visualizados</SelectItem>
+              <SelectItem value="mais_antigos">Mais Antigos</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Badges e Botão de Limpar Filtros (Old section - removing or updating this based on new filter UI) */}
+        {/* Original badges section is completely replaced by new filter UI and temFiltrosAtivos logic above */}
+
+        {/* Resultados e Modo de Visualização */}
+        <div className="flex items-center justify-between mt-4 pt-4 border-t">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Filter className="w-4 h-4 text-gray-500" />
+            <span className="text-sm text-gray-600">
+              {anuncios.length} resultado{anuncios.length !== 1 ? 's' : ''}
+            </span>
+          </div>
+
+          <div className="flex gap-2">
+            <Button
+              variant={viewMode === "grid" ? "default" : "outline"}
+              size="icon"
+              onClick={() => setViewMode("grid")}
+              className={viewMode === "grid" ? "bg-pink-600 hover:bg-pink-700" : ""}
+            >
+              <Grid className="w-4 h-4" />
+            </Button>
+            <Button
+              variant={viewMode === "list" ? "default" : "outline"}
+              size="icon"
+              onClick={() => setViewMode("list")}
+              className={viewMode === "list" ? "bg-pink-600 hover:bg-pink-700" : ""}
+            >
+              <List className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+
         {isLoading ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
             {Array(6).fill(0).map((_, i) => (
               <Card key={i} className="h-96 animate-pulse bg-gray-100" />
             ))}
           </div>
         ) : anuncios.length === 0 ? (
-          <Card className="p-12 text-center">
+          <Card className="p-12 text-center mt-8">
             <div className="text-6xl mb-4">🔍</div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
               Nenhum anúncio encontrado
@@ -631,8 +602,8 @@ export default function Anuncios() {
         ) : (
           <>
             <div className={viewMode === "grid" 
-              ? "grid md:grid-cols-2 lg:grid-cols-3 gap-6" 
-              : "space-y-4"
+              ? "grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8" 
+              : "space-y-4 mt-8"
             }>
               {anunciosPaginados.map((anuncio) => (
                 <CardAnuncio key={anuncio.id} anuncio={anuncio} />
@@ -689,7 +660,7 @@ export default function Anuncios() {
         )}
       </div>
 
-      {/* Modal de Seletor de Procedimentos */}
+      {/* Modal de Seletor de Procedimentos (Still relevant if we keep the simple input and want a picker) */}
       <SeletorProcedimentos
         open={mostrarSeletorProcedimentos}
         onClose={() => setMostrarSeletorProcedimentos(false)}

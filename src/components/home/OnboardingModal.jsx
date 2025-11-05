@@ -198,8 +198,18 @@ export default function OnboardingModal({ open, onComplete, onClose }) {
     }
   };
 
-  const handleClose = () => {
+  const handleClose = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     if (onClose) {
+      onClose();
+    }
+  };
+
+  const handleOpenChange = (isOpen) => {
+    if (!isOpen && onClose) {
       onClose();
     }
   };
@@ -207,27 +217,21 @@ export default function OnboardingModal({ open, onComplete, onClose }) {
   return (
     <Dialog 
       open={open} 
-      onOpenChange={(isOpen) => {
-        if (!isOpen && onClose) {
-          onClose();
-        }
-      }}
+      onOpenChange={handleOpenChange}
     >
       <DialogContent 
         className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto"
-        onInteractOutside={(e) => {
-          // Permitir fechar clicando fora
-          if (onClose) {
-            onClose();
-          }
-        }}
+        onEscapeKeyDown={handleClose}
+        onPointerDownOutside={handleClose}
+        onInteractOutside={handleClose}
       >
         <button
           onClick={handleClose}
-          className="absolute top-4 right-4 w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors z-10"
+          className="absolute top-4 right-4 w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors z-50"
           type="button"
+          aria-label="Fechar"
         >
-          <X className="w-4 h-4" />
+          <X className="w-5 h-5" />
         </button>
 
         <DialogHeader>
