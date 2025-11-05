@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
+import SecaoPerguntas from "../components/anuncios/SecaoPerguntas";
 
 export default function DetalhesAnuncio() {
   const navigate = useNavigate();
@@ -207,6 +208,8 @@ export default function DetalhesAnuncio() {
     );
   }
 
+  const isAutor = user && anuncio && user.email === anuncio.created_by;
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
       <div className="max-w-6xl mx-auto px-4">
@@ -317,6 +320,15 @@ export default function DetalhesAnuncio() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Seção de Perguntas e Respostas */}
+            {anuncio && user && ( // Render only if anuncio and user data are available
+                <SecaoPerguntas
+                anuncio={anuncio}
+                user={user}
+                isAutor={isAutor}
+                />
+            )}
           </div>
 
           <div className="space-y-6">

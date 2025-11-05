@@ -143,7 +143,7 @@ Seja profissional, técnico mas acessível. Use informações baseadas em evidê
         <div className="text-center mb-8">
           <div className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-full flex items-center justify-center shadow-xl overflow-hidden">
             <img
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/f54646e8e_drbeleza.png"
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/966d17a8f_drbeleza.png"
               alt="Dr. Beleza"
               className="w-full h-full object-cover"
               onError={(e) => {

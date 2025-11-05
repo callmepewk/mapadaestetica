@@ -31,6 +31,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge"; // Added for admin badge
 import Chatbot from "./components/home/Chatbot";
 import OnboardingModal from "./components/home/OnboardingModal"; // Added OnboardingModal import
+import NotificationBell from "./components/layout/NotificationBell";
 
 export default function Layout({ children }) {
   const location = useLocation();
@@ -240,6 +241,11 @@ export default function Layout({ children }) {
 
             {/* Right Actions */}
             <div className="flex items-center gap-2 sm:gap-3">
+              {/* Sino de Notificações */}
+              {isAuthenticated && user && (
+                <NotificationBell user={user} />
+              )}
+
               {isAuthenticated ? (
                 <>
                   {/* Contador de Pontos - SEMPRE ATUALIZADO */}
