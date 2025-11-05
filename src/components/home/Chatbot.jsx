@@ -104,14 +104,14 @@ Responda de forma clara, objetiva e útil.`,
 
   return (
     <>
-      {/* Botão Flutuante - MOBILE OPTIMIZED */}
+      {/* Botão Flutuante - DR. BELEZA VISÍVEL NO MOBILE */}
       <AnimatePresence>
         {!isOpen && (
           <motion.div
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
-            className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40"
+            className="fixed bottom-6 right-6 z-50"
           >
             <div className="relative group">
               {/* Tooltip - ESCONDIDO NO MOBILE */}
@@ -126,10 +126,10 @@ Responda de forma clara, objetiva e útil.`,
                 </div>
               </div>
 
-              {/* Botão com Imagem - MENOR NO MOBILE */}
+              {/* Botão com Imagem - BEM VISÍVEL NO MOBILE */}
               <button
                 onClick={() => setIsOpen(true)}
-                className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full shadow-2xl border-4 border-[#F7D426] overflow-hidden hover:scale-110 transition-transform duration-300"
+                className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full shadow-2xl border-4 border-[#F7D426] overflow-hidden hover:scale-110 transition-transform duration-300 bg-[#F7D426]"
               >
                 <img
                   src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/ec64a4c52_drbeleza.png"
@@ -140,15 +140,25 @@ Responda de forma clara, objetiva e útil.`,
                     e.target.nextSibling.style.display = 'flex';
                   }}
                 />
-                <div className="hidden w-full h-full bg-gradient-to-r from-[#F7D426] to-[#FFE066] items-center justify-center">
-                  <MessageCircle className="w-6 h-6 sm:w-7 sm:h-7 text-[#2C2C2C]" />
+                <div className="hidden w-full h-full bg-gradient-to-r from-[#F7D426] to-[#FFE066] items-center justify-center absolute inset-0">
+                  <MessageCircle className="w-8 h-8 sm:w-10 sm:h-10 text-[#2C2C2C]" />
                 </div>
 
-                {/* Bolinha Online - MENOR NO MOBILE */}
-                <div className="absolute bottom-0 right-0 w-4 h-4 sm:w-5 sm:h-5 bg-green-500 rounded-full border-2 border-white">
+                {/* Bolinha Online */}
+                <div className="absolute bottom-0 right-0 w-5 h-5 sm:w-6 sm:h-6 bg-green-500 rounded-full border-3 border-white shadow-lg">
                   <div className="absolute inset-0 bg-green-500 rounded-full animate-ping opacity-75"></div>
                 </div>
+
+                {/* Pulse Effect */}
+                <div className="absolute inset-0 rounded-full bg-[#F7D426] opacity-30 animate-pulse"></div>
               </button>
+
+              {/* Label "Dr. Beleza" embaixo do botão - MOBILE */}
+              <div className="sm:hidden absolute -bottom-6 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
+                <span className="text-xs font-bold text-[#F7D426] bg-white px-2 py-1 rounded-full shadow-md border border-[#F7D426]">
+                  Dr. Beleza
+                </span>
+              </div>
             </div>
           </motion.div>
         )}
@@ -163,62 +173,61 @@ Responda de forma clara, objetiva e útil.`,
             exit={{ opacity: 0, y: 100 }}
             className="fixed bottom-0 right-0 left-0 sm:bottom-6 sm:right-6 sm:left-auto z-50 sm:w-96 sm:max-w-[calc(100vw-3rem)]"
           >
-            <Card className="border-none shadow-2xl overflow-hidden rounded-t-2xl sm:rounded-2xl h-[80vh] sm:h-auto flex flex-col">
+            <Card className="border-none shadow-2xl overflow-hidden rounded-t-2xl sm:rounded-2xl h-[85vh] sm:h-auto flex flex-col">
               {/* Header */}
-              <div className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] p-3 sm:p-4 flex items-center justify-between border-b-2 border-[#2C2C2C] flex-shrink-0">
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden bg-white flex items-center justify-center">
+              <div className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] p-4 flex items-center justify-between border-b-2 border-[#2C2C2C] flex-shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden bg-white flex items-center justify-center border-2 border-[#2C2C2C]">
                     <img 
-                      src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe4/f54646e8e_drbeleza.png" 
+                      src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/ec64a4c52_drbeleza.png" 
                       alt="Dr. Beleza"
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         e.target.onerror = null;
-                        e.target.innerHTML = '<span class="text-xl sm:text-2xl">🩺</span>';
+                        e.target.parentElement.innerHTML = '<span class="text-2xl">🩺</span>';
                       }}
                     />
                   </div>
                   <div>
-                    <h3 className="font-bold text-[#2C2C2C] text-sm sm:text-base">Dr. Beleza</h3>
-                    <p className="text-xs text-[#2C2C2C]/80">Assistente Virtual</p>
+                    <h3 className="font-bold text-[#2C2C2C] text-base sm:text-lg">Dr. Beleza</h3>
+                    <p className="text-xs text-[#2C2C2C]/80">Assistente Virtual • Online</p>
                   </div>
                 </div>
                 <Button
                   onClick={() => setIsOpen(false)}
                   variant="ghost"
                   size="icon"
-                  className="text-[#2C2C2C] hover:bg-[#2C2C2C]/10 w-8 h-8 sm:w-10 sm:h-10"
+                  className="text-[#2C2C2C] hover:bg-[#2C2C2C]/10 w-10 h-10"
                 >
-                  <X className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <X className="w-5 h-5" />
                 </Button>
               </div>
 
               {/* Mensagens - SCROLLABLE */}
-              <div className="flex-1 overflow-y-auto p-3 sm:p-4 bg-gray-50 space-y-3 sm:space-y-4 min-h-0">
+              <div className="flex-1 overflow-y-auto p-4 bg-gray-50 space-y-4 min-h-0">
                 {messages.map((message, index) => (
                   <div
                     key={index}
                     className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`max-w-[85%] sm:max-w-[80%] rounded-2xl p-2.5 sm:p-3 ${
+                      className={`max-w-[85%] sm:max-w-[80%] rounded-2xl p-3 ${
                         message.type === "user"
                           ? "bg-gradient-to-r from-[#F7D426] to-[#FFE066] text-[#2C2C2C] border-2 border-[#2C2C2C]"
                           : "bg-white shadow-md"
                       }`}
                     >
-                      <p className="text-xs sm:text-sm whitespace-pre-wrap break-words">{message.text}</p>
+                      <p className="text-sm whitespace-pre-wrap break-words">{message.text}</p>
                       
-                      {/* Botões de Ação */}
                       {message.action && (
-                        <div className="mt-2 sm:mt-3">
+                        <div className="mt-3">
                           {message.action === "login" && (
                             <Button
                               onClick={() => handleActionClick("login")}
                               size="sm"
-                              className="w-full bg-[#2C2C2C] hover:bg-[#3A3A3A] text-[#F7D426] font-bold text-xs sm:text-sm"
+                              className="w-full bg-[#2C2C2C] hover:bg-[#3A3A3A] text-[#F7D426] font-bold"
                             >
-                              <User className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                              <User className="w-4 h-4 mr-2" />
                               Fazer Login
                             </Button>
                           )}
@@ -226,9 +235,9 @@ Responda de forma clara, objetiva e útil.`,
                             <Button
                               onClick={() => handleActionClick("completar_cadastro")}
                               size="sm"
-                              className="w-full bg-[#2C2C2C] hover:bg-[#3A3A3A] text-[#F7D426] font-bold text-xs sm:text-sm"
+                              className="w-full bg-[#2C2C2C] hover:bg-[#3A3A3A] text-[#F7D426] font-bold"
                             >
-                              <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                              <Sparkles className="w-4 h-4 mr-2" />
                               Completar Cadastro
                             </Button>
                           )}
@@ -240,11 +249,11 @@ Responda de forma clara, objetiva e útil.`,
 
                 {loading && (
                   <div className="flex justify-start">
-                    <div className="bg-white shadow-md rounded-2xl p-2.5 sm:p-3">
-                      <div className="flex gap-1.5 sm:gap-2">
-                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-[#F7D426] rounded-full animate-bounce"></div>
-                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-[#F7D426] rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
-                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-[#F7D426] rounded-full animate-bounce" style={{ animationDelay: "0.4s" }}></div>
+                    <div className="bg-white shadow-md rounded-2xl p-3">
+                      <div className="flex gap-2">
+                        <div className="w-2 h-2 bg-[#F7D426] rounded-full animate-bounce"></div>
+                        <div className="w-2 h-2 bg-[#F7D426] rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+                        <div className="w-2 h-2 bg-[#F7D426] rounded-full animate-bounce" style={{ animationDelay: "0.4s" }}></div>
                       </div>
                     </div>
                   </div>
@@ -252,23 +261,23 @@ Responda de forma clara, objetiva e útil.`,
               </div>
 
               {/* Input - FIXO NO BOTTOM */}
-              <div className="p-3 sm:p-4 bg-white border-t flex-shrink-0">
+              <div className="p-4 bg-white border-t flex-shrink-0">
                 <div className="flex gap-2">
                   <Input
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
                     onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                    placeholder={user && user.cadastro_completo ? "Digite..." : "Faça login..."}
-                    className="flex-1 text-xs sm:text-sm h-9 sm:h-10"
+                    placeholder={user && user.cadastro_completo ? "Digite sua mensagem..." : "Faça login primeiro..."}
+                    className="flex-1 text-sm h-11"
                     disabled={!user || !user.cadastro_completo}
                   />
                   <Button
                     onClick={handleSendMessage}
                     disabled={loading || !inputMessage.trim() || !user || !user.cadastro_completo}
-                    className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] hover:from-[#E5C215] hover:to-[#F7D426] text-[#2C2C2C] border-2 border-[#2C2C2C] w-9 h-9 sm:w-10 sm:h-10 p-0"
+                    className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] hover:from-[#E5C215] hover:to-[#F7D426] text-[#2C2C2C] border-2 border-[#2C2C2C] w-11 h-11 p-0"
                     size="icon"
                   >
-                    <Send className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <Send className="w-5 h-5" />
                   </Button>
                 </div>
               </div>
