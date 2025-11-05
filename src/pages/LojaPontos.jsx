@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,7 +26,7 @@ const recompensas = [
     nome: "1 BeautyCoin",
     descricao: "Moeda virtual para usar em produtos e serviços exclusivos da plataforma",
     pontosNecessarios: 100,
-    icone: "💎",
+    icone: "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/290130570_image.png",
     categoria: "Moedas Virtuais",
     beneficios: [
       "Use em qualquer produto da loja",
@@ -270,7 +271,15 @@ export default function LojaPontos() {
 
                   <CardContent className="p-6">
                     <div className="text-center mb-4">
-                      <div className="text-6xl mb-3">{recompensa.icone}</div>
+                      {recompensa.id === 'beautycoin' ? (
+                        <img 
+                          src={recompensa.icone} 
+                          alt="BeautyCoin" 
+                          className="w-24 h-24 mx-auto mb-3 object-contain"
+                        />
+                      ) : (
+                        <div className="text-6xl mb-3">{recompensa.icone}</div>
+                      )}
                       <Badge className="mb-2 text-xs">{recompensa.categoria}</Badge>
                       <h3 className="text-xl font-bold text-gray-900 mb-2">
                         {recompensa.nome}

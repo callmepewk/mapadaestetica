@@ -7,13 +7,14 @@ import { createPageUrl } from "@/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, TrendingUp, Sparkles, Heart, Eye, Briefcase, Users, ExternalLink, MessageCircle, Send, AlertCircle, X } from "lucide-react";
+import { Calendar, Clock, TrendingUp, Sparkles, Heart, Eye, Briefcase, Users, ExternalLink, MessageCircle, Send, AlertCircle, X, Share2, Facebook, Copy } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input"; // Import Input component
 
 const fontesExternas = [
   {
@@ -62,6 +63,9 @@ export default function Blog() {
   const [novoComentario, setNovoComentario] = useState("");
   const [comentarios, setComentarios] = useState([]);
   const [erro, setErro] = useState(null);
+  const [respondendoComentario, setRespondendoComentario] = useState(null);
+  const [linkCompartilhamento, setLinkCompartilhamento] = useState("");
+  const [mostrarLinkCopiado, setMostrarLinkCopiado] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -140,9 +144,26 @@ export default function Blog() {
       setComentarios([]);
     }
 
+    // Gerar link de compartilhamento
+    const link = `${window.location.origin}${createPageUrl("Blog")}?artigo=${artigo.id}`;
+    setLinkCompartilhamento(link);
+
     setArtigoSelecionado(artigo);
     setDialogAberto(true);
   };
+
+  // Verificar se há artigo na URL ao carregar
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const artigoId = urlParams.get('artigo');
+    
+    if (artigoId && artigos.length > 0) {
+      const artigo = artigos.find(a => a.id === artigoId);
+      if (artigo) {
+        handleArtigoClick({ preventDefault: () => {} }, artigo);
+      }
+    }
+  }, [artigos]); // Dependência em 'artigos' para garantir que a busca seja feita após os dados estarem disponíveis
 
   const handleCurtir = async () => {
     if (!user) {
@@ -186,28 +207,78 @@ export default function Blog() {
     }
     
     try {
-      await base44.entities.ComentarioBlog.create({
+      const novoComentarioData = await base44.entities.ComentarioBlog.create({
         artigo_id: artigoSelecionado.id,
         usuario_nome: user.full_name,
         usuario_email: user.email,
-        usuario_foto: user.profile_picture || "", // Assuming `profile_picture` for user foto
+        usuario_foto: user.foto_perfil || "",
         comentario: novoComentario,
-        status: 'pendente' // Comentários podem precisar de moderação
+        comentario_pai_id: respondendoComentario,
+        status: 'ativo' // Comentários agora são ativos por padrão
       });
 
-      const comentariosData = await base44.entities.ComentarioBlog.filter(
-        { artigo_id: artigoSelecionado.id, status: 'ativo' },
-        '-created_date',
-        100
-      );
-      setComentarios(comentariosData);
+      // Adicionar comentário à lista local imediatamente
+      // Se for uma resposta, ela será filtrada e exibida corretamente
+      // Se for um comentário principal, será adicionado ao topo
+      setComentarios([novoComentarioData, ...comentarios]);
       setNovoComentario("");
+      setRespondendoComentario(null);
       setErro(null);
-      alert("Seu comentário foi enviado para aprovação."); // Informar ao usuário que está pendente
     } catch (error) {
       setErro("Erro ao enviar comentário");
       console.error("Erro ao enviar comentário:", error);
     }
+  };
+
+  const handleCurtirComentario = async (comentario) => {
+    if (!user) {
+      base44.auth.redirectToLogin(window.location.pathname);
+      return;
+    }
+
+    try {
+      const curtidas = comentario.curtidas_usuarios || [];
+      const jaCurtiu = curtidas.includes(user.email);
+      
+      const novasCurtidas = jaCurtiu
+        ? curtidas.filter(email => email !== user.email)
+        : [...curtidas, user.email];
+      
+      await base44.entities.ComentarioBlog.update(comentario.id, {
+        curtidas_usuarios: novasCurtidas,
+        total_curtidas: novasCurtidas.length
+      });
+
+      // Atualizar localmente
+      const comentariosAtualizados = comentarios.map(c => 
+        c.id === comentario.id 
+          ? { ...c, curtidas_usuarios: novasCurtidas, total_curtidas: novasCurtidas.length }
+          : c
+      );
+      setComentarios(comentariosAtualizados);
+    } catch (error) {
+      console.error("Erro ao curtir comentário:", error);
+    }
+  };
+
+  const copiarLinkCompartilhamento = () => {
+    navigator.clipboard.writeText(linkCompartilhamento);
+    setMostrarLinkCopiado(true);
+    setTimeout(() => setMostrarLinkCopiado(false), 2000);
+  };
+
+  const compartilharRedesSociais = (rede) => {
+    const texto = encodeURIComponent(`Confira este artigo: ${artigoSelecionado.titulo}`);
+    const url = encodeURIComponent(linkCompartilhamento);
+    
+    const links = {
+      whatsapp: `https://wa.me/?text=${texto}%20${url}`,
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
+      twitter: `https://twitter.com/intent/tweet?text=${texto}&url=${url}`,
+      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${url}`
+    };
+
+    window.open(links[rede], '_blank', 'width=600,height=400');
   };
 
   const ArtigoCard = ({ artigo }) => {
@@ -420,6 +491,8 @@ export default function Blog() {
               setComentarios([]); // Clear comments on close
               setNovoComentario(""); // Clear comment input
               setErro(null); // Clear errors
+              setRespondendoComentario(null); // Clear reply state
+              setMostrarLinkCopiado(false); // Clear copied message
             }}
             className="absolute top-4 right-4 z-50 w-8 h-8 rounded-full bg-white/90 hover:bg-white flex items-center justify-center shadow-lg"
           >
@@ -462,6 +535,37 @@ export default function Blog() {
                       <Heart className={`w-4 h-4 mr-2 ${artigoSelecionado.curtidas?.includes(user?.email) ? 'fill-red-600' : ''}`} />
                       {artigoSelecionado.total_curtidas || 0}
                     </Button>
+                    <Button variant="outline" size="sm" onClick={copiarLinkCompartilhamento}>
+                      <Share2 className="w-4 h-4 mr-2" />
+                      {mostrarLinkCopiado ? "Copiado!" : "Compartilhar"}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Opções de Compartilhamento */}
+                <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                  <p className="text-sm font-semibold mb-3">Compartilhar em:</p>
+                  <div className="flex flex-wrap gap-2">
+                    <Button size="sm" variant="outline" onClick={() => compartilharRedesSociais('whatsapp')} className="bg-green-50 hover:bg-green-100 text-green-700 border-green-200">
+                      <MessageCircle className="w-4 h-4 mr-2" />
+                      WhatsApp
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => compartilharRedesSociais('facebook')} className="bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200">
+                      <Facebook className="w-4 h-4 mr-2" />
+                      Facebook
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => compartilharRedesSociais('twitter')} className="bg-sky-50 hover:bg-sky-100 text-sky-700 border-sky-200">
+                      📱 Twitter
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => compartilharRedesSociais('linkedin')} className="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200">
+                      💼 LinkedIn
+                    </Button>
+                  </div>
+                  <div className="mt-3 flex gap-2">
+                    <Input value={linkCompartilhamento} readOnly className="text-sm" />
+                    <Button size="sm" onClick={copiarLinkCompartilhamento}>
+                      <Copy className="w-4 h-4" />
+                    </Button>
                   </div>
                 </div>
 
@@ -483,7 +587,7 @@ export default function Blog() {
                 <div className="mt-12 pt-8 border-t">
                   <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                     <MessageCircle className="w-6 h-6" />
-                    Comentários ({comentarios.length})
+                    Comentários ({comentarios.filter(c => c.status === 'ativo').length})
                   </h3>
 
                   {erro && (
@@ -494,8 +598,16 @@ export default function Blog() {
                   )}
 
                   <div className="mb-8">
+                    {respondendoComentario && (
+                      <div className="mb-3 p-2 bg-blue-50 rounded flex items-center justify-between">
+                        <span className="text-sm text-blue-700">Respondendo a um comentário</span>
+                        <Button size="sm" variant="ghost" onClick={() => setRespondendoComentario(null)} className="h-auto px-2 py-1">
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    )}
                     <Textarea
-                      placeholder={user ? "Escreva seu comentário..." : "Faça login para comentar"}
+                      placeholder={user ? (respondendoComentario ? "Escreva sua resposta..." : "Escreva seu comentário...") : "Faça login para comentar"}
                       value={novoComentario}
                       onChange={(e) => setNovoComentario(e.target.value)}
                       disabled={!user}
@@ -504,34 +616,89 @@ export default function Blog() {
                     />
                     <Button onClick={handleComentar} disabled={!user || !novoComentario.trim()} className="bg-pink-600 hover:bg-pink-700">
                       <Send className="w-4 h-4 mr-2" />
-                      Comentar
+                      {respondendoComentario ? "Responder" : "Comentar"}
                     </Button>
                   </div>
 
                   <div className="space-y-6">
-                    {comentarios.length === 0 ? (
+                    {comentarios.filter(c => c.status === 'ativo' && !c.comentario_pai_id).length === 0 ? (
                       <p className="text-gray-500 text-center">Nenhum comentário ainda. Seja o primeiro!</p>
                     ) : (
-                      comentarios.map((comentario) => (
-                        <div key={comentario.id} className="border-l-2 border-gray-200 pl-4">
-                          <div className="flex items-start gap-3">
-                            <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 font-bold flex-shrink-0">
-                              {comentario.usuario_foto ? (
-                                <img src={comentario.usuario_foto} alt={comentario.usuario_nome} className="w-full h-full rounded-full object-cover" />
-                              ) : (
-                                comentario.usuario_nome.charAt(0).toUpperCase()
-                              )}
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="font-semibold text-gray-900">{comentario.usuario_nome}</span>
-                                <span className="text-xs text-gray-500">
-                                  {format(new Date(comentario.created_date), "dd/MM/yyyy 'às' HH:mm")}
-                                </span>
+                      comentarios.filter(c => c.status === 'ativo' && !c.comentario_pai_id).map((comentario) => (
+                        <div key={comentario.id} className="space-y-4">
+                          {/* Comentário Principal */}
+                          <div className="border-l-2 border-gray-200 pl-4">
+                            <div className="flex items-start gap-3">
+                              <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 font-bold flex-shrink-0">
+                                {comentario.usuario_foto ? (
+                                  <img src={comentario.usuario_foto} alt={comentario.usuario_nome} className="w-full h-full rounded-full object-cover" />
+                                ) : (
+                                  comentario.usuario_nome.charAt(0).toUpperCase()
+                                )}
                               </div>
-                              <p className="text-gray-700">{comentario.comentario}</p>
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="font-semibold text-gray-900">{comentario.usuario_nome}</span>
+                                  <span className="text-xs text-gray-500">
+                                    {format(new Date(comentario.created_date), "dd/MM/yyyy 'às' HH:mm")}
+                                  </span>
+                                </div>
+                                <p className="text-gray-700 mb-2">{comentario.comentario}</p>
+                                <div className="flex items-center gap-4">
+                                  <button
+                                    onClick={() => handleCurtirComentario(comentario)}
+                                    disabled={!user}
+                                    className="flex items-center gap-1 text-sm text-gray-500 hover:text-pink-600 transition-colors"
+                                  >
+                                    <Heart className={`w-4 h-4 ${comentario.curtidas_usuarios?.includes(user?.email) ? 'fill-pink-600 text-pink-600' : ''}`} />
+                                    {comentario.total_curtidas || 0}
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setRespondendoComentario(comentario.id);
+                                      document.querySelector('textarea').focus();
+                                    }}
+                                    disabled={!user}
+                                    className="text-sm text-gray-500 hover:text-blue-600 transition-colors"
+                                  >
+                                    Responder
+                                  </button>
+                                </div>
+                              </div>
                             </div>
                           </div>
+
+                          {/* Respostas */}
+                          {comentarios.filter(r => r.status === 'ativo' && r.comentario_pai_id === comentario.id).map((resposta) => (
+                            <div key={resposta.id} className="ml-8 border-l-2 border-blue-200 pl-4">
+                              <div className="flex items-start gap-3">
+                                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 font-bold flex-shrink-0 text-xs">
+                                  {resposta.usuario_foto ? (
+                                    <img src={resposta.usuario_foto} alt={resposta.usuario_nome} className="w-full h-full rounded-full object-cover" />
+                                  ) : (
+                                    resposta.usuario_nome.charAt(0).toUpperCase()
+                                  )}
+                                </div>
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span className="font-semibold text-gray-900 text-sm">{resposta.usuario_nome}</span>
+                                    <span className="text-xs text-gray-500">
+                                      {format(new Date(resposta.created_date), "dd/MM/yyyy 'às' HH:mm")}
+                                    </span>
+                                  </div>
+                                  <p className="text-gray-700 text-sm mb-2">{resposta.comentario}</p>
+                                  <button
+                                    onClick={() => handleCurtirComentario(resposta)}
+                                    disabled={!user}
+                                    className="flex items-center gap-1 text-xs text-gray-500 hover:text-pink-600 transition-colors"
+                                  >
+                                    <Heart className={`w-3 h-3 ${resposta.curtidas_usuarios?.includes(user?.email) ? 'fill-pink-600 text-pink-600' : ''}`} />
+                                    {resposta.total_curtidas || 0}
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       ))
                     )}

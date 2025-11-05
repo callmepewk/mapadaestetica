@@ -90,43 +90,49 @@ export default function OnboardingModal({ open, onComplete, onClose }) {
 
       await base44.auth.updateMe(dados);
       
-      // Se for profissional, mostrar notificação antes de recarregar
+      // Se for profissional, mostrar notificação com opções antes de recarregar
       if (tipoUsuario === "profissional" || tipoUsuario === "tester") {
         // Criar um overlay com notificação
         const overlay = document.createElement('div');
-        overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:9999;display:flex;align-items:center;justify-content:center;';
+        overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
         
         const notification = document.createElement('div');
-        notification.style.cssText = 'background:white;border-radius:16px;padding:32px;max-width:500px;margin:20px;box-shadow:0 20px 60px rgba(0,0,0,0.3);text-align:center;';
+        notification.style.cssText = 'background:white;border-radius:16px;padding:32px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3);text-align:center;';
         notification.innerHTML = `
           <div style="font-size:48px;margin-bottom:16px;">🤔</div>
           <h3 style="font-size:24px;font-weight:bold;margin-bottom:16px;color:#2C2C2C;">Dúvidas sobre qual plano é melhor para você?</h3>
           <p style="color:#666;margin-bottom:24px;line-height:1.6;">
-            Fale com um especialista e descubra o plano ideal para impulsionar seu negócio!
+            Escolha como podemos te ajudar:
           </p>
-          <a href="https://wa.me/5531972595643?text=${encodeURIComponent('Olá! Acabei de me cadastrar no Mapa da Estética e gostaria de saber qual plano é o melhor para mim! 💼')}" 
-             target="_blank" 
-             style="display:inline-block;background:linear-gradient(to right, #25D366, #128C7E);color:white;padding:16px 32px;border-radius:8px;text-decoration:none;font-weight:bold;margin-bottom:12px;">
-            💬 Consultar Especialista
-          </a>
-          <button onclick="this.parentElement.remove(); window.location.reload();" 
-                  style="display:block;width:100%;background:transparent;color:#666;padding:12px;border:none;cursor:pointer;margin-top:12px;text-decoration:underline;">
-            Continuar sem consultar
-          </button>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <a href="https://wa.me/5531972595643?text=${encodeURIComponent('Olá! Acabei de me cadastrar no Mapa da Estética e gostaria de saber qual plano é o melhor para mim! 💼')}" 
+               target="_blank" 
+               style="display:block;background:linear-gradient(to right, #25D366, #128C7E);color:white;padding:16px 32px;border-radius:8px;text-decoration:none;font-weight:bold;">
+              💬 Falar com Especialista
+            </a>
+            <button onclick="window.open('/pesquisa-especializada?origem=cadastro', '_blank')"
+                    style="width:100%;background:linear-gradient(to right, #F7D426, #FFE066);color:#2C2C2C;padding:16px 32px;border-radius:8px;border:none;cursor:pointer;font-weight:bold;">
+              🩺 Falar com Dr. Beleza
+            </button>
+            <button onclick="this.closest('.relative').remove();window.location.reload();" 
+                    style="width:100%;background:transparent;color:#666;padding:12px;border:none;cursor:pointer;text-decoration:underline;margin-top:8px;">
+              Continuar sem consultar
+            </button>
+          </div>
         `;
         
         overlay.appendChild(notification);
         document.body.appendChild(overlay);
         
-        // Aguardar 30 segundos ou clique antes de recarregar automaticamente
+        // Aguardar 60 segundos ou clique antes de recarregar automaticamente
         setTimeout(() => {
           if (document.body.contains(overlay)) {
             overlay.remove();
             window.location.reload();
           }
-        }, 30000);
+        }, 60000);
       } else {
-        // Paciente ou tester: recarregar imediatamente
+        // Paciente: recarregar imediatamente
         window.location.reload();
       }
     } catch (error) {

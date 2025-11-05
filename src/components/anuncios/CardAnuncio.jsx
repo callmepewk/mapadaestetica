@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { MapPin, Clock, Eye, Star, Crown, Phone, Mail, Globe, Instagram, Facebook, X, Share2, Heart } from "lucide-react";
+import { MapPin, Clock, Eye, Star, Crown, Phone, Mail, Globe, Instagram, Facebook, X, Share2, Heart, Copy } from "lucide-react";
 import { format } from "date-fns";
 
 export default function CardAnuncio({ anuncio, destaque = false }) {
@@ -14,6 +14,8 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
   const [imagemAtual, setImagemAtual] = useState(0);
   const [curtido, setCurtido] = useState(false);
   const [user, setUser] = useState(null);
+  const [compartilhandoLink, setCompartilhandoLink] = useState(false);
+  const [linkCopiado, setLinkCopiado] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -82,45 +84,53 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
     return info[faixa] || info["$"];
   };
 
-  const handleCurtir = async () => {
+  const handleCurtir = async (e) => {
+    e.stopPropagation();
     if (!user) {
-      alert("Faça login para curtir!");
+      alert("Faça login para curtir anúncios!");
       return;
     }
-
+    setCurtido(!curtido);
+    
     try {
-      const novasCurtidas = curtido ? (anuncio.curtidas || 0) - 1 : (anuncio.curtidas || 0) + 1;
+      const curtidasAtuais = anuncio.curtidas || 0;
+      const novasCurtidas = curtido ? curtidasAtuais - 1 : curtidasAtuais + 1;
       // Assuming base44 and its entities method are available globally or imported implicitly
       await base44.entities.Anuncio.update(anuncio.id, {
         curtidas: novasCurtidas
       });
-      setCurtido(!curtido);
       anuncio.curtidas = novasCurtidas; // Update local anuncio object for immediate UI reflection
     } catch (error) {
       console.error("Erro ao curtir:", error);
+      setCurtido(prev => !prev); // Revert state if API call fails
     }
   };
 
-  const handleCompartilhar = () => {
-    // Assuming createPageUrl is a helper function available in the scope
-    // If not, you might need to define it or import it, e.g., import { createPageUrl } from 'path/to/utils';
-    const url = `${window.location.origin}${createPageUrl("DetalhesAnuncio")}?id=${anuncio.id}`;
-    const texto = `Confira: ${anuncio.titulo} - ${anuncio.profissional}`;
+  const handleCompartilhar = (e) => {
+    e.stopPropagation();
+    const link = `${window.location.origin}/detalhes-anuncio?id=${anuncio.id}`;
+    navigator.clipboard.writeText(link);
+    setLinkCopiado(true);
+    setTimeout(() => {
+      setLinkCopiado(false);
+      setCompartilhandoLink(false); // Close sharing options after copying
+    }, 2000);
+  };
 
-    if (navigator.share) {
-      navigator.share({
-        title: anuncio.titulo,
-        text: texto,
-        url: url
-      }).catch(() => {
-        // Fallback para copiar link em caso de erro ou cancelamento do share
-        navigator.clipboard.writeText(url);
-        alert("Link copiado para a área de transferência!");
-      });
-    } else {
-      navigator.clipboard.writeText(url);
-      alert("Link copiado para a área de transferência!");
-    }
+  const abrirCompartilhamento = (e, rede) => {
+    e.stopPropagation();
+    const link = `${window.location.origin}/detalhes-anuncio?id=${anuncio.id}`;
+    const texto = encodeURIComponent(`Confira: ${anuncio.titulo} - ${anuncio.profissional}`);
+    const url = encodeURIComponent(link);
+    
+    const links = {
+      whatsapp: `https://wa.me/?text=${texto}%20${url}`,
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
+      twitter: `https://twitter.com/intent/tweet?text=${texto}&url=${url}`
+    };
+
+    window.open(links[rede], '_blank', 'width=600,height=400');
+    setCompartilhandoLink(false); // Close sharing options after opening social media
   };
 
   const isPremium = anuncio?.plano === 'premium' || anuncio?.plano === 'platina';
@@ -129,7 +139,10 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
   return (
     <>
       <Card
-        className={`overflow-hidden group hover:shadow-2xl transition-shadow duration-200 border-none h-full flex flex-col ${
+        onClick={() => {
+          window.location.href = `/detalhes-anuncio?id=${anuncio.id}`;
+        }}
+        className={`overflow-hidden group hover:shadow-2xl transition-shadow duration-200 border-none h-full flex flex-col cursor-pointer ${
           isPremium ? 'ring-2 ring-[#F7D426]' : ''
         }`}
       >
@@ -180,27 +193,6 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
               </Avatar>
             </div>
           )}
-
-          <div className="absolute bottom-3 right-3 flex gap-2">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleCurtir();
-              }}
-              className="w-8 h-8 bg-white/90 rounded-full flex items-center justify-center hover:bg-white transition-colors shadow-lg"
-            >
-              <Heart className={`w-4 h-4 ${curtido ? 'fill-red-500 text-red-500' : 'text-gray-700'}`} />
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleCompartilhar();
-              }}
-              className="w-8 h-8 bg-white/90 rounded-full flex items-center justify-center hover:bg-white transition-colors shadow-lg"
-            >
-              <Share2 className="w-4 h-4 text-gray-700" />
-            </button>
-          </div>
         </div>
 
         <CardContent className="p-4 flex flex-col flex-1">
@@ -352,8 +344,54 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
             )}
           </div>
 
+          {/* Ações */}
+          <div className="flex items-center gap-2 pt-4 border-t mt-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleCurtir}
+              className={`flex-1 ${curtido ? 'text-red-600' : 'text-gray-600'}`}
+            >
+              <Heart className={`w-4 h-4 mr-2 ${curtido ? 'fill-red-600' : ''}`} />
+              {curtido ? 'Curtido' : 'Curtir'}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                setCompartilhandoLink(!compartilhandoLink);
+              }}
+              className="flex-1 text-blue-600"
+            >
+              <Share2 className="w-4 h-4 mr-2" />
+              {linkCopiado ? 'Link Copiado!' : 'Compartilhar'}
+            </Button>
+          </div>
+
+          {/* Opções de Compartilhamento */}
+          {compartilhandoLink && (
+            <div className="mt-3 p-3 bg-gray-50 rounded-lg space-y-2" onClick={(e) => e.stopPropagation()}>
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" onClick={(e) => abrirCompartilhamento(e, 'whatsapp')} className="flex-1 bg-green-50 text-green-700">
+                  WhatsApp
+                </Button>
+                <Button size="sm" variant="outline" onClick={(e) => abrirCompartilhamento(e, 'facebook')} className="flex-1 bg-blue-50 text-blue-700">
+                  Facebook
+                </Button>
+                <Button size="sm" variant="outline" onClick={(e) => abrirCompartilhamento(e, 'twitter')} className="flex-1 bg-sky-50 text-sky-700">
+                  Twitter
+                </Button>
+              </div>
+              <Button size="sm" variant="outline" onClick={handleCompartilhar} className="w-full">
+                <Copy className="w-4 h-4 mr-2" />
+                Copiar Link
+              </Button>
+            </div>
+          )}
+
           <Button
-            onClick={() => setDialogAberto(true)}
+            onClick={(e) => { e.stopPropagation(); setDialogAberto(true); }}
             className="w-full mt-4 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
           >
             Ver Mais Detalhes
@@ -440,6 +478,7 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
                     </div>
                   </div>
 
+                  {/* These buttons are left untouched as per instructions, they don't have onClick events in the original code */}
                   <div className="flex gap-2">
                     <Button variant="outline" size="icon"><Share2 className="w-4 h-4" /></Button>
                     <Button variant="outline" size="icon"><Heart className="w-4 h-4" /></Button>
