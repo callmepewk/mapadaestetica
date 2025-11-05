@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createPageUrl } from "@/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MessageSquare, CheckCircle, XCircle, Send } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { v4 as uuidv4 } from 'uuid';
 
 const perguntasProntas = [
   {
@@ -20,14 +20,18 @@ const perguntasProntas = [
   }
 ];
 
+// Função para gerar ID único
+const gerarId = () => {
+  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+};
+
 export default function SecaoPerguntas({ anuncio, user, isAutor }) {
   const queryClient = useQueryClient();
-  const [perguntaSelecionada, setPerguntaSelecionada] = useState(null);
 
   const enviarPerguntaMutation = useMutation({
     mutationFn: async (perguntaTexto) => {
       const novaPergunta = {
-        id: uuidv4(),
+        id: gerarId(),
         usuario_nome: user.full_name,
         usuario_email: user.email,
         pergunta: perguntaTexto.texto,
@@ -58,7 +62,8 @@ export default function SecaoPerguntas({ anuncio, user, isAutor }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['anuncio-detalhes'] });
       alert("Pergunta enviada! O profissional será notificado.");
-      setPerguntaSelecionada(null);
+      // Recarregar a página para mostrar a nova pergunta
+      window.location.reload();
     },
   });
 
@@ -83,19 +88,23 @@ export default function SecaoPerguntas({ anuncio, user, isAutor }) {
 
       // Criar notificação para quem perguntou
       const pergunta = perguntasAtuais.find(p => p.id === perguntaId);
-      await base44.entities.Notificacao.create({
-        usuario_email: pergunta.usuario_email,
-        tipo: 'pergunta_respondida',
-        titulo: 'Sua pergunta foi respondida',
-        mensagem: `O anunciante respondeu "${resposta}" à sua pergunta sobre "${anuncio.titulo}"`,
-        anuncio_id: anuncio.id,
-        pergunta_id: perguntaId,
-        link_acao: `${createPageUrl("DetalhesAnuncio")}?id=${anuncio.id}`
-      });
+      if (pergunta) {
+        await base44.entities.Notificacao.create({
+          usuario_email: pergunta.usuario_email,
+          tipo: 'pergunta_respondida',
+          titulo: 'Sua pergunta foi respondida',
+          mensagem: `O anunciante respondeu "${resposta}" à sua pergunta sobre "${anuncio.titulo}"`,
+          anuncio_id: anuncio.id,
+          pergunta_id: perguntaId,
+          link_acao: `${createPageUrl("DetalhesAnuncio")}?id=${anuncio.id}`
+        });
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['anuncio-detalhes'] });
       alert("Resposta enviada! O usuário será notificado.");
+      // Recarregar a página para mostrar a resposta
+      window.location.reload();
     },
   });
 
@@ -133,18 +142,37 @@ export default function SecaoPerguntas({ anuncio, user, isAutor }) {
           </div>
         )}
 
+        {/* Prompt para usuários não logados */}
+        {!user && (
+          <div className="bg-yellow-50 p-4 rounded-lg border-2 border-yellow-200">
+            <p className="font-semibold text-yellow-900 mb-2">
+              Faça login para fazer perguntas
+            </p>
+            <p className="text-sm text-yellow-800 mb-3">
+              Crie uma conta grátis para poder fazer perguntas aos profissionais!
+            </p>
+            <Button
+              onClick={() => base44.auth.redirectToLogin(window.location.pathname)}
+              className="bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold"
+            >
+              Criar Conta Grátis
+            </Button>
+          </div>
+        )}
+
         {/* Lista de perguntas e respostas */}
         {perguntas.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             <MessageSquare className="w-12 h-12 mx-auto text-gray-300 mb-2" />
             <p className="text-sm">Nenhuma pergunta ainda</p>
+            <p className="text-xs text-gray-400 mt-1">Seja o primeiro a perguntar!</p>
           </div>
         ) : (
           <div className="space-y-4">
             {perguntas.map((pergunta) => (
               <div key={pergunta.id} className="bg-gray-50 p-4 rounded-lg">
                 <div className="flex items-start gap-3 mb-3">
-                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
+                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 text-sm">
                     {pergunta.usuario_nome?.charAt(0) || 'U'}
                   </div>
                   <div className="flex-1">

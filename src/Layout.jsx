@@ -94,7 +94,7 @@ export default function Layout({ children }) {
   };
 
   // Definir items de navegação baseado no tipo de usuário
-  const isPaciente = user?.tipo_usuario === 'paciente';
+  const isPaciente = user?.tipo_usuario === 'paciente' || !user; // Usuário sem cadastro age como paciente
   const isProfissional = user?.tipo_usuario === 'profissional';
   const isAdmin = user?.role === 'admin'; // Added isAdmin check
   const isTester = user?.role === 'tester'; // Added isTester check
@@ -241,14 +241,14 @@ export default function Layout({ children }) {
 
             {/* Right Actions */}
             <div className="flex items-center gap-2 sm:gap-3">
-              {/* Sino de Notificações */}
+              {/* Sino de Notificações - SEMPRE VISÍVEL PARA AUTENTICADOS */}
               {isAuthenticated && user && (
                 <NotificationBell user={user} />
               )}
 
               {isAuthenticated ? (
                 <>
-                  {/* Contador de Pontos - SEMPRE ATUALIZADO */}
+                  {/* Contador de Pontos - VISÍVEL PARA PACIENTES E PROFISSIONAIS */}
                   {(isPaciente || isProfissional) && (
                     <Link to={createPageUrl("LojaPontos")}>
                       <Button variant="outline" className="flex items-center gap-2 border-[#F7D426] text-[#F7D426] hover:bg-[#FFF9E6]">
@@ -322,14 +322,27 @@ export default function Layout({ children }) {
                   </DropdownMenu>
                 </>
               ) : (
-                <Button
-                  onClick={() => base44.auth.redirectToLogin(location.pathname)}
-                  className="bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold text-sm border-2 border-[#2C2C2C]"
-                  size="sm"
-                >
-                  <User className="w-4 h-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Entrar</span>
-                </Button>
+                <>
+                  {/* Mostrar contador de pontos como incentivo para não autenticados */}
+                  <Button
+                    variant="outline"
+                    className="flex items-center gap-2 border-[#F7D426] text-[#F7D426] hover:bg-[#FFF9E6]"
+                    onClick={() => base44.auth.redirectToLogin(location.pathname)}
+                  >
+                    <Star className="w-4 h-4" />
+                    <span className="font-bold hidden sm:inline">0</span>
+                    <span className="text-xs hidden md:inline">pts</span>
+                  </Button>
+
+                  <Button
+                    onClick={() => base44.auth.redirectToLogin(location.pathname)}
+                    className="bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold text-sm border-2 border-[#2C2C2C]"
+                    size="sm"
+                  >
+                    <User className="w-4 h-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Entrar</span>
+                  </Button>
+                </>
               )}
 
               {/* Mobile Menu Button */}
@@ -345,16 +358,29 @@ export default function Layout({ children }) {
           {/* Mobile Navigation */}
           {mobileMenuOpen && (
             <nav className="lg:hidden mt-4 pb-4 space-y-2 border-t pt-4">
-              {/* Loja de Pontos no Mobile */}
-              {isAuthenticated && (isPaciente || isProfissional) && (
-                <Link
-                  to={createPageUrl("LojaPontos")}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[#FFF9E6] text-[#2C2C2C] border-l-4 border-[#F7D426] font-medium"
+              {/* Loja de Pontos no Mobile - VISÍVEL PARA TODOS */}
+              {isAuthenticated ? (
+                (isPaciente || isProfissional) && (
+                  <Link
+                    to={createPageUrl("LojaPontos")}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[#FFF9E6] text-[#2C2C2C] border-l-4 border-[#F7D426] font-medium"
+                  >
+                    <Star className="w-5 h-5" />
+                    <span>Loja de Pontos ({user?.pontos_acumulados || 0})</span>
+                  </Link>
+                )
+              ) : (
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    base44.auth.redirectToLogin(location.pathname);
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-[#FFF9E6] text-[#2C2C2C] border-l-4 border-[#F7D426] font-medium"
                 >
                   <Star className="w-5 h-5" />
-                  <span>Loja de Pontos ({user?.pontos_acumulados || 0})</span>
-                </Link>
+                  <span>Loja de Pontos (0)</span>
+                </button>
               )}
 
               {navigationItems.map((item) => (

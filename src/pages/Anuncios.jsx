@@ -24,6 +24,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Badge } from "@/components/ui/badge";
+import LoginPromptModal from "../components/home/LoginPromptModal";
 
 const categorias = [
   "Todas",
@@ -77,6 +78,25 @@ export default function Anuncios() {
   const [filtroTipoAnuncio, setFiltroTipoAnuncio] = useState("");
   const [filtroStatusFuncionamento, setFiltroStatusFuncionamento] = useState("");
   const [mostrarSeletorProcedimentos, setMostrarSeletorProcedimentos] = useState(false);
+
+  const [user, setUser] = useState(null);
+  const [mostrarLoginPrompt, setMostrarLoginPrompt] = useState(false);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const userData = await base44.auth.me();
+        setUser(userData);
+      } catch {
+        setUser(null);
+        // Mostrar prompt de login após 2 segundos para usuários não autenticados
+        setTimeout(() => {
+          setMostrarLoginPrompt(true);
+        }, 2000);
+      }
+    };
+    fetchUser();
+  }, []);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -627,6 +647,13 @@ export default function Anuncios() {
           setPaginaAtual(1);
         }}
         procedimentoAtual={procedimentoFiltro}
+      />
+
+      {/* Modal de Login Prompt */}
+      <LoginPromptModal
+        open={mostrarLoginPrompt}
+        onClose={() => setMostrarLoginPrompt(false)}
+        pageName="anuncios"
       />
     </div>
   );

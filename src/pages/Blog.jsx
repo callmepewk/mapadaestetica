@@ -15,6 +15,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input"; // Import Input component
+import LoginPromptModal from "../components/home/LoginPromptModal"; // New import
 
 const fontesExternas = [
   {
@@ -66,6 +67,7 @@ export default function Blog() {
   const [respondendoComentario, setRespondendoComentario] = useState(null);
   const [linkCompartilhamento, setLinkCompartilhamento] = useState("");
   const [mostrarLinkCopiado, setMostrarLinkCopiado] = useState(false);
+  const [mostrarLoginPrompt, setMostrarLoginPrompt] = useState(false); // New state variable
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -74,6 +76,10 @@ export default function Blog() {
         setUser(userData);
       } catch {
         setUser(null);
+        // Mostrar prompt de login após 2 segundos para usuários não autenticados
+        setTimeout(() => {
+          setMostrarLoginPrompt(true);
+        }, 2000);
       }
     };
     fetchUser();
@@ -709,6 +715,13 @@ export default function Blog() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Modal de Login Prompt */}
+      <LoginPromptModal
+        open={mostrarLoginPrompt}
+        onClose={() => setMostrarLoginPrompt(false)}
+        pageName="blog"
+      />
     </div>
   );
 }

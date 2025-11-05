@@ -321,14 +321,12 @@ export default function DetalhesAnuncio() {
               </CardContent>
             </Card>
 
-            {/* Seção de Perguntas e Respostas */}
-            {anuncio && user && ( // Render only if anuncio and user data are available
-                <SecaoPerguntas
-                anuncio={anuncio}
-                user={user}
-                isAutor={isAutor}
-                />
-            )}
+            {/* Seção de Perguntas e Respostas - SEMPRE VISÍVEL */}
+            <SecaoPerguntas
+              anuncio={anuncio}
+              user={user}
+              isAutor={isAutor}
+            />
           </div>
 
           <div className="space-y-6">

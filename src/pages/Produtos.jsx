@@ -24,8 +24,8 @@ import {
   Check,
   ArrowLeft,
   ArrowRight,
-  Crown, // Added
-  DollarSign // Added
+  Crown,
+  DollarSign
 } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
 
@@ -73,7 +73,7 @@ const servicosContrataveis = [
     tipo_publico: "profissional",
     preco: 50,
     preco_texto: "A partir de R$ 50",
-    imagens: ["https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe2/f0cb8c67e_geraodeimagem.png"],
+    imagens: ["https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe2/f0cb8c67f_geraodeimagem.png"],
     beneficios: [
       "Até 10 imagens personalizadas",
       "Alta resolução e qualidade",
@@ -363,8 +363,8 @@ export default function Produtos() {
     initialData: [],
   });
 
-  const isPaciente = user?.tipo_usuario === 'paciente';
-  const isProfissional = user?.tipo_usuario === 'profissional' || !user;
+  const isPaciente = user?.tipo_usuario === 'paciente' || !user; // Usuário sem cadastro age como paciente
+  const isProfissional = user?.tipo_usuario === 'profissional';
 
   // Filtrar produtos baseado no tipo de usuário
   const todosProdutos = [
