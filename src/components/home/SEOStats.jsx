@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +32,13 @@ export default function SEOStats() {
     { nome: "Fios de Sustentação", icone: "✨", color: "from-purple-500 to-pink-500" },
     { nome: "Criolipólise", icone: "❄️", color: "from-blue-500 to-cyan-500" },
     { nome: "Microagulhamento", icone: "💎", color: "from-amber-500 to-orange-500" }
+  ];
+
+  const origemAcessos = [
+    { pais: "🇧🇷 Brasil", porcentagem: 94, cidades: ["São Paulo", "Rio de Janeiro", "Belo Horizonte"] },
+    { pais: "🇵🇹 Portugal", porcentagem: 3, cidades: ["Lisboa", "Porto"] },
+    { pais: "🇺🇸 EUA", porcentagem: 2, cidades: ["Miami", "Nova York"] },
+    { pais: "🌍 Outros", porcentagem: 1, cidades: [] }
   ];
 
   const estatisticas = [
@@ -121,7 +129,7 @@ export default function SEOStats() {
           })}
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-6 sm:gap-8">
+        <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
           {/* Tratamentos Mais Procurados */}
           <Card className="border-none shadow-lg">
             <CardContent className="p-6">
@@ -199,6 +207,55 @@ export default function SEOStats() {
                   <div>
                     <p className="font-bold text-gray-900">+ 150 buscas</p>
                     <p className="text-xs text-gray-600">por essas técnicas hoje</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Origem dos Acessos */}
+          <Card className="border-none shadow-lg">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 mb-6">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center">
+                  <span className="text-xl">🌎</span>
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg">Origem dos Acessos</h3>
+                  <p className="text-xs text-gray-500">Últimas 24 horas</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {origemAcessos.map((origem, index) => (
+                  <div key={index} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-gray-900">{origem.pais}</span>
+                      <Badge className="bg-blue-100 text-blue-800 text-xs">
+                        {origem.porcentagem}%
+                      </Badge>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-gradient-to-r from-blue-500 to-indigo-500 h-2 rounded-full transition-all duration-500"
+                        style={{ width: `${origem.porcentagem}%` }}
+                      ></div>
+                    </div>
+                    {origem.cidades.length > 0 && (
+                      <p className="text-xs text-gray-500">
+                        Cidades: {origem.cidades.join(", ")}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border-2 border-blue-200">
+                <div className="flex items-center gap-3">
+                  <div className="text-3xl">📍</div>
+                  <div>
+                    <p className="font-bold text-gray-900">São Paulo lidera</p>
+                    <p className="text-xs text-gray-600">42% dos acessos do Brasil</p>
                   </div>
                 </div>
               </div>
