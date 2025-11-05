@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -74,44 +75,61 @@ export default function RelatorioPrecoMedio() {
   // Calcular estatísticas
   const stats = {
     total: relatoriosFiltrados.length,
-    valorMedio: relatoriosFiltrados.length > 0 
-      ? (relatoriosFiltrados.reduce((acc, r) => acc + (r.valor_medio || 0), 0) / relatoriosFiltrados.length).toFixed(2)
+    valorMedio: relatoriosFiltrados.length > 0 && relatoriosFiltrados.some(r => r.valor_medio)
+      ? (relatoriosFiltrados.reduce((acc, r) => acc + (r.valor_medio || 0), 0) / relatoriosFiltrados.filter(r => typeof r.valor_medio === 'number' && !isNaN(r.valor_medio)).length).toFixed(2)
       : 0,
     economico: relatoriosFiltrados.filter(r => r.faixa_preco === '$').length,
     moderado: relatoriosFiltrados.filter(r => r.faixa_preco === '$$').length,
-    premium: relatoriosFiltrados.filter(r => r.faixa_preco === '$$$').length,
+    medioAlto: relatoriosFiltrados.filter(r => r.faixa_preco === '$$$').length,
+    alto: relatoriosFiltrados.filter(r => r.faixa_preco === '$$$$').length,
+    premium: relatoriosFiltrados.filter(r => r.faixa_preco === '$$$$$').length,
   };
 
   const getFaixaPrecoColor = (faixa) => {
-    if (faixa === '$') return 'bg-green-100 text-green-800';
-    if (faixa === '$$') return 'bg-yellow-100 text-yellow-800';
-    if (faixa === '$$$') return 'bg-red-100 text-red-800';
-    return 'bg-gray-100 text-gray-800';
+    const colors = {
+      '$': 'bg-green-100 text-green-800',
+      '$$': 'bg-blue-100 text-blue-800',
+      '$$$': 'bg-yellow-100 text-yellow-800',
+      '$$$$': 'bg-orange-100 text-orange-800',
+      '$$$$$': 'bg-red-100 text-red-800'
+    };
+    return colors[faixa] || 'bg-gray-100 text-gray-800';
+  };
+
+  const getFaixaPrecoTexto = (faixa) => {
+    const textos = {
+      '$': 'Até R$ 500',
+      '$$': 'R$ 500-1.000',
+      '$$$': 'R$ 1.000-2.000',
+      '$$$$': 'R$ 2.000-5.000',
+      '$$$$$': 'Acima de R$ 5.000'
+    };
+    return textos[faixa] || faixa;
   };
 
   const exportarCSV = () => {
-    const headers = ['Profissional', 'Email', 'Categoria', 'Procedimento', 'Valor Mínimo', 'Valor Máximo', 'Valor Médio', 'Faixa', 'Cidade', 'Estado', 'Data'];
+    const headers = ['Profissional', 'Email', 'Categoria', 'Procedimento', 'Valor Médio', 'Faixa Preço', 'Faixa Descrição', 'Cidade', 'Estado', 'Data'];
     const rows = relatoriosFiltrados.map(r => [
       r.profissional_nome,
       r.profissional_email,
       r.categoria,
       r.procedimento,
-      r.valor_minimo || '-',
-      r.valor_maximo || '-',
-      r.valor_medio,
+      r.valor_medio || '-',
       r.faixa_preco,
+      getFaixaPrecoTexto(r.faixa_preco),
       r.cidade || '-',
       r.estado || '-',
-      r.data_coleta || new Date().toLocaleDateString()
+      r.data_coleta ? new Date(r.data_coleta).toLocaleDateString('pt-BR') : '-'
     ]);
 
-    const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
+    const csv = [headers.join(','), ...rows.map(row => row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = `relatorio-precos-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
+    window.URL.revokeObjectURL(url);
   };
 
   if (!user || user.role !== 'admin') {
@@ -170,7 +188,9 @@ export default function RelatorioPrecoMedio() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Preço Médio Geral</p>
-                  <p className="text-3xl font-bold text-green-600">R$ {stats.valorMedio}</p>
+                  <p className="text-3xl font-bold text-green-600">
+                    {stats.valorMedio > 0 ? `R$ ${stats.valorMedio}` : 'N/A'}
+                  </p>
                 </div>
                 <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
                   <DollarSign className="w-6 h-6 text-green-600" />
@@ -179,36 +199,31 @@ export default function RelatorioPrecoMedio() {
             </CardContent>
           </Card>
 
-          <Card className="border-none shadow-lg">
+          <Card className="border-none shadow-lg md:col-span-2">
             <CardContent className="p-6">
-              <p className="text-sm text-gray-600 mb-2">Por Faixa de Preço</p>
-              <div className="space-y-1">
+              <p className="text-sm text-gray-600 mb-2">Distribuição por Faixa de Preço</p>
+              <div className="grid grid-cols-2 gap-2">
                 <div className="flex justify-between text-sm">
-                  <span>$ Econômico:</span>
+                  <span>$ (até 500):</span>
                   <span className="font-bold text-green-600">{stats.economico}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span>$$ Moderado:</span>
-                  <span className="font-bold text-yellow-600">{stats.moderado}</span>
+                  <span>$$ (500-1k):</span>
+                  <span className="font-bold text-blue-600">{stats.moderado}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span>$$$ Premium:</span>
+                  <span>$$$ (1k-2k):</span>
+                  <span className="font-bold text-yellow-600">{stats.medioAlto}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>$$$$ (2k-5k):</span>
+                  <span className="font-bold text-orange-600">{stats.alto}</span>
+                </div>
+                <div className="flex justify-between text-sm md:col-span-2">
+                  <span>$$$$$ (5k+):</span>
                   <span className="font-bold text-red-600">{stats.premium}</span>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-none shadow-lg">
-            <CardContent className="p-6">
-              <Button
-                onClick={exportarCSV}
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                disabled={relatoriosFiltrados.length === 0}
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Exportar CSV
-              </Button>
             </CardContent>
           </Card>
         </div>
@@ -224,12 +239,12 @@ export default function RelatorioPrecoMedio() {
             <div className="grid md:grid-cols-4 gap-4">
               <div>
                 <Label>Categoria</Label>
-                <Select value={filtroCategoria} onValueChange={setFiltroCategoria}>
+                <Select value={filtroCategoria} onValueChange={(value) => setFiltroCategoria(value === "Todas" ? "" : value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Todas" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={null}>Todas</SelectItem>
+                    <SelectItem value="Todas">Todas</SelectItem>
                     {categorias.map(cat => (
                       <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                     ))}
@@ -290,6 +305,18 @@ export default function RelatorioPrecoMedio() {
         {/* Tabela */}
         <Card className="border-none shadow-lg">
           <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Dados Coletados</h3>
+              <Button
+                onClick={exportarCSV}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                disabled={relatoriosFiltrados.length === 0}
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Exportar CSV
+              </Button>
+            </div>
+
             <div className="overflow-x-auto">
               {isLoading ? (
                 <div className="text-center py-8">
@@ -309,7 +336,7 @@ export default function RelatorioPrecoMedio() {
                       <TableHead>Categoria</TableHead>
                       <TableHead>Procedimento</TableHead>
                       <TableHead>Valor Médio</TableHead>
-                      <TableHead>Faixa</TableHead>
+                      <TableHead>Faixa de Preço</TableHead>
                       <TableHead>Localização</TableHead>
                       <TableHead>Data</TableHead>
                     </TableRow>
@@ -328,19 +355,21 @@ export default function RelatorioPrecoMedio() {
                         </TableCell>
                         <TableCell>{rel.procedimento}</TableCell>
                         <TableCell>
-                          <div>
-                            <p className="font-bold text-green-600">R$ {rel.valor_medio?.toFixed(2) || '-'}</p>
-                            {rel.valor_minimo && rel.valor_maximo && (
-                              <p className="text-xs text-gray-500">
-                                R$ {rel.valor_minimo?.toFixed(2)} - R$ {rel.valor_maximo?.toFixed(2)}
-                              </p>
-                            )}
-                          </div>
+                          {typeof rel.valor_medio === 'number' ? (
+                            <p className="font-bold text-green-600">R$ {rel.valor_medio.toFixed(2)}</p>
+                          ) : (
+                            <p className="text-gray-400">-</p>
+                          )}
                         </TableCell>
                         <TableCell>
-                          <Badge className={getFaixaPrecoColor(rel.faixa_preco)}>
-                            {rel.faixa_preco}
-                          </Badge>
+                          <div>
+                            <Badge className={getFaixaPrecoColor(rel.faixa_preco)}>
+                              {rel.faixa_preco}
+                            </Badge>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {getFaixaPrecoTexto(rel.faixa_preco)}
+                            </p>
+                          </div>
                         </TableCell>
                         <TableCell>
                           {rel.cidade && rel.estado ? `${rel.cidade}/${rel.estado}` : '-'}

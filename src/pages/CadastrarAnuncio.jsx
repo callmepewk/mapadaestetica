@@ -116,6 +116,7 @@ export default function CadastrarAnuncio() {
     status_funcionamento: "N/D",
     status: "ativo",
     data_agendamento: "",
+    servicos_oferecidos: [], // Added this line
     amenidades: {
       estacionamento: false,
       estacionamento_valet: false,
@@ -143,12 +144,33 @@ export default function CadastrarAnuncio() {
         // The `status` field is now directly from formData
         // `plano` and `em_destaque` were already defined correctly in formData before the spread
         // The original `status: "pendente"` is replaced by `formData.status`
-        plano: user?.plano_ativo || "free",
+        plano: user?.plano_ativo || "cobre", // Changed from "free" to "cobre"
         em_destaque: false,
         visualizacoes: 0,
         curtidas: 0,
         profissional_verificado: false
       });
+
+      // Criar registros no RelatorioPreco para cada serviço
+      if (data.servicos_oferecidos && data.servicos_oferecidos.length > 0) {
+        for (const servico of data.servicos_oferecidos) {
+          if (servico.preco) {
+            await base44.entities.RelatorioPreco.create({
+              anuncio_id: anuncio.id,
+              profissional_nome: data.profissional,
+              profissional_email: data.email || user.email,
+              categoria: data.categoria,
+              procedimento: servico.nome,
+              valor_medio: servico.preco,
+              faixa_preco: data.faixa_preco,
+              cidade: data.cidade,
+              estado: data.estado,
+              data_coleta: new Date().toISOString().split('T')[0]
+            });
+          }
+        }
+      }
+
       return anuncio;
     },
     onSuccess: () => {
@@ -439,20 +461,51 @@ export default function CadastrarAnuncio() {
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <Label>Faixa de Preço</Label>
+                    <Label>Faixa de Preço dos Serviços *</Label> {/* Updated Label */}
                     <Select
                       value={formData.faixa_preco}
                       onValueChange={(value) => setFormData({ ...formData, faixa_preco: value })}
+                      required
                     >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="$">$ - Econômico</SelectItem>
-                        <SelectItem value="$$">$$ - Moderado</SelectItem>
-                        <SelectItem value="$$$">$$$ - Premium</SelectItem>
+                        <SelectItem value="$">
+                          <div className="flex flex-col">
+                            <span className="font-bold">$ - Até R$ 500</span>
+                            <span className="text-xs text-gray-500">Serviços econômicos</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="$$">
+                          <div className="flex flex-col">
+                            <span className="font-bold">$$ - R$ 500 a R$ 1.000</span>
+                            <span className="text-xs text-gray-500">Preço moderado</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="$$$">
+                          <div className="flex flex-col">
+                            <span className="font-bold">$$$ - R$ 1.000 a R$ 2.000</span>
+                            <span className="text-xs text-gray-500">Preço médio-alto</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="$$$$">
+                          <div className="flex flex-col">
+                            <span className="font-bold">$$$$ - R$ 2.000 a R$ 5.000</span>
+                            <span className="text-xs text-gray-500">Preço alto</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="$$$$$">
+                          <div className="flex flex-col">
+                            <span className="font-bold">$$$$$ - Acima de R$ 5.000</span>
+                            <span className="text-xs text-gray-500">Preço premium</span>
+                          </div>
+                        </SelectItem>
                       </SelectContent>
                     </Select>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Selecione a faixa geral dos seus serviços
+                    </p>
                   </div>
 
                   <div>

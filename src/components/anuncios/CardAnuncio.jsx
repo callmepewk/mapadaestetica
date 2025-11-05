@@ -55,6 +55,17 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
     return colors[categoria] || "bg-gray-100 text-gray-800";
   };
 
+  const getFaixaPrecoInfo = (faixa) => {
+    const info = {
+      "$": { texto: "Até R$ 500", cor: "text-green-600" },
+      "$$": { texto: "R$ 500 - R$ 1.000", cor: "text-blue-600" },
+      "$$$": { texto: "R$ 1.000 - R$ 2.000", cor: "text-yellow-600" },
+      "$$$$": { texto: "R$ 2.000 - R$ 5.000", cor: "text-orange-600" },
+      "$$$$$": { texto: "Acima de R$ 5.000", cor: "text-red-600" }
+    };
+    return info[faixa] || info["$"];
+  };
+
   const handleCurtir = async () => {
     if (!user) {
       alert("Faça login para curtir!");
@@ -222,9 +233,16 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
           )}
 
           {anuncio.faixa_preco && (
-            <p className="text-sm text-gray-600 mb-2">
-              Faixa de preço: {anuncio.faixa_preco}
-            </p>
+            <div className="mb-3">
+              <div className="flex items-center gap-2">
+                <span className={`text-2xl font-bold ${getFaixaPrecoInfo(anuncio.faixa_preco).cor}`}>
+                  {anuncio.faixa_preco}
+                </span>
+                <span className="text-sm text-gray-600">
+                  {getFaixaPrecoInfo(anuncio.faixa_preco).texto}
+                </span>
+              </div>
+            </div>
           )}
 
           <p className="text-sm text-gray-600 mb-4 line-clamp-3 flex-1">
@@ -387,6 +405,22 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
                 <Separator className="my-6" />
 
                 <div className="space-y-6">
+                  {/* Faixa de Preço DESTACADA */}
+                  {anuncio.faixa_preco && (
+                    <div className="bg-gradient-to-r from-green-50 to-blue-50 p-4 rounded-lg border-2 border-green-200">
+                      <h3 className="font-semibold text-sm text-gray-700 mb-2">💰 Faixa de Preço dos Serviços</h3>
+                      <div className="flex items-center gap-3">
+                        <span className={`text-4xl font-bold ${getFaixaPrecoInfo(anuncio.faixa_preco).cor}`}>
+                          {anuncio.faixa_preco}
+                        </span>
+                        <div>
+                          <p className="font-semibold text-lg">{getFaixaPrecoInfo(anuncio.faixa_preco).texto}</p>
+                          <p className="text-xs text-gray-500">Valores aproximados dos serviços</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   <div>
                     <h3 className="font-semibold text-lg mb-2">Sobre</h3>
                     <p className="text-gray-600 leading-relaxed">{anuncio.descricao}</p>
