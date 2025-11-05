@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Play, CheckCircle, ArrowRight, Star } from "lucide-react";
+import { CheckCircle, ArrowRight, Star } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import CardAnuncio from "../anuncios/CardAnuncio";
 
@@ -35,7 +35,6 @@ const passos = [
 ];
 
 export default function Tutorial() {
-  const [videoAberto, setVideoAberto] = useState(false);
   const [mostrarExemplos, setMostrarExemplos] = useState(false);
   const [anunciosExemplo, setAnunciosExemplo] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -99,23 +98,13 @@ export default function Tutorial() {
           ))}
         </div>
 
-        {/* Botões de Ação */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-          <Button
-            onClick={() => setVideoAberto(true)}
-            size="lg"
-            className="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-bold"
-          >
-            <Play className="w-5 h-5 mr-2" />
-            Assistir Vídeo Tutorial
-          </Button>
-
+        {/* Botão de Ver Exemplos */}
+        <div className="flex justify-center mb-12">
           <Button
             onClick={carregarExemplos}
             size="lg"
-            variant="outline"
             disabled={loading}
-            className="border-2 border-purple-600 text-purple-600 hover:bg-purple-50 font-bold"
+            className="border-2 border-purple-600 text-purple-600 hover:bg-purple-50 font-bold bg-white"
           >
             {loading ? (
               <>
@@ -207,21 +196,6 @@ export default function Tutorial() {
           </Card>
         </div>
       </div>
-
-      {/* Modal de Vídeo */}
-      {videoAberto && (
-        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={() => setVideoAberto(false)}>
-          <div className="bg-white rounded-2xl p-4 max-w-4xl w-full" onClick={(e) => e.stopPropagation()}>
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold">Tutorial em Vídeo</h3>
-              <Button variant="ghost" onClick={() => setVideoAberto(false)}>✕</Button>
-            </div>
-            <div className="aspect-video bg-gray-900 rounded-lg flex items-center justify-center">
-              <p className="text-white">Vídeo tutorial em breve...</p>
-            </div>
-          </div>
-        </div>
-      )}
     </section>
   );
 }

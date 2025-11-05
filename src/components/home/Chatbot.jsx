@@ -170,7 +170,7 @@ export default function Chatbot({ user, onCompletarCadastro }) {
           resposta = "Temos 5 planos incríveis:\n\n🥉 COBRE - Grátis\n🥈 PRATA - R$ 99/mês\n🥇 OURO - R$ 197/mês (Mais Popular!)\n💎 DIAMANTE - R$ 297/mês\n👑 PLATINA - Sob Consulta\n\nQuer saber mais sobre algum plano específico?";
           break;
         case "marketing":
-          resposta = "Oferecemos:\n\n• Criação de Google Negócios\n• Geração de imagens profissionais\n• Otimização SEO\n• Destaque nos resultados\n\nQual serviço te interessa?";
+          resposta = "Oferecemos:\n\n• Criação de Google Negócios\n• Geração de imagens profissionais\n• Otimização SEO\n• Destaque nos resultados\n• Criação de vídeos profissionais\n\nQual serviço te interessa?";
           break;
         case "suporte":
           resposta = "Precisa de ajuda? Entre em contato:\n\n📞 Central: (31) 97259-5643\n💻 Suporte: (54) 99155-4136\n📧 Email: Fale Conosco\n\nComo posso ajudar?";
@@ -224,7 +224,7 @@ export default function Chatbot({ user, onCompletarCadastro }) {
                   e.target.src = 'https://via.placeholder.com/48?text=Dr';
                 }}
               />
-              <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
+              <div className="absolute bottom-0 right-0 w-3 h-3 bg-[#F7D426] rounded-full border-2 border-white animate-pulse"></div>
             </div>
             <span className="absolute -top-10 right-0 bg-white text-gray-800 px-3 py-1 rounded-lg shadow-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
               💬 Fale com Dr. Beleza
@@ -257,7 +257,7 @@ export default function Chatbot({ user, onCompletarCadastro }) {
                       e.target.src = 'https://via.placeholder.com/48?text=Dr';
                     }}
                   />
-                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-[#F7D426] rounded-full border-2 border-white"></div>
                 </div>
                 <div>
                   <h3 className="font-bold">Dr. Beleza</h3>
