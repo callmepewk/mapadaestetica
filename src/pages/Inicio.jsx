@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // Added useNavigate
 import { createPageUrl } from "@/utils";
 import {
   Search,
@@ -39,6 +39,7 @@ import { CardContent } from "@/components/ui/card";
 import CalculadoraLaserSection from "../components/home/CalculadoraLaserSection";
 import SEOStats from "../components/home/SEOStats";
 import OnboardingModal from "../components/home/OnboardingModal";
+import LoginPromptModal from "../components/home/LoginPromptModal"; // Added LoginPromptModal
 import {
   Dialog, // Added for comparison modal
   DialogContent, // Added for comparison modal
@@ -66,8 +67,12 @@ export default function Inicio() {
   const [buscaCidade, setBuscaCidade] = useState("");
   const [buscaCategoria, setBuscaCategoria] = useState("");
   const [mostrarOnboarding, setMostrarOnboarding] = useState(false);
-  const [mostrarComparacao, setMostrarComparacao] = useState(false); // New state variable
+  const [mostrarComparacao, setMostrarComparacao] = useState(false);
+  const [mostrarLoginPrompt, setMostrarLoginPrompt] = useState(false); // New state variable
+  const [tipoLoginPrompt, setTipoLoginPrompt] = useState(""); // New state variable: busca, drbeleza, patrocinador
   const [user, setUser] = useState(null);
+
+  const navigate = useNavigate(); // Initialize useNavigate hook
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -113,10 +118,35 @@ export default function Inicio() {
   });
 
   const handleBuscar = () => {
+    if (!user) {
+      setTipoLoginPrompt("busca");
+      setMostrarLoginPrompt(true);
+      return;
+    }
+    
     const params = new URLSearchParams();
     if (buscaCidade) params.append('cidade', buscaCidade);
     if (buscaCategoria) params.append('categoria', buscaCategoria);
     window.location.href = createPageUrl("Anuncios") + (params.toString() ? `?${params.toString()}` : '');
+  };
+
+  const handleAcessarDrBeleza = () => {
+    if (!user) {
+      setTipoLoginPrompt("drbeleza");
+      setMostrarLoginPrompt(true);
+      return;
+    }
+    navigate(createPageUrl("PesquisaEspecializada"));
+  };
+
+  const handleContratarPatrocinador = (whatsappMessage) => {
+    if (!user) {
+      setTipoLoginPrompt("patrocinador");
+      setMostrarLoginPrompt(true);
+      return;
+    }
+    // Se logado, abre o WhatsApp
+    window.open(whatsappMessage, '_blank');
   };
 
   const isAdmin = user?.role === 'admin';
@@ -258,12 +288,15 @@ export default function Inicio() {
                         Descubra como funciona e qual o tratamento certo para você com inteligência artificial
                       </p>
                     </div>
-                    <Link to={createPageUrl("PesquisaEspecializada")} className="flex-shrink-0">
-                      <Button size="lg" className="bg-[#2C2C2C] hover:bg-[#3A3A3A] text-[#F7D426] font-bold shadow-xl">
-                        Acessar Dr. Beleza
-                        <ArrowRight className="w-5 h-5 ml-2" />
-                      </Button>
-                    </Link>
+                    {/* Updated to call handleAcessarDrBeleza */}
+                    <Button 
+                      onClick={handleAcessarDrBeleza}
+                      size="lg" 
+                      className="bg-[#2C2C2C] hover:bg-[#3A3A3A] text-[#F7D426] font-bold shadow-xl flex-shrink-0"
+                    >
+                      Acessar Dr. Beleza
+                      <ArrowRight className="w-5 h-5 ml-2" />
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -385,7 +418,15 @@ export default function Inicio() {
             <p className="text-gray-600 mb-4">
               Quer se tornar um patrocinador?
             </p>
-            <a href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Tenho interesse em ser patrocinador do Mapa da Estética!")}`} target="_blank" rel="noopener noreferrer">
+            {/* Updated to call handleContratarPatrocinador */}
+            <a 
+              onClick={(e) => {
+                e.preventDefault();
+                handleContratarPatrocinador(`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Tenho interesse em ser patrocinador do Mapa da Estética!")}`);
+              }} 
+              href="#" 
+              className="inline-block"
+            >
               <Button size="lg" className="bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold border-2 border-[#2C2C2C]">
                 💼 Entre em Contato
                 <ArrowRight className="w-4 h-4 ml-2" />
@@ -472,7 +513,15 @@ export default function Inicio() {
                   </li>
                 </ul>
 
-                <a href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Tenho interesse no Plano COBRE de Patrocinador!")}`} target="_blank" rel="noopener noreferrer">
+                {/* Updated to call handleContratarPatrocinador */}
+                <a 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleContratarPatrocinador(`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Tenho interesse no Plano COBRE de Patrocinador!")}`);
+                  }} 
+                  href="#" 
+                  className="inline-block w-full"
+                >
                   <Button className="w-full bg-white text-orange-600 hover:bg-gray-100 font-bold">
                     Contratar COBRE
                   </Button>
@@ -551,7 +600,15 @@ export default function Inicio() {
                   </li>
                 </ul>
 
-                <a href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Tenho interesse no Plano PRATA de Patrocinador!")}`} target="_blank" rel="noopener noreferrer">
+                {/* Updated to call handleContratarPatrocinador */}
+                <a 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleContratarPatrocinador(`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Tenho interesse no Plano PRATA de Patrocinador!")}`);
+                  }} 
+                  href="#" 
+                  className="inline-block w-full"
+                >
                   <Button className="w-full bg-white text-gray-700 hover:bg-gray-100 font-bold">
                     Contratar PRATA
                   </Button>
@@ -641,7 +698,15 @@ export default function Inicio() {
                   </li>
                 </ul>
 
-                <a href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Tenho interesse no Plano OURO de Patrocinador!")}`} target="_blank" rel="noopener noreferrer">
+                {/* Updated to call handleContratarPatrocinador */}
+                <a 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleContratarPatrocinador(`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Tenho interesse no Plano OURO de Patrocinador!")}`);
+                  }} 
+                  href="#" 
+                  className="inline-block w-full"
+                >
                   <Button className="w-full bg-[#2C2C2C] text-[#F7D426] hover:bg-[#3A3A3A] font-bold">
                     Contratar OURO
                   </Button>
@@ -739,7 +804,15 @@ export default function Inicio() {
                   </li>
                 </ul>
 
-                <a href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Tenho interesse no Plano DIAMANTE de Patrocinador!")}`} target="_blank" rel="noopener noreferrer">
+                {/* Updated to call handleContratarPatrocinador */}
+                <a 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleContratarPatrocinador(`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Tenho interesse no Plano DIAMANTE de Patrocinador!")}`);
+                  }} 
+                  href="#" 
+                  className="inline-block w-full"
+                >
                   <Button className="w-full bg-white text-cyan-600 hover:bg-gray-100 font-bold">
                     Contratar DIAMANTE
                   </Button>
@@ -841,7 +914,15 @@ export default function Inicio() {
                   </li>
                 </ul>
 
-                <a href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Tenho interesse no Plano PLATINA de Patrocinador!")}`} target="_blank" rel="noopener noreferrer">
+                {/* Updated to call handleContratarPatrocinador */}
+                <a 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleContratarPatrocinador(`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Tenho interesse no Plano PLATINA de Patrocinador!")}`);
+                  }} 
+                  href="#" 
+                  className="inline-block w-full"
+                >
                   <Button className="w-full bg-white text-purple-600 hover:bg-gray-100 font-bold">
                     Contratar PLATINA
                   </Button>
@@ -925,6 +1006,13 @@ export default function Inicio() {
           </div>
         </div>
       </section>
+
+      {/* Modal de Login Prompt */}
+      <LoginPromptModal
+        open={mostrarLoginPrompt}
+        onClose={() => setMostrarLoginPrompt(false)}
+        pageName={tipoLoginPrompt}
+      />
 
       {/* Modal de Comparação */}
       <Dialog open={mostrarComparacao} onOpenChange={setMostrarComparacao}>

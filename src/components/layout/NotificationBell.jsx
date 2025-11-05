@@ -32,7 +32,7 @@ export default function NotificationBell({ user }) {
       return result;
     },
     enabled: !!user,
-    refetchInterval: 30000, // Atualiza a cada 30 segundos
+    refetchInterval: 30000,
   });
 
   const notificacoesNaoLidas = notificacoes.filter(n => !n.lida);
@@ -97,99 +97,126 @@ export default function NotificationBell({ user }) {
     limparNotificacoesMutation.mutate();
   };
 
+  const handleLoginRedirect = () => {
+    base44.auth.redirectToLogin(window.location.pathname);
+  };
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="w-5 h-5" />
-          {notificacoesNaoLidas.length > 0 && (
+          {user && notificacoesNaoLidas.length > 0 && (
             <Badge className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center p-0 bg-red-500 text-white text-xs">
               {notificacoesNaoLidas.length > 9 ? '9+' : notificacoesNaoLidas.length}
+            </Badge>
+          )}
+          {!user && (
+            <Badge className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center p-0 bg-[#F7D426] text-[#2C2C2C] text-xs">
+              !
             </Badge>
           )}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-96 p-0" align="end">
-        <div className="border-b p-4">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="font-bold text-lg">Notificações</h3>
-            {notificacoes.length > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleLimparTodas}
-                className="text-red-600 hover:text-red-700"
-              >
-                <Trash2 className="w-4 h-4 mr-1" />
-                Limpar
-              </Button>
-            )}
-          </div>
-          {notificacoesNaoLidas.length > 0 && (
+        {!user ? (
+          <div className="p-6 text-center">
+            <Bell className="w-12 h-12 mx-auto text-[#F7D426] mb-3" />
+            <h3 className="font-bold text-lg mb-2">Notificações</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Faça login para ver suas notificações e acompanhar suas interações!
+            </p>
             <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleMarcarTodasLidas}
-              className="w-full justify-start text-blue-600"
+              onClick={handleLoginRedirect}
+              className="w-full bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold"
             >
-              <Check className="w-4 h-4 mr-2" />
-              Marcar todas como lidas
+              Fazer Login
             </Button>
-          )}
-        </div>
-
-        <ScrollArea className="h-96">
-          {isLoading ? (
-            <div className="p-8 text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#F7D426] mx-auto"></div>
-            </div>
-          ) : notificacoes.length === 0 ? (
-            <div className="p-8 text-center">
-              <Bell className="w-12 h-12 mx-auto text-gray-300 mb-3" />
-              <p className="text-gray-500 text-sm">Nenhuma notificação</p>
-            </div>
-          ) : (
-            <div className="divide-y">
-              {notificacoes.map((notificacao) => (
-                <div
-                  key={notificacao.id}
-                  onClick={() => handleNotificacaoClick(notificacao)}
-                  className={`p-4 cursor-pointer transition-colors ${
-                    notificacao.lida 
-                      ? 'hover:bg-gray-50' 
-                      : 'bg-blue-50 hover:bg-blue-100'
-                  }`}
+          </div>
+        ) : (
+          <>
+            <div className="border-b p-4">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-bold text-lg">Notificações</h3>
+                {notificacoes.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleLimparTodas}
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    <Trash2 className="w-4 h-4 mr-1" />
+                    Limpar
+                  </Button>
+                )}
+              </div>
+              {notificacoesNaoLidas.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleMarcarTodasLidas}
+                  className="w-full justify-start text-blue-600"
                 >
-                  <div className="flex items-start gap-3">
-                    <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
-                      notificacao.lida ? 'bg-gray-300' : 'bg-blue-600'
-                    }`} />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2 mb-1">
-                        <p className={`font-semibold text-sm ${
-                          notificacao.lida ? 'text-gray-700' : 'text-gray-900'
-                        }`}>
-                          {notificacao.titulo}
-                        </p>
-                        {notificacao.tipo === 'nova_pergunta' && (
-                          <MessageSquare className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                        )}
-                      </div>
-                      <p className={`text-xs mb-2 ${
-                        notificacao.lida ? 'text-gray-500' : 'text-gray-700'
-                      }`}>
-                        {notificacao.mensagem}
-                      </p>
-                      <p className="text-xs text-gray-400">
-                        {format(new Date(notificacao.created_date), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                  <Check className="w-4 h-4 mr-2" />
+                  Marcar todas como lidas
+                </Button>
+              )}
             </div>
-          )}
-        </ScrollArea>
+
+            <ScrollArea className="h-96">
+              {isLoading ? (
+                <div className="p-8 text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#F7D426] mx-auto"></div>
+                </div>
+              ) : notificacoes.length === 0 ? (
+                <div className="p-8 text-center">
+                  <Bell className="w-12 h-12 mx-auto text-gray-300 mb-3" />
+                  <p className="text-gray-500 text-sm">Nenhuma notificação</p>
+                </div>
+              ) : (
+                <div className="divide-y">
+                  {notificacoes.map((notificacao) => (
+                    <div
+                      key={notificacao.id}
+                      onClick={() => handleNotificacaoClick(notificacao)}
+                      className={`p-4 cursor-pointer transition-colors ${
+                        notificacao.lida 
+                          ? 'hover:bg-gray-50' 
+                          : 'bg-blue-50 hover:bg-blue-100'
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
+                          notificacao.lida ? 'bg-gray-300' : 'bg-blue-600'
+                        }`} />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2 mb-1">
+                            <p className={`font-semibold text-sm ${
+                              notificacao.lida ? 'text-gray-700' : 'text-gray-900'
+                            }`}>
+                              {notificacao.titulo}
+                            </p>
+                            {notificacao.tipo === 'nova_pergunta' && (
+                              <MessageSquare className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                            )}
+                          </div>
+                          <p className={`text-xs mb-2 ${
+                            notificacao.lida ? 'text-gray-500' : 'text-gray-700'
+                          }`}>
+                            {notificacao.mensagem}
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            {format(new Date(notificacao.created_date), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </ScrollArea>
+          </>
+        )}
       </PopoverContent>
     </Popover>
   );

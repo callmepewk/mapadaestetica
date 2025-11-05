@@ -246,23 +246,19 @@ export default function Layout({ children }) {
 
             {/* Right Actions */}
             <div className="flex items-center gap-2 sm:gap-3">
-              {/* Sino de Notificações - SEMPRE VISÍVEL PARA AUTENTICADOS */}
-              {isAuthenticated && user && (
-                <NotificationBell user={user} />
-              )}
+              {/* Sino de Notificações - SEMPRE VISÍVEL (autenticados E não autenticados) */}
+              <NotificationBell user={user} />
 
               {isAuthenticated ? (
                 <>
-                  {/* Contador de Pontos - VISÍVEL PARA PACIENTES E PROFISSIONAIS */}
-                  {(isPaciente || isProfissional) && (
-                    <Link to={createPageUrl("LojaPontos")}>
-                      <Button variant="outline" className="flex items-center gap-2 border-[#F7D426] text-[#F7D426] hover:bg-[#FFF9E6]">
-                        <Star className="w-4 h-4" />
-                        <span className="font-bold hidden sm:inline">{user?.pontos_acumulados || 0}</span>
-                        <span className="text-xs hidden md:inline">pts</span>
-                      </Button>
-                    </Link>
-                  )}
+                  {/* Contador de Pontos - SEMPRE VISÍVEL (pacientes e profissionais) */}
+                  <Link to={createPageUrl("LojaPontos")}>
+                    <Button variant="outline" className="flex items-center gap-2 border-[#F7D426] text-[#F7D426] hover:bg-[#FFF9E6]">
+                      <Star className="w-4 h-4" />
+                      <span className="font-bold hidden sm:inline">{user?.pontos_acumulados || 0}</span>
+                      <span className="text-xs hidden md:inline">pts</span>
+                    </Button>
+                  </Link>
 
                   {isProfissional && (
                     <Link to={createPageUrl("CadastrarAnuncio")} className="hidden md:block">
@@ -300,12 +296,10 @@ export default function Layout({ children }) {
                         <User className="w-4 h-4 mr-2" />
                         Meu Perfil
                       </DropdownMenuItem>
-                      {(isPaciente || isProfissional) && (
-                        <DropdownMenuItem onClick={() => navigate(createPageUrl("LojaPontos"))}>
-                          <Star className="w-4 h-4 mr-2" />
-                          Loja de Pontos ({user?.pontos_acumulados || 0})
-                        </DropdownMenuItem>
-                      )}
+                      <DropdownMenuItem onClick={() => navigate(createPageUrl("LojaPontos"))}>
+                        <Star className="w-4 h-4 mr-2" />
+                        Loja de Pontos ({user?.pontos_acumulados || 0})
+                      </DropdownMenuItem>
                       {isProfissional && (
                         <DropdownMenuItem onClick={() => navigate(createPageUrl("MeuPlano"))}>
                           <CreditCard className="w-4 h-4 mr-2" />
@@ -365,16 +359,14 @@ export default function Layout({ children }) {
             <nav className="lg:hidden mt-4 pb-4 space-y-2 border-t pt-4">
               {/* Loja de Pontos no Mobile - SEMPRE VISÍVEL */}
               {isAuthenticated ? (
-                (isPaciente || isProfissional) && (
-                  <Link
-                    to={createPageUrl("LojaPontos")}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[#FFF9E6] text-[#2C2C2C] border-l-4 border-[#F7D426] font-medium"
-                  >
-                    <Star className="w-5 h-5" />
-                    <span>Loja de Pontos ({user?.pontos_acumulados || 0})</span>
-                  </Link>
-                )
+                <Link
+                  to={createPageUrl("LojaPontos")}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[#FFF9E6] text-[#2C2C2C] border-l-4 border-[#F7D426] font-medium"
+                >
+                  <Star className="w-5 h-5" />
+                  <span>Loja de Pontos ({user?.pontos_acumulados || 0})</span>
+                </Link>
               ) : (
                 <button
                   onClick={() => {
