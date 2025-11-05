@@ -41,11 +41,13 @@ import {
   AlertCircle,
   MessageCircle,
   ShoppingCart,
-  Shield, // New import
-  FileText, // New import
-  CheckCircle, // New import
-  Upload, // New import
-  Loader2, // New import
+  Shield,
+  FileText,
+  CheckCircle,
+  Upload,
+  Loader2,
+  Bookmark, // New import for Saved Ads
+  Handshake, // New import for Indicações
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from 'date-fns';
@@ -107,7 +109,7 @@ export default function Perfil() {
       if (!user) return [];
       return await base44.entities.Anuncio.filter({ created_by: user.email });
     },
-    enabled: !!user,
+    enabled: !!user && isProfissional, // Only fetch for professionals
     staleTime: 5 * 60 * 1000, // 5 minutos
     cacheTime: 15 * 60 * 1000, // 15 minutos
     refetchOnWindowFocus: false,
@@ -122,7 +124,25 @@ export default function Perfil() {
       if (!user) return [];
       return await base44.entities.PedidoProduto.filter({ usuario_email: user.email });
     },
-    enabled: !!user,
+    enabled: !!user && isPaciente, // Only fetch for patients
+    staleTime: 5 * 60 * 1000,
+    cacheTime: 15 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    initialData: [],
+  });
+
+  // NEW: Query for saved ads (for patients)
+  const { data: anunciosSalvos = [], isLoading: isLoadingAnunciosSalvos } = useQuery({
+    queryKey: ['anuncios-salvos', user?.email],
+    queryFn: async () => {
+      if (!user || !user.anuncios_salvos || user.anuncios_salvos.length === 0) return [];
+      // Assuming user.anuncios_salvos is an array of anuncio IDs
+      const savedAdsPromises = user.anuncios_salvos.map(anuncioId => base44.entities.Anuncio.get(anuncioId));
+      return await Promise.all(savedAdsPromises);
+    },
+    enabled: !!user && isPaciente && (user.anuncios_salvos?.length > 0),
     staleTime: 5 * 60 * 1000,
     cacheTime: 15 * 60 * 1000,
     refetchOnWindowFocus: false,
@@ -330,12 +350,17 @@ export default function Perfil() {
           {/* Main Content Area (left 2/3) */}
           <div className="lg:col-span-2 space-y-6">
             <Tabs defaultValue="informacoes" className="w-full">
-              <TabsList className={`grid w-full grid-cols-${isProfissional ? 5 : 2}`}>
-                <TabsTrigger value="informacoes">Informações Pessoais</TabsTrigger>
-                {isProfissional && <TabsTrigger value="anuncios">Meus Anúncios</TabsTrigger>}
-                <TabsTrigger value="produtos">Produtos & Serviços</TabsTrigger>
-                {isProfissional && <TabsTrigger value="relatorios">Relatórios</TabsTrigger>}
-                {isProfissional && <TabsTrigger value="atividades">Atividades</TabsTrigger>}
+              <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
+                <TabsTrigger value="informacoes">Informações</TabsTrigger>
+                <TabsTrigger value="meus-anuncios">
+                  {isProfissional ? 'Meus Anúncios' : 'Anúncios Salvos'}
+                </TabsTrigger>
+                {isProfissional ? (
+                  <TabsTrigger value="estatisticas">Estatísticas</TabsTrigger>
+                ) : (
+                  <TabsTrigger value="produtos-servicos">Produtos & Serviços</TabsTrigger>
+                )}
+                <TabsTrigger value="indicacoes">Indicações</TabsTrigger>
               </TabsList>
 
               {/* TabsContent for "informacoes" */}
@@ -771,224 +796,25 @@ export default function Perfil() {
                 </Card>
               </TabsContent>
 
-              {/* SETOR PROFISSIONAL: Stats e Tabs completas */}
-              {isProfissional && (
-                <>
-                  {/* TabsContent for "anuncios" */}
-                  <TabsContent value="anuncios" className="space-y-4">
-                    {/* Statistics Cards */}
-                    <div className="grid md:grid-cols-4 gap-4">
-                      <Card className="border-none shadow-lg">
-                        <CardContent className="p-4 text-center">
-                          <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                            <Eye className="w-6 h-6 text-green-600" />
-                          </div>
-                          <p className="text-2xl font-bold">{totalVisualizacoes}</p>
-                          <p className="text-sm text-gray-600">Visualizações</p>
-                        </CardContent>
-                      </Card>
-
-                      <Card className="border-none shadow-lg">
-                        <CardContent className="p-4  text-center">
-                          <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                            <TrendingUp className="w-6 h-6 text-blue-600" />
-                          </div>
-                          <p className="text-2xl font-bold">{anunciosAtivos}</p>
-                          <p className="text-sm text-gray-600">Ativos</p>
-                        </CardContent>
-                      </Card>
-
-                      <Card className="border-none shadow-lg">
-                        <CardContent className="p-4 text-center">
-                          <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                            <Star className="w-6 h-6 text-yellow-600" />
-                          </div>
-                          <p className="text-2xl font-bold">{anunciosDestaque}</p>
-                          <p className="text-sm text-gray-600">Em Destaque</p>
-                        </CardContent>
-                      </Card>
-
-                      <Card className="border-none shadow-lg">
-                        <CardContent className="p-4 text-center">
-                          <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                            <Clock className="w-6 h-6 text-orange-600" />
-                          </div>
-                          <p className="text-2xl font-bold">{anunciosPendentes}</p>
-                          <p className="text-sm text-gray-600">Pendentes</p>
-                        </CardContent>
-                      </Card>
-                    </div>
-
-                    <Card className="border-none shadow-lg">
-                      <CardContent className="p-6">
-                        <h3 className="font-semibold text-lg mb-4">Resumo dos Anúncios</h3>
-                        <div className="space-y-3">
-                          <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
-                            <span className="font-medium">Anúncios Ativos</span>
-                            <Badge className="bg-green-600">{anunciosAtivos}</Badge>
-                          </div>
-                          <div className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
-                            <span className="font-medium">Anúncios Pendentes</span>
-                            <Badge className="bg-yellow-600">{anunciosPendentes}</Badge>
-                          </div>
-                          <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
-                            <span className="font-medium">Anúncios em Destaque</span>
-                            <Badge className="bg-blue-600">{anunciosDestaque}</Badge>
-                          </div>
-                          <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                            <span className="font-medium">Anúncios Expirados</span>
-                            <Badge className="bg-gray-600">{anunciosExpirados}</Badge>
-                          </div>
-                        </div>
-
-                        <Button
-                          onClick={() => navigate(createPageUrl("CadastrarAnuncio"))}
-                          className="w-full mt-4 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
-                        >
-                          Criar Novo Anúncio
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-
-                  {/* TabsContent for "relatorios" */}
-                  <TabsContent value="relatorios" className="space-y-4">
-                    <Card className="border-none shadow-lg">
-                      <CardContent className="p-6">
+              {/* Tab Meus Anúncios (Profissional) / Anúncios Salvos (Paciente) */}
+              <TabsContent value="meus-anuncios">
+                <Card className="border-none shadow-lg">
+                  <CardContent className="p-6">
+                    {isProfissional ? (
+                      <div>
                         <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                          <TrendingUp className="w-5 h-5 text-pink-600" />
-                          Relatórios de Performance
+                          <Eye className="w-5 h-5 text-pink-600" />
+                          Meus Anúncios
                         </h3>
-                        <p className="text-sm text-gray-600 mb-6">
-                          Acompanhe o desempenho dos seus anúncios com relatórios detalhados, similar ao Google Negócios
-                        </p>
-
-                        {/* Overview Cards */}
-                        <div className="grid md:grid-cols-2 gap-4 mb-6">
-                          <div className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg border-2 border-blue-200">
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-sm font-medium text-blue-900">Visualizações Totais</span>
-                              <Eye className="w-5 h-5 text-blue-600" />
-                            </div>
-                            <p className="text-3xl font-bold text-blue-900">{totalVisualizacoes}</p>
-                            <p className="text-xs text-blue-700 mt-1">Nos últimos 30 dias</p>
-                          </div>
-
-                          <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border-2 border-green-200">
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-sm font-medium text-green-900">Taxa de Cliques</span>
-                              <TrendingUp className="w-5 h-5 text-green-600" />
-                            </div>
-                            <p className="text-3xl font-bold text-green-900">
-                              {totalVisualizacoes > 0 ? ((meusAnuncios.length / totalVisualizacoes) * 100).toFixed(1) : 0}%
-                            </p>
-                            <p className="text-xs text-green-700 mt-1">CTR médio dos anúncios</p>
-                          </div>
-                        </div>
-
-                        {/* Performance by Ad */}
-                        <div className="space-y-3">
-                          <h4 className="font-semibold text-sm text-gray-700 mb-3">Desempenho por Anúncio</h4>
-                          {meusAnuncios.length === 0 ? (
-                            <div className="text-center py-8 bg-gray-50 rounded-lg">
-                              <p className="text-gray-500">Você ainda não possui anúncios ativos</p>
-                              <Button
-                                onClick={() => navigate(createPageUrl("CadastrarAnuncio"))}
-                                className="mt-4 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
-                              >
-                                Criar Primeiro Anúncio
-                              </Button>
-                            </div>
-                          ) : (
-                            meusAnuncios.slice(0, 5).map((anuncio) => (
-                              <div
-                                key={anuncio.id}
-                                className="p-4 bg-white border-2 border-gray-200 rounded-lg hover:border-pink-300 transition-colors"
-                              >
-                                <div className="flex items-start justify-between mb-2">
-                                  <div className="flex-1">
-                                    <h5 className="font-medium text-gray-900 mb-1">{anuncio.titulo}</h5>
-                                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                                      <Badge className={
-                                        anuncio.status === 'ativo' ? 'bg-green-100 text-green-800' :
-                                        anuncio.status === 'pendente' ? 'bg-yellow-100 text-yellow-800' :
-                                        'bg-gray-100 text-gray-800'
-                                      }>
-                                        {anuncio.status}
-                                      </Badge>
-                                      <span>•</span>
-                                      <span>{anuncio.categoria}</span>
-                                    </div>
-                                  </div>
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() => navigate(`${createPageUrl("DetalhesAnuncio")}?id=${anuncio.id}`)}
-                                  >
-                                    Ver Detalhes
-                                  </Button>
-                                </div>
-
-                                <div className="grid grid-cols-3 gap-4 mt-3 pt-3 border-t">
-                                  <div className="text-center">
-                                    <div className="flex items-center justify-center gap-1 mb-1">
-                                      <Eye className="w-3 h-3 text-gray-400" />
-                                      <span className="text-xs text-gray-500">Visualizações</span>
-                                    </div>
-                                    <p className="text-lg font-bold text-gray-900">{anuncio.visualizacoes || 0}</p>
-                                  </div>
-                                  <div className="text-center">
-                                    <div className="flex items-center justify-center gap-1 mb-1">
-                                      <Star className="w-3 h-3 text-gray-400" />
-                                      <span className="text-xs text-gray-500">Curtidas</span>
-                                    </div>
-                                    <p className="text-lg font-bold text-gray-900">{anuncio.curtidas || 0}</p>
-                                  </div>
-                                  <div className="text-center">
-                                    <div className="flex items-center justify-center gap-1 mb-1">
-                                      <MessageCircle className="w-3 h-3 text-gray-400" />
-                                      <span className="text-xs text-gray-500">Comentários</span>
-                                    </div>
-                                    <p className="text-lg font-bold text-gray-900">{anuncio.comentarios?.length || 0}</p>
-                                  </div>
-                                </div>
-
-                                {/* Tags/Keywords */}
-                                {anuncio.tags && anuncio.tags.length > 0 && (
-                                  <div className="mt-3 pt-3 border-t">
-                                    <p className="text-xs text-gray-500 mb-2">Palavras-chave (Google Business):</p>
-                                    <div className="flex flex-wrap gap-1">
-                                      {anuncio.tags.slice(0, 5).map((tag, i) => (
-                                        <Badge key={i} variant="outline" className="text-xs">
-                                          {tag}
-                                        </Badge>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            ))
-                          )}
-                        </div>
-
-                        <Alert className="mt-6 bg-blue-50 border-blue-200">
-                          <AlertCircle className="h-4 w-4 text-blue-600" />
-                          <AlertDescription className="text-blue-800 text-sm">
-                            💡 Dica: Use palavras-chave (tags) estratégicas para melhorar seu posicionamento no Google e aumentar suas visualizações!
-                          </AlertDescription>
-                        </Alert>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-
-                  {/* TabsContent for "atividades" */}
-                  <TabsContent value="atividades" className="space-y-4">
-                    <Card className="border-none shadow-lg">
-                      <CardContent className="p-6">
-                        <h3 className="font-semibold text-lg mb-4">Atividades Recentes</h3>
                         {meusAnuncios.length === 0 ? (
                           <div className="text-center py-8 bg-gray-50 rounded-lg">
-                            <p className="text-gray-500">Nenhuma atividade recente</p>
+                            <p className="text-gray-500">Você ainda não possui anúncios cadastrados.</p>
+                            <Button
+                              onClick={() => navigate(createPageUrl("CadastrarAnuncio"))}
+                              className="w-full mt-4 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
+                            >
+                              Criar Novo Anúncio
+                            </Button>
                           </div>
                         ) : (
                           <div className="space-y-3">
@@ -1069,145 +895,400 @@ export default function Perfil() {
                             ))}
                           </div>
                         )}
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-                </>
-              )}
-
-              {/* NOVA ABA: Meus Produtos e Serviços (for both Patient and Professional) */}
-              <TabsContent value="produtos" className="space-y-4">
-                <Card className="border-none shadow-lg">
-                  <CardContent className="p-6">
-                    <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                      <ShoppingCart className="w-5 h-5 text-pink-600" />
-                      Meus Produtos e Serviços Contratados
-                    </h3>
-
-                    {meusPedidos.length === 0 ? (
-                      <div className="text-center py-12 bg-gradient-to-br from-gray-50 to-white rounded-xl border-2 border-dashed border-gray-300">
-                        <div className="text-6xl mb-4">🛍️</div>
-                        <p className="text-gray-500 mb-4">
-                          Você ainda não possui produtos ou serviços contratados
-                        </p>
-                        <Button
-                          onClick={() => navigate(createPageUrl("Produtos"))}
-                          className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
-                        >
-                          Ver Produtos Disponíveis
-                        </Button>
                       </div>
                     ) : (
-                      <div className="space-y-4">
-                        {meusPedidos.map((pedido) => (
-                          <div
-                            key={pedido.id}
-                            className="p-4 bg-white border-2 border-gray-200 rounded-lg hover:border-pink-300 transition-colors"
-                          >
-                            <div className="flex items-start justify-between mb-3">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-2">
-                                  {pedido.tipo === 'servico' ? (
-                                    <Badge className="bg-blue-100 text-blue-800">Serviço</Badge>
-                                  ) : (
-                                    <Badge className="bg-green-100 text-green-800">Produto</Badge>
-                                  )}
-                                  <Badge className={
-                                    pedido.status_pedido === 'entregue' ? 'bg-green-100 text-green-800' :
-                                    pedido.status_pedido === 'em_transito' ? 'bg-blue-100 text-blue-800' :
-                                    pedido.status_pedido === 'enviado' ? 'bg-yellow-100 text-yellow-800' :
-                                    pedido.status_pedido === 'cancelado' ? 'bg-red-100 text-red-800' :
-                                    'bg-gray-100 text-gray-800'
-                                  }>
-                                    {pedido.status_pedido.replace(/_/g, ' ')}
-                                  </Badge>
-                                </div>
-                                <h5 className="font-medium text-gray-900 mb-1">{pedido.produto_nome}</h5>
-                                <p className="text-sm text-gray-600">
-                                  Pedido #{pedido.id.slice(0, 8)} • {format(new Date(pedido.created_date), "dd/MM/yyyy 'às' HH:mm")}
-                                </p>
-                                <p className="text-sm font-bold text-gray-900 mt-2">
-                                  Valor: R$ {pedido.valor_total.toFixed(2)}
-                                </p>
-                              </div>
-                            </div>
-
-                            {/* Rastreamento */}
-                            {pedido.codigo_rastreio && (
-                              <div className="mt-3 pt-3 border-t bg-blue-50 p-3 rounded">
-                                <div className="flex items-center justify-between mb-2">
-                                  <p className="text-sm font-medium text-blue-900">
-                                    📦 Rastreamento
-                                  </p>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => {
-                                      const url = pedido.transportadora === 'Correios'
-                                        ? `https://www.correios.com.br/rastreamento?codigo=${pedido.codigo_rastreio}`
-                                        : `https://www.google.com/search?q=rastrear+${pedido.codigo_rastreio}`;
-                                      window.open(url, '_blank');
-                                    }}
-                                    className="text-xs"
-                                  >
-                                    Rastrear Encomenda
+                      <div>
+                        <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                          <Bookmark className="w-5 h-5 text-purple-600" />
+                          Anúncios Salvos
+                        </h3>
+                        {isLoadingAnunciosSalvos ? (
+                          <div className="text-center py-8 bg-gray-50 rounded-lg">
+                            <Loader2 className="w-6 h-6 mx-auto animate-spin text-purple-600" />
+                            <p className="text-gray-500 mt-2">Carregando anúncios salvos...</p>
+                          </div>
+                        ) : anunciosSalvos.length === 0 ? (
+                          <div className="text-center py-12 bg-gradient-to-br from-gray-50 to-white rounded-xl border-2 border-dashed border-gray-300">
+                            <div className="text-6xl mb-4">🤍</div>
+                            <p className="text-gray-500 mb-4">
+                              Você ainda não salvou nenhum anúncio.
+                            </p>
+                            <Button
+                              onClick={() => navigate(createPageUrl("Inicio"))} // Or a specific search page
+                              className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
+                            >
+                              Explorar Anúncios
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            {anunciosSalvos.map((anuncio) => (
+                              <div
+                                key={anuncio.id}
+                                className="p-4 bg-white border-2 border-gray-200 rounded-lg hover:border-purple-300 transition-colors cursor-pointer"
+                                onClick={() => handleVerAnuncio(anuncio.id)}
+                              >
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1">
+                                    <h5 className="font-medium text-gray-900 mb-1">{anuncio.titulo}</h5>
+                                    <p className="text-sm text-gray-600">{anuncio.descricao.substring(0, 70)}...</p>
+                                  </div>
+                                  <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); handleVerAnuncio(anuncio.id); }}>
+                                    Ver Detalhes
                                   </Button>
                                 </div>
-                                <p className="text-xs text-blue-700">
-                                  Código: <span className="font-mono font-bold">{pedido.codigo_rastreio}</span>
-                                </p>
-                                {pedido.transportadora && (
-                                  <p className="text-xs text-blue-700 mt-1">
-                                    Transportadora: {pedido.transportadora}
-                                  </p>
-                                )}
-
-                                {/* Histórico de Rastreio */}
-                                {pedido.historico_rastreio && pedido.historico_rastreio.length > 0 && (
-                                  <div className="mt-3 space-y-2">
-                                    <p className="text-xs font-medium text-blue-900">Últimas atualizações:</p>
-                                    {pedido.historico_rastreio.slice(-3).reverse().map((item, i) => (
-                                      <div key={i} className="text-xs bg-white p-2 rounded border border-blue-200">
-                                        <div className="flex justify-between mb-1">
-                                          <span className="font-medium">{item.status}</span>
-                                          <span className="text-gray-500">
-                                            {format(new Date(item.data), "dd/MM HH:mm")}
-                                          </span>
-                                        </div>
-                                        {item.localizacao && (
-                                          <p className="text-gray-600">📍 {item.localizacao}</p>
-                                        )}
-                                        {item.descricao && (
-                                          <p className="text-gray-600">{item.descricao}</p>
-                                        )}
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
+                                <div className="flex items-center gap-2 mt-3 pt-3 border-t text-sm text-gray-500">
+                                  <MapPin className="w-4 h-4" /> {anuncio.cidade}, {anuncio.estado}
+                                  <Star className="w-4 h-4 ml-auto" /> {anuncio.media_avaliacao || 'N/A'} ({anuncio.total_avaliacoes || 0})
+                                </div>
                               </div>
-                            )}
-
-                            {/* Endereço de Entrega */}
-                            {pedido.endereco_entrega && (
-                              <div className="mt-3 pt-3 border-t">
-                                <p className="text-xs font-medium text-gray-700 mb-1">Endereço de Entrega:</p>
-                                <p className="text-xs text-gray-600">
-                                  {pedido.endereco_entrega.rua}, {pedido.endereco_entrega.numero}
-                                  {pedido.endereco_entrega.complemento && ` - ${pedido.endereco_entrega.complemento}`}
-                                  <br />
-                                  {pedido.endereco_entrega.bairro} - {pedido.endereco_entrega.cidade}/{pedido.endereco_entrega.estado}
-                                  <br />
-                                  CEP: {pedido.endereco_entrega.cep}
-                                </p>
-                              </div>
-                            )}
+                            ))}
                           </div>
-                        ))}
+                        )}
                       </div>
                     )}
                   </CardContent>
                 </Card>
               </TabsContent>
+
+              {/* Tab Estatísticas (APENAS PROFISSIONAIS) */}
+              {isProfissional && (
+                <TabsContent value="estatisticas" className="space-y-4">
+                  {/* Statistics Cards */}
+                  <div className="grid md:grid-cols-4 gap-4">
+                    <Card className="border-none shadow-lg">
+                      <CardContent className="p-4 text-center">
+                        <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                          <Eye className="w-6 h-6 text-green-600" />
+                        </div>
+                        <p className="text-2xl font-bold">{totalVisualizacoes}</p>
+                        <p className="text-sm text-gray-600">Visualizações</p>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="border-none shadow-lg">
+                      <CardContent className="p-4  text-center">
+                        <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                          <TrendingUp className="w-6 h-6 text-blue-600" />
+                        </div>
+                        <p className="text-2xl font-bold">{anunciosAtivos}</p>
+                        <p className="text-sm text-gray-600">Ativos</p>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="border-none shadow-lg">
+                      <CardContent className="p-4 text-center">
+                        <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                          <Star className="w-6 h-6 text-yellow-600" />
+                        </div>
+                        <p className="text-2xl font-bold">{anunciosDestaque}</p>
+                        <p className="text-sm text-gray-600">Em Destaque</p>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="border-none shadow-lg">
+                      <CardContent className="p-4 text-center">
+                        <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                          <Clock className="w-6 h-6 text-orange-600" />
+                        </div>
+                        <p className="text-2xl font-bold">{anunciosPendentes}</p>
+                        <p className="text-sm text-gray-600">Pendentes</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  <Card className="border-none shadow-lg">
+                    <CardContent className="p-6">
+                      <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                        <TrendingUp className="w-5 h-5 text-pink-600" />
+                        Relatórios de Performance
+                      </h3>
+                      <p className="text-sm text-gray-600 mb-6">
+                        Acompanhe o desempenho dos seus anúncios com relatórios detalhados, similar ao Google Negócios
+                      </p>
+
+                      {/* Overview Cards */}
+                      <div className="grid md:grid-cols-2 gap-4 mb-6">
+                        <div className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg border-2 border-blue-200">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-medium text-blue-900">Visualizações Totais</span>
+                            <Eye className="w-5 h-5 text-blue-600" />
+                          </div>
+                          <p className="text-3xl font-bold text-blue-900">{totalVisualizacoes}</p>
+                          <p className="text-xs text-blue-700 mt-1">Nos últimos 30 dias</p>
+                        </div>
+
+                        <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border-2 border-green-200">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-medium text-green-900">Taxa de Cliques</span>
+                            <TrendingUp className="w-5 h-5 text-green-600" />
+                          </div>
+                          <p className="text-3xl font-bold text-green-900">
+                            {totalVisualizacoes > 0 ? ((meusAnuncios.length / totalVisualizacoes) * 100).toFixed(1) : 0}%
+                          </p>
+                          <p className="text-xs text-green-700 mt-1">CTR médio dos anúncios</p>
+                        </div>
+                      </div>
+
+                      {/* Performance by Ad */}
+                      <div className="space-y-3">
+                        <h4 className="font-semibold text-sm text-gray-700 mb-3">Desempenho por Anúncio</h4>
+                        {meusAnuncios.length === 0 ? (
+                          <div className="text-center py-8 bg-gray-50 rounded-lg">
+                            <p className="text-gray-500">Você ainda não possui anúncios ativos</p>
+                            <Button
+                              onClick={() => navigate(createPageUrl("CadastrarAnuncio"))}
+                              className="mt-4 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
+                            >
+                              Criar Primeiro Anúncio
+                            </Button>
+                          </div>
+                        ) : (
+                          meusAnuncios.slice(0, 5).map((anuncio) => (
+                            <div
+                              key={anuncio.id}
+                              className="p-4 bg-white border-2 border-gray-200 rounded-lg hover:border-pink-300 transition-colors"
+                            >
+                              <div className="flex items-start justify-between mb-2">
+                                <div className="flex-1">
+                                  <h5 className="font-medium text-gray-900 mb-1">{anuncio.titulo}</h5>
+                                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                                    <Badge className={
+                                      anuncio.status === 'ativo' ? 'bg-green-100 text-green-800' :
+                                      anuncio.status === 'pendente' ? 'bg-yellow-100 text-yellow-800' :
+                                      'bg-gray-100 text-gray-800'
+                                    }>
+                                      {anuncio.status}
+                                    </Badge>
+                                    <span>•</span>
+                                    <span>{anuncio.categoria}</span>
+                                  </div>
+                                </div>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => navigate(`${createPageUrl("DetalhesAnuncio")}?id=${anuncio.id}`)}
+                                >
+                                  Ver Detalhes
+                                </Button>
+                              </div>
+
+                              <div className="grid grid-cols-3 gap-4 mt-3 pt-3 border-t">
+                                <div className="text-center">
+                                  <div className="flex items-center justify-center gap-1 mb-1">
+                                    <Eye className="w-3 h-3 text-gray-400" />
+                                    <span className="text-xs text-gray-500">Visualizações</span>
+                                  </div>
+                                  <p className="text-lg font-bold text-gray-900">{anuncio.visualizacoes || 0}</p>
+                                </div>
+                                <div className="text-center">
+                                  <div className="flex items-center justify-center gap-1 mb-1">
+                                    <Star className="w-3 h-3 text-gray-400" />
+                                    <span className="text-xs text-gray-500">Curtidas</span>
+                                  </div>
+                                  <p className="text-lg font-bold text-gray-900">{anuncio.curtidas || 0}</p>
+                                </div>
+                                <div className="text-center">
+                                  <div className="flex items-center justify-center gap-1 mb-1">
+                                    <MessageCircle className="w-3 h-3 text-gray-400" />
+                                    <span className="text-xs text-gray-500">Comentários</span>
+                                  </div>
+                                  <p className="text-lg font-bold text-gray-900">{anuncio.comentarios?.length || 0}</p>
+                                </div>
+                              </div>
+
+                              {/* Tags/Keywords */}
+                              {anuncio.tags && anuncio.tags.length > 0 && (
+                                <div className="mt-3 pt-3 border-t">
+                                  <p className="text-xs text-gray-500 mb-2">Palavras-chave (Google Business):</p>
+                                  <div className="flex flex-wrap gap-1">
+                                    {anuncio.tags.slice(0, 5).map((tag, i) => (
+                                      <Badge key={i} variant="outline" className="text-xs">
+                                        {tag}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ))
+                        )}
+                      </div>
+
+                      <Alert className="mt-6 bg-blue-50 border-blue-200">
+                        <AlertCircle className="h-4 w-4 text-blue-600" />
+                        <AlertDescription className="text-blue-800 text-sm">
+                          💡 Dica: Use palavras-chave (tags) estratégicas para melhorar seu posicionamento no Google e aumentar suas visualizações!
+                        </AlertDescription>
+                      </Alert>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              )}
+
+              {/* Tab Produtos & Serviços (APENAS PACIENTES) */}
+              {!isProfissional && (
+                <TabsContent value="produtos-servicos" className="space-y-4">
+                  <Card className="border-none shadow-lg">
+                    <CardContent className="p-6">
+                      <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                        <ShoppingCart className="w-5 h-5 text-pink-600" />
+                        Meus Produtos e Serviços Contratados
+                      </h3>
+
+                      {meusPedidos.length === 0 ? (
+                        <div className="text-center py-12 bg-gradient-to-br from-gray-50 to-white rounded-xl border-2 border-dashed border-gray-300">
+                          <div className="text-6xl mb-4">🛍️</div>
+                          <p className="text-gray-500 mb-4">
+                            Você ainda não possui produtos ou serviços contratados
+                          </p>
+                          <Button
+                            onClick={() => navigate(createPageUrl("Produtos"))}
+                            className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
+                          >
+                            Ver Produtos Disponíveis
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {meusPedidos.map((pedido) => (
+                            <div
+                              key={pedido.id}
+                              className="p-4 bg-white border-2 border-gray-200 rounded-lg hover:border-pink-300 transition-colors"
+                            >
+                              <div className="flex items-start justify-between mb-3">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    {pedido.tipo === 'servico' ? (
+                                      <Badge className="bg-blue-100 text-blue-800">Serviço</Badge>
+                                    ) : (
+                                      <Badge className="bg-green-100 text-green-800">Produto</Badge>
+                                    )}
+                                    <Badge className={
+                                      pedido.status_pedido === 'entregue' ? 'bg-green-100 text-green-800' :
+                                      pedido.status_pedido === 'em_transito' ? 'bg-blue-100 text-blue-800' :
+                                      pedido.status_pedido === 'enviado' ? 'bg-yellow-100 text-yellow-800' :
+                                      pedido.status_pedido === 'cancelado' ? 'bg-red-100 text-red-800' :
+                                      'bg-gray-100 text-gray-800'
+                                    }>
+                                      {pedido.status_pedido.replace(/_/g, ' ')}
+                                    </Badge>
+                                  </div>
+                                  <h5 className="font-medium text-gray-900 mb-1">{pedido.produto_nome}</h5>
+                                  <p className="text-sm text-gray-600">
+                                    Pedido #{pedido.id.slice(0, 8)} • {format(new Date(pedido.created_date), "dd/MM/yyyy 'às' HH:mm")}
+                                  </p>
+                                  <p className="text-sm font-bold text-gray-900 mt-2">
+                                    Valor: R$ {pedido.valor_total.toFixed(2)}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* Rastreamento */}
+                              {pedido.codigo_rastreio && (
+                                <div className="mt-3 pt-3 border-t bg-blue-50 p-3 rounded">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <p className="text-sm font-medium text-blue-900">
+                                      📦 Rastreamento
+                                    </p>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => {
+                                        const url = pedido.transportadora === 'Correios'
+                                          ? `https://www.correios.com.br/rastreamento?codigo=${pedido.codigo_rastreio}`
+                                          : `https://www.google.com/search?q=rastrear+${pedido.codigo_rastreio}`;
+                                        window.open(url, '_blank');
+                                      }}
+                                      className="text-xs"
+                                    >
+                                      Rastrear Encomenda
+                                    </Button>
+                                  </div>
+                                  <p className="text-xs text-blue-700">
+                                    Código: <span className="font-mono font-bold">{pedido.codigo_rastreio}</span>
+                                  </p>
+                                  {pedido.transportadora && (
+                                    <p className="text-xs text-blue-700 mt-1">
+                                      Transportadora: {pedido.transportadora}
+                                    </p>
+                                  )}
+
+                                  {/* Histórico de Rastreio */}
+                                  {pedido.historico_rastreio && pedido.historico_rastreio.length > 0 && (
+                                    <div className="mt-3 space-y-2">
+                                      <p className="text-xs font-medium text-blue-900">Últimas atualizações:</p>
+                                      {pedido.historico_rastreio.slice(-3).reverse().map((item, i) => (
+                                        <div key={i} className="text-xs bg-white p-2 rounded border border-blue-200">
+                                          <div className="flex justify-between mb-1">
+                                            <span className="font-medium">{item.status}</span>
+                                            <span className="text-gray-500">
+                                              {format(new Date(item.data), "dd/MM HH:mm")}
+                                            </span>
+                                          </div>
+                                          {item.localizacao && (
+                                            <p className="text-gray-600">📍 {item.localizacao}</p>
+                                          )}
+                                          {item.descricao && (
+                                            <p className="text-gray-600">{item.descricao}</p>
+                                          )}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+
+                              {/* Endereço de Entrega */}
+                              {pedido.endereco_entrega && (
+                                <div className="mt-3 pt-3 border-t">
+                                  <p className="text-xs font-medium text-gray-700 mb-1">Endereço de Entrega:</p>
+                                  <p className="text-xs text-gray-600">
+                                    {pedido.endereco_entrega.rua}, {pedido.endereco_entrega.numero}
+                                    {pedido.endereco_entrega.complemento && ` - ${pedido.endereco_entrega.complemento}`}
+                                    <br />
+                                    {pedido.endereco_entrega.bairro} - {pedido.endereco_entrega.cidade}/{pedido.endereco_entrega.estado}
+                                    <br />
+                                    CEP: {pedido.endereco_entrega.cep}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              )}
+
+              {/* Tab Indicações (for both) */}
+              <TabsContent value="indicacoes">
+                <Card className="border-none shadow-lg">
+                  <CardContent className="p-6">
+                    <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                      <Handshake className="w-5 h-5 text-green-600" />
+                      Programa de Indicações
+                    </h3>
+                    <div className="text-center py-12 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border-2 border-dashed border-green-300">
+                      <div className="text-6xl mb-4">🤝</div>
+                      <p className="text-gray-800 text-lg mb-4">
+                        Indique o Mapa da Estética e ganhe benefícios!
+                      </p>
+                      <p className="text-gray-600 mb-6">
+                        Compartilhe seu código de indicação com amigos e colegas e seja recompensado.
+                      </p>
+                      <Button
+                        onClick={() => alert("Funcionalidade em desenvolvimento!")}
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        Ver Meu Código de Indicação
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
             </Tabs>
           </div>
 
