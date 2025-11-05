@@ -461,7 +461,9 @@ export default function Perfil() {
                             value={formData.full_name || ""}
                             onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
                             className="mt-1"
+                            placeholder="Seu nome completo"
                           />
+                          <p className="text-xs text-gray-500 mt-1">Este é o nome que será exibido publicamente</p>
                         </div>
 
                         {/* CPF e Data de Nascimento */}
