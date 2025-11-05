@@ -15,7 +15,8 @@ import {
   Menu,
   X,
   LogOut,
-  MapPin
+  MapPin,
+  TrendingUp // Added for admin reports
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -26,6 +27,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge"; // Added for admin badge
 import Chatbot from "./components/home/Chatbot";
 
 export default function Layout({ children }) {
@@ -62,6 +64,7 @@ export default function Layout({ children }) {
   // Definir items de navegação baseado no tipo de usuário
   const isPaciente = user?.tipo_usuario === 'paciente';
   const isProfissional = user?.tipo_usuario === 'profissional';
+  const isAdmin = user?.role === 'admin'; // Added isAdmin check
 
   const navigationItems = [
     { title: "Início", url: createPageUrl("Inicio"), icon: Home },
@@ -185,6 +188,9 @@ export default function Layout({ children }) {
                       <div className="px-2 py-2">
                         <p className="text-sm font-medium truncate">{user?.full_name}</p>
                         <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                        {isAdmin && (
+                          <Badge className="mt-1 bg-purple-100 text-purple-800">Admin</Badge>
+                        )}
                       </div>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => navigate(createPageUrl("Perfil"))}>
@@ -195,6 +201,12 @@ export default function Layout({ children }) {
                         <DropdownMenuItem onClick={() => navigate(createPageUrl("MeuPlano"))}>
                           <CreditCard className="w-4 h-4 mr-2" />
                           Meu Plano
+                        </DropdownMenuItem>
+                      )}
+                      {isAdmin && (
+                        <DropdownMenuItem onClick={() => navigate(createPageUrl("RelatorioPrecoMedio"))}>
+                          <TrendingUp className="w-4 h-4 mr-2" />
+                          Relatórios de Preço
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator />

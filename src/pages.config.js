@@ -14,6 +14,7 @@ import PesquisaEspecializada from './pages/PesquisaEspecializada';
 import Anuncios from './pages/Anuncios';
 import AgradecimentoCompra from './pages/AgradecimentoCompra';
 import EditarAnuncio from './pages/EditarAnuncio';
+import RelatorioPrecoMedio from './pages/RelatorioPrecoMedio';
 import Layout from './Layout.jsx';
 
 
@@ -34,6 +35,7 @@ export const PAGES = {
     "Anuncios": Anuncios,
     "AgradecimentoCompra": AgradecimentoCompra,
     "EditarAnuncio": EditarAnuncio,
+    "RelatorioPrecoMedio": RelatorioPrecoMedio,
 }
 
 export const pagesConfig = {

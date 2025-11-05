@@ -376,7 +376,7 @@ export default function Inicio() {
         </div>
       </section>
 
-      {/* PLANOS PARA ANUNCIANTES - AMBOS */}
+      {/* PLANOS PARA ANUNCIANTES - AMBOS - 5 PLANOS */}
       <section className="py-12 sm:py-16 bg-[#1A1A2E]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-8 sm:mb-12">
@@ -388,7 +388,8 @@ export default function Inicio() {
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6 mb-8">
+          {/* Primeira linha: COBRE, PRATA, OURO */}
+          <div className="grid md:grid-cols-3 gap-6 mb-6">
             {/* Plano COBRE */}
             <Card className="border-none shadow-xl overflow-hidden bg-gradient-to-br from-orange-500 to-amber-600">
               <CardContent className="p-6">
@@ -624,6 +625,206 @@ export default function Inicio() {
                 <a href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Tenho interesse no Plano OURO de Anunciante!")}`} target="_blank" rel="noopener noreferrer">
                   <Button className="w-full bg-[#2C2C2C] text-[#F7D426] hover:bg-[#3A3A3A] font-bold">
                     Contratar OURO
+                  </Button>
+                </a>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Segunda linha: DIAMANTE e PLATINA */}
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Plano DIAMANTE */}
+            <Card className="border-none shadow-xl overflow-hidden bg-gradient-to-br from-cyan-500 to-blue-600">
+              <CardContent className="p-6">
+                <div className="text-center mb-6">
+                  <h3 className="text-3xl font-bold text-white mb-2">DIAMANTE</h3>
+                  <p className="text-2xl font-bold text-white">12x R$ 997</p>
+                  <p className="text-white/80 text-sm">R$ 11.964/ano</p>
+                </div>
+
+                <div className="space-y-3 text-white mb-6">
+                  <div className="bg-white/10 p-3 rounded-lg">
+                    <p className="text-xs text-white/70">Dimensões:</p>
+                    <p className="font-bold">1920x400px (Banner Full)</p>
+                  </div>
+                  <div className="bg-white/10 p-3 rounded-lg">
+                    <p className="text-xs text-white/70">Posicionamento:</p>
+                    <p className="font-bold">Topo Fixo + Pop-up Estratégico</p>
+                  </div>
+                  <div className="bg-white/10 p-3 rounded-lg">
+                    <p className="text-xs text-white/70">Prioridade:</p>
+                    <p className="font-bold">Máxima</p>
+                  </div>
+                  <div className="bg-white/10 p-3 rounded-lg">
+                    <p className="text-xs text-white/70">Segmentação:</p>
+                    <p className="font-bold">Todas as categorias + Geolocalização</p>
+                  </div>
+                  <div className="bg-white/10 p-3 rounded-lg">
+                    <p className="text-xs text-white/70">Acesso:</p>
+                    <p className="font-bold">Dados completos + WhatsApp</p>
+                  </div>
+                  <div className="bg-white/10 p-3 rounded-lg">
+                    <p className="text-xs text-white/70">Impressões:</p>
+                    <p className="font-bold">Até 1.000.000 impressões/mês</p>
+                  </div>
+                </div>
+
+                <ul className="space-y-2 mb-6 text-white text-sm">
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>Banner Full HD (1920x400px)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>Topo fixo + Pop-up estratégico</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>Todas as categorias + geolocalização</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>Até 1.000.000 impressões/mês</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>Dados completos dos leads (Email, Tel, WhatsApp)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>4 posts patrocinados/mês no blog</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>Destaque premium no newsletter</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>Campanhas de email marketing mensal</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>Vídeo institucional na home (30s)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>Badge "Patrocinador Diamante"</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>Analytics avançado em tempo real</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>Gerente de sucesso dedicado</span>
+                  </li>
+                </ul>
+
+                <a href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Tenho interesse no Plano DIAMANTE de Anunciante!")}`} target="_blank" rel="noopener noreferrer">
+                  <Button className="w-full bg-white text-cyan-600 hover:bg-gray-100 font-bold">
+                    Contratar DIAMANTE
+                  </Button>
+                </a>
+              </CardContent>
+            </Card>
+
+            {/* Plano PLATINA */}
+            <Card className="border-none shadow-xl overflow-hidden bg-gradient-to-br from-purple-600 to-pink-600 ring-4 ring-purple-400">
+              <div className="bg-gradient-to-r from-purple-700 to-pink-700 text-white text-center py-2 font-bold text-sm">
+                👑 EXCLUSIVO
+              </div>
+              <CardContent className="p-6">
+                <div className="text-center mb-6">
+                  <h3 className="text-3xl font-bold text-white mb-2">PLATINA</h3>
+                  <p className="text-2xl font-bold text-white">12x R$ 1.597</p>
+                  <p className="text-white/80 text-sm">R$ 19.164/ano</p>
+                </div>
+
+                <div className="space-y-3 text-white mb-6">
+                  <div className="bg-white/10 p-3 rounded-lg">
+                    <p className="text-xs text-white/70">Dimensões:</p>
+                    <p className="font-bold">Formatos Personalizados</p>
+                  </div>
+                  <div className="bg-white/10 p-3 rounded-lg">
+                    <p className="text-xs text-white/70">Posicionamento:</p>
+                    <p className="font-bold">Exclusividade Total + Takeover</p>
+                  </div>
+                  <div className="bg-white/10 p-3 rounded-lg">
+                    <p className="text-xs text-white/70">Prioridade:</p>
+                    <p className="font-bold">Exclusiva</p>
+                  </div>
+                  <div className="bg-white/10 p-3 rounded-lg">
+                    <p className="text-xs text-white/70">Segmentação:</p>
+                    <p className="font-bold">Controle total + IA personalizada</p>
+                  </div>
+                  <div className="bg-white/10 p-3 rounded-lg">
+                    <p className="text-xs text-white/70">Acesso:</p>
+                    <p className="font-bold">CRM Integrado + API</p>
+                  </div>
+                  <div className="bg-white/10 p-3 rounded-lg">
+                    <p className="text-xs text-white/70">Impressões:</p>
+                    <p className="font-bold">ILIMITADAS</p>
+                  </div>
+                </div>
+
+                <ul className="space-y-2 mb-6 text-white text-sm">
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>Formatos de banner personalizados</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>Exclusividade de categoria (sem concorrentes)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>Takeover da plataforma (1 dia/mês)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>Impressões ILIMITADAS</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>CRM integrado + API para leads</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>Posts patrocinados ILIMITADOS</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>Email + newsletter com materiais oficiais</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>Co-branding em materiais oficiais</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>Presença em eventos do Mapa da Estética</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>Landing page personalizada</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>Badge "Parceiro Estratégico Platina"</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>Inteligência de mercado com analytics premium</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>Equipe de sucesso dedicada</span>
+                  </li>
+                </ul>
+
+                <a href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Tenho interesse no Plano PLATINA de Anunciante!")}`} target="_blank" rel="noopener noreferrer">
+                  <Button className="w-full bg-white text-purple-600 hover:bg-gray-100 font-bold">
+                    Contratar PLATINA
                   </Button>
                 </a>
               </CardContent>
