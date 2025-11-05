@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -38,6 +39,21 @@ const estados = [
 ];
 
 const ITEMS_PER_PAGE = 10;
+
+const tiposAnuncio = [
+  { valor: "servico", label: "💼 Serviço" },
+  { valor: "procedimento", label: "🔬 Procedimento" },
+  { valor: "tecnica", label: "✨ Técnica" },
+  { valor: "consultorio", label: "🏢 Consultório" },
+  { valor: "clinica", label: "🏥 Clínica" },
+  { valor: "promocao", label: "🎁 Promoção" },
+  { valor: "venda_produto", label: "🛍️ Venda de Produto" },
+  { valor: "venda_aparelho", label: "⚙️ Venda de Aparelho" },
+  { valor: "aluguel_produto", label: "📦 Aluguel de Produto" },
+  { valor: "aluguel_aparelho", label: "🔧 Aluguel de Aparelho" },
+  { valor: "troca_produto", label: "🔄 Troca de Produto" },
+  { valor: "troca_aparelho", label: "♻️ Troca de Aparelho" }
+];
 
 export default function Anuncios() {
   const [busca, setBusca] = useState("");
@@ -364,27 +380,28 @@ export default function Anuncios() {
                 </SelectContent>
               </Select>
 
-              {/* Filtro Tipo de Anúncio */}
-              <Select
-                value={filtroTipoAnuncio}
-                onValueChange={(value) => {
-                  setFiltroTipoAnuncio(value);
-                  setPaginaAtual(1);
-                }}
-              >
-                <SelectTrigger className="h-12">
-                  <SelectValue placeholder="Tipo de Anúncio" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={null}>Todos os tipos</SelectItem>
-                  <SelectItem value="servico">💼 Serviço</SelectItem>
-                  <SelectItem value="procedimento">🔬 Procedimento</SelectItem>
-                  <SelectItem value="tecnica">✨ Técnica</SelectItem>
-                  <SelectItem value="consultorio">🏢 Consultório</SelectItem>
-                  <SelectItem value="clinica">🏥 Clínica</SelectItem>
-                  <SelectItem value="promocao">🎁 Promoção</SelectItem>
-                </SelectContent>
-              </Select>
+              {/* NOVO: Filtro Tipo de Anúncio */}
+              <div>
+                <Select
+                  value={filtroTipoAnuncio}
+                  onValueChange={(value) => {
+                    setFiltroTipoAnuncio(value);
+                    setPaginaAtual(1);
+                  }}
+                >
+                  <SelectTrigger className="h-12">
+                    <SelectValue placeholder="Tipo de Anúncio" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={null}>Todos os tipos</SelectItem>
+                    {tiposAnuncio.map(tipo => (
+                      <SelectItem key={tipo.valor} value={tipo.valor}>
+                        {tipo.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {/* Badges e Botão de Limpar Filtros */}
@@ -406,7 +423,11 @@ export default function Anuncios() {
                       {getFaixaPrecoInfo(filtroFaixaPreco).emoji} {getFaixaPrecoInfo(filtroFaixaPreco).texto}
                     </Badge>
                   )}
-                  {filtroTipoAnuncio && <Badge variant="secondary">Tipo: {filtroTipoAnuncio}</Badge>}
+                  {filtroTipoAnuncio && (
+                    <Badge variant="secondary">
+                      Tipo: {tiposAnuncio.find(t => t.valor === filtroTipoAnuncio)?.label || filtroTipoAnuncio}
+                    </Badge>
+                  )}
                 </div>
                 <Button variant="ghost" size="sm" onClick={limparFiltros}>
                   Limpar Filtros

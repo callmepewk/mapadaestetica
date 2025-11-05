@@ -62,7 +62,13 @@ const tiposAnuncio = [
   { valor: "tecnica", label: "Técnica" },
   { valor: "consultorio", label: "Consultório" },
   { valor: "clinica", label: "Clínica" },
-  { valor: "promocao", label: "Promoção" }
+  { valor: "promocao", label: "Promoção" },
+  { valor: "venda_produto", label: "Venda de Produto" },
+  { valor: "venda_aparelho", label: "Venda de Aparelho" },
+  { valor: "aluguel_produto", label: "Aluguel de Produto" },
+  { valor: "aluguel_aparelho", label: "Aluguel de Aparelho" },
+  { valor: "troca_produto", label: "Troca de Produto" },
+  { valor: "troca_aparelho", label: "Troca de Aparelho" }
 ];
 
 const faixasPreco = [
