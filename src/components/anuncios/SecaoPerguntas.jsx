@@ -11,8 +11,12 @@ import { ptBR } from "date-fns/locale";
 
 const perguntasProntas = [
   {
-    texto: "Este produto/serviço ainda está disponível?",
+    texto: "Este produto ainda está disponível?",
     tipo: "disponibilidade_produto"
+  },
+  {
+    texto: "Este serviço ainda está disponível?",
+    tipo: "disponibilidade_oferta"
   },
   {
     texto: "Esta oferta ainda está disponível?",
@@ -20,7 +24,6 @@ const perguntasProntas = [
   }
 ];
 
-// Função para gerar ID único
 const gerarId = () => {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 };
@@ -48,7 +51,6 @@ export default function SecaoPerguntas({ anuncio, user, isAutor }) {
         perguntas: [...perguntasAtuais, novaPergunta]
       });
 
-      // Criar notificação para o autor do anúncio
       await base44.entities.Notificacao.create({
         usuario_email: anuncio.created_by,
         tipo: 'nova_pergunta',
@@ -62,7 +64,6 @@ export default function SecaoPerguntas({ anuncio, user, isAutor }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['anuncio-detalhes'] });
       alert("Pergunta enviada! O profissional será notificado.");
-      // Recarregar a página para mostrar a nova pergunta
       window.location.reload();
     },
   });
@@ -86,7 +87,6 @@ export default function SecaoPerguntas({ anuncio, user, isAutor }) {
         perguntas: perguntasAtualizadas
       });
 
-      // Criar notificação para quem perguntou
       const pergunta = perguntasAtuais.find(p => p.id === perguntaId);
       if (pergunta) {
         await base44.entities.Notificacao.create({
@@ -103,7 +103,6 @@ export default function SecaoPerguntas({ anuncio, user, isAutor }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['anuncio-detalhes'] });
       alert("Resposta enviada! O usuário será notificado.");
-      // Recarregar a página para mostrar a resposta
       window.location.reload();
     },
   });
@@ -119,7 +118,6 @@ export default function SecaoPerguntas({ anuncio, user, isAutor }) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Área para fazer perguntas (apenas não-autores logados) */}
         {!isAutor && user && (
           <div className="bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
             <p className="font-semibold text-blue-900 mb-3">
@@ -142,7 +140,6 @@ export default function SecaoPerguntas({ anuncio, user, isAutor }) {
           </div>
         )}
 
-        {/* Prompt para usuários não logados */}
         {!user && (
           <div className="bg-yellow-50 p-4 rounded-lg border-2 border-yellow-200">
             <p className="font-semibold text-yellow-900 mb-2">
@@ -160,7 +157,6 @@ export default function SecaoPerguntas({ anuncio, user, isAutor }) {
           </div>
         )}
 
-        {/* Lista de perguntas e respostas */}
         {perguntas.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             <MessageSquare className="w-12 h-12 mx-auto text-gray-300 mb-2" />
@@ -186,7 +182,6 @@ export default function SecaoPerguntas({ anuncio, user, isAutor }) {
                   </div>
                 </div>
 
-                {/* Resposta ou botões para responder */}
                 {pergunta.respondida ? (
                   <div className="ml-11 pl-4 border-l-2 border-green-300 bg-green-50 p-3 rounded">
                     <div className="flex items-center gap-2 mb-1">
