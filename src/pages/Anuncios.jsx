@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -11,9 +10,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Filter, MapPin, Grid, List, Locate } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card"; // Imported CardContent
+import { Search, Filter, MapPin, Grid, List, Locate, Sparkles } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import CardAnuncio from "../components/anuncios/CardAnuncio";
+import SeletorProcedimentos from "../components/anuncios/SeletorProcedimentos";
 import {
   Pagination,
   PaginationContent,
@@ -32,14 +32,12 @@ const categorias = [
   "Harmonização Facial", "Maquiagem", "Outros"
 ];
 
-// List of Brazilian states (UF)
 const estados = [
   "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG",
   "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"
 ];
 
-
-const ITEMS_PER_PAGE = 10; // LIMITADO A 10 ANÚNCIOS POR PÁGINA
+const ITEMS_PER_PAGE = 10;
 
 export default function Anuncios() {
   const [busca, setBusca] = useState("");
@@ -51,10 +49,10 @@ export default function Anuncios() {
   const [paginaAtual, setPaginaAtual] = useState(1);
   const [viewMode, setViewMode] = useState("grid");
   const [localizando, setLocalizando] = useState(false);
-  const [ordenacao, setOrdenacao] = useState("mais_recentes"); // New state for sorting
-  const [filtroFaixaPreco, setFiltroFaixaPreco] = useState(""); // New state for price range filter
-  const [filtroTipoAnuncio, setFiltroTipoAnuncio] = useState(""); // New state for ad type filter
-
+  const [ordenacao, setOrdenacao] = useState("mais_recentes");
+  const [filtroFaixaPreco, setFiltroFaixaPreco] = useState("");
+  const [filtroTipoAnuncio, setFiltroTipoAnuncio] = useState("");
+  const [mostrarSeletorProcedimentos, setMostrarSeletorProcedimentos] = useState(false);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -64,8 +62,8 @@ export default function Anuncios() {
     const procedimento = urlParams.get('procedimento');
     const tag = urlParams.get('tag');
     const ordem = urlParams.get('ordem');
-    const faixaPreco = urlParams.get('faixaPreco'); // New: check for faixaPreco in URL
-    const tipoAnuncio = urlParams.get('tipoAnuncio'); // New: check for tipoAnuncio in URL
+    const faixaPreco = urlParams.get('faixaPreco');
+    const tipoAnuncio = urlParams.get('tipoAnuncio');
 
     if (cidade) setCidadeFiltro(cidade);
     if (estado) setEstadoFiltro(estado);
@@ -73,8 +71,8 @@ export default function Anuncios() {
     if (procedimento) setProcedimentoFiltro(procedimento);
     if (tag) setTagFiltro(tag);
     if (ordem) setOrdenacao(ordem);
-    if (faixaPreco) setFiltroFaixaPreco(faixaPreco); // Apply faixaPreco from URL
-    if (tipoAnuncio) setFiltroTipoAnuncio(tipoAnuncio); // Apply tipoAnuncio from URL
+    if (faixaPreco) setFiltroFaixaPreco(faixaPreco);
+    if (tipoAnuncio) setFiltroTipoAnuncio(tipoAnuncio);
   }, []);
 
   const usarMinhaLocalizacao = async () => {
@@ -113,14 +111,12 @@ export default function Anuncios() {
     );
   };
 
-  // Memoized object for server-side filters to be used in queryKey
   const serverSideFilters = useMemo(() => ({
     cidade: cidadeFiltro,
     estado: estadoFiltro,
     categoria: categoriaFiltro,
   }), [cidadeFiltro, estadoFiltro, categoriaFiltro]);
 
-  // CARREGAMENTO INSTANTÂNEO
   const { data: fetchedAnuncios = [], isLoading } = useQuery({
     queryKey: ['anuncios', serverSideFilters, ordenacao],
     queryFn: async () => {
@@ -145,21 +141,19 @@ export default function Anuncios() {
       const result = await base44.entities.Anuncio.filter(query, ordemParam, 100);
       return result;
     },
-    staleTime: 0, // Sempre busca dados frescos
+    staleTime: 0,
     cacheTime: 5 * 60 * 1000,
     refetchOnWindowFocus: true,
-    refetchOnMount: true, // FORÇAR REFETCH
+    refetchOnMount: true,
     refetchOnReconnect: false,
     initialData: [],
   });
 
-  // Apply client-side filters and sorting to the fetched data
   const anuncios = useMemo(() => {
     const planoOrdem = { 'premium': 4, 'avancado': 3, 'intermediario': 2, 'basico': 1 };
     
     return fetchedAnuncios
       .filter(anuncio => {
-        // Client-side filtering for search terms, procedures, and tags
         const matchProcedimento = !procedimentoFiltro ||
           anuncio.procedimentos_servicos?.some(p => 
             p.toLowerCase().includes(procedimentoFiltro.toLowerCase())
@@ -183,28 +177,23 @@ export default function Anuncios() {
             t.toLowerCase().includes(busca.toLowerCase())
           );
         
-        // Cidade and Estado are primarily filtered server-side but a final client-side check can be helpful
         const matchCidade = !cidadeFiltro || 
           anuncio.cidade?.toLowerCase().includes(cidadeFiltro.toLowerCase());
         
         const matchEstado = !estadoFiltro ||
           anuncio.estado?.toLowerCase().includes(estadoFiltro.toLowerCase());
 
-        // New client-side filters
         const matchFaixaPreco = !filtroFaixaPreco || anuncio.faixa_preco === filtroFaixaPreco;
         const matchTipoAnuncio = !filtroTipoAnuncio || anuncio.tipo_anuncio === filtroTipoAnuncio;
 
         return matchCidade && matchEstado && matchProcedimento && matchTag && matchBusca && matchFaixaPreco && matchTipoAnuncio;
       })
       .sort((a, b) => {
-        // Client-side sort: prioritize by plan (Premium first)
         const planoA = planoOrdem[a.plano] || 0;
         const planoB = planoOrdem[b.plano] || 0;
         if (planoB !== planoA) {
           return planoB - planoA;
         }
-        // If plans are the same, use created_date as a tie-breaker (most recent first)
-        // This maintains the original client-side sort behavior for same-plan items
         return new Date(b.created_date) - new Date(a.created_date);
       });
   }, [fetchedAnuncios, busca, procedimentoFiltro, tagFiltro, cidadeFiltro, estadoFiltro, filtroFaixaPreco, filtroTipoAnuncio]);
@@ -224,15 +213,12 @@ export default function Anuncios() {
     setBusca("");
     setCidadeFiltro("");
     setEstadoFiltro("");
-    setCategoriaFiltro("Todas"); // Reset to default
+    setCategoriaFiltro("Todas");
     setProcedimentoFiltro("");
     setTagFiltro("");
     setFiltroFaixaPreco("");
     setFiltroTipoAnuncio("");
     setPaginaAtual(1);
-    // If there were URL parameters set, clearing them would ideally update the URL,
-    // but the original code doesn't explicitly modify the URL based on filter changes.
-    // So for now, only state is cleared.
   };
 
   const getFaixaPrecoInfo = (faixa) => {
@@ -243,7 +229,7 @@ export default function Anuncios() {
       "$$$$": { texto: "R$ 2.000 - R$ 5.000", emoji: "🧡" },
       "$$$$$": { texto: "Acima de R$ 5.000", emoji: "❤️" }
     };
-    return info[faixa] || info["$"]; // Default to $ if not found, as per outline
+    return info[faixa] || info["$"];
   };
 
   return (
@@ -266,7 +252,7 @@ export default function Anuncios() {
               <div className="relative">
                 <Search className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
                 <Input
-                  placeholder="Buscar por nome, profissional, procedimento..."
+                  placeholder="Buscar por nome, profissional..."
                   value={busca}
                   onChange={(e) => {
                     setBusca(e.target.value);
@@ -329,22 +315,22 @@ export default function Anuncios() {
                 </SelectContent>
               </Select>
 
-              {/* Procedimento input */}
-              <div className="relative">
-                <Search className="absolute left-3 top-3.5 w-5 h-5 text-gray-400 z-10" />
-                <Input
-                  placeholder="Buscar por procedimento específico (ex: Botox, Peeling...)"
-                  value={procedimentoFiltro}
-                  onChange={(e) => {
-                    setProcedimentoFiltro(e.target.value);
-                    setPaginaAtual(1);
-                  }}
-                  className="pl-10 h-12"
-                />
+              {/* NOVO: Botão para abrir seletor de procedimentos */}
+              <div className="md:col-span-2">
+                <Button
+                  onClick={() => setMostrarSeletorProcedimentos(true)}
+                  variant="outline"
+                  className="w-full h-12 border-2 border-purple-300 text-purple-700 hover:bg-purple-50 hover:border-purple-400"
+                >
+                  <Sparkles className="w-5 h-5 mr-2" />
+                  {procedimentoFiltro 
+                    ? `Procedimento: ${procedimentoFiltro}` 
+                    : "Selecionar Procedimento Específico"}
+                </Button>
               </div>
-              
+
               {/* Tag input */}
-              <div className="relative">
+              <div className="relative md:col-span-2">
                 <Search className="absolute left-3 top-3.5 w-5 h-5 text-gray-400 z-10" />
                 <Input
                   placeholder="Buscar por tag (ex: #microagulhamento #peeling)"
@@ -370,36 +356,11 @@ export default function Anuncios() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value={null}>Todas as faixas</SelectItem>
-                  <SelectItem value="$">
-                    <div className="flex items-center gap-2">
-                      <span>💚 $</span>
-                      <span className="text-xs text-gray-500">Até R$ 500</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="$$">
-                    <div className="flex items-center gap-2">
-                      <span>💙 $$</span>
-                      <span className="text-xs text-gray-500">R$ 500 - R$ 1.000</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="$$$">
-                    <div className="flex items-center gap-2">
-                      <span>💛 $$$</span>
-                      <span className="text-xs text-gray-500">R$ 1.000 - R$ 2.000</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="$$$$">
-                    <div className="flex items-center gap-2">
-                      <span>🧡 $$$$</span>
-                      <span className="text-xs text-gray-500">R$ 2.000 - R$ 5.000</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="$$$$$">
-                    <div className="flex items-center gap-2">
-                      <span>❤️ $$$$$</span>
-                      <span className="text-xs text-gray-500">Acima de R$ 5.000</span>
-                    </div>
-                  </SelectItem>
+                  <SelectItem value="$">💚 $ - Até R$ 500</SelectItem>
+                  <SelectItem value="$$">💙 $$ - R$ 500 - R$ 1.000</SelectItem>
+                  <SelectItem value="$$$">💛 $$$ - R$ 1.000 - R$ 2.000</SelectItem>
+                  <SelectItem value="$$$$">🧡 $$$$ - R$ 2.000 - R$ 5.000</SelectItem>
+                  <SelectItem value="$$$$$">❤️ $$$$$ - Acima de R$ 5.000</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -426,7 +387,7 @@ export default function Anuncios() {
               </Select>
             </div>
 
-            {/* Conditional Badges and Clear Filters Button */}
+            {/* Badges e Botão de Limpar Filtros */}
             {(busca || cidadeFiltro || estadoFiltro || categoriaFiltro !== "Todas" || procedimentoFiltro || tagFiltro || filtroFaixaPreco || filtroTipoAnuncio) && (
               <div className="mt-4 flex items-center justify-between mb-4">
                 <div className="flex flex-wrap gap-2">
@@ -434,7 +395,11 @@ export default function Anuncios() {
                   {cidadeFiltro && <Badge variant="secondary">Cidade: {cidadeFiltro}</Badge>}
                   {estadoFiltro && <Badge variant="secondary">Estado: {estadoFiltro}</Badge>}
                   {categoriaFiltro !== "Todas" && <Badge variant="secondary">Categoria: {categoriaFiltro}</Badge>}
-                  {procedimentoFiltro && <Badge variant="secondary">Procedimento: {procedimentoFiltro}</Badge>}
+                  {procedimentoFiltro && (
+                    <Badge className="bg-purple-100 text-purple-800">
+                      Procedimento: {procedimentoFiltro}
+                    </Badge>
+                  )}
                   {tagFiltro && <Badge variant="secondary">Tag: {tagFiltro}</Badge>}
                   {filtroFaixaPreco && (
                     <Badge variant="secondary">
@@ -449,7 +414,7 @@ export default function Anuncios() {
               </div>
             )}
 
-            {/* Localize button and Ordenacao Select */}
+            {/* Localização e Ordenação */}
             <div className="flex flex-col md:flex-row gap-4 items-start md:items-center mb-4">
               <Button
                 onClick={usarMinhaLocalizacao}
@@ -479,7 +444,7 @@ export default function Anuncios() {
               </Select>
             </div>
 
-            {/* Filter results count and view mode buttons */}
+            {/* Resultados e Modo de Visualização */}
             <div className="flex items-center justify-between mt-4 pt-4 border-t">
               <div className="flex items-center gap-2 flex-wrap">
                 <Filter className="w-4 h-4 text-gray-500" />
@@ -550,7 +515,6 @@ export default function Anuncios() {
                     
                     {Array.from({ length: Math.min(5, totalPaginas) }, (_, i) => {
                       let pageNum;
-                      // Logic to display a maximum of 5 page numbers, centered around the current page
                       if (totalPaginas <= 5) {
                         pageNum = i + 1;
                       } else if (paginaAtual <= 3) {
@@ -587,6 +551,17 @@ export default function Anuncios() {
           </>
         )}
       </div>
+
+      {/* Modal de Seletor de Procedimentos */}
+      <SeletorProcedimentos
+        open={mostrarSeletorProcedimentos}
+        onClose={() => setMostrarSeletorProcedimentos(false)}
+        onSelect={(procedimento) => {
+          setProcedimentoFiltro(procedimento);
+          setPaginaAtual(1);
+        }}
+        procedimentoAtual={procedimentoFiltro}
+      />
     </div>
   );
 }
