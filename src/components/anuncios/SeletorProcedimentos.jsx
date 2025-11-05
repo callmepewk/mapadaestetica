@@ -387,7 +387,7 @@ export default function SeletorProcedimentos({ open, onClose, onSelect, procedim
             <div className="space-y-2">
               {procedimentosFiltrados.length > 0 ? (
                 <>
-                  <p className="text-xs sm:text-sm text-gray-600 mb-3 sticky top-0 bg-white py-2 z-10">
+                  <p className="text-xs sm:text-sm text-gray-600 mb-3">
                     {procedimentosFiltrados.length} procedimento(s) encontrado(s)
                   </p>
                   {procedimentosFiltrados.map((proc) => (
@@ -413,7 +413,7 @@ export default function SeletorProcedimentos({ open, onClose, onSelect, procedim
           ) : (
             // Lista categorizada - TODAS AS CATEGORIAS
             <div className="space-y-4 sm:space-y-6 pb-4">
-              <div className="bg-gradient-to-r from-pink-50 to-purple-50 p-3 sm:p-4 rounded-lg border-2 border-pink-200 mb-4 sticky top-0 z-10">
+              <div className="bg-gradient-to-r from-pink-50 to-purple-50 p-3 sm:p-4 rounded-lg border-2 border-pink-200 mb-4">
                 <p className="text-center font-bold text-pink-900 text-sm sm:text-base">
                   📋 {Object.keys(procedimentosPorCategoria).length} Categorias Completas | 
                   {todosProcedimentos.length} Procedimentos Totais
