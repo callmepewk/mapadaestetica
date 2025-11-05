@@ -188,7 +188,7 @@ export default function CalculadoraLaserSection() {
         <div className="text-center mb-12">
           <Badge className="mb-4 bg-blue-600 text-white">
             <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/894287324_drbeleza.png"
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe2/894287324_drbeleza.png"
               alt="Dr. Beleza"
               className="w-4 h-4 rounded-full mr-2 inline-block"
             />
@@ -552,7 +552,7 @@ export default function CalculadoraLaserSection() {
                     {isUserFree && (
                       <TooltipContent className="bg-yellow-50 border-2 border-yellow-300 text-yellow-900 p-4 max-w-xs z-50">
                         <p className="font-semibold mb-2">🔒 Recurso Premium</p>
-                        <p className="text-sm">Para baixar o relatório completo, é necessário ter um plano BÁSICO ou superior.</p>
+                        <p className="text-sm">Para baixar o relatório completo, é necessário ter um plano PRATA ou superior.</p>
                         <Button
                           onClick={() => window.location.href = createPageUrl("Planos")}
                           className="w-full mt-3 bg-yellow-600 hover:bg-yellow-700 text-white"

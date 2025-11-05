@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
@@ -9,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Checkbox } from "@/components/ui/checkbox"; // New import
 import {
   Select,
   SelectContent,
@@ -34,7 +36,10 @@ import {
   Lightbulb,
   ThumbsUp,
   ThumbsDown,
-  Loader2
+  Loader2,
+  X, // New import
+  Shield, // New import
+  FileText // New import
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -91,8 +96,36 @@ export default function CadastrarAnuncio() {
     cep: "",
     horario_funcionamento: "",
     procedimentos_servicos: [],
-    tags: []
+    tags: [],
+    imagem_principal: "", // New field
+    imagens_galeria: [], // New field
+    amenidades: { // New field
+      estacionamento: false,
+      estacionamento_valet: false,
+      aceita_pet: false,
+      lounge: false,
+      lounge_bar: false,
+      musica_ambiente: false,
+      seguranca: false
+    }
   });
+
+  // Estados de upload de imagens
+  const [uploadingImagemPrincipal, setUploadingImagemPrincipal] = useState(false);
+  const [uploadingGaleria, setUploadingGaleria] = useState(false);
+
+  // Estados de verificação de autoridade
+  const [documentosVerificacao, setDocumentosVerificacao] = useState({
+    licenca_sanitaria: null,
+    alvara_funcionamento: null,
+    registro_profissional: null
+  });
+  const [uploadingDocumentos, setUploadingDocumentos] = useState({
+    licenca_sanitaria: false,
+    alvara_funcionamento: false,
+    registro_profissional: false
+  });
+  const [solicitarVerificacao, setSolicitarVerificacao] = useState(false); // New state, though only used to trigger `handleEnviarVerificacao` implicitly by state change rather than dialog display
 
   // Estados do Assistente IA
   const [mostrarAssistenteDescricao, setMostrarAssistenteDescricao] = useState(false);
@@ -138,6 +171,122 @@ export default function CadastrarAnuncio() {
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleAmenidadeChange = (amenidade, checked) => {
+    setFormData(prev => ({
+      ...prev,
+      amenidades: {
+        ...prev.amenidades,
+        [amenidade]: checked
+      }
+    }));
+  };
+
+  // Upload de imagem principal
+  const handleUploadImagemPrincipal = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploadingImagemPrincipal(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setFormData(prev => ({ ...prev, imagem_principal: file_url }));
+    } catch (error) {
+      console.error("Erro ao fazer upload:", error);
+      setErro("Erro ao fazer upload da imagem");
+    } finally {
+      setUploadingImagemPrincipal(false);
+    }
+  };
+
+  // Upload de galeria de imagens
+  const handleUploadGaleria = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    setUploadingGaleria(true);
+    try {
+      const urls = [];
+      for (const file of files) {
+        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        urls.push(file_url);
+      }
+      setFormData(prev => ({
+        ...prev,
+        imagens_galeria: [...prev.imagens_galeria, ...urls]
+      }));
+    } catch (error) {
+      console.error("Erro ao fazer upload:", error);
+      setErro("Erro ao fazer upload das imagens");
+    } finally {
+      setUploadingGaleria(false);
+    }
+  };
+
+  // Remover imagem da galeria
+  const handleRemoverImagemGaleria = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      imagens_galeria: prev.imagens_galeria.filter((_, i) => i !== index)
+    }));
+  };
+
+  // Upload de documentos de verificação
+  const handleUploadDocumento = async (tipo, e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploadingDocumentos(prev => ({ ...prev, [tipo]: true }));
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setDocumentosVerificacao(prev => ({ ...prev, [tipo]: file_url }));
+    } catch (error) {
+      console.error("Erro ao fazer upload:", error);
+      setErro("Erro ao fazer upload do documento");
+    } finally {
+      setUploadingDocumentos(prev => ({ ...prev, [tipo]: false }));
+    }
+  };
+
+  // Enviar solicitação de verificação
+  const handleEnviarVerificacao = async () => {
+    const documentosCompletos = Object.values(documentosVerificacao).every(doc => doc !== null);
+    
+    if (!documentosCompletos) {
+      setErro("Por favor, envie todos os 3 documentos para solicitar verificação");
+      return;
+    }
+
+    const mensagem = `
+Nova Solicitação de Verificação de Profissional
+
+Profissional: ${user.full_name}
+Email: ${user.email}
+Telefone: ${formData.telefone}
+Cidade: ${formData.cidade} - ${formData.estado}
+
+Documentos enviados:
+1. Licença Sanitária: ${documentosVerificacao.licenca_sanitaria}
+2. Alvará de Funcionamento: ${documentosVerificacao.alvara_funcionamento}
+3. Registro Profissional: ${documentosVerificacao.registro_profissional}
+
+Por favor, revisar e aprovar/reprovar esta solicitação.
+    `;
+
+    try {
+      await base44.integrations.Core.SendEmail({
+        to: "pedro_hbfreitas@hotmail.com", // This should be configured to an admin email
+        subject: `Verificação de Profissional - ${user.full_name}`,
+        body: mensagem
+      });
+      
+      alert("Solicitação enviada com sucesso! Você receberá um email quando a verificação for processada.");
+      setSolicitarVerificacao(false); // Reset this state if needed, or simply for internal logic.
+    } catch (error) {
+      console.error("Erro ao enviar solicitação:", error);
+      setErro("Erro ao enviar solicitação de verificação");
+    }
   };
 
   // Função para solicitar ajuda com descrição
@@ -285,7 +434,30 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
         dias_exposicao: 30,
         visualizacoes: 0,
         curtidas: 0,
-        profissional_verificado: false
+        profissional_verificado: false,
+        imagem_principal: formData.imagem_principal, // Include in payload
+        imagens_galeria: formData.imagens_galeria,   // Include in payload
+        amenidades: formData.amenidades,             // Include in payload
+        verificacao_autoridade: {
+          licenca_sanitaria: {
+            possui: !!documentosVerificacao.licenca_sanitaria,
+            documento_url: documentosVerificacao.licenca_sanitaria || "",
+            verificado: false,
+            data_verificacao: ""
+          },
+          alvara_funcionamento: {
+            possui: !!documentosVerificacao.alvara_funcionamento,
+            documento_url: documentosVerificacao.alvara_funcionamento || "",
+            verificado: false,
+            data_verificacao: ""
+          },
+          registro_profissional: {
+            possui: !!documentosVerificacao.registro_profissional,
+            documento_url: documentosVerificacao.registro_profissional || "",
+            verificado: false,
+            data_verificacao: ""
+          }
+        }
       };
 
       await base44.entities.Anuncio.create(anuncioData);
@@ -466,6 +638,102 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
             </CardContent>
           </Card>
 
+          {/* Upload de Imagens */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Imagens do Anúncio</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label>Imagem Principal *</Label>
+                <div className="mt-2">
+                  {formData.imagem_principal ? (
+                    <div className="relative">
+                      <img
+                        src={formData.imagem_principal}
+                        alt="Imagem principal"
+                        className="w-full h-64 object-cover rounded-lg"
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        className="absolute top-2 right-2"
+                        onClick={() => setFormData(prev => ({ ...prev, imagem_principal: "" }))}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                      <Upload className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                      <Label htmlFor="imagem-principal" className="cursor-pointer">
+                        <span className="text-blue-600 hover:text-blue-700">
+                          {uploadingImagemPrincipal ? "Enviando..." : "Clique para enviar"}
+                        </span>
+                      </Label>
+                      <Input
+                        id="imagem-principal"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleUploadImagemPrincipal}
+                        disabled={uploadingImagemPrincipal}
+                        required
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <Label>Galeria de Imagens (até 10 imagens)</Label>
+                <div className="mt-2">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                    {formData.imagens_galeria.map((img, index) => (
+                      <div key={index} className="relative">
+                        <img
+                          src={img}
+                          alt={`Galeria ${index + 1}`}
+                          className="w-full h-32 object-cover rounded-lg"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          className="absolute top-1 right-1"
+                          onClick={() => handleRemoverImagemGaleria(index)}
+                        >
+                          <X className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {formData.imagens_galeria.length < 10 && (
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                      <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
+                      <Label htmlFor="galeria" className="cursor-pointer">
+                        <span className="text-blue-600 hover:text-blue-700 text-sm">
+                          {uploadingGaleria ? "Enviando..." : "Adicionar mais imagens"}
+                        </span>
+                      </Label>
+                      <Input
+                        id="galeria"
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={handleUploadGaleria}
+                        disabled={uploadingGaleria}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Contato */}
           <Card>
             <CardHeader>
@@ -511,6 +779,93 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
                     onChange={(e) => handleInputChange("email", e.target.value)}
                     required
                   />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Amenidades */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Amenidades do Estabelecimento</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="estacionamento"
+                    checked={formData.amenidades.estacionamento}
+                    onCheckedChange={(checked) => handleAmenidadeChange("estacionamento", checked)}
+                  />
+                  <Label htmlFor="estacionamento" className="cursor-pointer">
+                    🅿️ Estacionamento
+                  </Label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="estacionamento_valet"
+                    checked={formData.amenidades.estacionamento_valet}
+                    onCheckedChange={(checked) => handleAmenidadeChange("estacionamento_valet", checked)}
+                  />
+                  <Label htmlFor="estacionamento_valet" className="cursor-pointer">
+                    🚗 Estacionamento com Valet
+                  </Label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="aceita_pet"
+                    checked={formData.amenidades.aceita_pet}
+                    onCheckedChange={(checked) => handleAmenidadeChange("aceita_pet", checked)}
+                  />
+                  <Label htmlFor="aceita_pet" className="cursor-pointer">
+                    🐕 Aceita Pets
+                  </Label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="lounge"
+                    checked={formData.amenidades.lounge}
+                    onCheckedChange={(checked) => handleAmenidadeChange("lounge", checked)}
+                  />
+                  <Label htmlFor="lounge" className="cursor-pointer">
+                    🛋️ Lounge
+                  </Label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="lounge_bar"
+                    checked={formData.amenidades.lounge_bar}
+                    onCheckedChange={(checked) => handleAmenidadeChange("lounge_bar", checked)}
+                  />
+                  <Label htmlFor="lounge_bar" className="cursor-pointer">
+                    🍷 Lounge Bar
+                  </Label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="musica_ambiente"
+                    checked={formData.amenidades.musica_ambiente}
+                    onCheckedChange={(checked) => handleAmenidadeChange("musica_ambiente", checked)}
+                  />
+                  <Label htmlFor="musica_ambiente" className="cursor-pointer">
+                    🎵 Música Ambiente
+                  </Label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="seguranca"
+                    checked={formData.amenidades.seguranca}
+                    onCheckedChange={(checked) => handleAmenidadeChange("seguranca", checked)}
+                  />
+                  <Label htmlFor="seguranca" className="cursor-pointer">
+                    🛡️ Segurança 24h
+                  </Label>
                 </div>
               </div>
             </CardContent>
@@ -569,6 +924,172 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
                   placeholder="Ex: Seg a Sex: 9h às 18h | Sáb: 9h às 13h"
                 />
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Torne-se um Profissional Verificado */}
+          <Card className="border-2 border-blue-300 bg-gradient-to-br from-blue-50 to-cyan-50">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Shield className="w-6 h-6 text-blue-600" />
+                <CardTitle className="text-blue-900">Torne-se um Profissional Verificado</CardTitle>
+              </div>
+              <p className="text-sm text-blue-700 mt-2">
+                Ganhe o selo de verificação ✓ similar ao Meta e aumente sua credibilidade!
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Alert className="bg-white border-blue-200">
+                <AlertCircle className="h-4 w-4 text-blue-600" />
+                <AlertDescription className="text-blue-900">
+                  <strong>Como funciona:</strong> Envie os 3 documentos abaixo e nossa equipe irá verificar.
+                  Após aprovação, você receberá o selo de profissional verificado no seu anúncio!
+                </AlertDescription>
+              </Alert>
+
+              <div className="space-y-4">
+                {/* Licença Sanitária */}
+                <div>
+                  <Label className="flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-blue-600" />
+                    Licença Sanitária
+                  </Label>
+                  {documentosVerificacao.licenca_sanitaria ? (
+                    <div className="mt-2 p-3 bg-green-50 border-2 border-green-200 rounded-lg flex items-center justify-between">
+                      <span className="text-sm text-green-800">✓ Documento enviado</span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setDocumentosVerificacao(prev => ({ ...prev, licenca_sanitaria: null }))}
+                      >
+                        Remover
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="mt-2">
+                      <Label htmlFor="licenca" className="cursor-pointer">
+                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 transition-colors">
+                          {uploadingDocumentos.licenca_sanitaria ? (
+                            <Loader2 className="w-6 h-6 mx-auto animate-spin text-blue-600" />
+                          ) : (
+                            <>
+                              <Upload className="w-6 h-6 mx-auto text-gray-400 mb-2" />
+                              <span className="text-sm text-blue-600">Clique para enviar</span>
+                            </>
+                          )}
+                        </div>
+                      </Label>
+                      <Input
+                        id="licenca"
+                        type="file"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        className="hidden"
+                        onChange={(e) => handleUploadDocumento("licenca_sanitaria", e)}
+                        disabled={uploadingDocumentos.licenca_sanitaria}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Alvará de Funcionamento */}
+                <div>
+                  <Label className="flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-blue-600" />
+                    Alvará de Funcionamento
+                  </Label>
+                  {documentosVerificacao.alvara_funcionamento ? (
+                    <div className="mt-2 p-3 bg-green-50 border-2 border-green-200 rounded-lg flex items-center justify-between">
+                      <span className="text-sm text-green-800">✓ Documento enviado</span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setDocumentosVerificacao(prev => ({ ...prev, alvara_funcionamento: null }))}
+                      >
+                        Remover
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="mt-2">
+                      <Label htmlFor="alvara" className="cursor-pointer">
+                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 transition-colors">
+                          {uploadingDocumentos.alvara_funcionamento ? (
+                            <Loader2 className="w-6 h-6 mx-auto animate-spin text-blue-600" />
+                          ) : (
+                            <>
+                              <Upload className="w-6 h-6 mx-auto text-gray-400 mb-2" />
+                              <span className="text-sm text-blue-600">Clique para enviar</span>
+                            </>
+                          )}
+                        </div>
+                      </Label>
+                      <Input
+                        id="alvara"
+                        type="file"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        className="hidden"
+                        onChange={(e) => handleUploadDocumento("alvara_funcionamento", e)}
+                        disabled={uploadingDocumentos.alvara_funcionamento}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Registro Profissional */}
+                <div>
+                  <Label className="flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-blue-600" />
+                    Registro Profissional (CRO, CREFITO, etc)
+                  </Label>
+                  {documentosVerificacao.registro_profissional ? (
+                    <div className="mt-2 p-3 bg-green-50 border-2 border-green-200 rounded-lg flex items-center justify-between">
+                      <span className="text-sm text-green-800">✓ Documento enviado</span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setDocumentosVerificacao(prev => ({ ...prev, registro_profissional: null }))}
+                      >
+                        Remover
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="mt-2">
+                      <Label htmlFor="registro" className="cursor-pointer">
+                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 transition-colors">
+                          {uploadingDocumentos.registro_profissional ? (
+                            <Loader2 className="w-6 h-6 mx-auto animate-spin text-blue-600" />
+                          ) : (
+                            <>
+                              <Upload className="w-6 h-6 mx-auto text-gray-400 mb-2" />
+                              <span className="text-sm text-blue-600">Clique para enviar</span>
+                            </>
+                          )}
+                        </div>
+                      </Label>
+                      <Input
+                        id="registro"
+                        type="file"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        className="hidden"
+                        onChange={(e) => handleUploadDocumento("registro_profissional", e)}
+                        disabled={uploadingDocumentos.registro_profissional}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <Button
+                type="button"
+                onClick={handleEnviarVerificacao}
+                disabled={!Object.values(documentosVerificacao).every(doc => doc !== null)}
+                className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+              >
+                <Shield className="w-4 h-4 mr-2" />
+                Enviar para Verificação
+              </Button>
             </CardContent>
           </Card>
 
