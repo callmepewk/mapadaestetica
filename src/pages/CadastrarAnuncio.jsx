@@ -79,6 +79,7 @@ export default function CadastrarAnuncio() {
           whatsapp: userData.whatsapp || "",
           cidade: userData.cidade || "",
           estado: userData.estado || "",
+          bairro: userData.bairro || "", // Initialize bairro from user data if available
           instagram: userData.instagram || "",
           facebook: userData.facebook || ""
         }));
@@ -109,6 +110,7 @@ export default function CadastrarAnuncio() {
     endereco: "",
     cidade: "",
     estado: "",
+    bairro: "", // Added bairro to formData state
     cep: "",
     imagem_principal: "",
     logo: "",
@@ -862,19 +864,20 @@ export default function CadastrarAnuncio() {
                       <SelectValue placeholder="Selecione" />
                     </SelectTrigger>
                     <SelectContent>
-                        {estados.map((uf) => (
+                      {estados.map((uf) => (
                         <SelectItem key={uf} value={uf}>{uf}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
 
-                <div className="md:col-span-2">
-                  <Label htmlFor="endereco">Endereço Completo</Label>
+                <div>
+                  <Label htmlFor="bairro">Bairro</Label>
                   <Input
-                    id="endereco"
-                    value={formData.endereco}
-                    onChange={(e) => setFormData({ ...formData, endereco: e.target.value })}
+                    id="bairro"
+                    value={formData.bairro}
+                    onChange={(e) => setFormData({ ...formData, bairro: e.target.value })}
+                    placeholder="Ex: Centro, Savassi..."
                   />
                 </div>
 
@@ -884,6 +887,15 @@ export default function CadastrarAnuncio() {
                     id="cep"
                     value={formData.cep}
                     onChange={(e) => setFormData({ ...formData, cep: e.target.value })}
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <Label htmlFor="endereco">Endereço Completo</Label>
+                  <Input
+                    id="endereco"
+                    value={formData.endereco}
+                    onChange={(e) => setFormData({ ...formData, endereco: e.target.value })}
                   />
                 </div>
 
