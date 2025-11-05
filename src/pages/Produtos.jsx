@@ -69,7 +69,7 @@ const servicosContrataveis = [
     tipo_publico: "profissional",
     preco: 50,
     preco_texto: "A partir de R$ 50",
-    imagens: ["https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&q=80"],
+    imagens: ["https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/f0cb8c67e_geraodeimagem.png"],
     beneficios: [
       "Até 10 imagens personalizadas",
       "Alta resolução e qualidade",
