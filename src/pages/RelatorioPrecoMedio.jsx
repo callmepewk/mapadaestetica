@@ -8,12 +8,22 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, TrendingUp, DollarSign, Calendar, Search, Eye, Users, ShoppingCart, BarChart3 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ArrowLeft, Download, TrendingUp, DollarSign, MapPin, Calendar, Filter } from "lucide-react";
 
-export default function Relatorios() {
+const categorias = [
+  "Todas",
+  "Estética Facial", "Estética Corporal", "Depilação", "Harmonização Facial",
+  "Massoterapia e Drenagem", "Micropigmentação e Design", "Manicure e Pedicure"
+];
+
+export default function RelatorioPrecoMedio() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [categoriaFiltro, setCategoriaFiltro] = useState("Todas");
+  const [cidadeFiltro, setCidadeFiltro] = useState("");
+  const [estadoFiltro, setEstadoFiltro] = useState("");
+  const [procedimentoBusca, setProcedimentoBusca] = useState("");
 
   useEffect(() => {
     const checkAdmin = async () => {
@@ -21,7 +31,6 @@ export default function Relatorios() {
         const userData = await base44.auth.me();
         setUser(userData);
         
-        // Bloquear acesso para não-admins
         if (userData.role !== 'admin') {
           alert("Acesso negado. Apenas administradores podem acessar relatórios.");
           navigate(createPageUrl("Inicio"));
@@ -33,21 +42,242 @@ export default function Relatorios() {
     checkAdmin();
   }, [navigate]);
 
+  const { data: anuncios = [], isLoading } = useQuery({
+    queryKey: ['anuncios-relatorio'],
+    queryFn: async () => {
+      const result = await base44.entities.Anuncio.filter({ status: 'ativo' });
+      return result;
+    },
+    enabled: !!user && user.role === 'admin',
+  });
+
+  // Calcular estatísticas
+  const estatisticas = React.useMemo(() => {
+    let anunciosFiltrados = anuncios;
+
+    if (categoriaFiltro !== "Todas") {
+      anunciosFiltrados = anunciosFiltrados.filter(a => a.categoria === categoriaFiltro);
+    }
+    if (cidadeFiltro) {
+      anunciosFiltrados = anunciosFiltrados.filter(a => 
+        a.cidade?.toLowerCase().includes(cidadeFiltro.toLowerCase())
+      );
+    }
+    if (estadoFiltro) {
+      anunciosFiltrados = anunciosFiltrados.filter(a => 
+        a.estado?.toUpperCase() === estadoFiltro.toUpperCase()
+      );
+    }
+    if (procedimentoBusca) {
+      anunciosFiltrados = anunciosFiltrados.filter(a =>
+        a.procedimentos_servicos?.some(p =>
+          p.toLowerCase().includes(procedimentoBusca.toLowerCase())
+        )
+      );
+    }
+
+    // Contar por faixa de preço
+    const distribuicao = {
+      "$": anunciosFiltrados.filter(a => a.faixa_preco === "$").length,
+      "$$": anunciosFiltrados.filter(a => a.faixa_preco === "$$").length,
+      "$$$": anunciosFiltrados.filter(a => a.faixa_preco === "$$$").length,
+      "$$$$": anunciosFiltrados.filter(a => a.faixa_preco === "$$$$").length,
+      "$$$$$": anunciosFiltrados.filter(a => a.faixa_preco === "$$$$$").length,
+    };
+
+    // Procedimentos mais comuns
+    const procedimentosMap = {};
+    anunciosFiltrados.forEach(anuncio => {
+      anuncio.procedimentos_servicos?.forEach(proc => {
+        procedimentosMap[proc] = (procedimentosMap[proc] || 0) + 1;
+      });
+    });
+
+    const procedimentosComuns = Object.entries(procedimentosMap)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .map(([nome, count]) => ({ nome, count }));
+
+    return {
+      total: anunciosFiltrados.length,
+      distribuicao,
+      procedimentosComuns,
+      porCategoria: categorias
+        .filter(c => c !== "Todas")
+        .map(cat => ({
+          categoria: cat,
+          quantidade: anunciosFiltrados.filter(a => a.categoria === cat).length
+        }))
+        .filter(c => c.quantidade > 0)
+        .sort((a, b) => b.quantidade - a.quantidade)
+    };
+  }, [anuncios, categoriaFiltro, cidadeFiltro, estadoFiltro, procedimentoBusca]);
+
+  const exportarPDF = () => {
+    const dataAtual = new Date().toLocaleDateString('pt-BR');
+    const horaAtual = new Date().toLocaleTimeString('pt-BR');
+    
+    const conteudoHTML = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Relatório de Preços Médios - Mapa da Estética</title>
+        <style>
+          @page { size: A4; margin: 2cm; }
+          body { font-family: Arial, sans-serif; color: #333; line-height: 1.6; }
+          .header { text-align: center; margin-bottom: 30px; border-bottom: 3px solid #F7D426; padding-bottom: 20px; }
+          h1 { color: #2C2C2C; margin: 0; font-size: 28px; }
+          .subtitle { color: #666; font-size: 14px; margin-top: 5px; }
+          .filtros { background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0; }
+          .metric { background: white; border-left: 4px solid #F7D426; padding: 15px; margin: 10px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+          .metric-title { font-weight: bold; color: #2C2C2C; margin-bottom: 5px; }
+          .metric-value { font-size: 32px; font-weight: bold; color: #F7D426; }
+          table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+          th { background: #2C2C2C; color: white; padding: 12px; text-align: left; }
+          td { padding: 10px; border-bottom: 1px solid #ddd; }
+          tr:nth-child(even) { background: #f8f9fa; }
+          .footer { margin-top: 40px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #ddd; padding-top: 20px; }
+          .highlight { background: #FFF9E6; padding: 3px 8px; border-radius: 4px; font-weight: bold; }
+          .chart-bar { background: #F7D426; height: 20px; display: inline-block; margin-right: 10px; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>💰 Relatório de Preços Médios</h1>
+          <p class="subtitle">Mapa da Estética - Clube da Beleza</p>
+          <p class="subtitle">Gerado em: ${dataAtual} às ${horaAtual}</p>
+        </div>
+
+        <div class="filtros">
+          <h3>Filtros Aplicados:</h3>
+          <p><strong>Categoria:</strong> ${categoriaFiltro}</p>
+          ${cidadeFiltro ? `<p><strong>Cidade:</strong> ${cidadeFiltro}</p>` : ''}
+          ${estadoFiltro ? `<p><strong>Estado:</strong> ${estadoFiltro}</p>` : ''}
+          ${procedimentoBusca ? `<p><strong>Procedimento:</strong> ${procedimentoBusca}</p>` : ''}
+        </div>
+        
+        <div class="metric">
+          <div class="metric-title">📊 Total de Anúncios Analisados</div>
+          <div class="metric-value">${estatisticas.total}</div>
+        </div>
+
+        <h2>Distribuição por Faixa de Preço</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Faixa</th>
+              <th>Valor</th>
+              <th>Quantidade</th>
+              <th>Percentual</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>$</strong></td>
+              <td>Até R$ 500</td>
+              <td class="highlight">${estatisticas.distribuicao["$"]}</td>
+              <td>${((estatisticas.distribuicao["$"] / estatisticas.total) * 100).toFixed(1)}%</td>
+            </tr>
+            <tr>
+              <td><strong>$$</strong></td>
+              <td>R$ 500 - R$ 1.000</td>
+              <td class="highlight">${estatisticas.distribuicao["$$"]}</td>
+              <td>${((estatisticas.distribuicao["$$"] / estatisticas.total) * 100).toFixed(1)}%</td>
+            </tr>
+            <tr>
+              <td><strong>$$$</strong></td>
+              <td>R$ 1.000 - R$ 2.000</td>
+              <td class="highlight">${estatisticas.distribuicao["$$$"]}</td>
+              <td>${((estatisticas.distribuicao["$$$"] / estatisticas.total) * 100).toFixed(1)}%</td>
+            </tr>
+            <tr>
+              <td><strong>$$$$</strong></td>
+              <td>R$ 2.000 - R$ 5.000</td>
+              <td class="highlight">${estatisticas.distribuicao["$$$$"]}</td>
+              <td>${((estatisticas.distribuicao["$$$$"] / estatisticas.total) * 100).toFixed(1)}%</td>
+            </tr>
+            <tr>
+              <td><strong>$$$$$</strong></td>
+              <td>Acima de R$ 5.000</td>
+              <td class="highlight">${estatisticas.distribuicao["$$$$$"]}</td>
+              <td>${((estatisticas.distribuicao["$$$$$"] / estatisticas.total) * 100).toFixed(1)}%</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2>Procedimentos Mais Oferecidos</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Procedimento</th>
+              <th>Profissionais</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${estatisticas.procedimentosComuns.map((proc, index) => `
+              <tr>
+                <td><strong>${index + 1}º</strong></td>
+                <td>${proc.nome}</td>
+                <td class="highlight">${proc.count}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+
+        <h2>Distribuição por Categoria</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Categoria</th>
+              <th>Quantidade de Profissionais</th>
+              <th>Percentual</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${estatisticas.porCategoria.map(cat => `
+              <tr>
+                <td><strong>${cat.categoria}</strong></td>
+                <td class="highlight">${cat.quantidade}</td>
+                <td>${((cat.quantidade / estatisticas.total) * 100).toFixed(1)}%</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+
+        <div class="footer">
+          <p><strong>Mapa da Estética - Clube da Beleza</strong></p>
+          <p>CNPJ: 46.792.168/0001-88</p>
+          <p>www.mapadaestetica.com.br | (31) 97259-5643</p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob([conteudoHTML], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Relatorio_Precos_Medios_${new Date().toISOString().split('T')[0]}.html`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    alert('Relatório exportado! Abra o arquivo HTML e use Ctrl+P (ou Cmd+P no Mac) para salvar como PDF.');
+  };
+
   if (!user || user.role !== 'admin') {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Card className="p-12 text-center max-w-md">
           <div className="text-6xl mb-4">🔒</div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">
-            Acesso Restrito
-          </h3>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">Acesso Restrito</h3>
           <p className="text-gray-600 mb-6">
-            Apenas administradores podem acessar esta página
+            Apenas administradores podem acessar relatórios
           </p>
-          <Button
-            onClick={() => navigate(createPageUrl("Inicio"))}
-            className="bg-gradient-to-r from-pink-600 to-rose-600"
-          >
+          <Button onClick={() => navigate(createPageUrl("Inicio"))} className="bg-[#F7D426] text-[#2C2C2C] hover:bg-[#E5C215] border-2 border-[#2C2C2C]">
             Voltar ao Início
           </Button>
         </Card>
@@ -58,327 +288,227 @@ export default function Relatorios() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
       <div className="max-w-7xl mx-auto px-4">
-        <Button
-          variant="ghost"
-          onClick={() => navigate(createPageUrl("Perfil"))}
-          className="mb-6"
-        >
+        <Button variant="ghost" onClick={() => navigate(createPageUrl("Relatorios"))} className="mb-6">
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Voltar
+          Voltar aos Relatórios
         </Button>
 
-        <div className="mb-8">
-          <Badge className="mb-4 bg-[#F7D426] text-[#2C2C2C] font-bold">
-            Admin - Central de Relatórios
-          </Badge>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-            Relatórios do Sistema
-          </h1>
-          <p className="text-gray-600">
-            Análise completa de todos os dados da plataforma
-          </p>
+        <div className="mb-8 flex items-start justify-between">
+          <div>
+            <Badge className="mb-4 bg-[#F7D426] text-[#2C2C2C] font-bold border-2 border-[#2C2C2C]">
+              Admin - Relatório de Preços
+            </Badge>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+              Relatório de Preços Médios
+            </h1>
+            <p className="text-gray-600">
+              Análise completa de preços praticados na plataforma
+            </p>
+          </div>
+          <Button onClick={exportarPDF} className="bg-[#2C2C2C] text-[#F7D426] hover:bg-[#3A3A3A] border-2 border-[#F7D426]">
+            <Download className="w-4 h-4 mr-2" />
+            Exportar PDF
+          </Button>
         </div>
 
-        {/* Tabs principais */}
-        <Tabs defaultValue="preco" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="preco">
-              <DollarSign className="w-4 h-4 mr-2" />
-              Preços Médios
-            </TabsTrigger>
-            <TabsTrigger value="seo">
-              <BarChart3 className="w-4 h-4 mr-2" />
-              SEO & Tráfego
-            </TabsTrigger>
-            <TabsTrigger value="transacoes">
-              <ShoppingCart className="w-4 h-4 mr-2" />
-              Transações
-            </TabsTrigger>
-          </TabsList>
+        {/* Filtros */}
+        <Card className="mb-8 border-2 border-gray-200">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Filter className="w-5 h-5" />
+              Filtros
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-4 gap-4">
+              <div>
+                <Label>Categoria</Label>
+                <Select value={categoriaFiltro} onValueChange={setCategoriaFiltro}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categorias.map(cat => (
+                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-          {/* Aba de Preços Médios */}
-          <TabsContent value="preco">
-            <Card>
-              <CardHeader>
-                <CardTitle>Relatório de Preços Médios</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 mb-4">
-                  Análise de preços praticados pelos profissionais da plataforma
-                </p>
-                <Button onClick={() => window.location.href = '/relatorio-preco-medio'}>
-                  Ver Relatório Completo
+              <div>
+                <Label>Cidade</Label>
+                <Input
+                  value={cidadeFiltro}
+                  onChange={(e) => setCidadeFiltro(e.target.value)}
+                  placeholder="Ex: São Paulo"
+                />
+              </div>
+
+              <div>
+                <Label>Estado (UF)</Label>
+                <Input
+                  value={estadoFiltro}
+                  onChange={(e) => setEstadoFiltro(e.target.value)}
+                  placeholder="Ex: SP"
+                  maxLength={2}
+                />
+              </div>
+
+              <div>
+                <Label>Procedimento</Label>
+                <Input
+                  value={procedimentoBusca}
+                  onChange={(e) => setProcedimentoBusca(e.target.value)}
+                  placeholder="Ex: Botox"
+                />
+              </div>
+            </div>
+
+            {(categoriaFiltro !== "Todas" || cidadeFiltro || estadoFiltro || procedimentoBusca) && (
+              <div className="mt-4 flex gap-2">
+                {categoriaFiltro !== "Todas" && <Badge variant="secondary">Categoria: {categoriaFiltro}</Badge>}
+                {cidadeFiltro && <Badge variant="secondary">Cidade: {cidadeFiltro}</Badge>}
+                {estadoFiltro && <Badge variant="secondary">Estado: {estadoFiltro}</Badge>}
+                {procedimentoBusca && <Badge variant="secondary">Procedimento: {procedimentoBusca}</Badge>}
+                <Button size="sm" variant="ghost" onClick={() => {
+                  setCategoriaFiltro("Todas");
+                  setCidadeFiltro("");
+                  setEstadoFiltro("");
+                  setProcedimentoBusca("");
+                }}>
+                  Limpar Filtros
                 </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
-          {/* Aba de SEO & Tráfego */}
-          <TabsContent value="seo" className="space-y-6">
-            {/* Cards de Métricas */}
-            <div className="grid md:grid-cols-4 gap-6">
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600 mb-1">Visitas Hoje</p>
-                      <p className="text-3xl font-bold text-gray-900">1.234</p>
-                    </div>
-                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                      <Eye className="w-6 h-6 text-blue-600" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600 mb-1">Novos Usuários</p>
-                      <p className="text-3xl font-bold text-green-600">89</p>
-                    </div>
-                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                      <Users className="w-6 h-6 text-green-600" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600 mb-1">Taxa de Conversão</p>
-                      <p className="text-3xl font-bold text-purple-600">12.5%</p>
-                    </div>
-                    <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                      <TrendingUp className="w-6 h-6 text-purple-600" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600 mb-1">Pesquisas</p>
-                      <p className="text-3xl font-bold text-orange-600">567</p>
-                    </div>
-                    <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                      <Search className="w-6 h-6 text-orange-600" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Tabs Secundários: Diário, Mensal, Anual */}
-            <Tabs defaultValue="diario">
-              <TabsList>
-                <TabsTrigger value="diario">Diário</TabsTrigger>
-                <TabsTrigger value="mensal">Mensal</TabsTrigger>
-                <TabsTrigger value="anual">Anual</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="diario" className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Relatório SEO Diário</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                          <p className="text-sm text-gray-600 mb-1">Total de Visualizações</p>
-                          <p className="text-2xl font-bold">1,234</p>
-                          <p className="text-xs text-green-600 mt-1">+15% vs ontem</p>
-                        </div>
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                          <p className="text-sm text-gray-600 mb-1">Páginas Mais Vistas</p>
-                          <p className="text-lg font-semibold">Anúncios</p>
-                          <p className="text-xs text-gray-500 mt-1">456 visualizações</p>
-                        </div>
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                          <p className="text-sm text-gray-600 mb-1">Tempo Médio na Página</p>
-                          <p className="text-2xl font-bold">3:42</p>
-                          <p className="text-xs text-blue-600 mt-1">+8% vs ontem</p>
-                        </div>
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                          <p className="text-sm text-gray-600 mb-1">Taxa de Rejeição</p>
-                          <p className="text-2xl font-bold">24.5%</p>
-                          <p className="text-xs text-red-600 mt-1">-3% vs ontem</p>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="mensal" className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Relatório SEO Mensal</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="grid md:grid-cols-3 gap-4">
-                        <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-4 rounded-lg">
-                          <p className="text-sm text-blue-900 mb-1 font-semibold">Total de Visitas</p>
-                          <p className="text-3xl font-bold text-blue-600">34,567</p>
-                          <p className="text-xs text-blue-700 mt-1">+23% vs mês anterior</p>
-                        </div>
-                        <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-lg">
-                          <p className="text-sm text-green-900 mb-1 font-semibold">Novos Usuários</p>
-                          <p className="text-3xl font-bold text-green-600">2,345</p>
-                          <p className="text-xs text-green-700 mt-1">+18% vs mês anterior</p>
-                        </div>
-                        <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-lg">
-                          <p className="text-sm text-purple-900 mb-1 font-semibold">Conversões</p>
-                          <p className="text-3xl font-bold text-purple-600">456</p>
-                          <p className="text-xs text-purple-700 mt-1">+31% vs mês anterior</p>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="anual" className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Relatório SEO Anual</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div className="bg-gradient-to-br from-yellow-50 to-amber-50 p-6 rounded-lg">
-                          <p className="text-sm text-yellow-900 mb-2 font-semibold">Total de Visitas do Ano</p>
-                          <p className="text-4xl font-bold text-yellow-600">456,789</p>
-                          <p className="text-xs text-yellow-700 mt-2">Crescimento de 145% vs ano anterior</p>
-                        </div>
-                        <div className="bg-gradient-to-br from-pink-50 to-rose-50 p-6 rounded-lg">
-                          <p className="text-sm text-pink-900 mb-2 font-semibold">Receita Total do Ano</p>
-                          <p className="text-4xl font-bold text-pink-600">R$ 287.5K</p>
-                          <p className="text-xs text-pink-700 mt-2">Crescimento de 89% vs ano anterior</p>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
-          </TabsContent>
-
-          {/* Aba de Transações */}
-          <TabsContent value="transacoes" className="space-y-6">
-            {/* Cards de Métricas */}
-            <div className="grid md:grid-cols-4 gap-6">
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600 mb-1">Receita Hoje</p>
-                      <p className="text-3xl font-bold text-green-600">R$ 1.2K</p>
-                    </div>
-                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                      <DollarSign className="w-6 h-6 text-green-600" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600 mb-1">Transações</p>
-                      <p className="text-3xl font-bold text-blue-600">45</p>
-                    </div>
-                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                      <ShoppingCart className="w-6 h-6 text-blue-600" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600 mb-1">Ticket Médio</p>
-                      <p className="text-3xl font-bold text-purple-600">R$ 27</p>
-                    </div>
-                    <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                      <BarChart3 className="w-6 h-6 text-purple-600" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600 mb-1">Pontos Resgatados</p>
-                      <p className="text-3xl font-bold text-orange-600">2.5K</p>
-                    </div>
-                    <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                      <TrendingUp className="w-6 h-6 text-orange-600" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Histórico de Transações */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Últimas Transações</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div>
-                      <p className="font-semibold">Compra de Produto</p>
-                      <p className="text-sm text-gray-600">Beauty Box - Clube da Beleza</p>
-                      <p className="text-xs text-gray-500">user@example.com</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-green-600">R$ 149,90</p>
-                      <p className="text-xs text-gray-500">Hoje, 14:32</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div>
-                      <p className="font-semibold">Upgrade de Plano</p>
-                      <p className="text-sm text-gray-600">Plano OURO</p>
-                      <p className="text-xs text-gray-500">profissional@example.com</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-green-600">R$ 597,00</p>
-                      <p className="text-xs text-gray-500">Hoje, 11:15</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div>
-                      <p className="font-semibold">Resgate de Pontos</p>
-                      <p className="text-sm text-gray-600">Massagem Relaxante 60min</p>
-                      <p className="text-xs text-gray-500">cliente@example.com</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-purple-600">800 pontos</p>
-                      <p className="text-xs text-gray-500">Ontem, 16:45</p>
-                    </div>
-                  </div>
+        {isLoading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#F7D426] mx-auto"></div>
+          </div>
+        ) : (
+          <>
+            {/* Card de Resumo */}
+            <Card className="mb-8 border-2 border-[#F7D426] bg-gradient-to-br from-[#FFF9E6] to-white">
+              <CardContent className="p-8">
+                <div className="text-center">
+                  <h2 className="text-2xl font-bold text-[#2C2C2C] mb-2">Total de Anúncios Analisados</h2>
+                  <p className="text-6xl font-bold text-[#F7D426] mb-4">{estatisticas.total}</p>
+                  <p className="text-gray-600">
+                    Dados coletados de profissionais ativos na plataforma
+                  </p>
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
+
+            {/* Distribuição por Faixa de Preço */}
+            <Card className="mb-8 border-2 border-gray-200">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <DollarSign className="w-6 h-6 text-[#F7D426]" />
+                  Distribuição por Faixa de Preço
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {Object.entries(estatisticas.distribuicao).map(([faixa, quantidade]) => {
+                    const percentual = estatisticas.total > 0 ? (quantidade / estatisticas.total) * 100 : 0;
+                    const labels = {
+                      "$": "Até R$ 500",
+                      "$$": "R$ 500 - R$ 1.000",
+                      "$$$": "R$ 1.000 - R$ 2.000",
+                      "$$$$": "R$ 2.000 - R$ 5.000",
+                      "$$$$$": "Acima de R$ 5.000"
+                    };
+
+                    return (
+                      <div key={faixa}>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-lg text-[#2C2C2C]">{faixa}</span>
+                            <span className="text-sm text-gray-600">{labels[faixa]}</span>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <span className="font-bold text-[#F7D426]">{quantidade} profissionais</span>
+                            <span className="text-sm text-gray-500">{percentual.toFixed(1)}%</span>
+                          </div>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-3">
+                          <div
+                            className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] h-3 rounded-full transition-all"
+                            style={{ width: `${percentual}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Procedimentos Mais Oferecidos */}
+            <Card className="mb-8 border-2 border-gray-200">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="w-6 h-6 text-[#F7D426]" />
+                  Top 10 Procedimentos Mais Oferecidos
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {estatisticas.procedimentosComuns.map((proc, index) => (
+                    <div key={proc.nome} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border-l-4 border-[#F7D426]">
+                      <div className="flex items-center gap-4">
+                        <div className="w-8 h-8 bg-[#F7D426] rounded-full flex items-center justify-center text-[#2C2C2C] font-bold border-2 border-[#2C2C2C]">
+                          {index + 1}
+                        </div>
+                        <span className="font-semibold text-gray-900">{proc.nome}</span>
+                      </div>
+                      <Badge className="bg-[#2C2C2C] text-[#F7D426]">
+                        {proc.count} profissionais
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Distribuição por Categoria */}
+            <Card className="border-2 border-gray-200">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MapPin className="w-6 h-6 text-[#F7D426]" />
+                  Distribuição por Categoria
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {estatisticas.porCategoria.map(cat => {
+                    const percentual = (cat.quantidade / estatisticas.total) * 100;
+                    return (
+                      <div key={cat.categoria} className="bg-gray-50 p-4 rounded-lg border-l-4 border-[#F7D426]">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-semibold text-gray-900">{cat.categoria}</span>
+                          <Badge className="bg-[#F7D426] text-[#2C2C2C] border-2 border-[#2C2C2C]">
+                            {cat.quantidade}
+                          </Badge>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div
+                            className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] h-2 rounded-full"
+                            style={{ width: `${percentual}%` }}
+                          ></div>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">{percentual.toFixed(1)}% do total</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
       </div>
     </div>
   );
