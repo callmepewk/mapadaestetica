@@ -15,6 +15,7 @@ import Anuncios from './pages/Anuncios';
 import AgradecimentoCompra from './pages/AgradecimentoCompra';
 import EditarAnuncio from './pages/EditarAnuncio';
 import RelatorioPrecoMedio from './pages/RelatorioPrecoMedio';
+import LojaPontos from './pages/LojaPontos';
 import Layout from './Layout.jsx';
 
 
@@ -36,6 +37,7 @@ export const PAGES = {
     "AgradecimentoCompra": AgradecimentoCompra,
     "EditarAnuncio": EditarAnuncio,
     "RelatorioPrecoMedio": RelatorioPrecoMedio,
+    "LojaPontos": LojaPontos,
 }
 
 export const pagesConfig = {

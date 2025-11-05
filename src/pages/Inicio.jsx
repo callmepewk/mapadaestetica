@@ -149,8 +149,11 @@ export default function Inicio() {
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 leading-tight px-2">
                 Explore a sua cidade!
               </h1>
-              <p className="text-lg sm:text-xl md:text-2xl mb-8 sm:mb-12 text-white/90 max-w-2xl mx-auto px-4">
+              <p className="text-lg sm:text-xl md:text-2xl mb-2 text-white/90 max-w-2xl mx-auto px-4">
                 Os melhores serviços e especialistas você encontra aqui
+              </p>
+              <p className="text-sm sm:text-base mb-8 sm:mb-12 text-[#F7D426] font-semibold max-w-2xl mx-auto px-4">
+                ✨ Ache um profissional especializado e verificado com apenas um clique
               </p>
 
               <div className="max-w-4xl mx-auto bg-white rounded-xl sm:rounded-2xl shadow-2xl p-4 sm:p-6 md:p-8">
@@ -1222,7 +1225,7 @@ export default function Inicio() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link to={createPageUrl("CadastrarAnuncio")}>
-                  <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-100 font-bold shadow-xl">
+                  <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-100 font-bold shadow-xl w-full sm:w-auto">
                     Começar Grátis Agora
                     <ArrowRight className="w-5 h-5 ml-2" />
                   </Button>
@@ -1232,7 +1235,7 @@ export default function Inicio() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white/10">
+                  <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white/10 w-full sm:w-auto font-semibold">
                     Falar com Especialista
                     <MessageCircle className="w-5 h-5 ml-2" />
                   </Button>

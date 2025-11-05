@@ -196,6 +196,11 @@ export default function Produtos() {
     window.open(url, '_blank');
   };
 
+  // Redirecionar menções de pontos para a loja
+  const redirectToLojaPontos = () => {
+    navigate('/loja-pontos');
+  };
+
   // Se não escolheu o tipo de busca ainda, mostra a seleção
   if (tipoBusca === null) {
     return (
@@ -317,6 +322,12 @@ export default function Produtos() {
                     Ganhe pontos em cada compra e troque por produtos exclusivos ou descontos especiais!
                   </p>
                 </div>
+                <Button
+                  onClick={redirectToLojaPontos}
+                  className="bg-[#2C2C2C] hover:bg-[#3A3A3A] text-[#F7D426] font-bold"
+                >
+                  Ver Loja de Pontos
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -396,6 +407,13 @@ export default function Produtos() {
                     </div>
                   </div>
                 </div>
+                <Button
+                  onClick={redirectToLojaPontos}
+                  size="lg"
+                  className="bg-[#2C2C2C] hover:bg-[#3A3A3A] text-[#F7D426] font-bold"
+                >
+                  Ver Loja de Pontos
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -586,7 +604,7 @@ export default function Produtos() {
 
         {/* Info Cards */}
         <div className="grid md:grid-cols-3 gap-6 mt-12">
-          <Card className="border-none shadow-lg">
+          <Card className="border-none shadow-lg cursor-pointer hover:shadow-xl transition-all" onClick={redirectToLojaPontos}>
             <CardContent className="p-6 text-center">
               <div className="w-12 h-12 bg-[#F7D426] rounded-full flex items-center justify-center mx-auto mb-4">
                 <Gift className="w-6 h-6 text-[#2C2C2C]" />
@@ -598,7 +616,7 @@ export default function Produtos() {
             </CardContent>
           </Card>
 
-          <Card className="border-none shadow-lg">
+          <Card className="border-none shadow-lg cursor-pointer hover:shadow-xl transition-all" onClick={redirectToLojaPontos}>
             <CardContent className="p-6 text-center">
               <div className="w-12 h-12 bg-[#F7D426] rounded-full flex items-center justify-center mx-auto mb-4">
                 <Award className="w-6 h-6 text-[#2C2C2C]" />

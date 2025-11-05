@@ -16,7 +16,8 @@ import {
   X,
   LogOut,
   MapPin,
-  TrendingUp // Added for admin reports
+  TrendingUp, // Added for admin reports
+  Star // Added for points store
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -99,7 +100,6 @@ export default function Layout({ children }) {
     { title: "Início", url: createPageUrl("Inicio"), icon: Home },
     { title: "Anúncios", url: createPageUrl("Anuncios"), icon: Search },
     { title: "Produtos", url: createPageUrl("Produtos"), icon: CreditCard },
-    // Planos apenas para profissionais
     ...(!isPaciente ? [{ title: "Planos", url: createPageUrl("Planos"), icon: CreditCard }] : []),
     { title: "Blog", url: createPageUrl("Blog"), icon: Newspaper },
     { title: "Sobre Nós", url: createPageUrl("SobreNos"), icon: Info },
@@ -237,6 +237,17 @@ export default function Layout({ children }) {
             <div className="flex items-center gap-2 sm:gap-3">
               {isAuthenticated ? (
                 <>
+                  {/* Contador de Pontos */}
+                  {(isPaciente || isProfissional) && (
+                    <Link to={createPageUrl("LojaPontos")}>
+                      <Button variant="outline" className="flex items-center gap-2 border-[#F7D426] text-[#F7D426] hover:bg-[#FFF9E6]">
+                        <Star className="w-4 h-4" />
+                        <span className="font-bold hidden sm:inline">{user?.pontos_acumulados || 0}</span>
+                        <span className="text-xs hidden md:inline">pts</span>
+                      </Button>
+                    </Link>
+                  )}
+
                   {isProfissional && (
                     <Link to={createPageUrl("CadastrarAnuncio")} className="hidden md:block">
                       <Button className="bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold shadow-lg hover:shadow-xl transition-all duration-200 text-sm border-2 border-[#2C2C2C]">
@@ -273,6 +284,12 @@ export default function Layout({ children }) {
                         <User className="w-4 h-4 mr-2" />
                         Meu Perfil
                       </DropdownMenuItem>
+                      {(isPaciente || isProfissional) && (
+                        <DropdownMenuItem onClick={() => navigate(createPageUrl("LojaPontos"))}>
+                          <Star className="w-4 h-4 mr-2" />
+                          Loja de Pontos ({user?.pontos_acumulados || 0})
+                        </DropdownMenuItem>
+                      )}
                       {isProfissional && (
                         <DropdownMenuItem onClick={() => navigate(createPageUrl("MeuPlano"))}>
                           <CreditCard className="w-4 h-4 mr-2" />
@@ -317,6 +334,18 @@ export default function Layout({ children }) {
           {/* Mobile Navigation */}
           {mobileMenuOpen && (
             <nav className="lg:hidden mt-4 pb-4 space-y-2 border-t pt-4">
+              {/* Loja de Pontos no Mobile */}
+              {isAuthenticated && (isPaciente || isProfissional) && (
+                <Link
+                  to={createPageUrl("LojaPontos")}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[#FFF9E6] text-[#2C2C2C] border-l-4 border-[#F7D426] font-medium"
+                >
+                  <Star className="w-5 h-5" />
+                  <span>Loja de Pontos ({user?.pontos_acumulados || 0})</span>
+                </Link>
+              )}
+
               {navigationItems.map((item) => (
                 <Link
                   key={item.title}
