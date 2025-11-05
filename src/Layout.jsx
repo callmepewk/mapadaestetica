@@ -3,14 +3,14 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
-import { 
-  Home, 
-  Search, 
-  CreditCard, 
-  Newspaper, 
-  Info, 
-  MessageCircle, 
-  User, 
+import {
+  Home,
+  Search,
+  CreditCard,
+  Newspaper,
+  Info,
+  MessageCircle,
+  User,
   PlusCircle,
   Menu,
   X,
@@ -37,7 +37,8 @@ export default function Layout({ children }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [mostrarOnboarding, setMostrarOnboarding] = useState(false); // Added state for OnboardingModal
+  const [mostrarOnboarding, setMostrarOnboarding] = useState(false);
+  const [testeExpirado, setTesteExpirado] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -47,6 +48,19 @@ export default function Layout({ children }) {
         if (authenticated) {
           const userData = await base44.auth.me();
           setUser(userData);
+
+          // Verificar se é tester e se expirou
+          if (userData.role === 'tester' && userData.data_expiracao_teste) {
+            const dataExpiracao = new Date(userData.data_expiracao_teste);
+            const hoje = new Date();
+            // Normalize dates to compare only the date part, ignoring time
+            hoje.setHours(0, 0, 0, 0);
+            dataExpiracao.setHours(0, 0, 0, 0);
+
+            if (hoje > dataExpiracao) {
+              setTesteExpirado(true);
+            }
+          }
         }
       } catch (error) {
         setIsAuthenticated(false);
@@ -128,12 +142,34 @@ export default function Layout({ children }) {
       {/* Passed user and onCompletarCadastro to Chatbot */}
       <Chatbot user={user} onCompletarCadastro={handleCompletarCadastro} />
 
+      {/* Barra de Alerta - Teste Expirado */}
+      {testeExpirado && (
+        <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white py-3 px-4 sticky top-0 z-50 shadow-md">
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2 flex-1 text-center sm:text-left">
+              <span className="text-2xl">⏰</span>
+              <div>
+                <p className="text-sm font-bold">Seu período de teste expirou!</p>
+                <p className="text-xs">Faça upgrade agora e continue aproveitando todos os recursos ilimitados</p>
+              </div>
+            </div>
+            <Button
+              onClick={() => navigate(createPageUrl("Planos"))}
+              size="sm"
+              className="bg-white hover:bg-gray-100 text-red-600 font-bold flex-shrink-0 w-full sm:w-auto"
+            >
+              Ver Planos
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Barra de Alerta - Cadastro Incompleto */}
-      {cadastroIncompleto && (
+      {cadastroIncompleto && !testeExpirado && (
         <div className="bg-gradient-to-r from-yellow-400 to-amber-500 text-[#2C2C2C] py-2 px-4 sticky top-0 z-50 shadow-md">
           <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2 flex-1 text-center sm:text-left">
-              <span className="text-2xl flex-shrink-0">⚠️</span>
+              <span className="text-2xl">⚠️</span>
               <p className="text-sm font-semibold">
                 Complete seu cadastro para ter acesso total à plataforma!
               </p>
@@ -168,8 +204,8 @@ export default function Layout({ children }) {
           <div className="flex items-center justify-between gap-4">
             {/* Logo */}
             <Link to={createPageUrl("Inicio")} className="flex items-center gap-2 sm:gap-3 group flex-shrink-0">
-              <img 
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe2/2274d89a4_logo_v1.png" 
+              <img
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe2/2274d89a4_logo_v1.png"
                 alt="Mapa da Estética"
                 className="h-12 sm:h-14 md:h-16 w-auto object-contain transform group-hover:scale-105 transition-transform"
                 onError={(e) => {
@@ -319,8 +355,8 @@ export default function Layout({ children }) {
         <div className="max-w-7xl mx-auto px-4 py-8 sm:py-12">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
             <div>
-              <img 
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe2/2274d89a4_logo_v1.png" 
+              <img
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe2/2274d89a4_logo_v1.png"
                 alt="Mapa da Estética"
                 className="h-12 w-auto object-contain mb-4 brightness-0 invert"
               />
@@ -371,10 +407,10 @@ export default function Layout({ children }) {
           </div>
         </div>
       </footer>
-      
+
       {/* Modal de Onboarding - Controlado por Layout */}
-      <OnboardingModal 
-        open={mostrarOnboarding} 
+      <OnboardingModal
+        open={mostrarOnboarding}
         onClose={handleOnboardingClose}
       />
     </div>

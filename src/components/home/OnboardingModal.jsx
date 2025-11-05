@@ -19,8 +19,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { User, Briefcase, Check, X } from "lucide-react";
+import { User, Briefcase, Check, X, TestTube2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
 
 const categorias = [
   "Estética Facial", "Estética Corporal", "Estética Capilar e Tricologia",
@@ -50,6 +51,12 @@ export default function OnboardingModal({ open, onComplete, onClose }) {
   });
   const [loading, setLoading] = useState(false);
 
+  const handleGoogleLogin = () => {
+    // Redirecionar para login com Google
+    const redirectUrl = window.location.origin + window.location.pathname;
+    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=YOUR_CLIENT_ID&redirect_uri=${encodeURIComponent(redirectUrl)}&response_type=token&scope=profile%20email`;
+  };
+
   const handleTipoUsuarioSubmit = () => {
     if (!tipoUsuario) return;
     setEtapa(2);
@@ -61,7 +68,7 @@ export default function OnboardingModal({ open, onComplete, onClose }) {
       return;
     }
     
-    if (tipoUsuario === "paciente") {
+    if (tipoUsuario === "paciente" || tipoUsuario === "tester") {
       salvarDados();
     } else {
       setEtapa(3);
@@ -75,7 +82,10 @@ export default function OnboardingModal({ open, onComplete, onClose }) {
         ...dadosBasicos,
         tipo_usuario: tipoUsuario,
         cadastro_completo: true,
-        ...(tipoUsuario === "profissional" ? dadosProfissional : {})
+        ...(tipoUsuario === "profissional" || tipoUsuario === "tester" ? dadosProfissional : {}),
+        ...(tipoUsuario === "tester" ? {
+          data_expiracao_teste: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+        } : {})
       };
 
       await base44.auth.updateMe(dados);
@@ -101,10 +111,15 @@ export default function OnboardingModal({ open, onComplete, onClose }) {
         onClose();
       }
     }}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto" onPointerDownOutside={(e) => {
+        // Permitir fechar clicando fora
+        if (onClose) {
+          onClose();
+        }
+      }}>
         <button
           onClick={handleClose}
-          className="absolute top-4 right-4 w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors"
+          className="absolute top-4 right-4 w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors z-10"
         >
           <X className="w-4 h-4" />
         </button>
@@ -127,12 +142,41 @@ export default function OnboardingModal({ open, onComplete, onClose }) {
               className="space-y-6 py-4"
             >
               <div className="text-center">
-                <h3 className="text-xl font-bold mb-2">Você é um paciente ou profissional?</h3>
+                <h3 className="text-xl font-bold mb-2">Você é um paciente, profissional ou quer testar?</h3>
                 <p className="text-sm text-gray-600">Isso nos ajuda a personalizar sua experiência</p>
               </div>
 
+              {/* Botão de Login com Google */}
+              <div className="mb-6">
+                <Button
+                  onClick={handleGoogleLogin}
+                  variant="outline"
+                  className="w-full h-12 border-2 hover:border-[#F7D426] hover:bg-[#FFF9E6]"
+                >
+                  <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                  </svg>
+                  Continuar com Google
+                </Button>
+                <p className="text-xs text-center text-gray-500 mt-2">
+                  Seus dados serão preenchidos automaticamente
+                </p>
+              </div>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white text-gray-500">ou continue manualmente</span>
+                </div>
+              </div>
+
               <RadioGroup value={tipoUsuario} onValueChange={setTipoUsuario}>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <label
                     className={`relative cursor-pointer rounded-xl border-2 p-6 hover:border-pink-500 transition-colors ${
                       tipoUsuario === "paciente" ? "border-pink-500 bg-pink-50" : "border-gray-200"
@@ -180,8 +224,49 @@ export default function OnboardingModal({ open, onComplete, onClose }) {
                       </div>
                     )}
                   </label>
+
+                  <label
+                    className={`relative cursor-pointer rounded-xl border-2 p-6 hover:border-[#F7D426] transition-colors ${
+                      tipoUsuario === "tester" ? "border-[#F7D426] bg-[#FFF9E6]" : "border-gray-200"
+                    }`}
+                  >
+                    <RadioGroupItem value="tester" id="tester" className="sr-only" />
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="w-16 h-16 rounded-full bg-[#FFF9E6] flex items-center justify-center border-2 border-[#F7D426]">
+                        <TestTube2 className="w-8 h-8 text-[#F7D426]" />
+                      </div>
+                      <div className="text-center">
+                        <p className="font-bold text-lg">Teste Grátis</p>
+                        <p className="text-xs text-gray-600">7 dias completos</p>
+                        <Badge className="mt-1 bg-[#F7D426] text-[#2C2C2C] text-xs">
+                          Tudo Ilimitado!
+                        </Badge>
+                      </div>
+                    </div>
+                    {tipoUsuario === "tester" && (
+                      <div className="absolute top-2 right-2">
+                        <div className="w-6 h-6 rounded-full bg-[#F7D426] flex items-center justify-center">
+                          <Check className="w-4 h-4 text-[#2C2C2C]" />
+                        </div>
+                      </div>
+                    )}
+                  </label>
                 </div>
               </RadioGroup>
+
+              {tipoUsuario === "tester" && (
+                <div className="bg-gradient-to-r from-[#FFF9E6] to-[#FFE066] p-4 rounded-lg border-2 border-[#F7D426]">
+                  <p className="text-sm font-medium text-[#2C2C2C] mb-2">
+                    ✨ Teste Grátis por 7 Dias:
+                  </p>
+                  <ul className="text-xs text-[#2C2C2C] space-y-1 list-disc list-inside">
+                    <li>Anúncios ilimitados</li>
+                    <li>Tags e especialidades ilimitadas</li>
+                    <li>Acesso a todas as funcionalidades</li>
+                    <li>Sem necessidade de cartão de crédito</li>
+                  </ul>
+                </div>
+              )}
 
               <Button
                 onClick={handleTipoUsuarioSubmit}
@@ -275,14 +360,14 @@ export default function OnboardingModal({ open, onComplete, onClose }) {
                   disabled={loading}
                   className="flex-1 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
                 >
-                  {tipoUsuario === "paciente" ? "Finalizar" : "Continuar"}
+                  {tipoUsuario === "paciente" || tipoUsuario === "tester" ? "Finalizar" : "Continuar"}
                 </Button>
               </div>
             </motion.div>
           )}
 
-          {/* Etapa 3: Dados Profissionais (apenas para profissionais) */}
-          {etapa === 3 && tipoUsuario === "profissional" && (
+          {/* Etapa 3: Dados Profissionais (apenas para profissionais e testers) */}
+          {etapa === 3 && (tipoUsuario === "profissional" || tipoUsuario === "tester") && (
             <motion.div
               key="etapa3"
               initial={{ opacity: 0, x: 20 }}

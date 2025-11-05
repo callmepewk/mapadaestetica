@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,7 +9,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function Chatbot() {
+export default function Chatbot({ user, onCompletarCadastro }) {
   const [aberto, setAberto] = useState(false);
   const [mensagens, setMensagens] = useState([]);
   const [inputMensagem, setInputMensagem] = useState("");
@@ -18,6 +17,7 @@ export default function Chatbot() {
   const [tipoUsuario, setTipoUsuario] = useState(null);
   const [mostrarTooltip, setMostrarTooltip] = useState(false);
   const messagesEndRef = useRef(null);
+  const chatRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -27,20 +27,63 @@ export default function Chatbot() {
     scrollToBottom();
   }, [mensagens]);
 
+  // Fechar ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (aberto && chatRef.current && !chatRef.current.contains(event.target)) {
+        // Verificar se não clicou no botão de abrir
+        const botaoAbrir = document.getElementById('chatbot-button');
+        if (botaoAbrir && !botaoAbrir.contains(event.target)) {
+          setAberto(false);
+        }
+      }
+    };
+
+    if (aberto) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [aberto]);
+
   useEffect(() => {
     if (aberto && mensagens.length === 0) {
-      setMensagens([
-        {
-          tipo: "bot",
-          conteudo: "Olá! Sou o Dr. Beleza 🩺✨, seu assistente virtual!\n\nPara que eu possa te ajudar melhor, você é:",
-          opcoes: [
-            { texto: "👤 Paciente/Cliente", valor: "paciente" },
-            { texto: "💼 Profissional da Estética", valor: "profissional" }
-          ]
-        }
-      ]);
+      // Verificar se usuário completou cadastro
+      if (!user || !user.cadastro_completo) {
+        setMensagens([
+          {
+            tipo: "bot",
+            conteudo: "Olá! Sou o Dr. Beleza 🩺✨, seu assistente virtual!\n\nPara começar, preciso que você complete seu cadastro. É rápido e fácil!",
+            opcoes: [
+              { texto: "✅ Completar Cadastro", valor: "completar_cadastro" }
+            ]
+          }
+        ]);
+      } else {
+        setMensagens([
+          {
+            tipo: "bot",
+            conteudo: "Olá! Sou o Dr. Beleza 🩺✨, seu assistente virtual!\n\nPara que eu possa te ajudar melhor, você é:",
+            opcoes: [
+              { texto: "👤 Paciente/Cliente", valor: "paciente" },
+              { texto: "💼 Profissional da Estética", valor: "profissional" }
+            ]
+          }
+        ]);
+      }
     }
-  }, [aberto, mensagens.length]);
+  }, [aberto, mensagens.length, user]);
+
+  const handleOpcaoInicial = (opcao) => {
+    if (opcao.valor === "completar_cadastro") {
+      setAberto(false);
+      onCompletarCadastro();
+      return;
+    }
+    handleEscolhaTipo(opcao.valor);
+  };
 
   const handleEscolhaTipo = (tipo) => {
     setTipoUsuario(tipo);
@@ -123,7 +166,7 @@ export default function Chatbot() {
           resposta = "Acesse 'Meu Perfil' para:\n\n• Ver seus anúncios ativos\n• Editar informações\n• Ver estatísticas\n• Gerenciar contatos\n\nVocê já criou seu primeiro anúncio?";
           break;
         case "planos":
-          resposta = "Temos 4 planos incríveis:\n\n🆓 FREE - Comece grátis\n⭐ BÁSICO - R$ 99/mês\n💎 AVANÇADO - R$ 297/mês (Mais Popular!)\n👑 PREMIUM - Consulte\n\nQuer saber mais sobre algum plano específico?";
+          resposta = "Temos 5 planos incríveis:\n\n🥉 COBRE - Grátis\n🥈 PRATA - R$ 99/mês\n🥇 OURO - R$ 197/mês (Mais Popular!)\n💎 DIAMANTE - R$ 297/mês\n👑 PLATINA - Sob Consulta\n\nQuer saber mais sobre algum plano específico?";
           break;
         case "marketing":
           resposta = "Oferecemos:\n\n• Criação de Google Negócios\n• Geração de imagens profissionais\n• Otimização SEO\n• Destaque nos resultados\n\nQual serviço te interessa?";
@@ -159,9 +202,10 @@ export default function Chatbot() {
 
   return (
     <>
-      {/* Botão Flutuante com imagem do Dr. Beleza - MAIOR */}
+      {/* Botão Flutuante - COR AMARELA */}
       <AnimatePresence>
         <div 
+          id="chatbot-button"
           className="fixed bottom-6 right-6 z-50"
           onMouseEnter={() => setMostrarTooltip(true)}
           onMouseLeave={() => setMostrarTooltip(false)}
@@ -176,14 +220,13 @@ export default function Chatbot() {
                 transition={{ type: "spring", damping: 20, stiffness: 300 }}
                 className="absolute right-24 bottom-0 mb-2"
               >
-                <div className="relative bg-white rounded-2xl shadow-2xl p-4 max-w-xs border-2 border-blue-200">
-                  {/* Seta da nuvem */}
+                <div className="relative bg-white rounded-2xl shadow-2xl p-4 max-w-xs border-2 border-[#F7D426]">
                   <div className="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2">
-                    <div className="w-4 h-4 bg-white border-r-2 border-t-2 border-blue-200 rotate-45"></div>
+                    <div className="w-4 h-4 bg-white border-r-2 border-t-2 border-[#F7D426] rotate-45"></div>
                   </div>
                   
                   <div className="flex items-start gap-3">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#F7D426] to-[#FFE066] flex items-center justify-center flex-shrink-0">
                       <img
                         src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/acc7e047d_drbeleza.png"
                         alt="Dr. Beleza"
@@ -209,17 +252,17 @@ export default function Chatbot() {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => setAberto(!aberto)}
-            className="relative w-20 h-20 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform overflow-hidden"
+            className="relative w-20 h-20 bg-gradient-to-r from-[#F7D426] to-[#FFE066] rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform overflow-hidden border-2 border-[#2C2C2C]"
           >
-            {/* Bolinha de Online */}
+            {/* Bolinha de Online - COR AMARELA */}
             <motion.div
               animate={{ scale: [1, 1.2, 1] }}
               transition={{ duration: 2, repeat: Infinity }}
-              className="absolute top-1 right-1 w-5 h-5 bg-green-500 rounded-full border-4 border-white shadow-lg"
+              className="absolute top-1 right-1 w-5 h-5 bg-[#F7D426] rounded-full border-4 border-white shadow-lg"
             ></motion.div>
 
             {aberto ? (
-              <X className="w-8 h-8 text-white" />
+              <X className="w-8 h-8 text-[#2C2C2C]" />
             ) : (
               <img
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/acc7e047d_drbeleza.png"
@@ -227,7 +270,7 @@ export default function Chatbot() {
                 className="w-full h-full object-cover"
                 onError={(e) => {
                   e.target.style.display = 'none';
-                  e.target.parentElement.innerHTML = '<svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"></path><path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"></path></svg>';
+                  e.target.parentElement.innerHTML = '<svg className="w-8 h-8 text-[#2C2C2C]" fill="currentColor" viewBox="0 0 20 20"><path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"></path><path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"></path></svg>';
                 }}
               />
             )}
@@ -239,15 +282,16 @@ export default function Chatbot() {
       <AnimatePresence>
         {aberto && (
           <motion.div
+            ref={chatRef}
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-24 right-6 z-50 w-96 max-w-[calc(100vw-3rem)] shadow-2xl rounded-2xl overflow-hidden"
+            className="fixed bottom-32 right-6 z-50 w-96 max-w-[calc(100vw-3rem)] shadow-2xl rounded-2xl overflow-hidden"
           >
             <Card className="border-none overflow-hidden">
-              {/* Header com cor do Dr. Beleza */}
-              <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-4 text-white">
+              {/* Header - COR AMARELA */}
+              <div className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] p-4 text-[#2C2C2C]">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center overflow-hidden">
                     <img
@@ -262,7 +306,7 @@ export default function Chatbot() {
                   </div>
                   <div>
                     <h3 className="font-bold">Dr. Beleza</h3>
-                    <p className="text-xs text-white/90">Seu assistente virtual</p>
+                    <p className="text-xs text-[#2C2C2C]/80">Seu assistente virtual</p>
                   </div>
                 </div>
               </div>
@@ -273,7 +317,7 @@ export default function Chatbot() {
                   <div key={index} className={`flex ${msg.tipo === "usuario" ? "justify-end" : "justify-start"}`}>
                     <div className={`max-w-[80%] rounded-2xl p-3 ${
                       msg.tipo === "usuario" 
-                        ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-br-none" 
+                        ? "bg-gradient-to-r from-[#F7D426] to-[#FFE066] text-[#2C2C2C] rounded-br-none" 
                         : "bg-white shadow-md rounded-bl-none"
                     }`}>
                       <p className="text-sm whitespace-pre-line">{msg.conteudo}</p>
@@ -283,8 +327,8 @@ export default function Chatbot() {
                           {msg.opcoes.map((opcao, i) => (
                             <button
                               key={i}
-                              onClick={() => !tipoUsuario ? handleEscolhaTipo(opcao.valor) : handleOpcao(opcao)}
-                              className="w-full text-left px-3 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors text-sm font-medium text-blue-900"
+                              onClick={() => !tipoUsuario && !user?.cadastro_completo ? handleOpcaoInicial(opcao) : !tipoUsuario ? handleEscolhaTipo(opcao.valor) : handleOpcao(opcao)}
+                              className="w-full text-left px-3 py-2 bg-[#FFF9E6] hover:bg-[#F7D426] rounded-lg transition-colors text-sm font-medium text-[#2C2C2C]"
                             >
                               {opcao.texto}
                             </button>
@@ -311,7 +355,7 @@ export default function Chatbot() {
               </div>
 
               {/* Input */}
-              {tipoUsuario && (
+              {tipoUsuario && user?.cadastro_completo && (
                 <div className="p-4 border-t bg-white">
                   <form onSubmit={handleEnviarMensagem} className="flex gap-2">
                     <Input
@@ -325,7 +369,7 @@ export default function Chatbot() {
                       type="submit"
                       size="icon"
                       disabled={!inputMensagem.trim() || loading}
-                      className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600"
+                      className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] hover:from-[#E5C215] hover:to-[#F7D426] text-[#2C2C2C]"
                     >
                       <Send className="w-4 h-4" />
                     </Button>
