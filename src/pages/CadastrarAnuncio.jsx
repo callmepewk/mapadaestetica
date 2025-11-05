@@ -41,7 +41,7 @@ import {
   Shield,
   FileText,
   MessageCircle,
-  MapPin // New import
+  MapPin
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -94,6 +94,7 @@ export default function CadastrarAnuncio() {
     categoria: "",
     subcategoria: "",
     faixa_preco: "",
+    status_funcionamento: "", // New field
     profissional: "",
     telefone: "",
     whatsapp: "",
@@ -106,7 +107,7 @@ export default function CadastrarAnuncio() {
     procedimentos_servicos: [],
     tags: [],
     imagem_principal: "",
-    logo: "", // New field
+    logo: "",
     imagens_galeria: [],
     amenidades: {
       estacionamento: false,
@@ -121,7 +122,7 @@ export default function CadastrarAnuncio() {
 
   // Estados de upload de imagens
   const [uploadingImagemPrincipal, setUploadingImagemPrincipal] = useState(false);
-  const [uploadingLogo, setUploadingLogo] = useState(false); // New state
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingGaleria, setUploadingGaleria] = useState(false);
 
   // Estados de verificação de autoridade
@@ -612,7 +613,7 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
         curtidas: 0,
         profissional_verificado: false,
         imagem_principal: formData.imagem_principal,
-        logo: formData.logo, // Include in payload
+        logo: formData.logo,
         imagens_galeria: formData.imagens_galeria,
         amenidades: formData.amenidades,
         verificacao_autoridade: {
@@ -823,6 +824,48 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+
+              {/* NEW FIELDS */}
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Status de Funcionamento</Label>
+                  <Select 
+                    value={formData.status_funcionamento || "N/D"} 
+                    onValueChange={(value) => handleInputChange("status_funcionamento", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="N/D">Não Informado</SelectItem>
+                      <SelectItem value="Aberto Agora">Aberto Agora</SelectItem>
+                      <SelectItem value="Fechado">Fechado</SelectItem>
+                      <SelectItem value="Sempre Aberto">Sempre Aberto (24h)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label>Horário de Funcionamento</Label>
+                  <Input
+                    value={formData.horario_funcionamento}
+                    onChange={(e) => handleInputChange("horario_funcionamento", e.target.value)}
+                    placeholder="Ex: Seg a Sex: 9h às 18h"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label>Palavras-chave / Hashtags</Label>
+                <p className="text-xs text-gray-500 mb-2">
+                  Adicione palavras-chave para melhorar a busca do seu anúncio (ex: botox, harmonização)
+                </p>
+                <Input
+                  value={formData.tags?.join(", ") || ""}
+                  onChange={(e) => handleInputChange("tags", e.target.value.split(",").map(t => t.trim()).filter(Boolean))}
+                  placeholder="Ex: botox, harmonização, preenchimento"
+                />
               </div>
             </CardContent>
           </Card>
@@ -1179,15 +1222,6 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
                   value={formData.endereco}
                   onChange={(e) => handleInputChange("endereco", e.target.value)}
                   placeholder="Rua, número, bairro"
-                />
-              </div>
-
-              <div>
-                <Label>Horário de Funcionamento</Label>
-                <Input
-                  value={formData.horario_funcionamento}
-                  onChange={(e) => handleInputChange("horario_funcionamento", e.target.value)}
-                  placeholder="Ex: Seg a Sex: 9h às 18h | Sáb: 9h às 13h"
                 />
               </div>
             </CardContent>

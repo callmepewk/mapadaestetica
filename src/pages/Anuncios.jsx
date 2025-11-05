@@ -55,6 +55,13 @@ const tiposAnuncio = [
   { valor: "troca_aparelho", label: "♻️ Troca de Aparelho" }
 ];
 
+const statusFuncionamento = [
+  { valor: "Aberto Agora", label: "🟢 Aberto Agora" },
+  { valor: "Fechado", label: "🔴 Fechado" },
+  { valor: "Sempre Aberto", label: "🔵 Sempre Aberto (24h)" },
+  { valor: "N/D", label: "⚪ Não Informado" }
+];
+
 export default function Anuncios() {
   const [busca, setBusca] = useState("");
   const [cidadeFiltro, setCidadeFiltro] = useState("");
@@ -68,6 +75,7 @@ export default function Anuncios() {
   const [ordenacao, setOrdenacao] = useState("mais_recentes");
   const [filtroFaixaPreco, setFiltroFaixaPreco] = useState("");
   const [filtroTipoAnuncio, setFiltroTipoAnuncio] = useState("");
+  const [filtroStatusFuncionamento, setFiltroStatusFuncionamento] = useState("");
   const [mostrarSeletorProcedimentos, setMostrarSeletorProcedimentos] = useState(false);
 
   useEffect(() => {
@@ -80,6 +88,8 @@ export default function Anuncios() {
     const ordem = urlParams.get('ordem');
     const faixaPreco = urlParams.get('faixaPreco');
     const tipoAnuncio = urlParams.get('tipoAnuncio');
+    const statusFuncionamentoParam = urlParams.get('statusFuncionamento');
+
 
     if (cidade) setCidadeFiltro(cidade);
     if (estado) setEstadoFiltro(estado);
@@ -89,6 +99,7 @@ export default function Anuncios() {
     if (ordem) setOrdenacao(ordem);
     if (faixaPreco) setFiltroFaixaPreco(faixaPreco);
     if (tipoAnuncio) setFiltroTipoAnuncio(tipoAnuncio);
+    if (statusFuncionamentoParam) setFiltroStatusFuncionamento(statusFuncionamentoParam);
   }, []);
 
   const usarMinhaLocalizacao = async () => {
@@ -186,6 +197,7 @@ export default function Anuncios() {
           anuncio.titulo?.toLowerCase().includes(busca.toLowerCase()) ||
           anuncio.profissional?.toLowerCase().includes(busca.toLowerCase()) ||
           anuncio.descricao?.toLowerCase().includes(busca.toLowerCase()) ||
+          anuncio.horario_funcionamento?.toLowerCase().includes(busca.toLowerCase()) ||
           anuncio.procedimentos_servicos?.some(p => 
             p.toLowerCase().includes(busca.toLowerCase())
           ) ||
@@ -201,8 +213,10 @@ export default function Anuncios() {
 
         const matchFaixaPreco = !filtroFaixaPreco || anuncio.faixa_preco === filtroFaixaPreco;
         const matchTipoAnuncio = !filtroTipoAnuncio || anuncio.tipo_anuncio === filtroTipoAnuncio;
+        const matchStatusFuncionamento = !filtroStatusFuncionamento || anuncio.status_funcionamento === filtroStatusFuncionamento;
 
-        return matchCidade && matchEstado && matchProcedimento && matchTag && matchBusca && matchFaixaPreco && matchTipoAnuncio;
+
+        return matchCidade && matchEstado && matchProcedimento && matchTag && matchBusca && matchFaixaPreco && matchTipoAnuncio && matchStatusFuncionamento;
       })
       .sort((a, b) => {
         const planoA = planoOrdem[a.plano] || 0;
@@ -212,7 +226,7 @@ export default function Anuncios() {
         }
         return new Date(b.created_date) - new Date(a.created_date);
       });
-  }, [fetchedAnuncios, busca, procedimentoFiltro, tagFiltro, cidadeFiltro, estadoFiltro, filtroFaixaPreco, filtroTipoAnuncio]);
+  }, [fetchedAnuncios, busca, procedimentoFiltro, tagFiltro, cidadeFiltro, estadoFiltro, filtroFaixaPreco, filtroTipoAnuncio, filtroStatusFuncionamento]);
 
   const totalPaginas = Math.ceil(anuncios.length / ITEMS_PER_PAGE);
   const anunciosPaginados = anuncios.slice(
@@ -234,6 +248,7 @@ export default function Anuncios() {
     setTagFiltro("");
     setFiltroFaixaPreco("");
     setFiltroTipoAnuncio("");
+    setFiltroStatusFuncionamento("");
     setPaginaAtual(1);
   };
 
@@ -330,7 +345,9 @@ export default function Anuncios() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
 
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
               {/* NOVO: Botão para abrir seletor de procedimentos */}
               <div className="md:col-span-2">
                 <Button
@@ -349,7 +366,7 @@ export default function Anuncios() {
               <div className="relative md:col-span-2">
                 <Search className="absolute left-3 top-3.5 w-5 h-5 text-gray-400 z-10" />
                 <Input
-                  placeholder="Buscar por tag (ex: #microagulhamento #peeling)"
+                  placeholder="Buscar por palavra-chave (ex: #microagulhamento)"
                   value={tagFiltro}
                   onChange={(e) => {
                     setTagFiltro(e.target.value);
@@ -402,10 +419,33 @@ export default function Anuncios() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Status de Funcionamento */}
+              <div>
+                <Select
+                  value={filtroStatusFuncionamento}
+                  onValueChange={(value) => {
+                    setFiltroStatusFuncionamento(value);
+                    setPaginaAtual(1);
+                  }}
+                >
+                  <SelectTrigger className="h-12">
+                    <SelectValue placeholder="Status de Funcionamento" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={null}>Todos os status</SelectItem>
+                    {statusFuncionamento.map(status => (
+                      <SelectItem key={status.valor} value={status.valor}>
+                        {status.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {/* Badges e Botão de Limpar Filtros */}
-            {(busca || cidadeFiltro || estadoFiltro || categoriaFiltro !== "Todas" || procedimentoFiltro || tagFiltro || filtroFaixaPreco || filtroTipoAnuncio) && (
+            {(busca || cidadeFiltro || estadoFiltro || categoriaFiltro !== "Todas" || procedimentoFiltro || tagFiltro || filtroFaixaPreco || filtroTipoAnuncio || filtroStatusFuncionamento) && (
               <div className="mt-4 flex items-center justify-between mb-4">
                 <div className="flex flex-wrap gap-2">
                   {busca && <Badge variant="secondary">Busca: {busca}</Badge>}
@@ -417,7 +457,7 @@ export default function Anuncios() {
                       Procedimento: {procedimentoFiltro}
                     </Badge>
                   )}
-                  {tagFiltro && <Badge variant="secondary">Tag: {tagFiltro}</Badge>}
+                  {tagFiltro && <Badge variant="secondary">Palavra-chave: {tagFiltro}</Badge>}
                   {filtroFaixaPreco && (
                     <Badge variant="secondary">
                       {getFaixaPrecoInfo(filtroFaixaPreco).emoji} {getFaixaPrecoInfo(filtroFaixaPreco).texto}
@@ -426,6 +466,11 @@ export default function Anuncios() {
                   {filtroTipoAnuncio && (
                     <Badge variant="secondary">
                       Tipo: {tiposAnuncio.find(t => t.valor === filtroTipoAnuncio)?.label || filtroTipoAnuncio}
+                    </Badge>
+                  )}
+                  {filtroStatusFuncionamento && (
+                    <Badge variant="secondary">
+                      Status: {statusFuncionamento.find(s => s.valor === filtroStatusFuncionamento)?.label || filtroStatusFuncionamento}
                     </Badge>
                   )}
                 </div>

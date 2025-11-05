@@ -212,21 +212,21 @@ export default function Chatbot({ user, onCompletarCadastro }) {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
             onClick={() => setChatAberto(true)} // Opens chat
-            className="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-full shadow-2xl flex items-center justify-center z-50 hover:scale-110 transition-transform group"
+            className="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-br from-[#F7D426] to-[#FFE066] rounded-full shadow-2xl flex items-center justify-center z-50 hover:scale-110 transition-transform group border-2 border-[#2C2C2C]"
           >
             <div className="relative">
               <img
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/f54646e8e_drbeleza.png"
                 alt="Dr. Beleza"
-                className="w-12 h-12 rounded-full object-cover border-2 border-white"
+                className="w-12 h-12 rounded-full object-cover border-2 border-[#2C2C2C]"
                 onError={(e) => {
                   e.target.onerror = null;
                   e.target.src = 'https://via.placeholder.com/48?text=Dr';
                 }}
               />
-              <div className="absolute bottom-0 right-0 w-3 h-3 bg-[#F7D426] rounded-full border-2 border-white animate-pulse"></div>
+              <div className="absolute bottom-0 right-0 w-3 h-3 bg-[#F7D426] rounded-full border-2 border-[#2C2C2C] animate-pulse"></div>
             </div>
-            <span className="absolute -top-10 right-0 bg-white text-gray-800 px-3 py-1 rounded-lg shadow-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+            <span className="absolute -top-10 right-0 bg-[#2C2C2C] text-[#F7D426] px-3 py-1 rounded-lg shadow-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity font-bold border-2 border-[#F7D426]">
               💬 Fale com Dr. Beleza
             </span>
           </motion.button>
@@ -241,32 +241,32 @@ export default function Chatbot({ user, onCompletarCadastro }) {
             initial={{ opacity: 0, y: 20, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="fixed bottom-6 right-6 w-96 max-w-[calc(100vw-3rem)] bg-white rounded-2xl shadow-2xl z-50 flex flex-col"
+            className="fixed bottom-6 right-6 w-96 max-w-[calc(100vw-3rem)] bg-white rounded-2xl shadow-2xl z-50 flex flex-col border-2 border-[#F7D426]"
             style={{ height: '600px', maxHeight: 'calc(100vh - 3rem)' }}
           >
             {/* Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white p-4 rounded-t-2xl flex items-center justify-between">
+            <div className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] text-[#2C2C2C] p-4 rounded-t-2xl flex items-center justify-between border-b-2 border-[#2C2C2C]">
               <div className="flex items-center gap-3">
                 <div className="relative">
                   <img
                     src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/f54646e8e_drbeleza.png"
                     alt="Dr. Beleza"
-                    className="w-12 h-12 rounded-full border-2 border-white object-cover"
+                    className="w-12 h-12 rounded-full border-2 border-[#2C2C2C] object-cover"
                     onError={(e) => {
                       e.target.onerror = null;
                       e.target.src = 'https://via.placeholder.com/48?text=Dr';
                     }}
                   />
-                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-[#F7D426] rounded-full border-2 border-white"></div>
+                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-[#F7D426] rounded-full border-2 border-[#2C2C2C]"></div>
                 </div>
                 <div>
                   <h3 className="font-bold">Dr. Beleza</h3>
-                  <p className="text-xs text-blue-100">Seu assistente inteligente</p>
+                  <p className="text-xs text-[#2C2C2C]/80">Seu assistente inteligente</p>
                 </div>
               </div>
               <button
                 onClick={() => setChatAberto(false)} // Closes chat
-                className="text-white hover:bg-white/20 rounded-full p-2 transition-colors"
+                className="text-[#2C2C2C] hover:bg-[#2C2C2C] hover:text-[#F7D426] rounded-full p-2 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
