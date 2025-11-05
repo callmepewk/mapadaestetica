@@ -197,6 +197,7 @@ export default function Planos() {
   const [user, setUser] = useState(null);
   const [mostrarSucesso, setMostrarSucesso] = useState(false);
   const [planoAtualizado, setPlanoAtualizado] = useState("");
+  const [verificandoPagamento, setVerificandoPagamento] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -210,107 +211,95 @@ export default function Planos() {
     fetchUser();
   }, []);
 
-  // Carregar script do Mercado Pago
+  // Verificar parâmetros de retorno do Mercado Pago
   useEffect(() => {
-    // Check if window is defined (for SSR compatibility)
-    if (typeof window === 'undefined') return;
+    const verificarPagamento = async () => {
+      const params = new URLSearchParams(location.search);
+      
+      // Parâmetros que o Mercado Pago retorna
+      const collectionStatus = params.get('collection_status'); // approved, pending, rejected
+      const paymentId = params.get('payment_id'); // Keeping for potential future use or debugging
+      const preferenceId = params.get('preference_id'); // Keeping for potential future use or debugging
+      const externalReference = params.get('external_reference'); // Keeping for potential future use or debugging
+      const planoParam = params.get('plano');
 
-    // Verificar se o script já foi carregado usando um flag no window object
-    if (window.$MPC_loaded) return;
+      // Se tem collection_status, veio do Mercado Pago
+      if (collectionStatus && user) {
+        setVerificandoPagamento(true);
 
-    const script = document.createElement('script');
-    script.type = 'text/javascript';
-    script.async = true;
-    script.src = document.location.protocol + "//secure.mlstatic.com/mptools/render.js";
-    
-    // Find the first script tag to insert before it
-    const firstScript = document.getElementsByTagName('script')[0];
-    if (firstScript) {
-      firstScript.parentNode.insertBefore(script, firstScript);
-    } else {
-      document.head.appendChild(script); // Fallback if no script tags are found
-    }
-    
-    window.$MPC_loaded = true; // Set custom flag
+        if (collectionStatus === 'approved') {
+          try {
+            // Atualizar plano do usuário
+            await base44.auth.updateMe({
+              plano_ativo: planoParam || 'prata',
+              data_adesao_plano: new Date().toISOString().split('T')[0]
+            });
 
-    // Listener para mensagens do Mercado Pago (quando fechar o modal)
-    const handleMPMessage = (event) => {
-      // It's crucial to check the origin of the message for security reasons
-      // The official Mercado Pago script originates from secure.mlstatic.com
-      const mpOrigin = 'https://secure.mlstatic.com';
-      if (event.origin === mpOrigin && event.data && event.data.preapproval_id) {
-        console.log('Recebido preapproval_id do Mercado Pago:', event.data.preapproval_id);
-        // This can be used for additional backend verification or analytics
+            setPlanoAtualizado((planoParam || 'prata').toUpperCase());
+            setMostrarSucesso(true);
+
+            // Recarregar usuário
+            const userData = await base44.auth.me();
+            setUser(userData);
+
+            // Limpar URL
+            window.history.replaceState({}, '', createPageUrl("Planos"));
+          } catch (error) {
+            console.error("Erro ao atualizar plano:", error);
+            alert("Pagamento aprovado, mas houve erro ao ativar o plano. Entre em contato com o suporte.");
+          }
+        } else if (collectionStatus === 'pending') {
+          alert("Seu pagamento está pendente. Assim que for aprovado, seu plano será ativado automaticamente.");
+          window.history.replaceState({}, '', createPageUrl("Planos"));
+        } else if (collectionStatus === 'rejected') {
+          alert("Seu pagamento foi rejeitado. Tente novamente ou entre em contato com o suporte.");
+          window.history.replaceState({}, '', createPageUrl("Planos"));
+        }
+
+        setVerificandoPagamento(false);
       }
     };
 
-    window.addEventListener("message", handleMPMessage);
-
-    return () => {
-      window.removeEventListener("message", handleMPMessage);
-    };
-  }, []); // Empty dependency array means this runs once on mount
-
-  // Verificar parâmetros de retorno do Mercado Pago
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const status = params.get('status');
-    const plano = params.get('plano');
-    
-    // Ensure both status and plano are present, and user data is loaded
-    if (status === 'approved' && plano && user) {
-      const atualizarPlano = async () => {
-        try {
-          await base44.auth.updateMe({
-            plano_ativo: plano,
-            data_adesao_plano: new Date().toISOString().split('T')[0]
-          });
-          setPlanoAtualizado(plano.toUpperCase());
-          setMostrarSucesso(true);
-          
-          // Limpar URL usando navigate.replace para integração com React Router
-          navigate(createPageUrl("Planos"), { replace: true });
-          
-          // Recarregar dados do usuário para refletir a mudança de plano na UI
-          const userData = await base44.auth.me();
-          setUser(userData);
-        } catch (error) {
-          console.error("Erro ao atualizar plano:", error);
-          // Optionally show an error message to the user
-        }
-      };
-      atualizarPlano();
+    if (user) {
+      verificarPagamento();
     }
-  }, [location, user, navigate]); // Add navigate to dependencies
+  }, [location, user, navigate]);
 
   const handleContratarPlano = (plano) => {
+    if (!user) {
+      alert("Por favor, faça login para contratar um plano.");
+      base44.auth.redirectToLogin(window.location.href);
+      return;
+    }
+
     if (!plano.linkPagamento) {
-      // Logic exclusively for the free 'COBRE' plan
-      if (user) {
-        // Prevent redundant updates if the user is already on the 'COBRE' plan
-        if (user.plano_ativo !== plano.tipo) {
-            base44.auth.updateMe({
-                plano_ativo: plano.tipo,
-                data_adesao_plano: new Date().toISOString().split('T')[0]
-            }).then(() => {
-                alert(`Parabéns! Seu plano ${plano.nome.toUpperCase()} foi ativado com sucesso.`);
-                // Optionally refetch user data to update UI
-                base44.auth.me().then(setUser).catch(console.error);
-            }).catch(error => {
-                console.error("Erro ao ativar plano gratuito:", error);
-                alert("Ocorreu um erro ao tentar ativar o plano gratuito. Por favor, tente novamente.");
-            });
-        } else {
-            alert("Você já está no plano Cobre gratuito!");
-        }
+      // Plano gratuito (COBRE)
+      if (user.plano_ativo !== plano.tipo) {
+        base44.auth.updateMe({
+          plano_ativo: plano.tipo,
+          data_adesao_plano: new Date().toISOString().split('T')[0]
+        }).then(() => {
+          alert(`Parabéns! Seu plano ${plano.nome.toUpperCase()} foi ativado com sucesso.`);
+          base44.auth.me().then(setUser).catch(console.error);
+        }).catch(error => {
+          console.error("Erro ao ativar plano gratuito:", error);
+          alert("Ocorreu um erro ao tentar ativar o plano gratuito. Por favor, tente novamente.");
+        });
       } else {
-          // If not logged in, prompt to log in or create account
-          alert("Por favor, faça login ou cadastre-se para ativar o plano gratuito.");
-          navigate(createPageUrl("Login")); // Redirect to login page
+        alert("Você já está no plano Cobre gratuito!");
       }
       return;
     }
-    // For paid plans, this function is no longer directly called as the Mercado Pago button handles redirection.
+
+    // Planos pagos - REDIRECIONAR para Mercado Pago
+    const currentUrl = window.location.origin + createPageUrl("Planos");
+    const backUrl = `${currentUrl}?plano=${plano.tipo}`;
+    
+    // Construir URL completa com back_urls
+    const mercadoPagoUrl = `${plano.linkPagamento}&back_urls[success]=${encodeURIComponent(backUrl)}&back_urls[pending]=${encodeURIComponent(backUrl)}&back_urls[failure]=${encodeURIComponent(backUrl)}`;
+    
+    // REDIRECIONAR (não abrir nova aba)
+    window.location.href = mercadoPagoUrl;
   };
 
   const isAdmin = user?.role === 'admin';
@@ -318,33 +307,17 @@ export default function Planos() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
-      {/* CSS do Mercado Pago */}
-      <style>{`
-        .mp-pay-button {
-          background-color: #3483FA;
-          color: white;
-          padding: 12px 32px;
-          text-decoration: none;
-          border-radius: 8px;
-          display: inline-block;
-          font-size: 16px;
-          font-weight: 600;
-          transition: all 0.3s;
-          font-family: Arial, sans-serif;
-          text-align: center;
-          border: none;
-          cursor: pointer;
-          box-shadow: 0 2px 8px rgba(52, 131, 250, 0.3);
-        }
-        .mp-pay-button:hover {
-          background-color: #2a68c8;
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(52, 131, 250, 0.4);
-        }
-        .mp-pay-button:active {
-          transform: translateY(0);
-        }
-      `}</style>
+      {/* Alert de Verificação de Pagamento */}
+      {verificandoPagamento && (
+        <Alert className="max-w-4xl mx-auto mb-6 bg-blue-50 border-blue-200">
+          <div className="flex items-center gap-3">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+            <AlertDescription className="text-blue-800">
+              Verificando seu pagamento... Aguarde um momento.
+            </AlertDescription>
+          </div>
+        </Alert>
+      )}
 
       {/* Alert de Sucesso */}
       {mostrarSucesso && (
@@ -371,7 +344,7 @@ export default function Planos() {
           </p>
         </div>
 
-        {/* Seção de Contato - NOVA */}
+        {/* Seção de Contato */}
         <div className="mb-12 grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
           <Card className="border-2 border-blue-200 hover:border-blue-400 transition-colors">
             <CardContent className="p-6">
@@ -431,11 +404,7 @@ export default function Planos() {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
           {planosExibidos.map((plano, index) => {
             const IconComponent = plano.icone;
-            // Dynamically construct linkPagamento with back_url for each paid plan
-            const planLinkPagamento = plano.linkPagamento ? 
-                `${plano.linkPagamento}&back_url=${encodeURIComponent(window.location.origin + createPageUrl("Planos") + `?status=approved&plano=${plano.tipo}`)}`
-                : null;
-
+            
             return (
               <motion.div
                 key={plano.tipo}
@@ -521,29 +490,19 @@ export default function Planos() {
                     )}
 
                     <div className="space-y-2 mt-auto">
-                      {plano.tipo === 'cobre' ? (
-                        <Button
-                          onClick={() => handleContratarPlano(plano)}
-                          className={`w-full ${
-                            plano.destaque
-                              ? "bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700"
-                              : "bg-[#2C2C2C] hover:bg-[#3A3A3A]"
-                          }`}
-                        >
-                          Plano Atual
-                          <ArrowRight className="w-4 h-4 ml-2" />
-                        </Button>
-                      ) : (
-                        <a
-                          href={planLinkPagamento} // Use the dynamically constructed link with back_url
-                          name="MP-payButton"
-                          className="mp-pay-button w-full"
-                          target="_blank" // Open in new tab/window for Mercado Pago
-                          rel="noopener noreferrer" // Security best practice
-                        >
-                          Contratar Agora
-                        </a>
-                      )}
+                      <Button
+                        onClick={() => handleContratarPlano(plano)}
+                        className={`w-full ${
+                          plano.destaque
+                            ? "bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700"
+                            : plano.tipo === 'cobre'
+                            ? "bg-[#2C2C2C] hover:bg-[#3A3A3A]"
+                            : "bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+                        }`}
+                      >
+                        {plano.tipo === 'cobre' ? 'Plano Gratuito' : 'Contratar Agora'}
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
