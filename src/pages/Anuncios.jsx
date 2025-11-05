@@ -197,7 +197,7 @@ export default function Anuncios() {
   });
 
   const anuncios = useMemo(() => {
-    const planoOrdem = { 'premium': 4, 'diamante': 3, 'ouro': 2, 'prata', 'cobre': 1 };
+    const planoOrdem = { 'premium': 5, 'diamante': 4, 'ouro': 3, 'prata': 2, 'cobre': 1 };
     
     return fetchedAnuncios
       .filter(anuncio => {
