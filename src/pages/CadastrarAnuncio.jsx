@@ -40,7 +40,8 @@ import {
   X,
   Shield,
   FileText,
-  MessageCircle // New import
+  MessageCircle,
+  MapPin // New import
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -156,6 +157,9 @@ export default function CadastrarAnuncio() {
 
   // Novo estado: Modal de Geração de Imagem
   const [mostrarModalImagem, setMostrarModalImagem] = useState(false);
+
+  // Estado para localização
+  const [buscandoLocalizacao, setBuscandoLocalizacao] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -525,6 +529,67 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
     setAnuncioGerado(null);
     alert("Anúncio gerado aplicado com sucesso! Os campos que você já havia preenchido foram mantidos.");
   };
+
+  // Função para buscar localização do usuário
+  const handleUsarMinhaLocalizacao = async () => {
+    setBuscandoLocalizacao(true);
+
+    try {
+      // Tentar obter geolocalização do navegador
+      if (!navigator.geolocation) {
+        alert("Geolocalização não é suportada pelo seu navegador");
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+
+          try {
+            // Usar API de geocoding reverso para obter endereço
+            const response = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+            );
+            const data = await response.json();
+
+            if (data && data.address) {
+              const address = data.address;
+
+              setFormData(prev => ({
+                ...prev,
+                cidade: address.city || address.town || address.village || "",
+                estado: address.state_code || address.state || "",
+                endereco: `${address.road || ""} ${address.house_number || ""}`.trim(),
+                cep: address.postcode || ""
+              }));
+
+              alert("Localização preenchida com sucesso!");
+            } else {
+                alert("Não foi possível determinar o endereço a partir da sua localização. Preencha manualmente.");
+            }
+          } catch (error) {
+            console.error("Erro ao buscar endereço:", error);
+            alert("Erro ao buscar endereço. Verifique sua conexão ou tente novamente.");
+          }
+        },
+        (error) => {
+          console.error("Erro de geolocalização:", error);
+          let message = "Não foi possível obter sua localização. ";
+          if (error.code === error.PERMISSION_DENIED) {
+              message += "Por favor, conceda permissão de localização ao navegador.";
+          } else if (error.code === error.POSITION_UNAVAILABLE) {
+              message += "As informações de localização não estão disponíveis.";
+          } else if (error.code === error.TIMEOUT) {
+              message += "A solicitação para obter a localização expirou.";
+          }
+          alert(message);
+        }
+      );
+    } finally {
+      setBuscandoLocalizacao(false);
+    }
+  };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -1048,7 +1113,28 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
           {/* Localização */}
           <Card>
             <CardHeader>
-              <CardTitle>Localização</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle>Localização</CardTitle>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleUsarMinhaLocalizacao}
+                  disabled={buscandoLocalizacao}
+                  className="border-blue-300 text-blue-700 hover:bg-blue-50"
+                >
+                  {buscandoLocalizacao ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Buscando...
+                    </>
+                  ) : (
+                    <>
+                      <MapPin className="w-4 h-4 mr-2" />
+                      Usar Minha Localização
+                    </>
+                  )}
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid md:grid-cols-3 gap-4">

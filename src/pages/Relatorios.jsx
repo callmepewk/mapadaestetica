@@ -106,7 +106,7 @@ export default function Relatorios() {
                 <p className="text-gray-600 mb-4">
                   Análise de preços praticados pelos profissionais da plataforma
                 </p>
-                <Button onClick={() => window.location.href = '/relatorio-preco-medio'}>
+                <Button onClick={() => navigate(createPageUrl("RelatorioPrecoMedio"))}>
                   Ver Relatório Completo
                 </Button>
               </CardContent>

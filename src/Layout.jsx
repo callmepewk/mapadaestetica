@@ -297,9 +297,9 @@ export default function Layout({ children }) {
                         </DropdownMenuItem>
                       )}
                       {isAdmin && (
-                        <DropdownMenuItem onClick={() => navigate(createPageUrl("RelatorioPrecoMedio"))}>
+                        <DropdownMenuItem onClick={() => navigate(createPageUrl("Relatorios"))}>
                           <TrendingUp className="w-4 h-4 mr-2" />
-                          Relatórios de Preço
+                          Relatórios
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator />

@@ -17,18 +17,24 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
   const [user, setUser] = useState(null);
   const [compartilhandoLink, setCompartilhandoLink] = useState(false);
   const [linkCopiado, setLinkCopiado] = useState(false);
+  const [numCurtidas, setNumCurtidas] = useState(anuncio?.curtidas || 0);
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const userData = await base44.auth.me();
         setUser(userData);
+        
+        // Verificar se usuário já curtiu este anúncio
+        if (userData.anuncios_curtidos && userData.anuncios_curtidos.includes(anuncio.id)) {
+          setCurtido(true);
+        }
       } catch {
         setUser(null);
       }
     };
     fetchUser();
-  }, []);
+  }, [anuncio.id]);
 
   if (!anuncio) return null;
 
@@ -97,17 +103,41 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
       alert("Faça upgrade do seu plano para curtir anúncios!");
       return;
     }
+
+    const novoCurtidoState = !curtido;
+    setCurtido(novoCurtidoState);
     
-    setCurtido(!curtido);
+    // Atualizar contador local imediatamente
+    setNumCurtidas(prev => novoCurtidoState ? prev + 1 : prev - 1);
     
     try {
-      const curtidasAtuais = anuncio.curtidas || 0;
+      // Atualizar anúncio
+      const usuarios_curtiram = anuncio.usuarios_curtiram || [];
+      const novosUsuariosCurtiramAnuncio = novoCurtidoState 
+        ? [...usuarios_curtiram, user.email]
+        : usuarios_curtiram.filter(email => email !== user.email);
+      
       await base44.entities.Anuncio.update(anuncio.id, {
-        curtidas: curtido ? curtidasAtuais - 1 : curtidasAtuais + 1
+        curtidas: novoCurtidoState ? (anuncio.curtidas || 0) + 1 : (anuncio.curtidas || 0) - 1,
+        usuarios_curtiram: novosUsuariosCurtiramAnuncio
       });
+
+      // Atualizar lista de curtidas do usuário
+      const anuncios_curtidos_usuario = user.anuncios_curtidos || [];
+      const novosAnunciosCurtidosUsuario = novoCurtidoState
+        ? [...anuncios_curtidos_usuario, anuncio.id]
+        : anuncios_curtidos_usuario.filter(id => id !== anuncio.id);
+      
+      await base44.auth.updateMe({ anuncios_curtidos: novosAnunciosCurtidosUsuario });
+      
+      // Atualizar estado local do usuário
+      setUser({ ...user, anuncios_curtidos: novosAnunciosCurtidosUsuario });
     } catch (error) {
       console.error("Erro ao curtir:", error);
-      setCurtido(prev => !prev); // Revert state if API call fails
+      // Reverter estado em caso de erro
+      setCurtido(prev => !prev);
+      setNumCurtidas(prev => novoCurtidoState ? prev - 1 : prev + 1);
+      alert("Erro ao curtir. Tente novamente.");
     }
   };
 
@@ -351,7 +381,7 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
               </span>
               <span className="flex items-center gap-1">
                 <Heart className="w-4 h-4" />
-                {anuncio.curtidas || 0}
+                {numCurtidas}
               </span>
             </div>
 
@@ -446,7 +476,7 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
                 {todasImagens.length > 1 && (
                   <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
                     {todasImagens.map((_, index) => (
-                      <button key={index} onClick={() => setImagemAtual(index)} className={`w-2 h-2 rounded-full transition-all ${imagemAtual === index ? "bg-white w-8" : "bg-white/50"}`} />
+                      <button key={index} onClick={() => setImagemAtual(index)} className={`flex-shrink-0 w-2 h-2 rounded-full transition-all ${imagemAtual === index ? "bg-white w-8" : "bg-white/50"}`} />
                     ))}
                   </div>
                 )}
@@ -503,8 +533,8 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
                   </div>
 
                   <div className="flex gap-2">
-                    <Button variant="outline" size="icon"><Share2 className="w-4 h-4" /></Button>
-                    <Button variant="outline" size="icon"><Heart className="w-4 h-4" /></Button>
+                    <Button variant="outline" size="icon" onClick={handleCompartilhar}><Share2 className="w-4 h-4" /></Button>
+                    <Button variant="outline" size="icon" onClick={handleCurtir}><Heart className={`w-4 h-4 ${curtido ? 'fill-red-600 text-red-600' : ''}`} /></Button>
                   </div>
                 </div>
 
