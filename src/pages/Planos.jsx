@@ -4,11 +4,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Check, Sparkles, Star, Zap, Crown, Gem, ArrowRight, X, MessageCircle, Headphones } from "lucide-react";
+import { Check, Sparkles, Star, Zap, Crown, Gem, ArrowRight, X, MessageCircle, Headphones, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 const planos = [
   {
@@ -199,6 +200,10 @@ export default function Planos() {
   const [planoAtualizado, setPlanoAtualizado] = useState("");
   const [verificandoPagamento, setVerificandoPagamento] = useState(false);
 
+  const [mostrarModalConfirmacao, setMostrarModalConfirmacao] = useState(false);
+  const [planoSelecionado, setPlanoSelecionado] = useState(null);
+  const [aguardandoConfirmacao, setAguardandoConfirmacao] = useState(false);
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -216,56 +221,94 @@ export default function Planos() {
     const verificarPagamento = async () => {
       const params = new URLSearchParams(location.search);
       
-      // Parâmetros que o Mercado Pago retorna
       const collectionStatus = params.get('collection_status'); // approved, pending, rejected
-      const paymentId = params.get('payment_id'); // Keeping for potential future use or debugging
-      const preferenceId = params.get('preference_id'); // Keeping for potential future use or debugging
-      const externalReference = params.get('external_reference'); // Keeping for potential future use or debugging
       const planoParam = params.get('plano');
 
       // Se tem collection_status, veio do Mercado Pago
-      if (collectionStatus && user) {
+      if (collectionStatus && user && planoParam) {
         setVerificandoPagamento(true);
 
-        if (collectionStatus === 'approved') {
-          try {
-            // Atualizar plano do usuário
-            await base44.auth.updateMe({
-              plano_ativo: planoParam || 'prata',
-              data_adesao_plano: new Date().toISOString().split('T')[0]
-            });
+        try {
+          // Find the most recent SolicitacaoAtivacaoPlano for this user and plan
+          const solicitacoes = await base44.entities.SolicitacaoAtivacaoPlano.filter(
+            { 
+              usuario_email: user.email, 
+              plano_solicitado: planoParam,
+            },
+            '-created_date', // Order by created_date descending to get the most recent
+            1 // Limit to 1 result
+          );
 
-            setPlanoAtualizado((planoParam || 'prata').toUpperCase());
-            setMostrarSucesso(true);
+          if (solicitacoes.length > 0) {
+            const solicitacao = solicitacoes[0];
+            let updateData = {};
+            let alertMessage = "";
+            let notificationType = null;
+            let notificationTitle = null;
+            let notificationMessage = null;
 
-            // Recarregar usuário
-            const userData = await base44.auth.me();
-            setUser(userData);
+            if (collectionStatus === 'approved') {
+              updateData = { status: 'pagamento_aprovado_mp', data_pagamento_mp: new Date().toISOString() };
+              alertMessage = `Seu pagamento foi aprovado pelo Mercado Pago para o plano ${planoParam.toUpperCase()}. Nossa equipe foi notificada e ativará seu plano em até 24 horas.`;
+              
+              notificationType = "novo_pagamento_mp_aprovado";
+              notificationTitle = `Pagamento Aprovado - Plano ${planoParam.toUpperCase()}`;
+              notificationMessage = `${user.full_name} (${user.email}) teve um pagamento aprovado via Mercado Pago para o plano ${planoParam.toUpperCase()}. Verifique e ative o plano.`;
 
-            // Limpar URL
-            window.history.replaceState({}, '', createPageUrl("Planos"));
-          } catch (error) {
-            console.error("Erro ao atualizar plano:", error);
-            alert("Pagamento aprovado, mas houve erro ao ativar o plano. Entre em contato com o suporte.");
+              setPlanoAtualizado(planoParam.toUpperCase());
+              setMostrarSucesso(true); // Show success alert visually
+              // Plan is NOT automatically activated on user's profile here. Admin will do it.
+            } else if (collectionStatus === 'pending') {
+              updateData = { status: 'pagamento_pendente_mp', data_pagamento_mp: new Date().toISOString() };
+              alertMessage = "Seu pagamento está pendente. Assim que for aprovado, nossa equipe será notificada para ativar seu plano.";
+            } else if (collectionStatus === 'rejected') {
+              updateData = { status: 'pagamento_rejeitado_mp', data_pagamento_mp: new Date().toISOString() };
+              alertMessage = "Seu pagamento foi rejeitado. Tente novamente ou entre em contato com o suporte.";
+            }
+
+            if (Object.keys(updateData).length > 0) {
+              await base44.entities.SolicitacaoAtivacaoPlano.update(solicitacao.id, updateData);
+            }
+            if (notificationType) {
+              await base44.entities.Notificacao.create({
+                usuario_email: "admin@mapadaestetica.com.br", // Email do admin
+                tipo: notificationType,
+                titulo: notificationTitle,
+                mensagem: notificationMessage,
+                link_acao: `/solicitacoes-plano` // Assuming an admin page to manage solicitations
+              });
+            }
+            if (alertMessage) {
+              alert(alertMessage);
+            }
+          } else {
+            // No prior solicitation found. This can happen if user went directly to MP link or refreshed page.
+            // In this case, we can still inform the user based on MP status.
+            if (collectionStatus === 'approved') {
+              alert("Pagamento aprovado, mas não encontramos uma solicitação correspondente em nosso sistema. Por favor, entre em contato com o suporte para ativarmos seu plano.");
+            } else if (collectionStatus === 'pending') {
+              alert("Seu pagamento está pendente. Por favor, entre em contato com o suporte se não tiver uma solicitação ativa para este pagamento.");
+            } else if (collectionStatus === 'rejected') {
+              alert("Seu pagamento foi rejeitado. Tente novamente ou entre em contato com o suporte.");
+            }
           }
-        } else if (collectionStatus === 'pending') {
-          alert("Seu pagamento está pendente. Assim que for aprovado, seu plano será ativado automaticamente.");
-          window.history.replaceState({}, '', createPageUrl("Planos"));
-        } else if (collectionStatus === 'rejected') {
-          alert("Seu pagamento foi rejeitado. Tente novamente ou entre em contato com o suporte.");
+        } catch (error) {
+          console.error("Erro ao processar retorno do Mercado Pago:", error);
+          alert("Ocorreu um erro ao processar seu pagamento. Entre em contato com o suporte.");
+        } finally {
+          setVerificandoPagamento(false);
+          // Always clean the URL after processing MP params
           window.history.replaceState({}, '', createPageUrl("Planos"));
         }
-
-        setVerificandoPagamento(false);
       }
     };
 
     if (user) {
       verificarPagamento();
     }
-  }, [location, user, navigate]);
+  }, [location, user]); // navigate removed as it's not used directly here
 
-  const handleContratarPlano = (plano) => {
+  const handleContratarPlano = async (plano) => {
     if (!user) {
       alert("Por favor, faça login para contratar um plano.");
       base44.auth.redirectToLogin(window.location.href);
@@ -275,31 +318,106 @@ export default function Planos() {
     if (!plano.linkPagamento) {
       // Plano gratuito (COBRE)
       if (user.plano_ativo !== plano.tipo) {
-        base44.auth.updateMe({
-          plano_ativo: plano.tipo,
-          data_adesao_plano: new Date().toISOString().split('T')[0]
-        }).then(() => {
+        try {
+          await base44.auth.updateMe({
+            plano_ativo: plano.tipo,
+            data_adesao_plano: new Date().toISOString().split('T')[0]
+          });
           alert(`Parabéns! Seu plano ${plano.nome.toUpperCase()} foi ativado com sucesso.`);
-          base44.auth.me().then(setUser).catch(console.error);
-        }).catch(error => {
+          const userData = await base44.auth.me();
+          setUser(userData);
+          // Reload user to reflect new plan status
+          window.history.replaceState({}, '', createPageUrl("Planos")); // Clean URL if any MP params were there
+        } catch (error) {
           console.error("Erro ao ativar plano gratuito:", error);
           alert("Ocorreu um erro ao tentar ativar o plano gratuito. Por favor, tente novamente.");
-        });
+        }
       } else {
         alert("Você já está no plano Cobre gratuito!");
       }
       return;
     }
 
-    // Planos pagos - REDIRECIONAR para Mercado Pago
+    // Planos pagos - Abrir Mercado Pago e modal de confirmação
+    setPlanoSelecionado(plano);
+    
+    // Criar solicitação de ativação
+    try {
+      await base44.entities.SolicitacaoAtivacaoPlano.create({
+        usuario_email: user.email,
+        usuario_nome: user.full_name,
+        plano_solicitado: plano.tipo,
+        link_mercadopago: plano.linkPagamento,
+        status: "aguardando_confirmacao", // Initial status
+        data_solicitacao: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Erro ao criar solicitação de plano:", error);
+      alert("Ocorreu um erro ao iniciar a contratação do plano. Por favor, tente novamente.");
+      return;
+    }
+
+    // Construir URL completa com back_urls (para o caso de o MP redirecionar)
     const currentUrl = window.location.origin + createPageUrl("Planos");
     const backUrl = `${currentUrl}?plano=${plano.tipo}`;
-    
-    // Construir URL completa com back_urls
     const mercadoPagoUrl = `${plano.linkPagamento}&back_urls[success]=${encodeURIComponent(backUrl)}&back_urls[pending]=${encodeURIComponent(backUrl)}&back_urls[failure]=${encodeURIComponent(backUrl)}`;
+
+    // Abrir link do Mercado Pago em nova aba
+    window.open(mercadoPagoUrl, '_blank');
     
-    // REDIRECIONAR (não abrir nova aba)
-    window.location.href = mercadoPagoUrl;
+    // Mostrar modal de confirmação
+    setMostrarModalConfirmacao(true);
+  };
+
+  const handleConfirmarPagamento = async () => {
+    if (!planoSelecionado || !user) return;
+    
+    setAguardandoConfirmacao(true);
+    
+    try {
+      // Buscar a solicitação mais recente do usuário para este plano que ainda não foi totalmente processada
+      const solicitacoes = await base44.entities.SolicitacaoAtivacaoPlano.filter(
+        { 
+          usuario_email: user.email, 
+          plano_solicitado: planoSelecionado.tipo,
+          status_ne: 'ativado_admin' // Not already activated by admin
+        },
+        '-created_date', // Get the most recent one
+        1
+      );
+
+      if (solicitacoes.length > 0) {
+        const solicitacao = solicitacoes[0];
+        
+        // Atualizar status para confirmado pelo usuário
+        await base44.entities.SolicitacaoAtivacaoPlano.update(solicitacao.id, {
+          status: "confirmado_usuario",
+          data_confirmacao_usuario: new Date().toISOString()
+        });
+
+        // Criar notificação para o suporte (admin)
+        await base44.entities.Notificacao.create({
+          usuario_email: "admin@mapadaestetica.com.br", // Email do admin
+          tipo: "nova_confirmacao_plano", 
+          titulo: `Confirmação de Pagamento de Plano - ${planoSelecionado.nome.toUpperCase()}`,
+          mensagem: `${user.full_name} (${user.email}) CONFIRMOU o pagamento do plano ${planoSelecionado.nome.toUpperCase()}. Verifique o pagamento no Mercado Pago e ative o plano.`,
+          link_acao: `/solicitacoes-plano` // Link para o admin verificar as solicitações
+        });
+
+        setPlanoAtualizado(planoSelecionado.nome.toUpperCase());
+        setMostrarSucesso(true);
+        setMostrarModalConfirmacao(false);
+        setPlanoSelecionado(null);
+        alert("Sua confirmação de pagamento foi registrada! Nossa equipe foi notificada e ativará seu plano em até 24 horas. Você receberá um e-mail de confirmação.");
+      } else {
+        alert("Não encontramos uma solicitação de plano ativa para confirmar. Por favor, tente novamente ou entre em contato com o suporte.");
+      }
+    } catch (error) {
+      console.error("Erro ao confirmar pagamento:", error);
+      alert("Erro ao processar sua confirmação. Por favor, entre em contato com o suporte.");
+    } finally {
+      setAguardandoConfirmacao(false);
+    }
   };
 
   const isAdmin = user?.role === 'admin';
@@ -325,7 +443,7 @@ export default function Planos() {
           <Check className="h-4 w-4 text-green-600" />
           <AlertDescription className="text-green-800">
             🎉 <strong>Parabéns!</strong> Seu plano <strong>{planoAtualizado}</strong> foi ativado com sucesso! 
-            Agora você tem acesso a todos os recursos premium.
+            Você receberá um e-mail de confirmação em breve.
           </AlertDescription>
         </Alert>
       )}
@@ -586,6 +704,84 @@ export default function Planos() {
           </Link>
         </div>
       </div>
+
+      {/* Modal de Confirmação de Pagamento */}
+      <Dialog open={mostrarModalConfirmacao} onOpenChange={setMostrarModalConfirmacao}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-center">
+              🔄 Finalize seu Pagamento
+            </DialogTitle>
+            <DialogDescription className="text-center">
+              O Mercado Pago foi aberto em uma nova aba
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6 py-4">
+            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 p-6 rounded-lg border-2 border-blue-200">
+              <h3 className="font-bold text-lg mb-3 text-center">
+                📋 Instruções:
+              </h3>
+              <ol className="space-y-3 text-sm list-none p-0">
+                <li className="flex items-start gap-2">
+                  <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-xs mt-0.5">1</span>
+                  <span>Complete o pagamento na aba do Mercado Pago.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-xs mt-0.5">2</span>
+                  <span>Após finalizar, volte aqui e clique em "Confirmar Pagamento".</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-xs mt-0.5">3</span>
+                  <span>Seu plano será ativado em até 24 horas após a confirmação pela nossa equipe.</span>
+                </li>
+              </ol>
+            </div>
+
+            <Alert className="bg-yellow-50 border-yellow-200">
+              <AlertCircle className="h-4 w-4 text-yellow-600" />
+              <AlertDescription className="text-yellow-800 text-sm">
+                <strong>Importante:</strong> Você receberá uma confirmação por email assim que seu plano for ativado pela nossa equipe.
+              </AlertDescription>
+            </Alert>
+
+            <div className="flex flex-col gap-3">
+              <Button
+                onClick={handleConfirmarPagamento}
+                disabled={aguardandoConfirmacao}
+                className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold"
+              >
+                {aguardandoConfirmacao ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Processando...
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-4 h-4 mr-2" />
+                    Confirmar Pagamento Realizado
+                  </>
+                )}
+              </Button>
+
+              <Button
+                onClick={() => {
+                  setMostrarModalConfirmacao(false);
+                  setPlanoSelecionado(null);
+                }}
+                variant="outline"
+                className="w-full"
+              >
+                Cancelar
+              </Button>
+
+              <p className="text-xs text-center text-gray-500">
+                Dúvidas? Entre em contato: (31) 97259-5643
+              </p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
