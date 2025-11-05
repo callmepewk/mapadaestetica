@@ -1,3 +1,4 @@
+
 import React from "react";
 import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
@@ -24,6 +25,25 @@ export default function LoginPromptModal({ open, onClose, pageName }) {
     navigate(createPageUrl("Inicio"));
   };
 
+  const getMensagem = () => {
+    switch(pageName) {
+      case "anuncios":
+        return "Para acessar os anúncios e encontrar os melhores profissionais, você precisa criar uma conta gratuita!";
+      case "blog":
+        return "Para acessar o blog e todo o conteúdo exclusivo, você precisa criar uma conta gratuita!";
+      case "busca":
+        return "Para buscar profissionais, você precisa criar uma conta gratuita!";
+      case "drbeleza":
+        return "Para acessar o Dr. Beleza e receber orientações personalizadas, você precisa criar uma conta gratuita!";
+      case "patrocinador":
+        return "Para contratar planos de patrocinador, você precisa criar uma conta gratuita!";
+      case "produtos":
+        return "Para adquirir produtos e serviços, você precisa criar uma conta gratuita!";
+      default:
+        return "Para acessar este conteúdo, você precisa criar uma conta gratuita!";
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={() => {}}>
       <DialogContent 
@@ -37,18 +57,7 @@ export default function LoginPromptModal({ open, onClose, pageName }) {
             Crie sua Conta Grátis
           </DialogTitle>
           <DialogDescription className="text-base pt-2">
-            {pageName === "anuncios" 
-              ? "Para acessar os anúncios e encontrar os melhores profissionais, você precisa criar uma conta gratuita!"
-              : pageName === "blog"
-              ? "Para acessar o blog e todo o conteúdo exclusivo, você precisa criar uma conta gratuita!"
-              : pageName === "busca"
-              ? "Para buscar profissionais, você precisa criar uma conta gratuita!"
-              : pageName === "drbeleza"
-              ? "Para acessar o Dr. Beleza e receber orientações personalizadas, você precisa criar uma conta gratuita!"
-              : pageName === "patrocinador"
-              ? "Para contratar planos de patrocinador, você precisa criar uma conta gratuita!"
-              : "Para acessar este conteúdo, você precisa criar uma conta gratuita!"
-            }
+            {getMensagem()}
           </DialogDescription>
         </DialogHeader>
 
@@ -77,6 +86,10 @@ export default function LoginPromptModal({ open, onClose, pageName }) {
               <li className="flex items-start gap-2">
                 <span className="text-[#F7D426] font-bold">✓</span>
                 <span>Acesso ao Dr. Beleza (IA Assistente)</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-[#F7D426] font-bold">✓</span>
+                <span>Compre produtos e serviços</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[#F7D426] font-bold">✓</span>

@@ -14,6 +14,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter
+} from "@/components/ui/dialog";
+import {
   Search,
   Filter,
   ShoppingCart,
@@ -313,6 +321,47 @@ const servicosContrataveis = [
   }
 ];
 
+// Placeholder for LoginPromptModal, as it's not provided in the outline to be imported.
+// In a real application, this would likely be in its own file and imported.
+const LoginPromptModal = ({ open, onClose, pageName }) => {
+  const navigate = useNavigate();
+  const handleLogin = () => {
+    onClose();
+    base44.auth.redirectToLogin(window.location.pathname);
+  };
+
+  const handleSignUp = () => {
+    onClose();
+    navigate('/cadastro'); // Assuming a signup route
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Acesso Exclusivo</DialogTitle>
+          <DialogDescription>
+            Para prosseguir, você precisa estar logado ou criar uma conta.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="py-4">
+          <p className="text-sm text-gray-700 mb-4">
+            Faça login para {pageName === 'produtos' ? 'comprar este item' : 'contratar este serviço'} ou crie sua conta agora e aproveite todos os benefícios!
+          </p>
+        </div>
+        <DialogFooter className="flex-col sm:flex-row gap-2">
+          <Button variant="outline" onClick={handleSignUp} className="w-full">
+            Criar Conta
+          </Button>
+          <Button onClick={handleLogin} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+            Fazer Login
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 export default function Produtos() {
   const navigate = useNavigate();
   const [busca, setBusca] = useState("");
@@ -321,6 +370,7 @@ export default function Produtos() {
   const [categoriaSelecionada, setCategoriaSelecionada] = useState("Todas");
   const [user, setUser] = useState(null);
   const [tipoBusca, setTipoBusca] = useState(null); // null, 'produtos', 'servicos'
+  const [mostrarLoginPrompt, setMostrarLoginPrompt] = useState(false);
 
   React.useEffect(() => {
     const fetchUser = async () => {
@@ -426,9 +476,18 @@ export default function Produtos() {
     if (!categoriasParaFiltro.includes(categoriaFiltro)) {
       setCategoriaFiltro("Todas");
     }
-  }, [tipoBusca, categoriasParaFiltro, categoriaFiltro]); // Added categoriaFiltro to dependencies
+  }, [tipoBusca, categoriasParaFiltro, categoriaFiltro]);
+
+  const createPageUrl = (pageName) => {
+    return `/${pageName.toLowerCase()}`;
+  };
 
   const handleContratar = (servico) => {
+    if (!user) {
+      setMostrarLoginPrompt(true);
+      return;
+    }
+    
     const mensagem = `Olá! Tenho interesse em contratar: ${servico.nome}. Gostaria de mais informações sobre valores e como funciona! 💼`;
     const whatsapp = "5531972595643";
     const url = `https://wa.me/${whatsapp}?text=${encodeURIComponent(mensagem)}`;
@@ -443,15 +502,14 @@ export default function Produtos() {
   // Função para processar compra de produto
   const handleComprarProduto = async (produto) => {
     if (!user) {
-      alert("Faça login para comprar produtos!");
-      base44.auth.redirectToLogin(window.location.pathname);
+      setMostrarLoginPrompt(true);
       return;
     }
 
-    // Verificar se é produto exclusivo do clube (preço = 0 ou não definido)
+    // Verificar se é produto exclusivo do clube (preço = 0)
     if (produto.preco === 0 || !produto.preco) {
       alert("Este produto é exclusivo para membros do Clube da Beleza! Assine para ter acesso.");
-      navigate('/planos');
+      navigate(createPageUrl("Planos"));
       return;
     }
 
@@ -461,7 +519,6 @@ export default function Produtos() {
     }
 
     try {
-      // Determinar faixa de preço e calcular pontos
       const faixaPreco = determinarFaixaPreco(precoFinal);
       const pontosGanhos = calcularPontosPorFaixaPreco(faixaPreco);
 
@@ -485,15 +542,13 @@ export default function Produtos() {
       setUser({ ...user, pontos_acumulados: novosPontos });
 
       // Redirecionar para página de agradecimento
-      navigate('/agradecimento-compra' + `?tipo=produto&nome=${encodeURIComponent(produto.nome)}&pontos=${pontosGanhos}`);
-
+      navigate(createPageUrl("AgradecimentoCompra") + `?tipo=produto&nome=${encodeURIComponent(produto.nome)}&pontos=${pontosGanhos}`);
     } catch (error) {
       console.error("Erro ao processar compra:", error);
       alert("Erro ao processar compra. Tente novamente.");
     }
   };
 
-  // Se não escolheu o tipo de busca ainda, mostra a seleção
   if (tipoBusca === null) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
@@ -993,6 +1048,13 @@ export default function Produtos() {
           </Card>
         </div>
       </div>
+
+      {/* Modal de Login Prompt */}
+      <LoginPromptModal
+        open={mostrarLoginPrompt}
+        onClose={() => setMostrarLoginPrompt(false)}
+        pageName={tipoBusca} // Passa o tipo de busca para o modal para personalizar a mensagem
+      />
     </div>
   );
 }

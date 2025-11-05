@@ -324,7 +324,7 @@ export default function Inicio() {
       {/* PROFISSIONAIS: Conteúdo específico */}
       {isProfissional && (
         <>
-          {/* NOVO: Resumo dos Anúncios */}
+          {/* MELHORADO: Resumo dos Anúncios - Formato Card Scrollável */}
           {resumoAnuncios.length > 0 && (
             <section className="py-8 bg-white">
               <div className="max-w-7xl mx-auto px-4">
@@ -343,33 +343,75 @@ export default function Inicio() {
                   </Button>
                 </div>
 
-                <div className="grid md:grid-cols-3 gap-6">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {resumoAnuncios.map((anuncio) => (
-                    <Card key={anuncio.id} className="border-none shadow-lg hover:shadow-xl transition-all">
-                      <div className="h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center overflow-hidden">
+                    <Card key={anuncio.id} className="border-none shadow-lg hover:shadow-xl transition-all overflow-hidden">
+                      {/* Imagem */}
+                      <div className="h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center overflow-hidden relative">
                         {anuncio.imagem_principal ? (
                           <img src={anuncio.imagem_principal} alt={anuncio.titulo} className="w-full h-full object-cover" />
                         ) : (
                           <span className="text-6xl">✨</span>
                         )}
+                        {anuncio.plano && anuncio.plano !== 'cobre' && (
+                          <Badge className="absolute top-2 right-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+                            {anuncio.plano.toUpperCase()}
+                          </Badge>
+                        )}
                       </div>
+
                       <CardContent className="p-4">
+                        {/* Categoria */}
                         <Badge className="mb-2 bg-pink-100 text-pink-800">{anuncio.categoria}</Badge>
-                        <h3 className="font-bold text-lg mb-2 line-clamp-1">{anuncio.titulo}</h3>
-                        <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
+                        
+                        {/* Título */}
+                        <h3 className="font-bold text-lg mb-2 line-clamp-2">{anuncio.titulo}</h3>
+                        
+                        {/* Localização */}
+                        {anuncio.cidade && anuncio.estado && (
+                          <div className="flex items-center gap-1 text-sm text-gray-600 mb-3">
+                            <MapPin className="w-4 h-4" />
+                            <span>{anuncio.cidade}, {anuncio.estado}</span>
+                          </div>
+                        )}
+
+                        {/* Métricas */}
+                        <div className="flex items-center gap-4 text-sm text-gray-600 mb-3 pb-3 border-b">
                           <span className="flex items-center gap-1">
                             <Eye className="w-4 h-4" />
                             {anuncio.visualizacoes || 0}
                           </span>
                           <span className="flex items-center gap-1">
                             <Heart className="w-4 h-4" />
-                            {anuncio.curtidas || 0}
+                            {anuncio.total_curtidas || anuncio.curtidas || 0}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <MessageCircle className="w-4 h-4" />
+                            {(anuncio.comentarios?.length || 0) + (anuncio.perguntas?.length || 0)}
                           </span>
                         </div>
+
+                        {/* Faixa de Preço */}
+                        {anuncio.faixa_preco && (
+                          <div className="mb-3">
+                            <p className="text-xs text-gray-500 mb-1">Faixa de Preço:</p>
+                            <div className="flex items-center gap-2">
+                              <span className="text-2xl text-[#F7D426]">{anuncio.faixa_preco}</span>
+                              <span className="text-xs text-gray-600">
+                                {anuncio.faixa_preco === "$" && "Até R$ 500"}
+                                {anuncio.faixa_preco === "$$" && "R$ 500 - R$ 1.000"}
+                                {anuncio.faixa_preco === "$$$" && "R$ 1.000 - R$ 2.000"}
+                                {anuncio.faixa_preco === "$$$$" && "R$ 2.000 - R$ 5.000"}
+                                {anuncio.faixa_preco === "$$$$$" && "Acima de R$ 5.000"}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Botão Ver Detalhes */}
                         <Button
                           onClick={() => window.location.href = `${createPageUrl("DetalhesAnuncio")}?id=${anuncio.id}`}
                           className="w-full bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold"
-                          size="sm"
                         >
                           Ver Detalhes
                         </Button>
