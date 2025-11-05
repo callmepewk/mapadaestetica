@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -11,6 +12,22 @@ import { format } from "date-fns";
 export default function CardAnuncio({ anuncio, destaque = false }) {
   const [dialogAberto, setDialogAberto] = useState(false);
   const [imagemAtual, setImagemAtual] = useState(0);
+  const [curtido, setCurtido] = useState(false);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        // Assuming base44 and its auth method are available globally or imported implicitly
+        // If not, you might need an explicit import like: import { base44 } from 'path/to/base44';
+        const userData = await base44.auth.me();
+        setUser(userData);
+      } catch {
+        setUser(null);
+      }
+    };
+    fetchUser();
+  }, []);
 
   if (!anuncio) return null;
 
@@ -38,12 +55,53 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
     return colors[categoria] || "bg-gray-100 text-gray-800";
   };
 
-  const isPremium = anuncio?.plano === 'premium';
+  const handleCurtir = async () => {
+    if (!user) {
+      alert("Faça login para curtir!");
+      return;
+    }
+
+    try {
+      const novasCurtidas = curtido ? (anuncio.curtidas || 0) - 1 : (anuncio.curtidas || 0) + 1;
+      // Assuming base44 and its entities method are available globally or imported implicitly
+      await base44.entities.Anuncio.update(anuncio.id, {
+        curtidas: novasCurtidas
+      });
+      setCurtido(!curtido);
+      anuncio.curtidas = novasCurtidas; // Update local anuncio object for immediate UI reflection
+    } catch (error) {
+      console.error("Erro ao curtir:", error);
+    }
+  };
+
+  const handleCompartilhar = () => {
+    // Assuming createPageUrl is a helper function available in the scope
+    // If not, you might need to define it or import it, e.g., import { createPageUrl } from 'path/to/utils';
+    const url = `${window.location.origin}${createPageUrl("DetalhesAnuncio")}?id=${anuncio.id}`;
+    const texto = `Confira: ${anuncio.titulo} - ${anuncio.profissional}`;
+
+    if (navigator.share) {
+      navigator.share({
+        title: anuncio.titulo,
+        text: texto,
+        url: url
+      }).catch(() => {
+        // Fallback para copiar link em caso de erro ou cancelamento do share
+        navigator.clipboard.writeText(url);
+        alert("Link copiado para a área de transferência!");
+      });
+    } else {
+      navigator.clipboard.writeText(url);
+      alert("Link copiado para a área de transferência!");
+    }
+  };
+
+  const isPremium = anuncio?.plano === 'premium' || anuncio?.plano === 'platina';
   const todasImagens = [anuncio.imagem_principal, ...(anuncio.imagens_galeria || [])].filter(Boolean);
 
   return (
     <>
-      <Card 
+      <Card
         className={`overflow-hidden group hover:shadow-2xl transition-shadow duration-200 border-none h-full flex flex-col ${
           isPremium ? 'ring-2 ring-[#F7D426]' : ''
         }`}
@@ -59,7 +117,7 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
           ) : (
             <div className="w-full h-full flex items-center justify-center text-gray-400 text-6xl">✨</div>
           )}
-          
+
           {isPremium && (
             <div className="absolute top-3 left-3">
               <Badge className="bg-gradient-to-r from-[#F7D426] to-yellow-500 text-[#2C2C2C] border-none shadow-lg font-bold">
@@ -95,6 +153,27 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
               </Avatar>
             </div>
           )}
+
+          <div className="absolute bottom-3 right-3 flex gap-2">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCurtir();
+              }}
+              className="w-8 h-8 bg-white/90 rounded-full flex items-center justify-center hover:bg-white transition-colors shadow-lg"
+            >
+              <Heart className={`w-4 h-4 ${curtido ? 'fill-red-500 text-red-500' : 'text-gray-700'}`} />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCompartilhar();
+              }}
+              className="w-8 h-8 bg-white/90 rounded-full flex items-center justify-center hover:bg-white transition-colors shadow-lg"
+            >
+              <Share2 className="w-4 h-4 text-gray-700" />
+            </button>
+          </div>
         </div>
 
         <CardContent className="p-4 flex flex-col flex-1">
@@ -102,6 +181,11 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
             <Badge className={getCategoriaColor(anuncio.categoria)}>
               {anuncio.categoria}
             </Badge>
+            {anuncio.subcategoria && (
+              <Badge variant="outline" className="text-xs">
+                {anuncio.subcategoria}
+              </Badge>
+            )}
             {anuncio.profissional_verificado && (
               <Badge className="bg-blue-100 text-blue-800">
                 ✓ Verificado
@@ -117,11 +201,50 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
             {anuncio.profissional}
           </p>
 
+          {anuncio.categoria_clinica && (
+            <p className="text-xs text-gray-600 mb-2">
+              {anuncio.categoria_clinica}
+            </p>
+          )}
+
+          {anuncio.tipo_estabelecimento && (
+            <Badge variant="outline" className="mb-2 w-fit text-xs">
+              {anuncio.tipo_estabelecimento}
+            </Badge>
+          )}
+
+          {anuncio.estrelas_estabelecimento && (
+            <div className="flex gap-1 mb-2">
+              {Array.from({ length: anuncio.estrelas_estabelecimento }).map((_, i) => (
+                <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+              ))}
+            </div>
+          )}
+
+          {anuncio.faixa_preco && (
+            <p className="text-sm text-gray-600 mb-2">
+              Faixa de preço: {anuncio.faixa_preco}
+            </p>
+          )}
+
           <p className="text-sm text-gray-600 mb-4 line-clamp-3 flex-1">
             {anuncio.descricao}
           </p>
 
-          {/* Informações visíveis no card */}
+          {anuncio.procedimentos_servicos && anuncio.procedimentos_servicos.length > 0 && (
+            <div className="mb-3">
+              <p className="text-xs font-semibold text-gray-700 mb-1">Procedimentos:</p>
+              <div className="flex flex-wrap gap-1">
+                {anuncio.procedimentos_servicos.slice(0, 3).map((proc, i) => (
+                  <Badge key={i} variant="outline" className="text-xs">{proc}</Badge>
+                ))}
+                {anuncio.procedimentos_servicos.length > 3 && (
+                  <Badge variant="outline" className="text-xs">+{anuncio.procedimentos_servicos.length - 3}</Badge>
+                )}
+              </div>
+            </div>
+          )}
+
           <div className="space-y-2 mb-4">
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <MapPin className="w-4 h-4 flex-shrink-0 text-pink-600" />
@@ -143,10 +266,26 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
             )}
           </div>
 
+          {anuncio.amenidades && (
+            <div className="mb-3">
+              <div className="flex flex-wrap gap-2">
+                {anuncio.amenidades.estacionamento && <Badge variant="outline" className="text-xs">🅿️ Estacionamento</Badge>}
+                {anuncio.amenidades.aceita_pet && <Badge variant="outline" className="text-xs">🐕 Pet Friendly</Badge>}
+                {anuncio.amenidades.lounge && <Badge variant="outline" className="text-xs">🛋️ Lounge</Badge>}
+              </div>
+            </div>
+          )}
+
           <div className="flex items-center justify-between pt-3 border-t">
-            <div className="flex items-center gap-1 text-xs text-gray-500">
-              <Eye className="w-4 h-4" />
-              <span>{anuncio.visualizacoes || 0} views</span>
+            <div className="flex items-center gap-3 text-xs text-gray-500">
+              <span className="flex items-center gap-1">
+                <Eye className="w-4 h-4" />
+                {anuncio.visualizacoes || 0}
+              </span>
+              <span className="flex items-center gap-1">
+                <Heart className="w-4 h-4" />
+                {anuncio.curtidas || 0}
+              </span>
             </div>
 
             {anuncio.created_date && (
