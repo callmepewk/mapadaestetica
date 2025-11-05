@@ -32,6 +32,7 @@ const planos = [
       "Estatísticas básicas"
     ],
     naoInclui: [
+      "🔒 Acesso ao WhatsApp dos profissionais",
       "Perfil destacado",
       "Badge de verificação",
       "Prioridade nas buscas",
@@ -55,6 +56,7 @@ const planos = [
       dias_exposicao: 7
     },
     beneficios: [
+      "✅ Acesso ao WhatsApp dos profissionais",
       "2 Especialidades cadastradas",
       "10 Anúncios ativos",
       "5 Tags/palavras-chave do Google Negócio",
@@ -89,6 +91,7 @@ const planos = [
       dias_exposicao: 14
     },
     beneficios: [
+      "✅ Acesso ao WhatsApp dos profissionais",
       "3 Especialidades cadastradas",
       "15 Anúncios ativos",
       "10 Tags/palavras-chave premium",
@@ -124,6 +127,7 @@ const planos = [
       dias_exposicao: 21
     },
     beneficios: [
+      "✅ Acesso ao WhatsApp dos profissionais",
       "5 Especialidades cadastradas",
       "25 Anúncios ativos",
       "20 Tags/palavras-chave premium",
@@ -159,6 +163,7 @@ const planos = [
       dias_exposicao: 30
     },
     beneficios: [
+      "✅ Acesso ao WhatsApp dos profissionais",
       "Especialidades ILIMITADAS",
       "Anúncios ILIMITADOS",
       "100 Tags/palavras-chave premium",
@@ -190,9 +195,15 @@ export default function Planos() {
         <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
           Escolha Seu Plano de Anúncios
         </h1>
-        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+        <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-4">
           5 planos exclusivos para profissionais de todos os portes
         </p>
+        <div className="inline-flex items-center gap-2 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-lg px-4 py-2">
+          <span className="text-xl">💬</span>
+          <p className="text-sm text-gray-700">
+            <span className="font-bold text-green-700">Novidade:</span> A partir do Plano PRATA você tem acesso ao WhatsApp de todos os profissionais!
+          </p>
+        </div>
       </div>
 
       {/* Plans Grid */}
