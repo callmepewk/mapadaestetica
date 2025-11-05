@@ -31,6 +31,9 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
 
   if (!anuncio) return null;
 
+  // Verificar se usuário tem plano gratuito/cobre
+  const isPlanoGratuito = !user || user.plano_ativo === 'cobre' || !user.plano_ativo;
+
   const getStatusColor = (status) => {
     const colors = {
       "Aberto Agora": "bg-green-100 text-green-800 border-green-200",
@@ -471,12 +474,11 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
                       <h3 className="font-semibold text-lg mb-3">Serviços Oferecidos</h3>
                       <div className="space-y-2">
                         {anuncio.servicos_oferecidos.map((servico, index) => (
-                          <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                            <div>
+                          <div key={index} className="flex items-center p-3 bg-gray-50 rounded-lg">
+                            <div className="flex-1">
                               <p className="font-medium">{servico.nome}</p>
                               {servico.duracao && <p className="text-sm text-gray-500">Duração: {servico.duracao}</p>}
                             </div>
-                            {servico.preco && <p className="font-semibold text-pink-600">R$ {servico.preco.toFixed(2)}</p>}
                           </div>
                         ))}
                       </div>
@@ -537,15 +539,50 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
                 )}
 
                 {anuncio.whatsapp && (
-                  <a href={`https://wa.me/${anuncio.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
-                    <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
-                      <span className="text-white font-bold">W</span>
+                  isPlanoGratuito ? (
+                    <div className="relative">
+                      <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg border-2 border-green-200">
+                        <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                          <span className="text-white font-bold">W</span>
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-xs text-gray-500">WhatsApp</p>
+                          <p className="font-medium text-green-700 blur-sm select-none">({anuncio.whatsapp.substring(0, 2)}) *****-****</p>
+                        </div>
+                      </div>
+                      <div className="mt-3 p-3 bg-gradient-to-r from-yellow-50 to-amber-50 border-2 border-yellow-300 rounded-lg">
+                        <div className="flex items-start gap-2 mb-2">
+                          <Crown className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-semibold text-sm text-yellow-900 mb-1">🔒 Conteúdo Bloqueado</p>
+                            <p className="text-xs text-yellow-800 mb-3">
+                              Faça upgrade do seu plano para visualizar o WhatsApp e contatar diretamente os profissionais!
+                            </p>
+                            <a 
+                              href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Gostaria de fazer upgrade do meu plano para acessar os contatos dos profissionais! 💆‍♀️")}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <Button size="sm" className="w-full bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700">
+                                <Crown className="w-4 h-4 mr-2" />
+                                Fazer Upgrade
+                              </Button>
+                            </a>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-xs text-gray-500">WhatsApp</p>
-                      <p className="font-medium text-green-700">Enviar mensagem</p>
-                    </div>
-                  </a>
+                  ) : (
+                    <a href={`https://wa.me/${anuncio.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
+                      <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                        <span className="text-white font-bold">W</span>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">WhatsApp</p>
+                        <p className="font-medium text-green-700">Enviar mensagem</p>
+                      </div>
+                    </a>
+                  )
                 )}
 
                 {anuncio.email && (
