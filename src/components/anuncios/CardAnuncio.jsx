@@ -31,8 +31,9 @@ export default function CardAnuncio({ anuncio, destaque = false }) {
 
   if (!anuncio) return null;
 
-  // Verificar se usuário tem plano gratuito/cobre
-  const isPlanoGratuito = !user || user.plano_ativo === 'cobre' || !user.plano_ativo;
+  // Admin nunca tem restrição, apenas usuários profissionais com plano cobre
+  const isAdmin = user?.role === 'admin';
+  const isPlanoGratuito = !isAdmin && (!user || user.plano_ativo === 'cobre' || !user.plano_ativo);
 
   const getStatusColor = (status) => {
     const colors = {

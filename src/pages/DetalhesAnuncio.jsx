@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
@@ -90,7 +91,9 @@ export default function DetalhesAnuncio() {
   ].filter(Boolean) : [];
 
   const isPaciente = user?.tipo_usuario === 'paciente';
-  const isUserFree = !user || user.plano_ativo === 'free';
+  const isAdmin = user?.role === 'admin';
+  // Admin nunca tem restrição, apenas usuários com plano cobre/free
+  const isUserFree = !isAdmin && (!user || user.plano_ativo === 'cobre' || !user.plano_ativo);
 
   if (loading) {
     return (
@@ -220,7 +223,7 @@ export default function DetalhesAnuncio() {
               <Alert className="bg-gradient-to-br from-yellow-50 to-amber-50 border-2 border-yellow-300">
                 <Lock className="h-5 w-5 text-yellow-600" />
                 <AlertDescription className="text-yellow-900">
-                  <p className="font-semibold mb-2">{isPaciente ? "🔒 Acesso Limitado" : "🔒 Plano FREE"}</p>
+                  <p className="font-semibold mb-2">{isPaciente ? "🔒 Acesso Limitado" : "🔒 Plano FREE/Cobre"}</p>
                   <p className="text-sm mb-3">{isPaciente ? "Pacientes têm acesso limitado." : "Faça upgrade para acesso completo!"}</p>
                   {!isPaciente && <Button onClick={() => navigate(createPageUrl("Planos"))} className="w-full bg-gradient-to-r from-yellow-600 to-amber-600" size="sm"><Crown className="w-4 h-4 mr-2" />Ver Planos</Button>}
                 </AlertDescription>
