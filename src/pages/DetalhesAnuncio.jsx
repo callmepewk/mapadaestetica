@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { MapPin, Phone, Mail, Globe, Clock, Instagram, Facebook, ArrowLeft, Share2, Heart, Eye, Calendar, Lock, Crown } from "lucide-react";
+import { MapPin, Phone, Mail, Globe, Clock, Instagram, Facebook, ArrowLeft, Share2, Heart, Eye, Calendar, Lock, Crown, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
 import SecaoPerguntas from "../components/anuncios/SecaoPerguntas";
+import ImpulsionarAnuncioModal from "../components/anuncios/ImpulsionarAnuncioModal";
 
 export default function DetalhesAnuncio() {
   const navigate = useNavigate();
@@ -22,6 +23,7 @@ export default function DetalhesAnuncio() {
   const [erro, setErro] = useState(null);
   const [curtido, setCurtido] = useState(false);
   const [compartilhando, setCompartilhando] = useState(false);
+  const [mostrarImpulsionar, setMostrarImpulsionar] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -110,6 +112,9 @@ export default function DetalhesAnuncio() {
   // Para curtir e compartilhar: apenas plano COBRE profissional tem restrição
   const isPlanoCobre = user?.tipo_usuario === 'profissional' && (!user.plano_ativo || user.plano_ativo === 'cobre');
   const temRestricaoAcoes = !isAdmin && isPlanoCobre;
+
+  const isAutor = user && anuncio && user.email === anuncio.created_by;
+  const isProfissionalAutor = isAutor && user?.tipo_usuario === 'profissional';
 
   const handleCurtir = async () => {
     if (!user) {
@@ -208,7 +213,6 @@ export default function DetalhesAnuncio() {
     );
   }
 
-  const isAutor = user && anuncio && user.email === anuncio.created_by;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
@@ -269,6 +273,17 @@ export default function DetalhesAnuncio() {
                     </div>
                   </div>
                   <div className="flex gap-2">
+                    {/* Botão Impulsionar - Apenas para o autor profissional */}
+                    {isProfissionalAutor && (
+                      <Button
+                        onClick={() => setMostrarImpulsionar(true)}
+                        className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] hover:from-[#E5C215] hover:to-[#F7D426] text-[#2C2C2C] font-bold border-2 border-[#2C2C2C]"
+                      >
+                        <TrendingUp className="w-4 h-4 mr-2" />
+                        Impulsionar
+                      </Button>
+                    )}
+                    
                     <Button 
                       variant="outline" 
                       size="icon"
@@ -390,6 +405,15 @@ export default function DetalhesAnuncio() {
           </div>
         </div>
       </div>
+
+      {/* Modal de Impulsionar Anúncio */}
+      {isProfissionalAutor && (
+        <ImpulsionarAnuncioModal
+          open={mostrarImpulsionar}
+          onClose={() => setMostrarImpulsionar(false)}
+          anuncio={anuncio}
+        />
+      )}
     </div>
   );
 }

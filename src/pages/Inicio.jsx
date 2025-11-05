@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useNavigate } from "react-router-dom"; // Added useNavigate
+import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import {
   Search,
@@ -16,9 +16,11 @@ import {
   MessageCircle,
   ChevronDown,
   ChevronUp,
-  CheckCircle, // Added for comparison modal
-  X,            // Added for comparison modal
-  AlertCircle   // Added for comparison modal
+  CheckCircle,
+  X,
+  AlertCircle,
+  Eye, // Added for anuncio summary
+  Heart, // Added for anuncio summary
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,13 +41,13 @@ import { CardContent } from "@/components/ui/card";
 import CalculadoraLaserSection from "../components/home/CalculadoraLaserSection";
 import SEOStats from "../components/home/SEOStats";
 import OnboardingModal from "../components/home/OnboardingModal";
-import LoginPromptModal from "../components/home/LoginPromptModal"; // Added LoginPromptModal
+import LoginPromptModal from "../components/home/LoginPromptModal";
 import {
-  Dialog, // Added for comparison modal
-  DialogContent, // Added for comparison modal
-  DialogHeader, // Added for comparison modal
-  DialogTitle, // Added for comparison modal
-} from "@/components/ui/dialog"; // Added for comparison modal
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const categorias = [
   { nome: "Depilação", cor: "from-pink-500 to-rose-500", icon: "✨" },
@@ -68,11 +70,12 @@ export default function Inicio() {
   const [buscaCategoria, setBuscaCategoria] = useState("");
   const [mostrarOnboarding, setMostrarOnboarding] = useState(false);
   const [mostrarComparacao, setMostrarComparacao] = useState(false);
-  const [mostrarLoginPrompt, setMostrarLoginPrompt] = useState(false); // New state variable
-  const [tipoLoginPrompt, setTipoLoginPrompt] = useState(""); // New state variable: busca, drbeleza, patrocinador
+  const [mostrarLoginPrompt, setMostrarLoginPrompt] = useState(false);
+  const [tipoLoginPrompt, setTipoLoginPrompt] = useState("");
   const [user, setUser] = useState(null);
+  const [resumoAnuncios, setResumoAnuncios] = useState([]);
 
-  const navigate = useNavigate(); // Initialize useNavigate hook
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -82,6 +85,20 @@ export default function Inicio() {
 
         if (userData && !userData.cadastro_completo) {
           setMostrarOnboarding(true);
+        }
+
+        // Buscar resumo dos anúncios do profissional
+        if (userData?.tipo_usuario === 'profissional') {
+          try {
+            const anuncios = await base44.entities.Anuncio.filter(
+              { created_by: userData.email, status: 'ativo' },
+              '-created_date',
+              3
+            );
+            setResumoAnuncios(anuncios);
+          } catch (error) {
+            console.error("Erro ao buscar anúncios:", error);
+          }
         }
       } catch {
         setUser(null);
@@ -288,7 +305,6 @@ export default function Inicio() {
                         Descubra como funciona e qual o tratamento certo para você com inteligência artificial
                       </p>
                     </div>
-                    {/* Updated to call handleAcessarDrBeleza */}
                     <Button 
                       onClick={handleAcessarDrBeleza}
                       size="lg" 
@@ -308,6 +324,63 @@ export default function Inicio() {
       {/* PROFISSIONAIS: Conteúdo específico */}
       {isProfissional && (
         <>
+          {/* NOVO: Resumo dos Anúncios */}
+          {resumoAnuncios.length > 0 && (
+            <section className="py-8 bg-white">
+              <div className="max-w-7xl mx-auto px-4">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900">Meus Anúncios</h2>
+                    <p className="text-gray-600">Acompanhe o desempenho dos seus anúncios</p>
+                  </div>
+                  <Button
+                    onClick={() => navigate(createPageUrl("Perfil"))}
+                    variant="outline"
+                    className="border-2 border-[#F7D426] text-[#F7D426] hover:bg-[#FFF9E6]"
+                  >
+                    Ver Todos
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-6">
+                  {resumoAnuncios.map((anuncio) => (
+                    <Card key={anuncio.id} className="border-none shadow-lg hover:shadow-xl transition-all">
+                      <div className="h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center overflow-hidden">
+                        {anuncio.imagem_principal ? (
+                          <img src={anuncio.imagem_principal} alt={anuncio.titulo} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-6xl">✨</span>
+                        )}
+                      </div>
+                      <CardContent className="p-4">
+                        <Badge className="mb-2 bg-pink-100 text-pink-800">{anuncio.categoria}</Badge>
+                        <h3 className="font-bold text-lg mb-2 line-clamp-1">{anuncio.titulo}</h3>
+                        <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
+                          <span className="flex items-center gap-1">
+                            <Eye className="w-4 h-4" />
+                            {anuncio.visualizacoes || 0}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Heart className="w-4 h-4" />
+                            {anuncio.curtidas || 0}
+                          </span>
+                        </div>
+                        <Button
+                          onClick={() => window.location.href = `${createPageUrl("DetalhesAnuncio")}?id=${anuncio.id}`}
+                          className="w-full bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold"
+                          size="sm"
+                        >
+                          Ver Detalhes
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+
           <SEOStats />
 
           {/* Botão de Comparação */}
@@ -418,7 +491,6 @@ export default function Inicio() {
             <p className="text-gray-600 mb-4">
               Quer se tornar um patrocinador?
             </p>
-            {/* Updated to call handleContratarPatrocinador */}
             <a 
               onClick={(e) => {
                 e.preventDefault();
@@ -513,7 +585,6 @@ export default function Inicio() {
                   </li>
                 </ul>
 
-                {/* Updated to call handleContratarPatrocinador */}
                 <a 
                   onClick={(e) => {
                     e.preventDefault();
@@ -600,7 +671,6 @@ export default function Inicio() {
                   </li>
                 </ul>
 
-                {/* Updated to call handleContratarPatrocinador */}
                 <a 
                   onClick={(e) => {
                     e.preventDefault();
@@ -698,7 +768,6 @@ export default function Inicio() {
                   </li>
                 </ul>
 
-                {/* Updated to call handleContratarPatrocinador */}
                 <a 
                   onClick={(e) => {
                     e.preventDefault();
@@ -804,7 +873,6 @@ export default function Inicio() {
                   </li>
                 </ul>
 
-                {/* Updated to call handleContratarPatrocinador */}
                 <a 
                   onClick={(e) => {
                     e.preventDefault();
@@ -914,7 +982,6 @@ export default function Inicio() {
                   </li>
                 </ul>
 
-                {/* Updated to call handleContratarPatrocinador */}
                 <a 
                   onClick={(e) => {
                     e.preventDefault();
