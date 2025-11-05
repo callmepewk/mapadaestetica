@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ export default function Chatbot() {
   const [inputMensagem, setInputMensagem] = useState("");
   const [loading, setLoading] = useState(false);
   const [tipoUsuario, setTipoUsuario] = useState(null);
+  const [mostrarTooltip, setMostrarTooltip] = useState(false);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -157,31 +159,80 @@ export default function Chatbot() {
 
   return (
     <>
-      {/* Botão Flutuante com imagem do Dr. Beleza */}
+      {/* Botão Flutuante com imagem do Dr. Beleza - MAIOR */}
       <AnimatePresence>
-        <motion.button
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0, opacity: 0 }}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={() => setAberto(!aberto)}
-          className="fixed bottom-6 right-6 z-50 w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform overflow-hidden"
+        <div 
+          className="fixed bottom-6 right-6 z-50"
+          onMouseEnter={() => setMostrarTooltip(true)}
+          onMouseLeave={() => setMostrarTooltip(false)}
         >
-          {aberto ? (
-            <X className="w-6 h-6 text-white" />
-          ) : (
-            <img
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/acc7e047d_drbeleza.png"
-              alt="Dr. Beleza"
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                e.target.style.display = 'none';
-                e.target.parentElement.innerHTML = '<svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"></path><path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"></path></svg>';
-              }}
-            />
-          )}
-        </motion.button>
+          {/* Tooltip/Nuvem Informativa */}
+          <AnimatePresence>
+            {mostrarTooltip && !aberto && (
+              <motion.div
+                initial={{ opacity: 0, x: 20, scale: 0.8 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={{ opacity: 0, x: 20, scale: 0.8 }}
+                transition={{ type: "spring", damping: 20, stiffness: 300 }}
+                className="absolute right-24 bottom-0 mb-2"
+              >
+                <div className="relative bg-white rounded-2xl shadow-2xl p-4 max-w-xs border-2 border-blue-200">
+                  {/* Seta da nuvem */}
+                  <div className="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2">
+                    <div className="w-4 h-4 bg-white border-r-2 border-t-2 border-blue-200 rotate-45"></div>
+                  </div>
+                  
+                  <div className="flex items-start gap-3">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0">
+                      <img
+                        src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/acc7e047d_drbeleza.png"
+                        alt="Dr. Beleza"
+                        className="w-full h-full rounded-full object-cover"
+                      />
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-900 mb-1">Dr. Beleza 🩺✨</p>
+                      <p className="text-sm text-gray-600">
+                        Seu assistente virtual! Tire dúvidas sobre tratamentos, encontre profissionais e muito mais.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <motion.button
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => setAberto(!aberto)}
+            className="relative w-20 h-20 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform overflow-hidden"
+          >
+            {/* Bolinha de Online */}
+            <motion.div
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="absolute top-1 right-1 w-5 h-5 bg-green-500 rounded-full border-4 border-white shadow-lg"
+            ></motion.div>
+
+            {aberto ? (
+              <X className="w-8 h-8 text-white" />
+            ) : (
+              <img
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/acc7e047d_drbeleza.png"
+                alt="Dr. Beleza"
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.parentElement.innerHTML = '<svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"></path><path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"></path></svg>';
+                }}
+              />
+            )}
+          </motion.button>
+        </div>
       </AnimatePresence>
 
       {/* Janela do Chatbot */}

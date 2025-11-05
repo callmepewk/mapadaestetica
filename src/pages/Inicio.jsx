@@ -56,16 +56,10 @@ const cidades = [
 export default function Inicio() {
   const [buscaCidade, setBuscaCidade] = useState("");
   const [buscaCategoria, setBuscaCategoria] = useState("");
-  const [mostrarTermos, setMostrarTermos] = useState(false);
   const [mostrarOnboarding, setMostrarOnboarding] = useState(false);
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const termosAceitos = localStorage.getItem('termos_aceitos');
-    if (!termosAceitos || termosAceitos !== 'true') {
-      setMostrarTermos(true);
-    }
-
     const fetchUser = async () => {
       try {
         const userData = await base44.auth.me();
@@ -80,11 +74,6 @@ export default function Inicio() {
     };
     fetchUser();
   }, []);
-
-  const handleAceitarTermos = () => {
-    localStorage.setItem('termos_aceitos', 'true');
-    setMostrarTermos(false);
-  };
 
   const handleOnboardingComplete = async () => {
     setMostrarOnboarding(false);
@@ -125,7 +114,7 @@ export default function Inicio() {
 
   return (
     <div className="min-h-screen">
-      <TermosCondicoes open={mostrarTermos} onAccept={handleAceitarTermos} />
+      <TermosCondicoes />
       <OnboardingModal open={mostrarOnboarding} onComplete={handleOnboardingComplete} />
 
       {/* PACIENTES: Hero, Categorias, Dr. Beleza */}
