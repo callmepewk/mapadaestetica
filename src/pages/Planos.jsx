@@ -233,14 +233,14 @@ export default function Planos() {
         setVerificandoPagamento(true);
 
         try {
-          // Find the most recent SolicitacaoAtivacaoPlano for this user and plan
+          // Buscar a solicitação mais recente deste usuário para este plano
           const solicitacoes = await base44.entities.SolicitacaoAtivacaoPlano.filter(
             { 
               usuario_email: user.email, 
               plano_solicitado: planoParam,
             },
-            '-created_date', // Order by created_date descending to get the most recent
-            1 // Limit to 1 result
+            '-created_date',
+            1
           );
 
           if (solicitacoes.length > 0) {
@@ -252,56 +252,87 @@ export default function Planos() {
             let notificationMessage = null;
 
             if (collectionStatus === 'approved') {
-              updateData = { status: 'pagamento_aprovado_mp', data_pagamento_mp: new Date().toISOString() };
-              alertMessage = `Seu pagamento foi aprovado pelo Mercado Pago para o plano ${planoParam.toUpperCase()}. Nossa equipe foi notificada e ativará seu plano em até 24 horas.`;
+              updateData = { 
+                status: 'pagamento_aprovado_mp', 
+                data_pagamento_mp: new Date().toISOString() 
+              };
               
-              notificationType = "novo_pagamento_mp_aprovado";
-              notificationTitle = `Pagamento Aprovado - Plano ${planoParam.toUpperCase()}`;
-              notificationMessage = `${user.full_name} (${user.email}) teve um pagamento aprovado via Mercado Pago para o plano ${planoParam.toUpperCase()}. Verifique e ative o plano.`;
+              notificationType = "nova_confirmacao_plano";
+              notificationTitle = `✅ Pagamento Aprovado - Plano ${planoParam.toUpperCase()}`;
+              notificationMessage = `${user.full_name} (${user.email}) teve um pagamento APROVADO via Mercado Pago para o plano ${planoParam.toUpperCase()}. Verifique e ative o plano.`;
 
               setPlanoAtualizado(planoParam.toUpperCase());
-              setMostrarSucesso(true); // Show success alert visually
-              // Plan is NOT automatically activated on user's profile here. Admin will do it.
+              setMostrarSucesso(true);
+              
+              alertMessage = `🎉 Parabéns! Seu pagamento foi aprovado pelo Mercado Pago!\n\nNossa equipe foi notificada e seu plano ${planoParam.toUpperCase()} será ativado em até 24 horas.\n\nVocê receberá um e-mail de confirmação assim que o plano estiver ativo.`;
+              
             } else if (collectionStatus === 'pending') {
-              updateData = { status: 'pagamento_pendente_mp', data_pagamento_mp: new Date().toISOString() };
-              alertMessage = "Seu pagamento está pendente. Assim que for aprovado, nossa equipe será notificada para ativar seu plano.";
+              updateData = { 
+                status: 'pagamento_pendente_mp', 
+                data_pagamento_mp: new Date().toISOString() 
+              };
+              alertMessage = "⏳ Seu pagamento está pendente de aprovação.\n\nAssim que o Mercado Pago aprovar, nossa equipe será notificada para ativar seu plano.\n\nVocê receberá uma confirmação por e-mail.";
+              
             } else if (collectionStatus === 'rejected') {
-              updateData = { status: 'pagamento_rejeitado_mp', data_pagamento_mp: new Date().toISOString() };
-              alertMessage = "Seu pagamento foi rejeitado. Tente novamente ou entre em contato com o suporte.";
+              updateData = { 
+                status: 'pagamento_rejeitado_mp', 
+                data_pagamento_mp: new Date().toISOString() 
+              };
+              alertMessage = "❌ Seu pagamento foi rejeitado pelo Mercado Pago.\n\nTente novamente ou entre em contato com nosso suporte:\n(31) 97259-5643";
             }
 
             if (Object.keys(updateData).length > 0) {
               await base44.entities.SolicitacaoAtivacaoPlano.update(solicitacao.id, updateData);
             }
+            
             if (notificationType) {
               await base44.entities.Notificacao.create({
-                usuario_email: "admin@mapadaestetica.com.br", // Email do admin
+                usuario_email: "admin@mapadaestetica.com.br",
                 tipo: notificationType,
                 titulo: notificationTitle,
                 mensagem: notificationMessage,
-                link_acao: `/solicitacoes-plano` // Assuming an admin page to manage solicitations
+                link_acao: `/solicitacoes-plano`
               });
             }
+            
             if (alertMessage) {
               alert(alertMessage);
             }
           } else {
-            // No prior solicitation found. This can happen if user went directly to MP link or refreshed page.
-            // In this case, we can still inform the user based on MP status.
+            // Sem solicitação prévia - criar uma nova
             if (collectionStatus === 'approved') {
-              alert("Pagamento aprovado, mas não encontramos uma solicitação correspondente em nosso sistema. Por favor, entre em contato com o suporte para ativarmos seu plano.");
+              await base44.entities.SolicitacaoAtivacaoPlano.create({
+                usuario_email: user.email,
+                usuario_nome: user.full_name,
+                plano_solicitado: planoParam,
+                link_mercadopago: "Retorno direto do MP",
+                status: "pagamento_aprovado_mp",
+                data_solicitacao: new Date().toISOString(),
+                data_pagamento_mp: new Date().toISOString()
+              });
+
+              await base44.entities.Notificacao.create({
+                usuario_email: "admin@mapadaestetica.com.br",
+                tipo: "nova_confirmacao_plano",
+                titulo: `✅ Pagamento Aprovado - Plano ${planoParam.toUpperCase()}`,
+                mensagem: `${user.full_name} (${user.email}) teve um pagamento APROVADO via Mercado Pago para o plano ${planoParam.toUpperCase()}. Verifique e ative o plano.`,
+                link_acao: `/solicitacoes-plano`
+              });
+
+              setPlanoAtualizado(planoParam.toUpperCase());
+              setMostrarSucesso(true);
+              alert(`🎉 Parabéns! Seu pagamento foi aprovado!\n\nSeu plano ${planoParam.toUpperCase()} será ativado em até 24 horas.`);
             } else if (collectionStatus === 'pending') {
-              alert("Seu pagamento está pendente. Por favor, entre em contato com o suporte se não tiver uma solicitação ativa para este pagamento.");
+              alert("⏳ Seu pagamento está pendente. Aguarde a aprovação do Mercado Pago.");
             } else if (collectionStatus === 'rejected') {
-              alert("Seu pagamento foi rejeitado. Tente novamente ou entre em contato com o suporte.");
+              alert("❌ Seu pagamento foi rejeitado. Tente novamente ou entre em contato: (31) 97259-5643");
             }
           }
         } catch (error) {
           console.error("Erro ao processar retorno do Mercado Pago:", error);
-          alert("Ocorreu um erro ao processar seu pagamento. Entre em contato com o suporte.");
+          alert("❌ Ocorreu um erro ao processar seu pagamento.\n\nPor favor, entre em contato com o suporte:\n(31) 97259-5643");
         } finally {
           setVerificandoPagamento(false);
-          // Always clean the URL after processing MP params
           window.history.replaceState({}, '', createPageUrl("Planos"));
         }
       }
@@ -310,7 +341,7 @@ export default function Planos() {
     if (user) {
       verificarPagamento();
     }
-  }, [location, user]); // navigate removed as it's not used directly here
+  }, [location, user]);
 
   const handleContratarPlano = async (plano) => {
     if (!user) {
@@ -330,8 +361,6 @@ export default function Planos() {
           alert(`Parabéns! Seu plano ${plano.nome.toUpperCase()} foi ativado com sucesso.`);
           const userData = await base44.auth.me();
           setUser(userData);
-          // Reload user to reflect new plan status
-          window.history.replaceState({}, '', createPageUrl("Planos")); // Clean URL if any MP params were there
         } catch (error) {
           console.error("Erro ao ativar plano gratuito:", error);
           alert("Ocorreu um erro ao tentar ativar o plano gratuito. Por favor, tente novamente.");
@@ -342,7 +371,7 @@ export default function Planos() {
       return;
     }
 
-    // Planos pagos - Abrir Mercado Pago e modal de confirmação
+    // Planos pagos
     setPlanoSelecionado(plano);
     
     // Criar solicitação de ativação
@@ -352,7 +381,7 @@ export default function Planos() {
         usuario_nome: user.full_name,
         plano_solicitado: plano.tipo,
         link_mercadopago: plano.linkPagamento,
-        status: "aguardando_confirmacao", // Initial status
+        status: "aguardando_confirmacao",
         data_solicitacao: new Date().toISOString()
       });
     } catch (error) {
@@ -361,13 +390,8 @@ export default function Planos() {
       return;
     }
 
-    // Construir URL completa com back_urls (para o caso de o MP redirecionar)
-    const currentUrl = window.location.origin + createPageUrl("Planos");
-    const backUrl = `${currentUrl}?plano=${plano.tipo}`;
-    const mercadoPagoUrl = `${plano.linkPagamento}&back_urls[success]=${encodeURIComponent(backUrl)}&back_urls[pending]=${encodeURIComponent(backUrl)}&back_urls[failure]=${encodeURIComponent(backUrl)}`;
-
-    // Abrir link do Mercado Pago em nova aba
-    window.open(mercadoPagoUrl, '_blank');
+    // Abrir link do Mercado Pago em nova aba (SEM back_urls - já configurado no painel do MP)
+    window.open(plano.linkPagamento, '_blank');
     
     // Mostrar modal de confirmação
     setMostrarModalConfirmacao(true);
@@ -379,46 +403,51 @@ export default function Planos() {
     setAguardandoConfirmacao(true);
     
     try {
-      // Buscar a solicitação mais recente do usuário para este plano que ainda não foi totalmente processada
       const solicitacoes = await base44.entities.SolicitacaoAtivacaoPlano.filter(
         { 
           usuario_email: user.email, 
           plano_solicitado: planoSelecionado.tipo,
-          status_ne: 'ativado_admin' // Not already activated by admin
         },
-        '-created_date', // Get the most recent one
+        '-created_date',
         1
       );
 
       if (solicitacoes.length > 0) {
         const solicitacao = solicitacoes[0];
         
-        // Atualizar status para confirmado pelo usuário
+        // Não atualizar se já foi aprovado pelo MP
+        if (solicitacao.status === 'pagamento_aprovado_mp' || solicitacao.status === 'ativado_admin') {
+          alert("✅ Seu pagamento já foi confirmado! Aguarde a ativação.");
+          setMostrarModalConfirmacao(false);
+          setPlanoSelecionado(null);
+          return;
+        }
+        
         await base44.entities.SolicitacaoAtivacaoPlano.update(solicitacao.id, {
           status: "confirmado_usuario",
           data_confirmacao_usuario: new Date().toISOString()
         });
 
-        // Criar notificação para o suporte (admin)
         await base44.entities.Notificacao.create({
-          usuario_email: "admin@mapadaestetica.com.br", // Email do admin
-          tipo: "nova_confirmacao_plano", 
-          titulo: `Confirmação de Pagamento de Plano - ${planoSelecionado.nome.toUpperCase()}`,
-          mensagem: `${user.full_name} (${user.email}) CONFIRMOU o pagamento do plano ${planoSelecionado.nome.toUpperCase()}. Verifique o pagamento no Mercado Pago e ative o plano.`,
-          link_acao: `/solicitacoes-plano` // Link para o admin verificar as solicitações
+          usuario_email: "admin@mapadaestetica.com.br",
+          tipo: "nova_confirmacao_plano",
+          titulo: `💬 Usuário Confirmou Pagamento - Plano ${planoSelecionado.nome.toUpperCase()}`,
+          mensagem: `${user.full_name} (${user.email}) CONFIRMOU manualmente o pagamento do plano ${planoSelecionado.nome.toUpperCase()}. Verifique o pagamento no Mercado Pago e ative o plano.`,
+          link_acao: `/solicitacoes-plano`
         });
 
         setPlanoAtualizado(planoSelecionado.nome.toUpperCase());
         setMostrarSucesso(true);
         setMostrarModalConfirmacao(false);
         setPlanoSelecionado(null);
-        alert("Sua confirmação de pagamento foi registrada! Nossa equipe foi notificada e ativará seu plano em até 24 horas. Você receberá um e-mail de confirmação.");
+        
+        alert("✅ Sua confirmação foi registrada!\n\nNossa equipe foi notificada e ativará seu plano em até 24 horas.\n\nVocê receberá um e-mail de confirmação.");
       } else {
-        alert("Não encontramos uma solicitação de plano ativa para confirmar. Por favor, tente novamente ou entre em contato com o suporte.");
+        alert("❌ Não encontramos uma solicitação de plano ativa.\n\nPor favor, tente novamente ou entre em contato:\n(31) 97259-5643");
       }
     } catch (error) {
       console.error("Erro ao confirmar pagamento:", error);
-      alert("Erro ao processar sua confirmação. Por favor, entre em contato com o suporte.");
+      alert("❌ Erro ao processar sua confirmação.\n\nEntre em contato com o suporte:\n(31) 97259-5643");
     } finally {
       setAguardandoConfirmacao(false);
     }
