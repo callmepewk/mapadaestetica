@@ -89,10 +89,10 @@ export default function Anuncios() {
         setUser(userData);
       } catch {
         setUser(null);
-        // REMOVIDO O TIMEOUT - Agora não abre automaticamente
-        // setTimeout(() => {
-        //   setMostrarLoginPrompt(true);
-        // }, 2000);
+        // MOSTRAR MODAL APÓS 1 SEGUNDO
+        setTimeout(() => {
+          setMostrarLoginPrompt(true);
+        }, 1000);
       }
     };
     fetchUser();

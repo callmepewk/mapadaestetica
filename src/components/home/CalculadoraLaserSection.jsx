@@ -14,11 +14,11 @@ import {
   X, 
   Download, 
   Lock,
-  HelpCircle, // New import
-  Lightbulb,  // New import
-  Search,     // New import
-  CheckCircle, // New import
-  ArrowRight  // New import
+  HelpCircle,
+  Lightbulb,
+  Search,
+  CheckCircle,
+  ArrowRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createPageUrl } from "@/utils";
@@ -35,11 +35,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 export default function CalculadoraLaserSection() {
   const [user, setUser] = useState(null);
   const [mostrarResultados, setMostrarResultados] = useState(false);
-  const [abaAtual, setAbaAtual] = useState("investimento"); // New state for current tab
+  const [abaAtual, setAbaAtual] = useState("investimento");
   const [dados, setDados] = useState({
     modeloLaser: "Ex: CO2 Fracionado",
     marcaLaser: "Ex: Ibramed",
@@ -72,7 +74,7 @@ export default function CalculadoraLaserSection() {
     tirAluguel: 0
   });
 
-  const [mostrarAjuda, setMostrarAjuda] = useState(false); // New state for help dialog
+  const [mostrarAjuda, setMostrarAjuda] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -186,13 +188,44 @@ export default function CalculadoraLaserSection() {
     }).format(value);
   };
 
-  const handleBaixarRelatorio = () => {
+  const handleBaixarRelatorio = async () => {
     if (!user || user.plano_ativo === 'free' || !user.plano_ativo) {
       // The tooltip will already handle the message for disabled button
       return; 
     }
-    // Download logic here
-    alert("Relatório completo sendo gerado... (Funcionalidade em desenvolvimento)");
+
+    try {
+      // Criar elemento temporário com o relatório
+      const relatorioElement = document.getElementById('relatorio-completo');
+      if (!relatorioElement) {
+        console.error('Elemento "relatorio-completo" não encontrado.');
+        alert('Erro ao gerar PDF: Elemento de relatório não encontrado.');
+        return;
+      }
+
+      // Capturar como canvas
+      const canvas = await html2canvas(relatorioElement, {
+        scale: 2, // Aumenta a resolução do canvas
+        useCORS: true, // Importante para imagens externas
+        logging: false, // Desabilita logs no console
+        windowWidth: relatorioElement.scrollWidth,
+        windowHeight: relatorioElement.scrollHeight
+      });
+
+      // Converter para PDF
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4'); // 'p' for portrait, 'mm' for units, 'a4' for size
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`relatorio-viabilidade-${dados.marcaLaser}-${Date.now()}.pdf`);
+      
+      alert('Relatório baixado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
+      alert('Erro ao gerar PDF. Tente novamente ou verifique o console para mais detalhes.');
+    }
   };
 
   const isUserFree = !user || user.plano_ativo === 'free' || !user.plano_ativo;
@@ -241,7 +274,7 @@ export default function CalculadoraLaserSection() {
                 Dados de Entrada
               </h3>
 
-              <Tabs value={abaAtual} onValueChange={setAbaAtual} className="w-full"> {/* Controlled by abaAtual */}
+              <Tabs value={abaAtual} onValueChange={setAbaAtual} className="w-full">
                 <TabsList className="grid w-full grid-cols-3 mb-6">
                   <TabsTrigger value="investimento">Investimento</TabsTrigger>
                   <TabsTrigger value="operacao">Operação</TabsTrigger>
@@ -324,7 +357,7 @@ export default function CalculadoraLaserSection() {
                   </div>
 
                   <Button
-                    onClick={handleProximaAba} // Next button
+                    onClick={handleProximaAba}
                     className="w-full mt-6 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 h-12 text-lg font-bold"
                   >
                     Próximo
@@ -379,7 +412,7 @@ export default function CalculadoraLaserSection() {
                   </div>
 
                   <Button
-                    onClick={handleProximaAba} // Next button
+                    onClick={handleProximaAba}
                     className="w-full mt-6 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 h-12 text-lg font-bold"
                   >
                     Próximo
@@ -407,7 +440,7 @@ export default function CalculadoraLaserSection() {
                   </div>
 
                   <Button
-                    onClick={calcular} // Calculate button on the last tab
+                    onClick={calcular}
                     className="w-full mt-6 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 h-12 text-lg font-bold"
                   >
                     <Calculator className="w-5 h-5 mr-2" />
@@ -454,7 +487,7 @@ export default function CalculadoraLaserSection() {
           </div>
         </div>
 
-        {/* Results Dialog - APENAS quando calcular */}
+        {/* Results Dialog */}
         <Dialog open={mostrarResultados} onOpenChange={setMostrarResultados}>
           <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
@@ -467,7 +500,7 @@ export default function CalculadoraLaserSection() {
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-6 py-4">
+            <div id="relatorio-completo" className="space-y-6 py-4">
               {/* Informações do Equipamento */}
               <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg p-6">
                 <h3 className="text-lg font-bold text-gray-900 mb-4">📋 Informações do Equipamento</h3>
@@ -575,14 +608,14 @@ export default function CalculadoraLaserSection() {
                           className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {isUserFree ? <Lock className="w-4 h-4 mr-2" /> : <Download className="w-4 h-4 mr-2" />}
-                          Baixar Relatório Completo
+                          Baixar Relatório PDF
                         </Button>
                       </div>
                     </TooltipTrigger>
                     {isUserFree && (
                       <TooltipContent className="bg-yellow-50 border-2 border-yellow-300 text-yellow-900 p-4 max-w-xs z-50">
                         <p className="font-semibold mb-2">🔒 Recurso Premium</p>
-                        <p className="text-sm">Para baixar o relatório completo, é necessário ter um plano PRATA ou superior.</p>
+                        <p className="text-sm">Para baixar o relatório completo em PDF, é necessário ter um plano PRATA ou superior.</p>
                         <Button
                           onClick={() => window.location.href = createPageUrl("Planos")}
                           className="w-full mt-3 bg-yellow-600 hover:bg-yellow-700 text-white"

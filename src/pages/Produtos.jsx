@@ -453,7 +453,11 @@ export default function Produtos() {
 
   // Redirecionar menções de pontos para a loja
   const redirectToLojaPontos = () => {
-    navigate('/loja-pontos');
+    if (!user) {
+      setMostrarLoginPrompt(true);
+      return;
+    }
+    navigate(createPageUrl("LojaPontos"));
   };
 
   // Função para processar compra de produto
@@ -1010,7 +1014,7 @@ export default function Produtos() {
       <LoginPromptModal
         open={mostrarLoginPrompt}
         onClose={() => setMostrarLoginPrompt(false)}
-        pageName={tipoBusca} // Passa o tipo de busca para o modal para personalizar a mensagem
+        pageName="produtos"
       />
     </div>
   );

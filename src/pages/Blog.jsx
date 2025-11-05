@@ -112,6 +112,12 @@ export default function Blog() {
   const handleArtigoClick = async (e, artigo) => {
     e.preventDefault();
     
+    // VERIFICAR LOGIN PRIMEIRO
+    if (!user) {
+      setMostrarLoginPrompt(true);
+      return;
+    }
+    
     if (!artigo || !artigo.id) {
       console.error("Artigo sem ID:", artigo);
       return;
@@ -287,9 +293,24 @@ export default function Blog() {
   const ArtigoCard = ({ artigo }) => {
     if (!artigo) return null;
     
+    const handleCardClick = (e) => {
+      // For external links, no login is required to open in new tab
+      if (artigo.tipo === 'geral' && artigo.link_externo) {
+        handleArtigoClick(e, artigo);
+        return;
+      }
+      
+      if (!user) {
+        e.preventDefault();
+        setMostrarLoginPrompt(true);
+        return;
+      }
+      handleArtigoClick(e, artigo);
+    };
+    
     return (
       <Card
-        onClick={(e) => handleArtigoClick(e, artigo)}
+        onClick={handleCardClick}
         className="overflow-hidden hover:shadow-xl transition-all duration-300 border-none cursor-pointer group"
       >
         <div className="h-48 bg-gradient-to-br from-pink-100 to-rose-100 flex items-center justify-center text-5xl md:text-6xl group-hover:scale-110 transition-transform duration-300">
