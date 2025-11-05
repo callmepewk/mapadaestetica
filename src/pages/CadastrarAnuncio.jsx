@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Checkbox } from "@/components/ui/checkbox"; // New import
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -26,10 +26,10 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { 
-  Sparkles, 
-  Upload, 
-  AlertCircle, 
+import {
+  Sparkles,
+  Upload,
+  AlertCircle,
   CheckCircle,
   Copy,
   Wand2,
@@ -37,9 +37,10 @@ import {
   ThumbsUp,
   ThumbsDown,
   Loader2,
-  X, // New import
-  Shield, // New import
-  FileText // New import
+  X,
+  Shield,
+  FileText,
+  MessageCircle // New import
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -97,9 +98,10 @@ export default function CadastrarAnuncio() {
     horario_funcionamento: "",
     procedimentos_servicos: [],
     tags: [],
-    imagem_principal: "", // New field
-    imagens_galeria: [], // New field
-    amenidades: { // New field
+    imagem_principal: "",
+    logo: "", // New field
+    imagens_galeria: [],
+    amenidades: {
       estacionamento: false,
       estacionamento_valet: false,
       aceita_pet: false,
@@ -112,6 +114,7 @@ export default function CadastrarAnuncio() {
 
   // Estados de upload de imagens
   const [uploadingImagemPrincipal, setUploadingImagemPrincipal] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false); // New state
   const [uploadingGaleria, setUploadingGaleria] = useState(false);
 
   // Estados de verificação de autoridade
@@ -125,13 +128,19 @@ export default function CadastrarAnuncio() {
     alvara_funcionamento: false,
     registro_profissional: false
   });
-  const [solicitarVerificacao, setSolicitarVerificacao] = useState(false); // New state, though only used to trigger `handleEnviarVerificacao` implicitly by state change rather than dialog display
+  const [solicitarVerificacao, setSolicitarVerificacao] = useState(false);
 
-  // Estados do Assistente IA
+  // Estados do Assistente IA (Descrição)
   const [mostrarAssistenteDescricao, setMostrarAssistenteDescricao] = useState(false);
   const [sugestaoDescricao, setSugestaoDescricao] = useState("");
   const [loadingDescricao, setLoadingDescricao] = useState(false);
   const [feedbackDescricao, setFeedbackDescricao] = useState(null);
+
+  // Novo estado: Assistente IA para Título
+  const [mostrarAssistenteTitulo, setMostrarAssistenteTitulo] = useState(false);
+  const [sugestaoTitulo, setSugestaoTitulo] = useState("");
+  const [loadingTitulo, setLoadingTitulo] = useState(false);
+  const [feedbackTitulo, setFeedbackTitulo] = useState(null);
 
   // Estados do Gerador IA
   const [mostrarGeradorIA, setMostrarGeradorIA] = useState(false);
@@ -145,12 +154,15 @@ export default function CadastrarAnuncio() {
   const [anuncioGerado, setAnuncioGerado] = useState(null);
   const [loadingGerador, setLoadingGerador] = useState(false);
 
+  // Novo estado: Modal de Geração de Imagem
+  const [mostrarModalImagem, setMostrarModalImagem] = useState(false);
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const userData = await base44.auth.me();
         setUser(userData);
-        
+
         // Preencher dados do usuário automaticamente
         setFormData(prev => ({
           ...prev,
@@ -181,6 +193,23 @@ export default function CadastrarAnuncio() {
         [amenidade]: checked
       }
     }));
+  };
+
+  // Upload de logo
+  const handleUploadLogo = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploadingLogo(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setFormData(prev => ({ ...prev, logo: file_url }));
+    } catch (error) {
+      console.error("Erro ao fazer upload:", error);
+      setErro("Erro ao fazer upload do logo");
+    } finally {
+      setUploadingLogo(false);
+    }
   };
 
   // Upload de imagem principal
@@ -252,7 +281,7 @@ export default function CadastrarAnuncio() {
   // Enviar solicitação de verificação
   const handleEnviarVerificacao = async () => {
     const documentosCompletos = Object.values(documentosVerificacao).every(doc => doc !== null);
-    
+
     if (!documentosCompletos) {
       setErro("Por favor, envie todos os 3 documentos para solicitar verificação");
       return;
@@ -280,7 +309,7 @@ Por favor, revisar e aprovar/reprovar esta solicitação.
         subject: `Verificação de Profissional - ${user.full_name}`,
         body: mensagem
       });
-      
+
       alert("Solicitação enviada com sucesso! Você receberá um email quando a verificação for processada.");
       setSolicitarVerificacao(false); // Reset this state if needed, or simply for internal logic.
     } catch (error) {
@@ -301,8 +330,8 @@ Por favor, revisar e aprovar/reprovar esta solicitação.
     setFeedbackDescricao(null);
 
     try {
-      const prompt = `Crie uma descrição profissional e atrativa para um anúncio de ${formData.categoria} com o título "${formData.titulo}". 
-      
+      const prompt = `Crie uma descrição profissional e atrativa para um anúncio de ${formData.categoria} com o título "${formData.titulo}".
+
 A descrição deve:
 - Ser clara e objetiva
 - Destacar benefícios do serviço
@@ -349,6 +378,82 @@ ${formData.faixa_preco ? `Faixa de preço: ${formData.faixa_preco}` : ''}`;
     setTimeout(() => {
       handleSolicitarAjudaDescricao();
     }, 500);
+  };
+
+  // Função para solicitar ajuda com título
+  const handleSolicitarAjudaTitulo = async () => {
+    if (!formData.categoria) {
+      setErro("Preencha a categoria primeiro para receber sugestões de título!");
+      return;
+    }
+
+    setLoadingTitulo(true);
+    setMostrarAssistenteTitulo(true);
+    setFeedbackTitulo(null);
+
+    try {
+      const prompt = `Crie um título profissional, atrativo e otimizado para SEO para um anúncio de ${formData.categoria}.
+
+O título deve:
+- Ser claro e direto
+- Chamar atenção do cliente
+- Incluir palavras-chave relevantes
+- Ter no máximo 70 caracteres
+- Ser profissional mas cativante
+
+${formData.subcategoria ? `Subcategoria específica: ${formData.subcategoria}` : ''}
+${formData.profissional ? `Nome do profissional: ${formData.profissional}` : ''}
+
+Gere APENAS o título, sem aspas ou explicações adicionais.`;
+
+      const resultado = await base44.integrations.Core.InvokeLLM({
+        prompt: prompt,
+        add_context_from_internet: false
+      });
+
+      setSugestaoTitulo(resultado);
+    } catch (error) {
+      console.error("Erro ao gerar título:", error);
+      setErro("Erro ao gerar sugestão de título. Tente novamente.");
+    } finally {
+      setLoadingTitulo(false);
+    }
+  };
+
+  // Função para copiar título sugerido
+  const handleCopiarTitulo = () => {
+    navigator.clipboard.writeText(sugestaoTitulo);
+    alert("Título copiado!");
+  };
+
+  // Função para aplicar título sugerido
+  const handleAplicarTitulo = () => {
+    setFormData(prev => ({ ...prev, titulo: sugestaoTitulo }));
+    setFeedbackTitulo("positivo");
+    setTimeout(() => {
+      setMostrarAssistenteTitulo(false);
+      setFeedbackTitulo(null);
+    }, 1500);
+  };
+
+  // Função para rejeitar título sugerido
+  const handleRejeitarTitulo = () => {
+    setFeedbackTitulo("negativo");
+    setTimeout(() => {
+      handleSolicitarAjudaTitulo();
+    }, 500);
+  };
+
+  // Função para abrir modal de geração de imagem
+  const handleGerarImagem = () => {
+    setMostrarModalImagem(true);
+  };
+
+  // Função para contratar serviço de design
+  const handleContratarDesign = () => {
+    const mensagem = `Olá! Tenho interesse no serviço de design profissional para geração de imagens de anúncios do Mapa da Estética! 🎨`;
+    window.open(`https://wa.me/5531972595643?text=${encodeURIComponent(mensagem)}`, '_blank');
+    setMostrarModalImagem(false);
   };
 
   // Função para gerar anúncio completo com IA
@@ -435,9 +540,10 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
         visualizacoes: 0,
         curtidas: 0,
         profissional_verificado: false,
-        imagem_principal: formData.imagem_principal, // Include in payload
-        imagens_galeria: formData.imagens_galeria,   // Include in payload
-        amenidades: formData.amenidades,             // Include in payload
+        imagem_principal: formData.imagem_principal,
+        logo: formData.logo, // Include in payload
+        imagens_galeria: formData.imagens_galeria,
+        amenidades: formData.amenidades,
         verificacao_autoridade: {
           licenca_sanitaria: {
             possui: !!documentosVerificacao.licenca_sanitaria,
@@ -515,7 +621,7 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
                   <Lightbulb className="w-6 h-6 text-white" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-bold text-lg mb-1">Ajuda com Descrição</h3>
+                  <h3 className="font-bold text-lg mb-1">Ajuda com Descrição IA</h3>
                   <p className="text-sm text-gray-600">
                     Receba sugestões de descrição baseadas no seu título e categoria
                   </p>
@@ -542,7 +648,7 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Tipo e Categoria */}
+          {/* Informações Básicas */}
           <Card>
             <CardHeader>
               <CardTitle>Informações Básicas</CardTitle>
@@ -579,7 +685,19 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
               </div>
 
               <div>
-                <Label>Título do Anúncio *</Label>
+                <div className="flex items-center justify-between mb-2">
+                  <Label>Título do Anúncio *</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSolicitarAjudaTitulo}
+                    disabled={!formData.categoria}
+                  >
+                    <Lightbulb className="w-4 h-4 mr-2" />
+                    Pedir Ajuda IA
+                  </Button>
+                </div>
                 <Input
                   value={formData.titulo}
                   onChange={(e) => handleInputChange("titulo", e.target.value)}
@@ -641,11 +759,67 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
           {/* Upload de Imagens */}
           <Card>
             <CardHeader>
-              <CardTitle>Imagens do Anúncio</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle>Imagens do Anúncio</CardTitle>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleGerarImagem}
+                  className="border-purple-300 text-purple-700 hover:bg-purple-50"
+                >
+                  <Wand2 className="w-4 h-4 mr-2" />
+                  Gerar Imagem com Design Profissional
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Logo/Foto do Profissional */}
+              <div>
+                <Label>Logo / Foto do Profissional</Label>
+                <p className="text-xs text-gray-500 mb-2">Imagem que aparecerá como identificação do seu perfil</p>
+                <div className="mt-2">
+                  {formData.logo ? (
+                    <div className="relative inline-block">
+                      <img
+                        src={formData.logo}
+                        alt="Logo"
+                        className="w-32 h-32 object-cover rounded-full border-4 border-gray-200"
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        className="absolute -top-2 -right-2 rounded-full w-8 h-8 p-0"
+                        onClick={() => setFormData(prev => ({ ...prev, logo: "" }))}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center max-w-xs">
+                      <Upload className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                      <Label htmlFor="logo" className="cursor-pointer">
+                        <span className="text-blue-600 hover:text-blue-700">
+                          {uploadingLogo ? "Enviando..." : "Clique para enviar logo"}
+                        </span>
+                      </Label>
+                      <Input
+                        id="logo"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleUploadLogo}
+                        disabled={uploadingLogo}
+                      />
+                      <p className="text-xs text-gray-500 mt-2">Preferencialmente quadrada (1:1)</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div>
                 <Label>Imagem Principal *</Label>
+                <p className="text-xs text-gray-500 mb-2">Imagem de capa do seu anúncio</p>
                 <div className="mt-2">
                   {formData.imagem_principal ? (
                     <div className="relative">
@@ -709,7 +883,7 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
                       </div>
                     ))}
                   </div>
-                  
+
                   {formData.imagens_galeria.length < 10 && (
                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
                       <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
@@ -1113,6 +1287,80 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
         </form>
       </div>
 
+      {/* Modal de Assistente de Título */}
+      <Dialog open={mostrarAssistenteTitulo} onOpenChange={setMostrarAssistenteTitulo}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Lightbulb className="w-5 h-5 text-blue-600" />
+              Sugestão de Título com IA
+            </DialogTitle>
+            <DialogDescription>
+              Baseado na sua categoria, nossa IA gerou este título profissional e otimizado
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {loadingTitulo ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                <span className="ml-3 text-gray-600">Gerando título...</span>
+              </div>
+            ) : (
+              <>
+                <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-6 rounded-lg border-2 border-blue-200">
+                  <p className="text-xl font-bold text-gray-800 text-center">
+                    {sugestaoTitulo}
+                  </p>
+                </div>
+
+                <AnimatePresence>
+                  {feedbackTitulo === "positivo" && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      className="bg-green-50 border-2 border-green-200 p-4 rounded-lg text-center"
+                    >
+                      <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-2" />
+                      <p className="text-green-800 font-semibold">Título aplicado com sucesso!</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </>
+            )}
+          </div>
+
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              onClick={handleCopiarTitulo}
+              disabled={loadingTitulo}
+            >
+              <Copy className="w-4 h-4 mr-2" />
+              Copiar Texto
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleRejeitarTitulo}
+              disabled={loadingTitulo}
+              className="text-red-600 border-red-200 hover:bg-red-50"
+            >
+              <ThumbsDown className="w-4 h-4 mr-2" />
+              Gerar Outro
+            </Button>
+            <Button
+              onClick={handleAplicarTitulo}
+              disabled={loadingTitulo}
+              className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+            >
+              <ThumbsUp className="w-4 h-4 mr-2" />
+              Usar Este Título
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Modal de Assistente de Descrição */}
       <Dialog open={mostrarAssistenteDescricao} onOpenChange={setMostrarAssistenteDescricao}>
         <DialogContent className="max-w-2xl">
@@ -1187,6 +1435,86 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
         </DialogContent>
       </Dialog>
 
+      {/* Modal de Geração de Imagem */}
+      <Dialog open={mostrarModalImagem} onOpenChange={setMostrarModalImagem}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="w-6 h-6 text-purple-600" />
+              Design Profissional de Imagens
+            </DialogTitle>
+            <DialogDescription>
+              Serviço exclusivo com equipe especializada
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6 py-4">
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-8 rounded-xl border-2 border-purple-200 text-center">
+              <div className="w-20 h-20 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Wand2 className="w-10 h-10 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                Deseja Contratar Este Serviço Exclusivo?
+              </h3>
+              <p className="text-gray-700 mb-6 leading-relaxed">
+                Nossa equipe de design profissional criará imagens personalizadas e de alta qualidade
+                para o seu anúncio, garantindo que você se destaque da concorrência!
+              </p>
+
+              <div className="grid md:grid-cols-3 gap-4 mb-6 text-left">
+                <div className="bg-white p-4 rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <span className="font-semibold text-sm">Design Profissional</span>
+                  </div>
+                  <p className="text-xs text-gray-600">Imagens criadas por designers especializados</p>
+                </div>
+
+                <div className="bg-white p-4 rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <span className="font-semibold text-sm">Alta Qualidade</span>
+                  </div>
+                  <p className="text-xs text-gray-600">Imagens em alta resolução e otimizadas</p>
+                </div>
+
+                <div className="bg-white p-4 rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <span className="font-semibold text-sm">Personalização</span>
+                  </div>
+                  <p className="text-xs text-gray-600">100% adaptado à sua identidade visual</p>
+                </div>
+              </div>
+
+              <Alert className="bg-yellow-50 border-yellow-200 mb-6">
+                <AlertCircle className="h-4 w-4 text-yellow-600" />
+                <AlertDescription className="text-yellow-800 text-sm">
+                  <strong>Investimento:</strong> Entre em contato para saber valores e prazos personalizados para suas necessidades!
+                </AlertDescription>
+              </Alert>
+            </div>
+          </div>
+
+          <DialogFooter className="flex-col sm:flex-row gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setMostrarModalImagem(false)}
+              className="w-full sm:w-auto"
+            >
+              Talvez Depois
+            </Button>
+            <Button
+              onClick={handleContratarDesign}
+              className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 font-bold"
+            >
+              <MessageCircle className="w-4 h-4 mr-2" />
+              Falar com Equipe de Design
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Modal de Gerador de Anúncio com IA */}
       <Dialog open={mostrarGeradorIA} onOpenChange={setMostrarGeradorIA}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -1196,7 +1524,7 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
               Gerar Anúncio Completo com IA
             </DialogTitle>
             <DialogDescription>
-              Preencha as informações abaixo e nossa IA criará um anúncio profissional completo para você. 
+              Preencha as informações abaixo e nossa IA criará um anúncio profissional completo para você.
               <strong> Os campos que você já preencheu no formulário serão mantidos.</strong>
             </DialogDescription>
           </DialogHeader>
