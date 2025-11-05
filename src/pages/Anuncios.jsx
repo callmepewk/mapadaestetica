@@ -28,7 +28,7 @@ import LoginPromptModal from "../components/home/LoginPromptModal";
 
 const categorias = [
   "Todas",
-  "Depilação", "Estética Facial", "Estética Corporal", "Massoterapia",
+  "Depilação", "Estética Facial", "Estética Corporal", "Massoterapia", "Medicina Estética",
   "Drenagem Linfática", "Micropigmentação", "Design de Sobrancelhas",
   "Extensão de Cílios", "Manicure e Pedicure", "Podologia",
   "Harmonização Facial", "Maquiagem", "Outros"
