@@ -16,9 +16,10 @@ import {
   X,
   LogOut,
   MapPin,
-  TrendingUp, // Added for admin reports
-  Star, // Added for points store
-  DollarSign // Added for beauty coins
+  TrendingUp,
+  Star,
+  DollarSign,
+  ShoppingCart
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -29,10 +30,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge"; // Added for admin badge
+import { Badge } from "@/components/ui/badge";
 import Chatbot from "./components/home/Chatbot";
-import OnboardingModal from "./components/home/OnboardingModal"; // Added OnboardingModal import
+import OnboardingModal from "./components/home/OnboardingModal";
 import NotificationBell from "./components/layout/NotificationBell";
+import CarrinhoModal from "./components/home/CarrinhoModal";
 
 export default function Layout({ children }) {
   const location = useLocation();
@@ -42,6 +44,25 @@ export default function Layout({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [mostrarOnboarding, setMostrarOnboarding] = useState(false);
   const [testeExpirado, setTesteExpirado] = useState(false);
+  const [carrinho, setCarrinho] = useState([]);
+  const [mostrarCarrinho, setMostrarCarrinho] = useState(false);
+
+  // Carregar carrinho do localStorage
+  useEffect(() => {
+    const carrinhoSalvo = localStorage.getItem('carrinho_mapa_estetica');
+    if (carrinhoSalvo) {
+      try {
+        setCarrinho(JSON.parse(carrivoSalvo));
+      } catch (e) {
+        console.error("Erro ao carregar carrinho:", e);
+      }
+    }
+  }, []);
+
+  // Salvar carrinho no localStorage sempre que mudar
+  useEffect(() => {
+    localStorage.setItem('carrinho_mapa_estetica', JSON.stringify(carrinho));
+  }, [carrinho]);
 
   // Scroll para o topo ao mudar de página
   useEffect(() => {
@@ -97,6 +118,17 @@ export default function Layout({ children }) {
   const handleLogin = () => {
     const currentPath = location.pathname + location.search;
     base44.auth.redirectToLogin(currentPath);
+  };
+
+  const handleRemoverItemCarrinho = (index) => {
+    setCarrinho(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleLimparCarrinho = () => {
+    if (confirm("Tem certeza que deseja limpar todo o carrinho?")) {
+      setCarrinho([]);
+      localStorage.removeItem('carrinho_mapa_estetica');
+    }
   };
 
   // Definir items de navegação baseado no tipo de usuário
@@ -262,8 +294,23 @@ export default function Layout({ children }) {
 
             {/* Right Actions */}
             <div className="flex items-center gap-2 sm:gap-3">
-              {/* Sino de Notificações - SEMPRE VISÍVEL (autenticados E não autenticados) */}
+              {/* Sino de Notificações */}
               <NotificationBell user={user} />
+
+              {/* CARRINHO DE COMPRAS - SEMPRE VISÍVEL */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="relative"
+                onClick={() => setMostrarCarrinho(true)}
+              >
+                <ShoppingCart className="w-5 h-5" />
+                {carrinho.length > 0 && (
+                  <Badge className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center p-0 bg-pink-600 text-white text-xs">
+                    {carrinho.length > 9 ? '9+' : carrinho.length}
+                  </Badge>
+                )}
+              </Button>
 
               {isAuthenticated ? (
                 <>
@@ -404,6 +451,25 @@ export default function Layout({ children }) {
           {/* Mobile Navigation */}
           {mobileMenuOpen && (
             <nav className="lg:hidden mt-4 pb-4 space-y-2 border-t pt-4">
+              {/* Carrinho no Mobile */}
+              <button
+                onClick={() => {
+                  setMostrarCarrinho(true);
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg bg-pink-50 text-pink-800 border-l-4 border-pink-500 font-medium"
+              >
+                <div className="flex items-center gap-3">
+                  <ShoppingCart className="w-5 h-5" />
+                  <span>Carrinho de Compras</span>
+                </div>
+                {carrinho.length > 0 && (
+                  <Badge className="bg-pink-600 text-white">
+                    {carrinho.length}
+                  </Badge>
+                )}
+              </button>
+
               {/* Loja de Pontos e Beauty Coins no Mobile */}
               {isAuthenticated ? (
                 <div className="space-y-2">
@@ -545,10 +611,19 @@ export default function Layout({ children }) {
         </div>
       </footer>
 
-      {/* Modal de Onboarding - Controlado por Layout */}
+      {/* Modal de Onboarding */}
       <OnboardingModal
         open={mostrarOnboarding}
         onClose={handleOnboardingClose}
+      />
+
+      {/* Modal de Carrinho */}
+      <CarrinhoModal
+        open={mostrarCarrinho}
+        onClose={() => setMostrarCarrinho(false)}
+        carrinho={carrinho}
+        onRemoverItem={handleRemoverItemCarrinho}
+        onLimparCarrinho={handleLimparCarrinho}
       />
     </div>
   );
