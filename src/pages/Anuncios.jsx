@@ -109,7 +109,9 @@ const tiposAnuncio = [
   { valor: "aluguel_produto", label: "📦 Aluguel de Produto" },
   { valor: "aluguel_aparelho", label: "🔧 Aluguel de Aparelho" },
   { valor: "troca_produto", label: "🔄 Troca de Produto" },
-  { valor: "troca_aparelho", label: "♻️ Troca de Aparelho" }
+  { valor: "troca_aparelho", label: "♻️ Troca de Aparelho" },
+  { valor: "venda_moveis", label: "🛋️ Venda de Móveis" },
+  { valor: "troca_moveis", label: "🪑 Troca de Móveis" }
 ];
 
 const statusFuncionamento = [
@@ -643,7 +645,30 @@ export default function Anuncios() {
                   </div>
 
                   {/* Terceira linha - Novos filtros + Tipo de Estabelecimento */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+                    <div>
+                      <Label className="mb-1 sm:mb-2 block font-semibold text-xs sm:text-sm">Tipo de Anúncio</Label>
+                      <Select
+                        value={filtroTipoAnuncio}
+                        onValueChange={(value) => {
+                          setFiltroTipoAnuncio(value);
+                          setPaginaAtual(1);
+                        }}
+                      >
+                        <SelectTrigger className="h-10 sm:h-12 text-sm">
+                          <SelectValue placeholder="Todos os tipos" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={null} className="text-sm">Todos os tipos</SelectItem>
+                          {tiposAnuncio.map((tipo) => (
+                            <SelectItem key={tipo.valor} value={tipo.valor} className="text-sm">
+                              {tipo.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
                     <div>
                       <Label className="mb-1 sm:mb-2 block font-semibold text-xs sm:text-sm">Tipo de Estabelecimento</Label>
                       <Select
