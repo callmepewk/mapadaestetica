@@ -576,11 +576,22 @@ export default function Layout({ children }) {
               
               {/* Logo do Clube da Beleza */}
               <div className="mt-6 pt-6 border-t border-gray-700">
-                <img
-                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/b53be18d1_clubeimg.jpeg"
-                  alt="Clube da Beleza"
-                  className="h-20 w-auto object-contain"
-                />
+                <a 
+                  href="https://clube-da-beleza-c6e913bb.base44.app" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="block hover:opacity-80 transition-opacity"
+                >
+                  <img
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/652cd0312_clubeimg.jpeg"
+                    alt="Clube da Beleza"
+                    className="h-20 w-auto object-contain"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/b53be18d1_clubeimg.jpeg';
+                    }}
+                  />
+                </a>
                 <p className="text-gray-400 text-xs mt-2">
                   Clube de Benefícios Exclusivos
                 </p>

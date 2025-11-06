@@ -76,15 +76,20 @@ export default function SobreNos() {
           {/* Logo do Clube da Beleza */}
           <div className="mb-6 flex justify-center">
             <a 
-              href="https://clubdabeleza.com" 
+              href="https://clube-da-beleza-c6e913bb.base44.app" 
               target="_blank" 
               rel="noopener noreferrer"
               className="hover:opacity-80 transition-opacity"
             >
               <img
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe2/b53be18d1_clubeimg.jpeg"
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/652cd0312_clubeimg.jpeg"
                 alt="Clube da Beleza"
                 className="h-32 w-auto object-contain"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  // Fallback para outras versões da imagem
+                  e.target.src = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/b53be18d1_clubeimg.jpeg';
+                }}
               />
             </a>
           </div>
@@ -107,7 +112,7 @@ export default function SobreNos() {
               {mostrarPlanos ? <ChevronUp className="w-5 h-5 ml-2" /> : <ChevronDown className="w-5 h-5 ml-2" />}
             </Button>
             <a 
-              href="https://clubdabeleza.com" 
+              href="https://clube-da-beleza-c6e913bb.base44.app" 
               target="_blank" 
               rel="noopener noreferrer"
             >

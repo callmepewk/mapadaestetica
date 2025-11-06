@@ -226,7 +226,7 @@ const planosPatrocinadores = [
     cor: "from-gray-300 to-gray-500",
     icone: Star,
     destaque: false,
-    linkPagamento: "https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=94d75f284b3e4070b4a45fc234473b64",
+    linkPagamento: "https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=3dc10d6629d0434b9ca9508a5cd29b14",
     beneficios: [
       "Logo destacado na home",
       "5 banners rotativos",
