@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Save, Upload } from "lucide-react";
+import { ArrowLeft, Save, Upload, Loader2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const categorias = [
@@ -25,28 +25,61 @@ const categorias = [
   "Suplementos",
   "Equipamentos",
   "Acessórios",
+  "Serviços para Pacientes",
+  "Serviços Contratáveis",
+  "Produtos para Pacientes",
   "Outros"
 ];
 
 export default function AdicionarProduto() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [produto, setProduto] = useState({
+    tipo: "produto", // produto ou servico
     nome: "",
     descricao: "",
     categoria: "",
     preco: 0,
     preco_promocional: 0,
+    preco_texto: "", // Para "Consultar", "A partir de X"
     pontos_ganhos: 5,
     pontos_necessarios: 0,
     estoque: 0,
     marca: "",
     imagens: [],
     em_destaque: false,
-    status: "ativo"
+    status: "ativo",
+    link_pagamento: "", // Novo campo
+    requer_assinatura: false // Para produtos exclusivos do clube
   });
 
-  const [imageUrl, setImageUrl] = useState("");
+  const handleUploadImage = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setProduto({
+        ...produto,
+        imagens: [...produto.imagens, file_url]
+      });
+      alert("Imagem enviada com sucesso!");
+    } catch (error) {
+      console.error("Erro ao fazer upload:", error);
+      alert("Erro ao fazer upload da imagem");
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleRemoveImage = (index) => {
+    setProduto({
+      ...produto,
+      imagens: produto.imagens.filter((_, i) => i !== index)
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -54,16 +87,16 @@ export default function AdicionarProduto() {
 
     try {
       // Validações
-      if (!produto.nome || !produto.descricao || !produto.categoria) {
-        alert("Preencha os campos obrigatórios: Nome, Descrição e Categoria");
+      if (!produto.nome || !produto.descricao || !produto.categoria || !produto.tipo) {
+        alert("Preencha os campos obrigatórios: Tipo, Nome, Descrição e Categoria");
         setLoading(false);
         return;
       }
 
-      // Se tem preço 0 e pontos_necessarios 0, alertar
-      if (produto.preco === 0 && produto.pontos_necessarios === 0) {
+      // Se não tem preço, precisa ter preco_texto
+      if (produto.preco === 0 && !produto.preco_texto && produto.pontos_necessarios === 0) {
         const confirma = window.confirm(
-          "Este produto não tem preço nem pontos necessários. Deseja continuar?"
+          "Este produto não tem preço definido. Deseja continuar?"
         );
         if (!confirma) {
           setLoading(false);
@@ -73,7 +106,7 @@ export default function AdicionarProduto() {
 
       await base44.entities.Produto.create(produto);
 
-      alert("✅ Produto criado com sucesso!");
+      alert("✅ Produto/Serviço criado com sucesso!");
       navigate(createPageUrl("Produtos"));
     } catch (error) {
       console.error("Erro ao criar produto:", error);
@@ -81,23 +114,6 @@ export default function AdicionarProduto() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleAddImage = () => {
-    if (imageUrl) {
-      setProduto({
-        ...produto,
-        imagens: [...produto.imagens, imageUrl]
-      });
-      setImageUrl("");
-    }
-  };
-
-  const handleRemoveImage = (index) => {
-    setProduto({
-      ...produto,
-      imagens: produto.imagens.filter((_, i) => i !== index)
-    });
   };
 
   return (
@@ -119,19 +135,36 @@ export default function AdicionarProduto() {
                 Adicionar Produto/Serviço
               </h1>
               <p className="text-gray-600">
-                Preencha as informações abaixo para adicionar um novo produto
+                Preencha as informações abaixo para adicionar um novo item
               </p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Tipo: Produto ou Serviço */}
+              <div>
+                <Label htmlFor="tipo">Tipo *</Label>
+                <Select
+                  value={produto.tipo}
+                  onValueChange={(value) => setProduto({ ...produto, tipo: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="produto">Produto</SelectItem>
+                    <SelectItem value="servico">Serviço</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               {/* Nome */}
               <div>
-                <Label htmlFor="nome">Nome do Produto *</Label>
+                <Label htmlFor="nome">Nome do {produto.tipo === 'servico' ? 'Serviço' : 'Produto'} *</Label>
                 <Input
                   id="nome"
                   value={produto.nome}
                   onChange={(e) => setProduto({ ...produto, nome: e.target.value })}
-                  placeholder="Ex: Sérum Facial Premium"
+                  placeholder={produto.tipo === 'servico' ? "Ex: Consulta Estética Online" : "Ex: Sérum Facial Premium"}
                   required
                 />
               </div>
@@ -143,7 +176,7 @@ export default function AdicionarProduto() {
                   id="descricao"
                   value={produto.descricao}
                   onChange={(e) => setProduto({ ...produto, descricao: e.target.value })}
-                  placeholder="Descrição detalhada do produto..."
+                  placeholder="Descrição detalhada..."
                   rows={4}
                   required
                 />
@@ -206,6 +239,36 @@ export default function AdicionarProduto() {
                 </div>
 
                 <div>
+                  <Label htmlFor="preco_texto">Texto do Preço</Label>
+                  <Input
+                    id="preco_texto"
+                    value={produto.preco_texto}
+                    onChange={(e) => setProduto({ ...produto, preco_texto: e.target.value })}
+                    placeholder="Ex: Consultar"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Use para "Consultar", "A partir de X", etc
+                  </p>
+                </div>
+              </div>
+
+              {/* Link de Pagamento */}
+              <div>
+                <Label htmlFor="link_pagamento">Link de Pagamento (Mercado Pago)</Label>
+                <Input
+                  id="link_pagamento"
+                  value={produto.link_pagamento}
+                  onChange={(e) => setProduto({ ...produto, link_pagamento: e.target.value })}
+                  placeholder="https://mercadopago.com.br/..."
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Link do Mercado Pago para pagamento deste produto/serviço
+                </p>
+              </div>
+
+              {/* Estoque (apenas para produtos) */}
+              {produto.tipo === 'produto' && (
+                <div>
                   <Label htmlFor="estoque">Estoque</Label>
                   <Input
                     id="estoque"
@@ -215,7 +278,7 @@ export default function AdicionarProduto() {
                     placeholder="0"
                   />
                 </div>
-              </div>
+              )}
 
               {/* Pontos */}
               <div className="grid md:grid-cols-2 gap-4">
@@ -240,24 +303,36 @@ export default function AdicionarProduto() {
                     placeholder="0"
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    Deixe 0 se não for um produto de resgate de pontos
+                    Deixe 0 se não for um produto de resgate
                   </p>
                 </div>
               </div>
 
-              {/* Imagens */}
+              {/* Upload de Imagens */}
               <div>
-                <Label>Imagens do Produto</Label>
-                <div className="flex gap-2 mt-2">
+                <Label>Imagens do {produto.tipo === 'servico' ? 'Serviço' : 'Produto'}</Label>
+                <div className="mt-2">
+                  <Label htmlFor="image-upload" className="cursor-pointer">
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-pink-400 transition-colors">
+                      {uploadingImage ? (
+                        <Loader2 className="w-8 h-8 mx-auto animate-spin text-pink-600" />
+                      ) : (
+                        <>
+                          <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
+                          <span className="text-sm text-pink-600 font-medium">Clique para fazer upload</span>
+                          <p className="text-xs text-gray-500 mt-1">PNG, JPG até 5MB</p>
+                        </>
+                      )}
+                    </div>
+                  </Label>
                   <Input
-                    value={imageUrl}
-                    onChange={(e) => setImageUrl(e.target.value)}
-                    placeholder="Cole a URL da imagem aqui"
+                    id="image-upload"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleUploadImage}
+                    disabled={uploadingImage}
                   />
-                  <Button type="button" onClick={handleAddImage}>
-                    <Upload className="w-4 h-4 mr-2" />
-                    Adicionar
-                  </Button>
                 </div>
 
                 {produto.imagens.length > 0 && (
@@ -293,7 +368,18 @@ export default function AdicionarProduto() {
                     onCheckedChange={(checked) => setProduto({ ...produto, em_destaque: checked })}
                   />
                   <Label htmlFor="em_destaque" className="cursor-pointer">
-                    Produto em Destaque
+                    {produto.tipo === 'servico' ? 'Serviço' : 'Produto'} em Destaque
+                  </Label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="requer_assinatura"
+                    checked={produto.requer_assinatura}
+                    onCheckedChange={(checked) => setProduto({ ...produto, requer_assinatura: checked })}
+                  />
+                  <Label htmlFor="requer_assinatura" className="cursor-pointer">
+                    Exclusivo Clube da Beleza
                   </Label>
                 </div>
 
@@ -332,13 +418,13 @@ export default function AdicionarProduto() {
                 >
                   {loading ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                       Salvando...
                     </>
                   ) : (
                     <>
                       <Save className="w-4 h-4 mr-2" />
-                      Salvar Produto
+                      Salvar {produto.tipo === 'servico' ? 'Serviço' : 'Produto'}
                     </>
                   )}
                 </Button>
