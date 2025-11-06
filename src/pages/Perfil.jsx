@@ -1728,7 +1728,7 @@ export default function Perfil() {
                               <span className="font-bold text-lg text-[#F7D426]">{user.pontos_acumulados || 0}</span>
                             </div>
                           </div>
-                          
+
                           <div className="p-3 bg-white rounded-lg border-2 border-purple-500">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
@@ -1739,7 +1739,7 @@ export default function Perfil() {
                             </div>
                           </div>
                         </div>
-                        
+
                         <Button
                           variant="outline"
                           className="w-full mb-2"
@@ -1768,7 +1768,7 @@ export default function Perfil() {
                               <span className="font-bold text-lg text-[#F7D426]">{user.pontos_acumulados || 0}</span>
                             </div>
                           </div>
-                          
+
                           <div className="p-3 bg-white rounded-lg border-2 border-purple-500">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
@@ -1779,7 +1779,7 @@ export default function Perfil() {
                             </div>
                           </div>
                         </div>
-                        
+
                         <Button
                           variant="outline"
                           className="w-full"
