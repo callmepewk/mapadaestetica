@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
@@ -59,10 +60,13 @@ export default function DetalhesAnuncio() {
           if (mounted) {
             setUser(null);
             // USUÁRIO NÃO LOGADO - MOSTRAR MODAL
-            setMostrarLoginPrompt(true);
-            setLoading(false);
+            // This is temporary, the user should only be redirected if no user is found,
+            // not if an error occurs while fetching user.
+            // For now, if an error happens in base44.auth.me(), it assumes no user is logged in.
+            // setMostrarLoginPrompt(true); 
+            // setLoading(false);
           }
-          return;
+          // Continue to load ad even if user is not logged in.
         }
 
         // Buscar anúncio pelo ID
@@ -116,7 +120,7 @@ export default function DetalhesAnuncio() {
 
   const handleCurtir = async () => {
     if (!user) {
-      alert("Faça login para curtir!");
+      setMostrarLoginPrompt(true); // Show login prompt if not logged in
       return;
     }
 
@@ -157,13 +161,13 @@ export default function DetalhesAnuncio() {
     } catch (error) {
       console.error("Erro ao curtir:", error);
       setCurtido(!novoCurtidoState);
-      alert("Erro ao curtir/descurtir. Tente novamente.");
+      alert("Erro ao processar curtida. Tente novamente.");
     }
   };
 
   const handleCompartilhar = () => {
     if (!user) {
-      alert("Faça login para compartilhar!");
+      setMostrarLoginPrompt(true); // Show login prompt if not logged in
       return;
     }
 
@@ -190,20 +194,9 @@ export default function DetalhesAnuncio() {
   }
 
   // SE NÃO TEM USUÁRIO, MOSTRAR MODAL DE LOGIN
-  if (!user) {
-    return (
-      <>
-        <LoginPromptModal
-          open={mostrarLoginPrompt}
-          onClose={() => {
-            setMostrarLoginPrompt(false);
-            navigate(createPageUrl("Inicio"));
-          }}
-          pageName="anuncios"
-        />
-      </>
-    );
-  }
+  // This logic is now handled by individual actions (curtir, compartilhar)
+  // and removed from the main render flow for better user experience.
+  // If the user is not logged in, they can still view the ad but actions are restricted.
 
   if (erro || !anuncio) {
     return (
@@ -378,7 +371,7 @@ export default function DetalhesAnuncio() {
                     </div>
                   )}
 
-                  {/* Serviços Oferecidos */}
+                  {/* Serviços Oferecidos - SEM PREÇO */}
                   {anuncio.servicos_oferecidos && anuncio.servicos_oferecidos.length > 0 && (
                     <div>
                       <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
@@ -392,7 +385,6 @@ export default function DetalhesAnuncio() {
                               <p className="font-medium">{servico.nome}</p>
                               {servico.duracao && <p className="text-sm text-gray-500">Duração: {servico.duracao}</p>}
                             </div>
-                            {servico.preco && <p className="font-semibold text-pink-600">R$ {servico.preco.toFixed(2)}</p>}
                           </div>
                         ))}
                       </div>
@@ -661,6 +653,12 @@ export default function DetalhesAnuncio() {
           anuncio={anuncio}
         />
       )}
+
+      <LoginPromptModal
+        open={mostrarLoginPrompt}
+        onClose={() => setMostrarLoginPrompt(false)}
+        pageName="anúncios" // Or a more specific page name if desired
+      />
     </div>
   );
 
