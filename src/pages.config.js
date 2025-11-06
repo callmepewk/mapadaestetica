@@ -19,6 +19,7 @@ import LojaPontos from './pages/LojaPontos';
 import Relatorios from './pages/Relatorios';
 import AdicionarProduto from './pages/AdicionarProduto';
 import ControlePlanos from './pages/ControlePlanos';
+import ControleProdutos from './pages/ControleProdutos';
 import Layout from './Layout.jsx';
 
 
@@ -44,6 +45,7 @@ export const PAGES = {
     "Relatorios": Relatorios,
     "AdicionarProduto": AdicionarProduto,
     "ControlePlanos": ControlePlanos,
+    "ControleProdutos": ControleProdutos,
 }
 
 export const pagesConfig = {
