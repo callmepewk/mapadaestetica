@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -283,19 +284,17 @@ export default function ControlePlanos() {
 
       const mensagemCompleta = mensagemSolicitacoes + mensagemProfissionais;
 
-      await base44.integrations.Core.SendEmail({
-        to: "pedro_hbfreitas@hotmail.com",
-        subject: `📊 Relatório Semanal de Planos - ${format(new Date(), "dd/MM/yyyy")}`,
-        body: mensagemCompleta
-      });
-
-      setSucesso("Relatório enviado por email com sucesso! (WhatsApp requer configuração manual)");
+      // Codificar mensagem para URL do WhatsApp
+      const mensagemCodificada = encodeURIComponent(mensagemCompleta);
       
-      const whatsappUrl = `https://chat.whatsapp.com/Ln4ZWIdmFd53acNSm4mayz`;
+      // Abrir WhatsApp Web/App com a mensagem
+      const whatsappUrl = `https://api.whatsapp.com/send?text=${mensagemCodificada}`;
       window.open(whatsappUrl, '_blank');
+
+      setSucesso("Link do WhatsApp aberto! Cole a mensagem no grupo.");
       
     } catch (error) {
-      console.error("Erro ao enviar relatório:", error);
+      console.error("Erro ao gerar relatório:", error);
       setErro("Erro ao gerar relatório");
     } finally {
       setEnviandoWhatsApp(false);
