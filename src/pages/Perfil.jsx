@@ -1730,13 +1730,11 @@ export default function Perfil() {
                           </div>
 
                           <div className="p-3 bg-white rounded-lg border-2 border-purple-500">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2">
                                 <DollarSign className="w-5 h-5 text-purple-600" />
                                 <span className="text-sm text-gray-600">Beauty Coins:</span>
                               </div>
                               <span className="font-bold text-lg text-purple-600">{user.beauty_coins || 0}</span>
-                            </div>
                           </div>
                         </div>
 
