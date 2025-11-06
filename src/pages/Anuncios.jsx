@@ -815,7 +815,7 @@ export default function Anuncios() {
               <>
                 <div className={viewMode === "grid" 
                   ? "grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mt-4 sm:mt-8" 
-                  ? "space-y-4 mt-4 sm:mt-8"
+                  : "space-y-4 mt-4 sm:mt-8"
                 }>
                   {anunciosPaginados.map((anuncio) => (
                     <CardAnuncio key={anuncio.id} anuncio={anuncio} />
