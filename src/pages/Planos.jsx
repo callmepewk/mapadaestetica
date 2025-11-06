@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Check, Sparkles, Star, Zap, Crown, Gem, ArrowRight, X, MessageCircle, Headphones, AlertCircle } from "lucide-react";
+import { Check, Sparkles, Star, Zap, Crown, Gem, ArrowRight, X, MessageCircle, Headphones, AlertCircle, CreditCard, Users } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -194,6 +194,105 @@ const planos = [
   }
 ];
 
+// NOVO: Planos de Patrocinadores
+const planosPatrocinadores = [
+  {
+    nome: "COBRE",
+    tipo: "cobre",
+    preco: "R$ 297/mês",
+    cor: "from-orange-400 to-amber-600",
+    icone: Star,
+    destaque: false,
+    linkPagamento: null, // Configurar
+    beneficios: [
+      "Logo na home page",
+      "1 banner rotativo",
+      "Link para site/redes sociais",
+      "Destaque em busca",
+      "Relatório mensal",
+      "Suporte básico"
+    ]
+  },
+  {
+    nome: "PRATA",
+    tipo: "prata",
+    preco: "R$ 497/mês",
+    cor: "from-gray-300 to-gray-500",
+    icone: Star,
+    destaque: false,
+    linkPagamento: null,
+    beneficios: [
+      "Logo destacado na home",
+      "3 banners rotativos",
+      "Link para site/redes sociais",
+      "Prioridade alta em buscas",
+      "Post mensal no blog",
+      "Relatório semanal",
+      "Suporte prioritário"
+    ]
+  },
+  {
+    nome: "OURO",
+    tipo: "ouro",
+    preco: "R$ 997/mês",
+    cor: "from-yellow-400 to-amber-500",
+    icone: Crown,
+    destaque: true,
+    linkPagamento: null,
+    beneficios: [
+      "Logo premium na home",
+      "5 banners rotativos",
+      "Seção exclusiva de patrocinador",
+      "Artigos mensais no blog",
+      "Prioridade máxima em buscas",
+      "Campanhas personalizadas",
+      "Relatório diário",
+      "Suporte VIP 24/7"
+    ]
+  },
+  {
+    nome: "DIAMANTE",
+    tipo: "diamante",
+    preco: "R$ 1.997/mês",
+    cor: "from-blue-400 to-cyan-500",
+    icone: Gem,
+    destaque: false,
+    linkPagamento: null,
+    beneficios: [
+      "Logo destaque máximo",
+      "10 banners rotativos",
+      "Seção exclusiva premium",
+      "2 artigos mensais no blog",
+      "Campanhas de email marketing",
+      "Webinars mensais",
+      "Prioridade absoluta",
+      "Gerente de conta dedicado",
+      "Relatórios em tempo real"
+    ]
+  },
+  {
+    nome: "PLATINA",
+    tipo: "platina",
+    preco: "Sob Consulta",
+    cor: "from-purple-500 to-pink-600",
+    icone: Zap,
+    destaque: false,
+    linkPagamento: null,
+    beneficios: [
+      "Parceria estratégica completa",
+      "Banners ilimitados",
+      "Co-branding da plataforma",
+      "Eventos exclusivos",
+      "Conteúdo ilimitado no blog",
+      "Campanhas de performance",
+      "Integração API completa",
+      "Equipe dedicada",
+      "Dashboards personalizados",
+      "Primeiro a saber novidades"
+    ]
+  }
+];
+
 export default function Planos() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -207,6 +306,7 @@ export default function Planos() {
   const [aguardandoConfirmacao, setAguardandoConfirmacao] = useState(false);
 
   const [mostrarDrBeleza, setMostrarDrBeleza] = useState(false);
+  const [abaPlanos, setAbaPlanos] = useState("mapa_estetica"); // NOVO
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -454,7 +554,6 @@ export default function Planos() {
   };
 
   const isAdmin = user?.role === 'admin';
-  const planosExibidos = planos;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
@@ -485,7 +584,7 @@ export default function Planos() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="text-center mb-12">
           <Badge className="mb-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-base px-6 py-2">
-            Planos para Profissionais de Estética
+            Planos para Profissionais e Empresas
           </Badge>
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
             Escolha o Plano Ideal para Você
@@ -495,6 +594,27 @@ export default function Planos() {
           </p>
         </div>
 
+        {/* NOVO: Navegação por Abas */}
+        <div className="flex justify-center gap-4 mb-8">
+          <Button
+            onClick={() => setAbaPlanos("mapa_estetica")}
+            variant={abaPlanos === "mapa_estetica" ? "default" : "outline"}
+            className={`${abaPlanos === "mapa_estetica" ? "bg-pink-600 hover:bg-pink-700 text-white" : "text-gray-700 hover:text-pink-600 border-gray-300 hover:border-pink-600"}`}
+          >
+            <CreditCard className="w-4 h-4 mr-2" />
+            Profissionais (Mapa da Estética)
+          </Button>
+          
+          <Button
+            onClick={() => setAbaPlanos("patrocinadores")}
+            variant={abaPlanos === "patrocinadores" ? "default" : "outline"}
+            className={`${abaPlanos === "patrocinadores" ? "bg-blue-600 hover:bg-blue-700 text-white" : "text-gray-700 hover:text-blue-600 border-gray-300 hover:border-blue-600"}`}
+          >
+            <Users className="w-4 h-4 mr-2" />
+            Empresas (Patrocinadores)
+          </Button>
+        </div>
+
         {/* Seção de Contato */}
         <div className="mb-12 grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
           <Card className="border-2 border-blue-200 hover:border-blue-400 transition-colors">
@@ -502,7 +622,7 @@ export default function Planos() {
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
                   <img
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/ec64a4c52_drbeleza.png"
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe4/ec64a4c52_drbeleza.png"
                     alt="Dr. Beleza"
                     className="w-full h-full object-cover"
                     onError={(e) => {
@@ -559,193 +679,352 @@ export default function Planos() {
         </div>
       </div>
 
-      {/* Plans Grid */}
-      <div className="max-w-7xl mx-auto px-4 mb-16">
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-          {planosExibidos.map((plano, index) => {
-            const IconComponent = plano.icone;
-            
-            return (
-              <motion.div
-                key={plano.tipo}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className={`flex ${plano.destaque ? "lg:-translate-y-4" : ""}`}
-              >
-                <Card className={`relative overflow-hidden border-none shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col w-full ${
-                  plano.destaque ? "ring-4 ring-yellow-500" : ""
-                }`}>
-                  {plano.destaque && (
-                    <div className="absolute top-0 right-0 bg-gradient-to-r from-yellow-500 to-amber-500 text-white px-4 py-1 text-sm font-semibold z-10 rounded-bl-lg">
-                      ⭐ Mais Popular
-                    </div>
-                  )}
+      {/* ABA: PLANOS MAPA DA ESTÉTICA */}
+      {abaPlanos === "mapa_estetica" && (
+        <>
+          {/* Plans Grid */}
+          <div className="max-w-7xl mx-auto px-4 mb-16">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+              {planos.map((plano, index) => {
+                const IconComponent = plano.icone;
+                
+                return (
+                  <motion.div
+                    key={plano.tipo}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className={`flex ${plano.destaque ? "lg:-translate-y-4" : ""}`}
+                  >
+                    <Card className={`relative overflow-hidden border-none shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col w-full ${
+                      plano.destaque ? "ring-4 ring-yellow-500" : ""
+                    }`}>
+                      {plano.destaque && (
+                        <div className="absolute top-0 right-0 bg-gradient-to-r from-yellow-500 to-amber-500 text-white px-4 py-1 text-sm font-semibold z-10 rounded-bl-lg">
+                          ⭐ Mais Popular
+                        </div>
+                      )}
 
-                  <div className={`h-48 bg-gradient-to-br ${plano.cor} p-6 relative overflow-hidden flex-shrink-0`}>
-                    <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20"></div>
-                    <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full -ml-16 -mb-16"></div>
-                    
-                    <div className="relative z-10 text-white">
-                      <IconComponent className="w-12 h-12 mb-4" />
-                      <h3 className="text-2xl font-bold mb-2">{plano.nome}</h3>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-2xl font-bold">{plano.preco}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <CardContent className="p-6 flex flex-col flex-1">
-                    <div className="mb-6 p-4 bg-gradient-to-br from-gray-50 to-white rounded-lg border-2 border-gray-200">
-                      <h4 className="font-bold mb-3 text-center">Limites</h4>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Especialidades:</span>
-                          <span className="font-bold">{plano.limites.especialidades}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Anúncios:</span>
-                          <span className="font-bold">{plano.limites.anuncios}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Tags:</span>
-                          <span className="font-bold">{plano.limites.tags}</span>
-                        </div>
-                        <div className="flex justify-between border-t pt-2 mt-2">
-                          <span className="text-gray-600">Exposição:</span>
-                          <span className="font-bold text-pink-600">{plano.limites.dias_exposicao} dias</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="mb-4 flex-1">
-                      <h4 className="font-semibold text-sm mb-2 text-green-700">✓ Incluído:</h4>
-                      <div className="space-y-2 max-h-64 overflow-y-auto">
-                        {plano.beneficios.map((beneficio, i) => (
-                          <div key={i} className="flex items-start gap-2">
-                            <div className="flex-shrink-0 w-4 h-4 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
-                              <Check className="w-3 h-3 text-green-600" />
-                            </div>
-                            <span className="text-xs text-gray-600">{beneficio}</span>
+                      <div className={`h-48 bg-gradient-to-br ${plano.cor} p-6 relative overflow-hidden flex-shrink-0`}>
+                        <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20"></div>
+                        <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full -ml-16 -mb-16"></div>
+                        
+                        <div className="relative z-10 text-white">
+                          <IconComponent className="w-12 h-12 mb-4" />
+                          <h3 className="text-2xl font-bold mb-2">{plano.nome}</h3>
+                          <div className="flex items-baseline gap-2">
+                            <span className="text-2xl font-bold">{plano.preco}</span>
                           </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {plano.naoInclui && plano.naoInclui.length > 0 && (
-                      <div className="mb-6 p-3 bg-red-50 rounded-lg">
-                        <h4 className="font-semibold text-sm mb-2 text-red-700">✗ Não incluído:</h4>
-                        <div className="space-y-1">
-                          {plano.naoInclui.slice(0, 3).map((item, i) => (
-                            <div key={i} className="flex items-start gap-2">
-                              <X className="w-3 h-3 text-red-500 flex-shrink-0 mt-0.5" />
-                              <span className="text-xs text-gray-600">{item}</span>
-                            </div>
-                          ))}
                         </div>
-                        <p className="text-xs text-red-600 mt-2 font-medium">
-                          Faça upgrade!
-                        </p>
                       </div>
-                    )}
 
-                    <div className="space-y-2 mt-auto">
-                      <Button
-                        onClick={() => handleContratarPlano(plano)}
-                        className={`w-full ${
-                          plano.destaque
-                            ? "bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700"
-                            : plano.tipo === 'cobre'
-                            ? "bg-[#2C2C2C] hover:bg-[#3A3A3A]"
-                            : "bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
-                        }`}
-                      >
-                        {plano.tipo === 'cobre' ? 'Plano Gratuito' : 'Contratar Agora'}
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            );
-          })}
-        </div>
-      </div>
+                      <CardContent className="p-6 flex flex-col flex-1">
+                        <div className="mb-6 p-4 bg-gradient-to-br from-gray-50 to-white rounded-lg border-2 border-gray-200">
+                          <h4 className="font-bold mb-3 text-center">Limites</h4>
+                          <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Especialidades:</span>
+                              <span className="font-bold">{plano.limites.especialidades}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Anúncios:</span>
+                              <span className="font-bold">{plano.limites.anuncios}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Tags:</span>
+                              <span className="font-bold">{plano.limites.tags}</span>
+                            </div>
+                            <div className="flex justify-between border-t pt-2 mt-2">
+                              <span className="text-gray-600">Exposição:</span>
+                              <span className="font-bold text-pink-600">{plano.limites.dias_exposicao} dias</span>
+                            </div>
+                          </div>
+                        </div>
 
-      {/* Benefits Section */}
-      <Card className="border-none shadow-2xl bg-gradient-to-br from-gray-900 to-gray-800 text-white mb-16">
-        <CardContent className="p-12">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold mb-4">Por Que Anunciar Conosco?</h2>
-            <p className="text-gray-300">
-              A maior plataforma de profissionais de estética do Brasil
-            </p>
+                        <div className="mb-4 flex-1">
+                          <h4 className="font-semibold text-sm mb-2 text-green-700">✓ Incluído:</h4>
+                          <div className="space-y-2 max-h-64 overflow-y-auto">
+                            {plano.beneficios.map((beneficio, i) => (
+                              <div key={i} className="flex items-start gap-2">
+                                <div className="flex-shrink-0 w-4 h-4 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
+                                  <Check className="w-3 h-3 text-green-600" />
+                                </div>
+                                <span className="text-xs text-gray-600">{beneficio}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {plano.naoInclui && plano.naoInclui.length > 0 && (
+                          <div className="mb-6 p-3 bg-red-50 rounded-lg">
+                            <h4 className="font-semibold text-sm mb-2 text-red-700">✗ Não incluído:</h4>
+                            <div className="space-y-1">
+                              {plano.naoInclui.slice(0, 3).map((item, i) => (
+                                <div key={i} className="flex items-start gap-2">
+                                  <X className="w-3 h-3 text-red-500 flex-shrink-0 mt-0.5" />
+                                  <span className="text-xs text-gray-600">{item}</span>
+                                </div>
+                              ))}
+                            </div>
+                            <p className="text-xs text-red-600 mt-2 font-medium">
+                              Faça upgrade!
+                            </p>
+                          </div>
+                        )}
+
+                        <div className="space-y-2 mt-auto">
+                          <Button
+                            onClick={() => handleContratarPlano(plano)}
+                            className={`w-full ${
+                              plano.destaque
+                                ? "bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700"
+                                : plano.tipo === 'cobre'
+                                ? "bg-[#2C2C2C] hover:bg-[#3A3A3A]"
+                                : "bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+                            }`}
+                          >
+                            {plano.tipo === 'cobre' ? 'Plano Gratuito' : 'Contratar Agora'}
+                            <ArrowRight className="w-4 h-4 ml-2" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                );
+              })}
+            </div>
           </div>
 
-          <div className="grid md:grid-cols-4 gap-8 text-center">
-            <div>
-              <div className="w-16 h-16 bg-[#F7D426]/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-3xl">🎯</span>
+          {/* Benefits Section */}
+          <Card className="border-none shadow-2xl bg-gradient-to-br from-gray-900 to-gray-800 text-white mb-16">
+            <CardContent className="p-12">
+              <div className="text-center mb-8">
+                <h2 className="text-3xl font-bold mb-4">Por Que Anunciar Conosco?</h2>
+                <p className="text-gray-300">
+                  A maior plataforma de profissionais de estética do Brasil
+                </p>
               </div>
-              <h3 className="font-semibold mb-2">Público Qualificado</h3>
-              <p className="text-sm text-gray-300">
-                Milhares de clientes buscando serviços
-              </p>
-            </div>
 
-            <div>
-              <div className="w-16 h-16 bg-[#F7D426]/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-3xl">📈</span>
-              </div>
-              <h3 className="font-semibold mb-2">Mais Visibilidade</h3>
-              <p className="text-sm text-gray-300">
-                Destaque nos resultados de busca
-              </p>
-            </div>
+              <div className="grid md:grid-cols-4 gap-8 text-center">
+                <div>
+                  <div className="w-16 h-16 bg-[#F7D426]/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-3xl">🎯</span>
+                  </div>
+                  <h3 className="font-semibold mb-2">Público Qualificado</h3>
+                  <p className="text-sm text-gray-300">
+                    Milhares de clientes buscando serviços
+                  </p>
+                </div>
 
-            <div>
-              <div className="w-16 h-16 bg-[#F7D426]/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-3xl">💼</span>
-              </div>
-              <h3 className="font-semibold mb-2">Gestão Profissional</h3>
-              <p className="text-sm text-gray-300">
-                Ferramentas para gerenciar seus anúncios
-              </p>
-            </div>
+                <div>
+                  <div className="w-16 h-16 bg-[#F7D426]/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-3xl">📈</span>
+                  </div>
+                  <h3 className="font-semibold mb-2">Mais Visibilidade</h3>
+                  <p className="text-sm text-gray-300">
+                    Destaque nos resultados de busca
+                  </p>
+                </div>
 
-            <div>
-              <div className="w-16 h-16 bg-[#F7D426]/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-3xl">🤝</span>
+                <div>
+                  <div className="w-16 h-16 bg-[#F7D426]/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-3xl">💼</span>
+                  </div>
+                  <h3 className="font-semibold mb-2">Gestão Profissional</h3>
+                  <p className="text-sm text-gray-300">
+                    Ferramentas para gerenciar seus anúncios
+                  </p>
+                </div>
+
+                <div>
+                  <div className="w-16 h-16 bg-[#F7D426]/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-3xl">🤝</span>
+                  </div>
+                  <h3 className="font-semibold mb-2">Suporte Dedicado</h3>
+                  <p className="text-sm text-gray-300">
+                    Equipe pronta para ajudar
+                  </p>
+                </div>
               </div>
-              <h3 className="font-semibold mb-2">Suporte Dedicado</h3>
-              <p className="text-sm text-gray-300">
-                Equipe pronta para ajudar
-              </p>
+            </CardContent>
+          </Card>
+
+          {/* CTA */}
+          <div className="text-center">
+            <p className="text-gray-600 mb-4 text-lg">Tem dúvidas sobre qual plano escolher?</p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <a
+                href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Gostaria de informações sobre os planos do Mapa da Estética! 💆‍♀️")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button size="lg" className="bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold">
+                  Fale Conosco
+                </Button>
+              </a>
+              <Link to={createPageUrl("CadastrarAnuncio")}>
+                <Button size="lg" variant="outline">
+                  Criar Anúncio Grátis
+                </Button>
+              </Link>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </>
+      )}
 
-      {/* CTA */}
-      <div className="text-center">
-        <p className="text-gray-600 mb-4 text-lg">Tem dúvidas sobre qual plano escolher?</p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <a
-            href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Gostaria de informações sobre os planos do Mapa da Estética! 💆‍♀️")}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Button size="lg" className="bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold">
-              Fale Conosco
-            </Button>
-          </a>
-          <Link to={createPageUrl("CadastrarAnuncio")}>
-            <Button size="lg" variant="outline">
-              Criar Anúncio Grátis
-            </Button>
-          </Link>
-        </div>
-      </div>
+      {/* ABA: PLANOS DE PATROCINADORES */}
+      {abaPlanos === "patrocinadores" && (
+        <>
+          <div className="max-w-7xl mx-auto px-4 mb-12">
+            <Alert className="bg-gradient-to-r from-blue-50 to-cyan-50 border-blue-200">
+              <Users className="h-5 w-5 text-blue-600" />
+              <AlertDescription className="text-blue-900">
+                <strong>Planos de Patrocínio:</strong> Torne-se um parceiro estratégico do Mapa da Estética e alcance milhares de profissionais e pacientes da área de estética!
+              </AlertDescription>
+            </Alert>
+          </div>
+
+          <div className="max-w-7xl mx-auto px-4 mb-16">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+              {planosPatrocinadores.map((plano, index) => {
+                const IconComponent = plano.icone;
+                
+                return (
+                  <motion.div
+                    key={plano.tipo}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className={`flex ${plano.destaque ? "lg:-translate-y-4" : ""}`}
+                  >
+                    <Card className={`relative overflow-hidden border-none shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col w-full ${
+                      plano.destaque ? "ring-4 ring-yellow-500" : ""
+                    }`}>
+                      {plano.destaque && (
+                        <div className="absolute top-0 right-0 bg-gradient-to-r from-yellow-500 to-amber-500 text-white px-4 py-1 text-sm font-semibold z-10 rounded-bl-lg">
+                          ⭐ Mais Popular
+                        </div>
+                      )}
+
+                      <div className={`h-48 bg-gradient-to-br ${plano.cor} p-6 relative overflow-hidden flex-shrink-0`}>
+                        <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20"></div>
+                        <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full -ml-16 -mb-16"></div>
+                        
+                        <div className="relative z-10 text-white">
+                          <IconComponent className="w-12 h-12 mb-4" />
+                          <h3 className="text-2xl font-bold mb-2">{plano.nome}</h3>
+                          <div className="flex items-baseline gap-2">
+                            <span className="text-2xl font-bold">{plano.preco}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <CardContent className="p-6 flex flex-col flex-1">
+                        <div className="mb-4 flex-1">
+                          <h4 className="font-semibold text-sm mb-2 text-green-700">✓ Incluído:</h4>
+                          <div className="space-y-2 max-h-64 overflow-y-auto">
+                            {plano.beneficios.map((beneficio, i) => (
+                              <div key={i} className="flex items-start gap-2">
+                                <div className="flex-shrink-0 w-4 h-4 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
+                                  <Check className="w-3 h-3 text-green-600" />
+                                </div>
+                                <span className="text-xs text-gray-600">{beneficio}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="space-y-2 mt-auto">
+                          <Button
+                            onClick={() => {
+                              const mensagem = `Olá! Tenho interesse no Plano de Patrocínio ${plano.nome} do Mapa da Estética! 🤝`;
+                              window.open(`https://wa.me/5531972595643?text=${encodeURIComponent(mensagem)}`, '_blank');
+                            }}
+                            className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+                          >
+                            Falar com Comercial
+                            <ArrowRight className="w-4 h-4 ml-2" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Benefits Section para Patrocinadores */}
+          <Card className="border-none shadow-2xl bg-gradient-to-br from-blue-900 to-cyan-800 text-white mb-16">
+            <CardContent className="p-12">
+              <div className="text-center mb-8">
+                <h2 className="text-3xl font-bold mb-4">Por Que Patrocinar o Mapa da Estética?</h2>
+                <p className="text-blue-100">
+                  Conecte sua marca com milhares de profissionais e clientes do setor de estética
+                </p>
+              </div>
+
+              <div className="grid md:grid-cols-4 gap-8 text-center">
+                <div>
+                  <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-3xl">🎯</span>
+                  </div>
+                  <h3 className="font-semibold mb-2">Público Qualificado</h3>
+                  <p className="text-sm text-blue-100">
+                    Profissionais e clientes da área de estética
+                  </p>
+                </div>
+
+                <div>
+                  <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-3xl">📈</span>
+                  </div>
+                  <h3 className="font-semibold mb-2">Máxima Visibilidade</h3>
+                  <p className="text-sm text-blue-100">
+                    Destaque em toda a plataforma
+                  </p>
+                </div>
+
+                <div>
+                  <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-3xl">💼</span>
+                  </div>
+                  <h3 className="font-semibold mb-2">Relatórios Completos</h3>
+                  <p className="text-sm text-blue-100">
+                    Acompanhe o desempenho em tempo real
+                  </p>
+                </div>
+
+                <div>
+                  <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-3xl">🤝</span>
+                  </div>
+                  <h3 className="font-semibold mb-2">Parceria Estratégica</h3>
+                  <p className="text-sm text-blue-100">
+                    Equipe dedicada ao seu sucesso
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* CTA */}
+          <div className="text-center">
+            <p className="text-gray-600 mb-4 text-lg">Interessado em patrocinar?</p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <a
+                href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Gostaria de informações sobre patrocínio no Mapa da Estética! 🤝")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button size="lg" className="bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold">
+                  Fale Conosco
+                </Button>
+              </a>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Modal de Confirmação de Pagamento */}
       <Dialog open={mostrarModalConfirmacao} onOpenChange={setMostrarModalConfirmacao}>
