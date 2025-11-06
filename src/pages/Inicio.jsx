@@ -545,19 +545,12 @@ export default function Inicio() {
             <p className="text-gray-600 mb-4">
               Quer se tornar um patrocinador?
             </p>
-            <a 
-              onClick={(e) => {
-                e.preventDefault();
-                handleContratarPatrocinador(`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Tenho interesse em ser patrocinador do Mapa da Estética!")}`);
-              }} 
-              href="#" 
-              className="inline-block"
-            >
+            <Link to={createPageUrl("Planos")}>
               <Button size="lg" className="bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold border-2 border-[#2C2C2C]">
-                💼 Entre em Contato
+                💼 Ver Planos de Patrocínio
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
-            </a>
+            </Link>
           </div>
         </div>
       </section>
