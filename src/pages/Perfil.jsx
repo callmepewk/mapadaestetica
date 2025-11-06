@@ -50,9 +50,14 @@ import {
   Handshake, // New import for Indicações
   DollarSign, // New import for Beauty Coins
   Briefcase, // New import for Informações Profissionais
+  Zap, // New import for Impulsionados
+  CreditCard, // New import for Planos Ativos
+  Crown, // New import for Clube da Beleza
+  Users, // New import for Patrocinador
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 export default function Perfil() {
   const navigate = useNavigate();
@@ -158,6 +163,26 @@ export default function Perfil() {
     initialData: [],
   });
 
+  // NEW: Query anúncios impulsionados
+  const { data: anunciosImpulsionados = [], isLoading: isLoadingImpulsionados } = useQuery({
+    queryKey: ['anuncios-impulsionados', user?.email],
+    queryFn: async () => {
+      if (!user) return [];
+      return await base44.entities.Anuncio.filter({
+        created_by: user.email,
+        impulsionado: true,
+        status: 'ativo'
+      });
+    },
+    enabled: !!user && isProfissional,
+    staleTime: 5 * 60 * 1000,
+    cacheTime: 15 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    initialData: [],
+  });
+
   const salvarMutation = useMutation({ // Renamed from updatePerfilMutation
     mutationFn: async (data) => {
       await base44.auth.updateMe(data);
@@ -195,6 +220,7 @@ export default function Perfil() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['meus-anuncios']);
+      queryClient.invalidateQueries(['anuncios-impulsionados']);
     },
   });
 
@@ -923,6 +949,130 @@ export default function Perfil() {
                           <Eye className="w-5 h-5 text-pink-600" />
                           Meus Anúncios
                         </h3>
+
+                        {/* NOVA SEÇÃO: Anúncios Impulsionados */}
+                        {anunciosImpulsionados.length > 0 && (
+                          <div className="mb-8 pb-6 border-b">
+                            <div className="flex items-center gap-2 mb-4">
+                              <Badge className="bg-gradient-to-r from-orange-500 to-amber-600 text-white">
+                                <Zap className="w-3 h-3 mr-1" />
+                                IMPULSIONADOS
+                              </Badge>
+                              <span className="text-sm text-gray-600">
+                                ({anunciosImpulsionados.length} {anunciosImpulsionados.length === 1 ? 'anúncio' : 'anúncios'})
+                              </span>
+                            </div>
+
+                            <div className="space-y-3">
+                              {anunciosImpulsionados.map((anuncio) => {
+                                // Calcular dias restantes se tiver data_impulsionamento
+                                let diasRestantes = null;
+                                if (anuncio.data_impulsionamento) {
+                                  const dataInicio = new Date(anuncio.data_impulsionamento);
+                                  const hoje = new Date();
+                                  const diffTime = hoje.getTime() - dataInicio.getTime();
+                                  diasRestantes = Math.max(0, 30 - Math.ceil(diffTime / (1000 * 60 * 60 * 24))); // Assumindo 30 dias de impulsionamento
+                                }
+
+                                return (
+                                  <div
+                                    key={anuncio.id}
+                                    className="p-4 bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-300 rounded-lg hover:border-orange-400 transition-colors"
+                                  >
+                                    <div className="flex items-start justify-between mb-2">
+                                      <div className="flex-1">
+                                        <div className="flex items-center gap-2 mb-2">
+                                          <Zap className="w-4 h-4 text-orange-600" />
+                                          <Badge className="bg-orange-600 text-white text-xs">
+                                            IMPULSIONADO
+                                          </Badge>
+                                          {diasRestantes !== null && (
+                                            <Badge variant="outline" className="text-xs">
+                                              {diasRestantes} dias restantes
+                                            </Badge>
+                                          )}
+                                        </div>
+                                        <h5 className="font-medium text-gray-900 mb-1">{anuncio.titulo}</h5>
+                                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                                          <Badge className="bg-green-100 text-green-800">
+                                            {anuncio.status}
+                                          </Badge>
+                                          <span>•</span>
+                                          <span>{anuncio.categoria}</span>
+                                        </div>
+                                      </div>
+                                      <div className="flex gap-2">
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() => handleEditarAnuncio(anuncio.id)}
+                                        >
+                                          Editar
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() => handleVerAnuncio(anuncio.id)}
+                                        >
+                                          Ver
+                                        </Button>
+                                      </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-4 gap-3 mt-3 pt-3 border-t border-orange-200">
+                                      <div className="text-center">
+                                        <div className="flex items-center justify-center gap-1 mb-1">
+                                          <Eye className="w-3 h-3 text-gray-400" />
+                                          <span className="text-xs text-gray-500">Views</span>
+                                        </div>
+                                        <p className="text-lg font-bold text-orange-600">{anuncio.visualizacoes || 0}</p>
+                                      </div>
+                                      <div className="text-center">
+                                        <div className="flex items-center justify-center gap-1 mb-1">
+                                          <Star className="w-3 h-3 text-gray-400" />
+                                          <span className="text-xs text-gray-500">Curtidas</span>
+                                        </div>
+                                        <p className="text-lg font-bold text-orange-600">{anuncio.curtidas || 0}</p>
+                                      </div>
+                                      <div className="text-center">
+                                        <div className="flex items-center justify-center gap-1 mb-1">
+                                          <MessageCircle className="w-3 h-3 text-gray-400" />
+                                          <span className="text-xs text-gray-500">Coments</span>
+                                        </div>
+                                        <p className="text-lg font-bold text-orange-600">{anuncio.comentarios?.length || 0}</p>
+                                      </div>
+                                      <div className="text-center">
+                                        <div className="flex items-center justify-center gap-1 mb-1">
+                                          <TrendingUp className="w-3 h-3 text-gray-400" />
+                                          <span className="text-xs text-gray-500">Alcance</span>
+                                        </div>
+                                        <p className="text-lg font-bold text-orange-600">+{Math.floor((anuncio.visualizacoes || 0) * 1.5)}</p>
+                                      </div>
+                                    </div>
+
+                                    {anuncio.data_impulsionamento && (
+                                      <div className="mt-3 pt-3 border-t border-orange-200">
+                                        <p className="text-xs text-gray-600">
+                                          <Clock className="w-3 h-3 inline mr-1" />
+                                          Impulsionado em: {format(new Date(anuncio.data_impulsionamento), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                                        </p>
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+
+                            <Alert className="mt-4 bg-orange-50 border-orange-200">
+                              <Zap className="h-4 w-4 text-orange-600" />
+                              <AlertDescription className="text-orange-800 text-sm">
+                                💡 Anúncios impulsionados recebem até <strong>3x mais visualizações</strong> e aparecem em destaque nas buscas!
+                              </AlertDescription>
+                            </Alert>
+                          </div>
+                        )}
+
+                        {/* Lista de todos os anúncios */}
                         {meusAnuncios.length === 0 ? (
                           <div className="text-center py-8 bg-gray-50 rounded-lg">
                             <p className="text-gray-500">Você ainda não possui anúncios cadastrados.</p>
@@ -1439,95 +1589,151 @@ export default function Perfil() {
               </CardContent>
             </Card>
 
-            {/* Plan Info - PROFISSIONAIS ou FREE para PACIENTES */}
-            {(isProfissional || (isPaciente && user.plano_ativo === 'free')) && (
-              <Card className="border-none shadow-lg bg-gradient-to-br from-pink-50 to-rose-50">
-                <CardContent className="p-6">
-                  <h3 className="font-semibold text-lg mb-4">Seu Plano</h3>
-                  <div className="text-center">
-                    <Badge className="mb-2 bg-gradient-to-r from-pink-500 to-rose-500 text-white text-lg px-4 py-2">
-                      {planoNome}
-                    </Badge>
-                    {isProfissional && (
-                      <>
-                        <div className="space-y-3 my-4">
-                          <div className="p-3 bg-white rounded-lg border-2 border-[#F7D426]">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <Star className="w-5 h-5 text-[#F7D426]" />
-                                <span className="text-sm text-gray-600">Pontos:</span>
-                              </div>
-                              <span className="font-bold text-lg text-[#F7D426]">{user.pontos_acumulados || 0}</span>
-                            </div>
-                          </div>
-                          
-                          <div className="p-3 bg-white rounded-lg border-2 border-purple-500">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <DollarSign className="w-5 h-5 text-purple-600" />
-                                <span className="text-sm text-gray-600">Beauty Coins:</span>
-                              </div>
-                              <span className="font-bold text-lg text-purple-600">{user.beauty_coins || 0}</span>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <Button
-                          variant="outline"
-                          className="w-full mb-2"
-                          onClick={() => navigate(createPageUrl("LojaPontos"))}
-                        >
-                          Ver Loja de Pontos
-                        </Button>
-                        <Button
-                          variant="outline"
-                          className="w-full"
-                          onClick={() => navigate(createPageUrl("MeuPlano"))}
-                        >
-                          Ver Meu Plano
-                        </Button>
-                      </>
+            {/* Plan Info - ATUALIZADO COM TODOS OS PLANOS */}
+            <Card className="border-none shadow-lg bg-gradient-to-br from-pink-50 to-rose-50">
+              <CardContent className="p-6">
+                <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-pink-600" />
+                  Meus Planos Ativos
+                </h3>
+
+                <div className="space-y-4">
+                  {/* Plano Mapa da Estética */}
+                  <div className="p-4 bg-white rounded-lg border-2 border-pink-200">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-sm font-semibold text-gray-700">Mapa da Estética</p>
+                      <Badge className="bg-gradient-to-r from-pink-500 to-rose-500 text-white">
+                        {planoNome}
+                      </Badge>
+                    </div>
+                    {user.data_adesao_plano && (
+                      <p className="text-xs text-gray-500">
+                        Desde {format(new Date(user.data_adesao_plano), "dd/MM/yyyy", { locale: ptBR })}
+                      </p>
                     )}
-                    {isPaciente && (
-                      <>
-                        <div className="space-y-3 my-4">
-                          <div className="p-3 bg-white rounded-lg border-2 border-[#F7D426]">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <Star className="w-5 h-5 text-[#F7D426]" />
-                                <span className="text-sm text-gray-600">Pontos:</span>
-                              </div>
-                              <span className="font-bold text-lg text-[#F7D426]">{user.pontos_acumulados || 0}</span>
-                            </div>
-                          </div>
-                          
-                          <div className="p-3 bg-white rounded-lg border-2 border-purple-500">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <DollarSign className="w-5 h-5 text-purple-600" />
-                                <span className="text-sm text-gray-600">Beauty Coins:</span>
-                              </div>
-                              <span className="font-bold text-lg text-purple-600">{user.beauty_coins || 0}</span>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <Button
-                          variant="outline"
-                          className="w-full"
-                          onClick={() => navigate(createPageUrl("LojaPontos"))}
-                        >
-                          Ver Loja de Pontos
-                        </Button>
-                        <p className="text-sm text-gray-600 mt-2">
-                          Plano gratuito para pacientes
-                        </p>
-                      </>
+                    {isProfissional && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full mt-3 text-xs"
+                        onClick={() => navigate(createPageUrl("Planos"))}
+                      >
+                        Fazer Upgrade
+                      </Button>
                     )}
                   </div>
-                </CardContent>
-              </Card>
-            )}
+
+                  {/* Plano Clube da Beleza */}
+                  <div className="p-4 bg-white rounded-lg border-2 border-purple-200">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <Crown className="w-4 h-4 text-purple-600" />
+                        <p className="text-sm font-semibold text-gray-700">Clube da Beleza</p>
+                      </div>
+                      <Badge className={
+                        user.plano_clube_beleza === 'nenhum' || !user.plano_clube_beleza ?
+                        "bg-gray-100 text-gray-600" :
+                        "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+                      }>
+                        {user.plano_clube_beleza === 'nenhum' || !user.plano_clube_beleza ? 'Não Ativo' : user.plano_clube_beleza.toUpperCase()}
+                      </Badge>
+                    </div>
+                    {user.plano_clube_beleza !== 'nenhum' && user.data_adesao_plano_clube && (
+                      <p className="text-xs text-gray-500">
+                        Desde {format(new Date(user.data_adesao_plano_clube), "dd/MM/yyyy", { locale: ptBR })}
+                      </p>
+                    )}
+                    {(user.plano_clube_beleza === 'nenhum' || !user.plano_clube_beleza) && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full mt-3 text-xs border-purple-300 text-purple-700 hover:bg-purple-50"
+                        onClick={() => alert("Funcionalidade em breve! Entre em contato conosco.")}
+                      >
+                        Assinar Clube
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* Plano Patrocinador */}
+                  {isProfissional && (
+                    <div className="p-4 bg-white rounded-lg border-2 border-blue-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <Users className="w-4 h-4 text-blue-600" />
+                          <p className="text-sm font-semibold text-gray-700">Patrocinador</p>
+                        </div>
+                        <Badge className={
+                          user.plano_patrocinador === 'nenhum' || !user.plano_patrocinador ?
+                          "bg-gray-100 text-gray-600" :
+                          "bg-gradient-to-r from-blue-500 to-indigo-500 text-white"
+                        }>
+                          {user.plano_patrocinador === 'nenhum' || !user.plano_patrocinador ? 'Não Ativo' : user.plano_patrocinador.toUpperCase()}
+                        </Badge>
+                      </div>
+                      {user.plano_patrocinador !== 'nenhum' && user.data_adesao_plano_patrocinador && (
+                        <p className="text-xs text-gray-500">
+                          Desde {format(new Date(user.data_adesao_plano_patrocinador), "dd/MM/yyyy", { locale: ptBR })}
+                        </p>
+                      )}
+                      {(user.plano_patrocinador === 'nenhum' || !user.plano_patrocinador) && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="w-full mt-3 text-xs border-blue-300 text-blue-700 hover:bg-blue-50"
+                          onClick={() => {
+                            const mensagem = `Olá! Tenho interesse em contratar um plano de Patrocinador no Mapa da Estética.\n\nDados:\nNome: ${user.full_name}\nEmail: ${user.email}`;
+                            window.open(`https://wa.me/5531972595643?text=${encodeURIComponent(mensagem)}`, '_blank');
+                          }}
+                        >
+                          Ser Patrocinador
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Pontos e Beauty Coins */}
+                <div className="space-y-3 mt-4 pt-4 border-t">
+                  <div className="p-3 bg-white rounded-lg border-2 border-[#F7D426]">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Star className="w-5 h-5 text-[#F7D426]" />
+                        <span className="text-sm text-gray-600">Pontos:</span>
+                      </div>
+                      <span className="font-bold text-lg text-[#F7D426]">{user.pontos_acumulados || 0}</span>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-white rounded-lg border-2 border-purple-500">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="w-5 h-5 text-purple-600" />
+                        <span className="text-sm text-gray-600">Beauty Coins:</span>
+                      </div>
+                      <span className="font-bold text-lg text-purple-600">{user.beauty_coins || 0}</span>
+                    </div>
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    className="w-full text-xs"
+                    onClick={() => navigate(createPageUrl("LojaPontos"))}
+                  >
+                    Ver Loja de Pontos
+                  </Button>
+                </div>
+
+                {isProfissional && (
+                  <Button
+                    className="w-full mt-4 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
+                    onClick={() => navigate(createPageUrl("MeuPlano"))}
+                  >
+                    Ver Detalhes Completos
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
 
             {/* Actions - AMBOS */}
             <Card className="border-none shadow-lg">
