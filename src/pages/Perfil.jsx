@@ -47,9 +47,12 @@ import {
   Upload,
   Loader2,
   Bookmark, // New import for Saved Ads
-  Handshake, // New import for Indicações
+  Handshake, // New import for Indicações, and now Patrocinador
   DollarSign, // New import for Beauty Coins
   Briefcase, // New import for Informações Profissionais
+  Zap, // New import for Impulsionados
+  CreditCard, // New import for Meus Planos
+  Crown, // New import for Clube da Beleza
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from 'date-fns';
@@ -150,6 +153,23 @@ export default function Perfil() {
       return await Promise.all(savedAdsPromises);
     },
     enabled: !!user && isPaciente && (user.anuncios_salvos?.length > 0),
+    staleTime: 5 * 60 * 1000,
+    cacheTime: 15 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    initialData: [],
+  });
+
+  // NEW: Query for boosted/impulsionados ads (professionals only)
+  const { data: anunciosImpulsionados = [], isLoading: isLoadingImpulsionados } = useQuery({
+    queryKey: ['anuncios-impulsionados', user?.email],
+    queryFn: async () => {
+      if (!user) return [];
+      const allAds = await base44.entities.Anuncio.filter({ created_by: user.email });
+      return allAds.filter(a => a.impulsionado === true);
+    },
+    enabled: !!user && isProfissional,
     staleTime: 5 * 60 * 1000,
     cacheTime: 15 * 60 * 1000,
     refetchOnWindowFocus: false,
@@ -382,7 +402,7 @@ export default function Perfil() {
                 ) : (
                   <TabsTrigger value="produtos-servicos">Produtos & Serviços</TabsTrigger>
                 )}
-                <TabsTrigger value="indicacoes">Indicações</TabsTrigger>
+                <TabsTrigger value="meus-planos">Meus Planos</TabsTrigger>
               </TabsList>
 
               {/* TabsContent for "informacoes" */}
@@ -915,105 +935,229 @@ export default function Perfil() {
 
               {/* Tab Meus Anúncios (Profissional) / Anúncios Salvos (Paciente) */}
               <TabsContent value="meus-anuncios">
-                <Card className="border-none shadow-lg">
-                  <CardContent className="p-6">
-                    {isProfissional ? (
-                      <div>
-                        <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                          <Eye className="w-5 h-5 text-pink-600" />
-                          Meus Anúncios
-                        </h3>
-                        {meusAnuncios.length === 0 ? (
-                          <div className="text-center py-8 bg-gray-50 rounded-lg">
-                            <p className="text-gray-500">Você ainda não possui anúncios cadastrados.</p>
-                            <Button
-                              onClick={() => navigate(createPageUrl("CadastrarAnuncio"))}
-                              className="w-full mt-4 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
-                            >
-                              Criar Novo Anúncio
-                            </Button>
-                          </div>
-                        ) : (
-                          <div className="space-y-3">
-                            {meusAnuncios.map((anuncio) => (
-                              <div
-                                key={anuncio.id}
-                                className="p-4 bg-white border-2 border-gray-200 rounded-lg hover:border-[#F7D426] transition-colors"
+                {isProfissional ? (
+                  <Card className="border-none shadow-lg">
+                    <CardContent className="p-6">
+                      <Tabs defaultValue="todos" className="w-full">
+                        <TabsList className="grid w-full grid-cols-2 mb-6">
+                          <TabsTrigger value="todos">Todos os Anúncios</TabsTrigger>
+                          <TabsTrigger value="impulsionados">
+                            Impulsionados ({anunciosImpulsionados.length})
+                          </TabsTrigger>
+                        </TabsList>
+
+                        <TabsContent value="todos">
+                          <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                            <Eye className="w-5 h-5 text-pink-600" />
+                            Todos os Meus Anúncios
+                          </h3>
+                          {meusAnuncios.length === 0 ? (
+                            <div className="text-center py-8 bg-gray-50 rounded-lg">
+                              <p className="text-gray-500">Você ainda não possui anúncios cadastrados.</p>
+                              <Button
+                                onClick={() => navigate(createPageUrl("CadastrarAnuncio"))}
+                                className="w-full mt-4 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
                               >
-                                <div className="flex items-start justify-between mb-2">
-                                  <div className="flex-1">
-                                    <h5 className="font-medium text-gray-900 mb-1">{anuncio.titulo}</h5>
-                                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                                      <Badge className={
-                                        anuncio.status === 'ativo' ? 'bg-green-100 text-green-800' :
-                                        anuncio.status === 'pendente' ? 'bg-yellow-100 text-yellow-800' :
-                                        'bg-gray-100 text-gray-800'
-                                      }>
-                                        {anuncio.status}
-                                      </Badge>
-                                      <span>•</span>
-                                      <span>{anuncio.categoria}</span>
+                                Criar Novo Anúncio
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="space-y-3">
+                              {meusAnuncios.map((anuncio) => (
+                                <div
+                                  key={anuncio.id}
+                                  className="p-4 bg-white border-2 border-gray-200 rounded-lg hover:border-[#F7D426] transition-colors"
+                                >
+                                  <div className="flex items-start justify-between mb-2">
+                                    <div className="flex-1">
+                                      <h5 className="font-medium text-gray-900 mb-1">{anuncio.titulo}</h5>
+                                      <div className="flex items-center gap-2 text-xs text-gray-500">
+                                        <Badge className={
+                                          anuncio.status === 'ativo' ? 'bg-green-100 text-green-800' :
+                                          anuncio.status === 'pendente' ? 'bg-yellow-100 text-yellow-800' :
+                                          'bg-gray-100 text-gray-800'
+                                        }>
+                                          {anuncio.status}
+                                        </Badge>
+                                        {anuncio.impulsionado && (
+                                          <Badge className="bg-orange-100 text-orange-800">
+                                            <Zap className="w-3 h-3 mr-1" />
+                                            Impulsionado
+                                          </Badge>
+                                        )}
+                                        <span>•</span>
+                                        <span>{anuncio.categoria}</span>
+                                      </div>
                                     </div>
-                                  </div>
-                                  <div className="flex gap-2">
-                                    {anuncio.status === 'pendente' && (
+                                    <div className="flex gap-2">
+                                      {anuncio.status === 'pendente' && (
+                                        <Button
+                                          size="sm"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            atualizarStatusMutation.mutate({ id: anuncio.id, status: 'ativo' });
+                                          }}
+                                          className="bg-green-600 hover:bg-green-700"
+                                        >
+                                          Ativar
+                                        </Button>
+                                      )}
                                       <Button
                                         size="sm"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          atualizarStatusMutation.mutate({ id: anuncio.id, status: 'ativo' });
-                                        }}
-                                        className="bg-green-600 hover:bg-green-700"
+                                        variant="outline"
+                                        onClick={() => handleEditarAnuncio(anuncio.id)}
                                       >
-                                        Ativar
+                                        Editar
                                       </Button>
-                                    )}
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      onClick={() => handleEditarAnuncio(anuncio.id)}
-                                    >
-                                      Editar
-                                    </Button>
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      onClick={() => handleVerAnuncio(anuncio.id)}
-                                    >
-                                      Ver
-                                    </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => handleVerAnuncio(anuncio.id)}
+                                      >
+                                        Ver
+                                      </Button>
+                                    </div>
                                   </div>
-                                </div>
 
-                                <div className="grid grid-cols-3 gap-4 mt-3 pt-3 border-t">
-                                  <div className="text-center">
-                                    <div className="flex items-center justify-center gap-1 mb-1">
-                                      <Eye className="w-3 h-3 text-gray-400" />
-                                      <span className="text-xs text-gray-500">Visualizações</span>
+                                  <div className="grid grid-cols-3 gap-4 mt-3 pt-3 border-t">
+                                    <div className="text-center">
+                                      <div className="flex items-center justify-center gap-1 mb-1">
+                                        <Eye className="w-3 h-3 text-gray-400" />
+                                        <span className="text-xs text-gray-500">Visualizações</span>
+                                      </div>
+                                      <p className="text-lg font-bold text-gray-900">{anuncio.visualizacoes || 0}</p>
                                     </div>
-                                    <p className="text-lg font-bold text-gray-900">{anuncio.visualizacoes || 0}</p>
-                                  </div>
-                                  <div className="text-center">
-                                    <div className="flex items-center justify-center gap-1 mb-1">
-                                      <Star className="w-3 h-3 text-gray-400" />
-                                      <span className="text-xs text-gray-500">Curtidas</span>
+                                    <div className="text-center">
+                                      <div className="flex items-center justify-center gap-1 mb-1">
+                                        <Star className="w-3 h-3 text-gray-400" />
+                                        <span className="text-xs text-gray-500">Curtidas</span>
+                                      </div>
+                                      <p className="text-lg font-bold text-gray-900">{anuncio.curtidas || 0}</p>
                                     </div>
-                                    <p className="text-lg font-bold text-gray-900">{anuncio.curtidas || 0}</p>
-                                  </div>
-                                  <div className="text-center">
-                                    <div className="flex items-center justify-center gap-1 mb-1">
-                                      <MessageCircle className="w-3 h-3 text-gray-400" />
-                                      <span className="text-xs text-gray-500">Comentários</span>
+                                    <div className="text-center">
+                                      <div className="flex items-center justify-center gap-1 mb-1">
+                                        <MessageCircle className="w-3 h-3 text-gray-400" />
+                                        <span className="text-xs text-gray-500">Comentários</span>
+                                      </div>
+                                      <p className="text-lg font-bold text-gray-900">{anuncio.comentarios?.length || 0}</p>
                                     </div>
-                                    <p className="text-lg font-bold text-gray-900">{anuncio.comentarios?.length || 0}</p>
                                   </div>
                                 </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    ) : (
+                              ))}
+                            </div>
+                          )}
+                        </TabsContent>
+
+                        <TabsContent value="impulsionados">
+                          <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                            <Zap className="w-5 h-5 text-orange-600" />
+                            Anúncios Impulsionados
+                          </h3>
+                          {isLoadingImpulsionados ? (
+                            <div className="text-center py-8 bg-gray-50 rounded-lg">
+                              <Loader2 className="w-6 h-6 mx-auto animate-spin text-orange-600" />
+                              <p className="text-gray-500 mt-2">Carregando anúncios impulsionados...</p>
+                            </div>
+                          ) : anunciosImpulsionados.length === 0 ? (
+                            <div className="text-center py-12 bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl border-2 border-dashed border-orange-300">
+                              <div className="text-6xl mb-4">🚀</div>
+                              <p className="text-gray-800 text-lg mb-4">
+                                Você ainda não tem anúncios impulsionados
+                              </p>
+                              <p className="text-gray-600 mb-6">
+                                Impulsione seus anúncios para aumentar a visibilidade e alcançar mais clientes!
+                              </p>
+                              <Button
+                                onClick={() => navigate(createPageUrl("Planos"))}
+                                className="bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700"
+                              >
+                                <Zap className="w-4 h-4 mr-2" />
+                                Ver Planos de Impulsionamento
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="space-y-4">
+                              {anunciosImpulsionados.map((anuncio) => (
+                                <div
+                                  key={anuncio.id}
+                                  className="p-4 bg-gradient-to-br from-orange-50 to-amber-50 border-2 border-orange-200 rounded-lg hover:border-orange-300 transition-colors"
+                                >
+                                  <div className="flex items-start justify-between mb-3">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2 mb-2">
+                                        <Badge className="bg-orange-600 text-white">
+                                          <Zap className="w-3 h-3 mr-1" />
+                                          Impulsionado
+                                        </Badge>
+                                        <Badge className={
+                                          anuncio.status === 'ativo' ? 'bg-green-100 text-green-800' :
+                                          'bg-gray-100 text-gray-800'
+                                        }>
+                                          {anuncio.status}
+                                        </Badge>
+                                      </div>
+                                      <h5 className="font-medium text-gray-900 mb-1">{anuncio.titulo}</h5>
+                                      <p className="text-sm text-gray-600 line-clamp-2">{anuncio.descricao}</p>
+                                      {anuncio.data_impulsionamento && (
+                                        <p className="text-xs text-orange-700 mt-2">
+                                          🚀 Impulsionado em: {format(new Date(anuncio.data_impulsionamento), "dd/MM/yyyy 'às' HH:mm")}
+                                        </p>
+                                      )}
+                                    </div>
+                                    <div className="flex gap-2">
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => handleEditarAnuncio(anuncio.id)}
+                                      >
+                                        Editar
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => handleVerAnuncio(anuncio.id)}
+                                      >
+                                        Ver
+                                      </Button>
+                                    </div>
+                                  </div>
+
+                                  <div className="grid grid-cols-3 gap-4 mt-3 pt-3 border-t border-orange-200">
+                                    <div className="text-center">
+                                      <div className="flex items-center justify-center gap-1 mb-1">
+                                        <Eye className="w-3 h-3 text-orange-600" />
+                                        <span className="text-xs text-orange-700">Visualizações</span>
+                                      </div>
+                                      <p className="text-lg font-bold text-orange-900">{anuncio.visualizacoes || 0}</p>
+                                    </div>
+                                    <div className="text-center">
+                                      <div className="flex items-center justify-center gap-1 mb-1">
+                                        <Star className="w-3 h-3 text-orange-600" />
+                                        <span className="text-xs text-orange-700">Curtidas</span>
+                                      </div>
+                                      <p className="text-lg font-bold text-orange-900">{anuncio.curtidas || 0}</p>
+                                    </div>
+                                    <div className="text-center">
+                                      <div className="flex items-center justify-center gap-1 mb-1">
+                                        <TrendingUp className="w-3 h-3 text-orange-600" />
+                                        <span className="text-xs text-orange-700">Engajamento</span>
+                                      </div>
+                                      <p className="text-lg font-bold text-orange-900">
+                                        {Math.round(((anuncio.curtidas || 0) / Math.max(anuncio.visualizacoes || 1, 1)) * 100)}%
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </TabsContent>
+                      </Tabs>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <Card className="border-none shadow-lg">
+                    <CardContent className="p-6">
                       <div>
                         <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
                           <Bookmark className="w-5 h-5 text-purple-600" />
@@ -1063,9 +1207,9 @@ export default function Perfil() {
                           </div>
                         )}
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                )}
               </TabsContent>
 
               {/* Tab Estatísticas (APENAS PROFISSIONAIS) */}
@@ -1404,6 +1548,130 @@ export default function Perfil() {
                     </div>
                   </CardContent>
                 </Card>
+              </TabsContent>
+
+              {/* NEW Tab: Meus Planos */}
+              <TabsContent value="meus-planos">
+                <div className="space-y-6">
+                  {/* Plano do Mapa da Estética */}
+                  <Card className="border-none shadow-lg">
+                    <CardContent className="p-6">
+                      <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                        <CreditCard className="w-5 h-5 text-pink-600" />
+                        Plano de Anúncios - Mapa da Estética
+                      </h3>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <Badge className="mb-2 bg-[#F7D426] text-[#2C2C2C] text-lg px-4 py-2">
+                            {planoNome}
+                          </Badge>
+                          <p className="text-sm text-gray-600 mt-2">
+                            {isProfissional
+                              ? `Seu plano atual para publicar e gerenciar anúncios`
+                              : `Plano gratuito para pacientes`
+                            }
+                          </p>
+                        </div>
+                        <Button
+                          onClick={() => navigate(createPageUrl("MeuPlano"))}
+                          className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
+                        >
+                          Ver Detalhes
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Plano do Clube da Beleza */}
+                  <Card className="border-none shadow-lg">
+                    <CardContent className="p-6">
+                      <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                        <Crown className="w-5 h-5 text-purple-600" />
+                        Clube da Beleza
+                      </h3>
+                      {user?.plano_clube_beleza ? (
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <Badge className="mb-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-lg px-4 py-2">
+                              {user.plano_clube_beleza.toUpperCase()}
+                            </Badge>
+                            <p className="text-sm text-gray-600 mt-2">
+                              Acesso exclusivo aos benefícios do Clube da Beleza
+                            </p>
+                          </div>
+                          <Button
+                            onClick={() => navigate(createPageUrl("SobreNos"))}
+                            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                          >
+                            Ver Benefícios
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border-2 border-dashed border-purple-300">
+                          <Crown className="w-12 h-12 text-purple-400 mx-auto mb-3" />
+                          <p className="text-gray-800 mb-4">
+                            Você ainda não faz parte do Clube da Beleza
+                          </p>
+                          <Button
+                            onClick={() => navigate(createPageUrl("SobreNos"))}
+                            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                          >
+                            <Crown className="w-4 h-4 mr-2" />
+                            Conhecer o Clube
+                          </Button>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Plano de Patrocinadores */}
+                  <Card className="border-none shadow-lg">
+                    <CardContent className="p-6">
+                      <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                        <Handshake className="w-5 h-5 text-blue-600" />
+                        Plano de Patrocinador
+                      </h3>
+                      {user?.plano_patrocinador ? (
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <Badge className="mb-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-lg px-4 py-2">
+                              {user.plano_patrocinador.toUpperCase()}
+                            </Badge>
+                            <p className="text-sm text-gray-600 mt-2">
+                              Patrocinador oficial do Mapa da Estética
+                            </p>
+                          </div>
+                          <Button
+                            onClick={() => {
+                              const mensagem = `Olá! Gostaria de mais informações sobre meu plano de patrocinador no Mapa da Estética.`;
+                              window.open(`https://wa.me/5531972595643?text=${encodeURIComponent(mensagem)}`, '_blank');
+                            }}
+                            className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+                          >
+                            Falar com Suporte
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl border-2 border-dashed border-blue-300">
+                          <Handshake className="w-12 h-12 text-blue-400 mx-auto mb-3" />
+                          <p className="text-gray-800 mb-4">
+                            Torne-se um patrocinador e alcance milhares de profissionais
+                          </p>
+                          <Button
+                            onClick={() => {
+                              const mensagem = `Olá! Tenho interesse em me tornar um patrocinador do Mapa da Estética! Podem me enviar mais informações?`;
+                              window.open(`https://wa.me/5531972595643?text=${encodeURIComponent(mensagem)}`, '_blank');
+                            }}
+                            className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+                          >
+                            <Handshake className="w-4 h-4 mr-2" />
+                            Quero Ser Patrocinador
+                          </Button>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
               </TabsContent>
 
             </Tabs>
