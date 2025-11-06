@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Eye, Heart, CheckCircle, Star } from "lucide-react";
+import { MapPin, Eye, Heart, CheckCircle, Star, Award } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function CardAnuncio({ anuncio, distancia }) {
@@ -40,8 +40,18 @@ export default function CardAnuncio({ anuncio, distancia }) {
           </div>
         )}
 
-        {anuncio.em_destaque && (
+        {/* NOVO: Badge Profissional Especializado */}
+        {anuncio.profissional_especializado && (
           <div className="absolute top-3 left-3">
+            <Badge className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-2 border-white shadow-lg">
+              <Award className="w-3 h-3 mr-1" />
+              Especializado
+            </Badge>
+          </div>
+        )}
+
+        {anuncio.em_destaque && (
+          <div className="absolute bottom-3 right-3">
             <Badge className="bg-gradient-to-r from-yellow-400 to-amber-500 text-[#2C2C2C] font-bold border-2 border-white shadow-lg">
               ⭐ Destaque
             </Badge>
@@ -114,6 +124,12 @@ export default function CardAnuncio({ anuncio, distancia }) {
           {anuncio.faixa_preco && (
             <Badge className="bg-green-100 text-green-800 text-xs font-bold">
               {anuncio.faixa_preco}
+            </Badge>
+          )}
+          {anuncio.profissional_especializado && (
+            <Badge className="bg-purple-100 text-purple-800 text-xs flex items-center gap-1">
+              <Award className="w-3 h-3" />
+              Especializado
             </Badge>
           )}
         </div>
