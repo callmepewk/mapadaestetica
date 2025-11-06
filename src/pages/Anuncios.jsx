@@ -119,6 +119,15 @@ const statusFuncionamento = [
   { valor: "N/D", label: "⚪ Não Informado" }
 ];
 
+const tiposEstabelecimento = [
+  { valor: "todos", label: "Todos os tipos", estrelas: null },
+  { valor: "Consultório", label: "⭐ Consultório", estrelas: 1 },
+  { valor: "Clínica", label: "⭐⭐ Clínica", estrelas: 2 },
+  { valor: "Centro Clínico", label: "⭐⭐⭐ Centro Clínico", estrelas: 3 },
+  { valor: "Centro de Especialidade", label: "⭐⭐⭐⭐ Centro Estético", estrelas: 4 },
+  { valor: "Clínica de Luxo", label: "⭐⭐⭐⭐⭐ Clínica de Luxo", estrelas: 5 }
+];
+
 const faixasDistancia = [
   { valor: "todas", label: "Todas as distâncias" },
   { valor: "0-0.5", label: "Até 500m" },
@@ -171,6 +180,7 @@ export default function Anuncios() {
   const [filtroStatusFuncionamento, setFiltroStatusFuncionamento] = useState("");
   const [mostrarSeletorProcedimentos, setMostrarSeletorProcedimentos] = useState(false);
   const [apenasVerificados, setApenasVerificados] = useState(false);
+  const [filtroTipoEstabelecimento, setFiltroTipoEstabelecimento] = useState("todos");
   
   const [filtroDistancia, setFiltroDistancia] = useState("todas");
   const [filtroTempoFormacao, setFiltroTempoFormacao] = useState("todas");
@@ -209,6 +219,7 @@ export default function Anuncios() {
     const verificados = urlParams.get('verificados');
     const distancia = urlParams.get('distancia');
     const tempoFormacao = urlParams.get('tempoFormacao');
+    const tipoEstabelecimento = urlParams.get('tipoEstabelecimento');
 
     if (cidade) setCidadeFiltro(cidade);
     if (estado) setEstadoFiltro(estado);
@@ -222,6 +233,7 @@ export default function Anuncios() {
     if (verificados) setApenasVerificados(verificados === 'true');
     if (distancia) setFiltroDistancia(distancia);
     if (tempoFormacao) setFiltroTempoFormacao(tempoFormacao);
+    if (tipoEstabelecimento) setFiltroTipoEstabelecimento(tipoEstabelecimento);
   }, []);
 
   const usarMinhaLocalizacao = async () => {
@@ -342,6 +354,9 @@ export default function Anuncios() {
         
         const matchVerificados = !apenasVerificados || anuncio.verificado;
 
+        const matchTipoEstabelecimento = filtroTipoEstabelecimento === "todos" || 
+          anuncio.tipo_estabelecimento === filtroTipoEstabelecimento;
+
         let matchDistancia = true;
         if (filtroDistancia !== "todas" && minhaLocalizacao && anuncio.latitude && anuncio.longitude) {
           const distanciaKm = calcularDistancia(
@@ -374,7 +389,7 @@ export default function Anuncios() {
         
         return matchCidade && matchEstado && matchProcedimento && matchTag && matchBusca && 
                matchFaixaPreco && matchTipoAnuncio && matchStatusFuncionamento && matchVerificados &&
-               matchDistancia && matchTempoFormacao;
+               matchDistancia && matchTempoFormacao && matchTipoEstabelecimento;
       })
       .sort((a, b) => {
         const planoA = planoOrdem[a.plano] || 0;
@@ -386,7 +401,7 @@ export default function Anuncios() {
       });
   }, [fetchedAnuncios, buscaTexto, procedimentoFiltro, tagFiltro, cidadeFiltro, estadoFiltro, 
       faixaPrecoFiltro, filtroTipoAnuncio, filtroStatusFuncionamento, apenasVerificados,
-      filtroDistancia, filtroTempoFormacao, minhaLocalizacao]);
+      filtroDistancia, filtroTempoFormacao, minhaLocalizacao, filtroTipoEstabelecimento]);
 
   const anunciosComLocalizacao = useMemo(() => {
     return anuncios.filter(a => a.latitude && a.longitude);
@@ -416,6 +431,7 @@ export default function Anuncios() {
     setApenasVerificados(false);
     setFiltroDistancia("todas");
     setFiltroTempoFormacao("todas");
+    setFiltroTipoEstabelecimento("todos");
     setPaginaAtual(1);
 
     const url = new URL(window.location);
@@ -435,7 +451,8 @@ export default function Anuncios() {
     faixaPrecoFiltro !== "Todas" ||
     apenasVerificados ||
     filtroDistancia !== "todas" ||
-    filtroTempoFormacao !== "todas";
+    filtroTempoFormacao !== "todas" ||
+    filtroTipoEstabelecimento !== "todos";
 
   const getFaixaPrecoInfo = (faixa) => {
     const info = {
@@ -625,8 +642,30 @@ export default function Anuncios() {
                     </div>
                   </div>
 
-                  {/* Terceira linha - Novos filtros */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                  {/* Terceira linha - Novos filtros + Tipo de Estabelecimento */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+                    <div>
+                      <Label className="mb-1 sm:mb-2 block font-semibold text-xs sm:text-sm">Tipo de Estabelecimento</Label>
+                      <Select
+                        value={filtroTipoEstabelecimento}
+                        onValueChange={(value) => {
+                          setFiltroTipoEstabelecimento(value);
+                          setPaginaAtual(1);
+                        }}
+                      >
+                        <SelectTrigger className="h-10 sm:h-12 text-sm">
+                          <SelectValue placeholder="Tipo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {tiposEstabelecimento.map((tipo) => (
+                            <SelectItem key={tipo.valor} value={tipo.valor} className="text-sm">
+                              {tipo.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
                     <div>
                       <Label className="mb-1 sm:mb-2 block font-semibold text-xs sm:text-sm">Distância</Label>
                       <Select
@@ -776,7 +815,7 @@ export default function Anuncios() {
               <>
                 <div className={viewMode === "grid" 
                   ? "grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mt-4 sm:mt-8" 
-                  : "space-y-4 mt-4 sm:mt-8"
+                  ? "space-y-4 mt-4 sm:mt-8"
                 }>
                   {anunciosPaginados.map((anuncio) => (
                     <CardAnuncio key={anuncio.id} anuncio={anuncio} />
