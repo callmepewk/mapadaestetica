@@ -37,7 +37,9 @@ import {
   Download,
   Send,
   Trash2,
-  X as XIcon
+  Zap,
+  Crown,
+  Users
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -48,6 +50,12 @@ const PLANOS_INFO = {
   ouro: { nome: "Ouro", cor: "bg-yellow-100 text-yellow-800" },
   diamante: { nome: "Diamante", cor: "bg-blue-100 text-blue-800" },
   platina: { nome: "Platina", cor: "bg-purple-100 text-purple-800" }
+};
+
+const PLANOS_IMPULSIONAMENTO_INFO = {
+  basico: { nome: "Básico", cor: "bg-blue-100 text-blue-800", duracao: 7, valor: 20 },
+  intermediario: { nome: "Intermediário", cor: "bg-purple-100 text-purple-800", duracao: 14, valor: 35 },
+  turbo: { nome: "Turbo", cor: "bg-orange-100 text-orange-800", duracao: 30, valor: 60 }
 };
 
 const STATUS_INFO = {
@@ -68,7 +76,7 @@ export default function ControlePlanos() {
   const [processando, setProcessando] = useState(false);
   const [erro, setErro] = useState(null);
   const [sucesso, setSucesso] = useState(null);
-  const [abaSelecionada, setAbaSelecionada] = useState("solicitacoes");
+  const [abaSelecionada, setAbaSelecionada] = useState("planos_mapa");
   const [buscaProfissional, setBuscaProfissional] = useState("");
   const [enviandoWhatsApp, setEnviandoWhatsApp] = useState(false);
 
@@ -90,9 +98,15 @@ export default function ControlePlanos() {
     fetchUser();
   }, []);
 
-  const { data: solicitacoes = [], isLoading: loadingSolicitacoes } = useQuery({
+  const { data: solicitacoesPlanos = [], isLoading: loadingSolicitacoesPlanos } = useQuery({
     queryKey: ['solicitacoes-plano'],
-    queryFn: () => base44.entities.SolicitacaoAtivacaoPlano.list('-created_date', 50),
+    queryFn: () => base44.entities.SolicitacaoAtivacaoPlano.list('-created_date', 100),
+    enabled: !!user,
+  });
+
+  const { data: solicitacoesImpulsionamento = [], isLoading: loadingSolicitacoesImpulsionamento } = useQuery({
+    queryKey: ['solicitacoes-impulsionamento'],
+    queryFn: () => base44.entities.SolicitacaoImpulsionamento.list('-created_date', 100),
     enabled: !!user,
   });
 
@@ -118,6 +132,21 @@ export default function ControlePlanos() {
       setTimeout(() => setErro(null), 3000);
     }
   });
+
+  const deletarImpulsionamentoMutation = useMutation({
+    mutationFn: (id) => base44.entities.SolicitacaoImpulsionamento.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['solicitacoes-impulsionamento'] });
+      setSucesso("Solicitação de impulsionamento excluída com sucesso!");
+      setTimeout(() => setSucesso(null), 3000);
+    },
+    onError: (error) => {
+      console.error("Erro ao excluir impulsionamento:", error);
+      setErro("Erro ao excluir solicitação de impulsionamento");
+      setTimeout(() => setErro(null), 3000);
+    }
+  });
+
 
   const deletarProfissionalMutation = useMutation({
     mutationFn: async (email) => {
@@ -185,9 +214,61 @@ export default function ControlePlanos() {
     }
   };
 
+  const handleAtivarImpulsionamento = async (solicitacao) => {
+    if (!confirm(`Ativar impulsionamento ${PLANOS_IMPULSIONAMENTO_INFO[solicitacao.plano_impulsionamento]?.nome} para "${solicitacao.anuncio_titulo}"?`)) {
+      return;
+    }
+
+    setProcessando(true);
+    try {
+      const dataInicio = new Date();
+      const dataFim = new Date();
+      dataFim.setDate(dataFim.getDate() + solicitacao.duracao_dias);
+
+      await base44.entities.SolicitacaoImpulsionamento.update(solicitacao.id, {
+        status: "ativado_admin",
+        data_ativacao: dataInicio.toISOString(),
+        data_inicio_impulsionamento: dataInicio.toISOString(),
+        data_fim_impulsionamento: dataFim.toISOString()
+      });
+
+      // Atualizar anúncio
+      await base44.entities.Anuncio.update(solicitacao.anuncio_id, {
+        impulsionado: true,
+        data_impulsionamento: dataInicio.toISOString()
+      });
+
+      // Notificar usuário
+      await base44.entities.Notificacao.create({
+        usuario_email: solicitacao.usuario_email,
+        tipo: "impulsionamento_ativado",
+        titulo: `🚀 Impulsionamento Ativado!`,
+        mensagem: `Seu anúncio "${solicitacao.anuncio_titulo}" foi impulsionado com sucesso! Válido até ${format(dataFim, "dd/MM/yyyy", { locale: ptBR })}.`,
+        link_acao: `/detalhes-anuncio?id=${solicitacao.anuncio_id}`
+      });
+
+      queryClient.invalidateQueries({ queryKey: ['solicitacoes-impulsionamento'] });
+      setSucesso("Impulsionamento ativado com sucesso!");
+      setTimeout(() => setSucesso(null), 3000);
+    } catch (error) {
+      console.error("Erro ao ativar impulsionamento:", error);
+      setErro("Erro ao ativar impulsionamento");
+      setTimeout(() => setErro(null), 3000);
+    } finally {
+      setProcessando(false);
+    }
+  };
+
+
   const handleExcluirSolicitacao = (solicitacao) => {
     if (confirm(`Tem certeza que deseja excluir a solicitação de ${solicitacao.usuario_nome}?`)) {
       deletarSolicitacaoMutation.mutate(solicitacao.id);
+    }
+  };
+
+  const handleExcluirImpulsionamento = (solicitacao) => {
+    if (confirm(`Tem certeza que deseja excluir a solicitação de impulsionamento para ${solicitacao.usuario_nome} - Anúncio "${solicitacao.anuncio_titulo}"?`)) {
+      deletarImpulsionamentoMutation.mutate(solicitacao.id);
     }
   };
 
@@ -220,7 +301,7 @@ export default function ControlePlanos() {
         <h1>📋 Solicitações de Planos</h1>
         <div class="header-info">
           <p><strong>Gerado em:</strong> ${dataAtual}</p>
-          <p><strong>Total de Solicitações:</strong> ${solicitacoes.length}</p>
+          <p><strong>Total de Solicitações:</strong> ${solicitacoesPlanos.length}</p>
         </div>
         <table>
           <thead>
@@ -233,7 +314,7 @@ export default function ControlePlanos() {
             </tr>
           </thead>
           <tbody>
-            ${solicitacoes.map(sol => `
+            ${solicitacoesPlanos.map(sol => `
               <tr>
                 <td>${sol.usuario_nome}</td>
                 <td>${sol.usuario_email}</td>
@@ -339,7 +420,7 @@ export default function ControlePlanos() {
     setEnviandoWhatsApp(true);
     
     try {
-      const solicitacoesPendentes = solicitacoes.filter(s => 
+      const solicitacoesPendentes = solicitacoesPlanos.filter(s => 
         s.status === 'aguardando_confirmacao' || 
         s.status === 'confirmado_usuario' ||
         s.status === 'pagamento_pendente_mp'
@@ -347,7 +428,7 @@ export default function ControlePlanos() {
 
       let mensagemSolicitacoes = `📋 *SOLICITAÇÕES DE PLANOS*\n`;
       mensagemSolicitacoes += `Data: ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR })}\n`;
-      mensagemSolicitacoes += `Total de Solicitações: ${solicitacoes.length}\n`;
+      mensagemSolicitacoes += `Total de Solicitações: ${solicitacoesPlanos.length}\n`;
       mensagemSolicitacoes += `Pendentes: ${solicitacoesPendentes.length}\n\n`;
 
       if (solicitacoesPendentes.length > 0) {
@@ -360,7 +441,7 @@ export default function ControlePlanos() {
         });
       }
 
-      const solicitacoesAtivadas = solicitacoes.filter(s => s.status === 'ativado_admin');
+      const solicitacoesAtivadas = solicitacoesPlanos.filter(s => s.status === 'ativado_admin');
       if (solicitacoesAtivadas.length > 0) {
         mensagemSolicitacoes += `\n*✅ ATIVADAS (${solicitacoesAtivadas.length}):*\n`;
         solicitacoesAtivadas.forEach((sol, i) => {
@@ -429,9 +510,9 @@ export default function ControlePlanos() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-            Controle de Planos
+            Controle de Planos e Impulsionamentos
           </h1>
-          <p className="text-gray-600">Gerencie solicitações e planos ativos dos profissionais</p>
+          <p className="text-gray-600">Gerencie todas as solicitações e planos da plataforma</p>
         </div>
 
         {erro && (
@@ -448,36 +529,66 @@ export default function ControlePlanos() {
           </Alert>
         )}
 
-        <div className="flex gap-4 mb-6">
+        {/* Navegação por Abas */}
+        <div className="flex gap-3 mb-6 overflow-x-auto pb-2">
           <Button
-            onClick={() => setAbaSelecionada("solicitacoes")}
-            variant={abaSelecionada === "solicitacoes" ? "default" : "outline"}
-            className={abaSelecionada === "solicitacoes" ? "bg-pink-600 hover:bg-pink-700" : ""}
+            onClick={() => setAbaSelecionada("planos_mapa")}
+            variant={abaSelecionada === "planos_mapa" ? "default" : "outline"}
+            className={abaSelecionada === "planos_mapa" ? "bg-pink-600 hover:bg-pink-700" : ""}
           >
-            <FileText className="w-4 h-4 mr-2" />
-            Solicitações ({solicitacoes.length})
+            <CreditCard className="w-4 h-4 mr-2" />
+            Planos Mapa ({solicitacoesPlanos.length})
           </Button>
+
+          <Button
+            onClick={() => setAbaSelecionada("impulsionamento")}
+            variant={abaSelecionada === "impulsionamento" ? "default" : "outline"}
+            className={abaSelecionada === "impulsionamento" ? "bg-orange-600 hover:bg-orange-700" : ""}
+          >
+            <Zap className="w-4 h-4 mr-2" />
+            Impulsionamentos ({solicitacoesImpulsionamento.length})
+          </Button>
+
+          <Button
+            onClick={() => setAbaSelecionada("clube_beleza")}
+            variant={abaSelecionada === "clube_beleza" ? "default" : "outline"}
+            className={abaSelecionada === "clube_beleza" ? "bg-purple-600 hover:bg-purple-700" : ""}
+          >
+            <Crown className="w-4 h-4 mr-2" />
+            Clube da Beleza (0)
+          </Button>
+
+          <Button
+            onClick={() => setAbaSelecionada("patrocinadores")}
+            variant={abaSelecionada === "patrocinadores" ? "default" : "outline"}
+            className={abaSelecionada === "patrocinadores" ? "bg-blue-600 hover:bg-blue-700" : ""}
+          >
+            <Users className="w-4 h-4 mr-2" />
+            Patrocinadores (0)
+          </Button>
+
           <Button
             onClick={() => setAbaSelecionada("profissionais")}
             variant={abaSelecionada === "profissionais" ? "default" : "outline"}
-            className={abaSelecionada === "profissionais" ? "bg-pink-600 hover:bg-pink-700" : ""}
+            className={abaSelecionada === "profissionais" ? "bg-green-600 hover:bg-green-700" : ""}
           >
             <User className="w-4 h-4 mr-2" />
             Profissionais ({usuarios.length})
           </Button>
         </div>
 
-        {abaSelecionada === "solicitacoes" && (
+        {/* ABA: PLANOS MAPA DA ESTÉTICA */}
+        {abaSelecionada === "planos_mapa" && (
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>Solicitações de Ativação de Planos</CardTitle>
+                <CardTitle>Solicitações de Planos - Mapa da Estética</CardTitle>
                 <div className="flex gap-2">
                   <Button
                     onClick={exportarSolicitacoesPDF}
                     variant="outline"
                     size="sm"
-                    disabled={solicitacoes.length === 0}
+                    disabled={solicitacoesPlanos.length === 0}
                   >
                     <Download className="w-4 h-4 mr-2" />
                     Exportar Relatório
@@ -500,11 +611,11 @@ export default function ControlePlanos() {
               </div>
             </CardHeader>
             <CardContent>
-              {loadingSolicitacoes ? (
+              {loadingSolicitacoesPlanos ? (
                 <div className="flex justify-center py-12">
                   <Loader2 className="w-8 h-8 animate-spin text-pink-600" />
                 </div>
-              ) : solicitacoes.length === 0 ? (
+              ) : solicitacoesPlanos.length === 0 ? (
                 <div className="text-center py-12">
                   <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-600">Nenhuma solicitação encontrada</p>
@@ -517,47 +628,41 @@ export default function ControlePlanos() {
                         <TableHead>Profissional</TableHead>
                         <TableHead>Plano</TableHead>
                         <TableHead>Status</TableHead>
-                        <TableHead>Data Solicitação</TableHead>
+                        <TableHead>Data</TableHead>
                         <TableHead className="text-right">Ações</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {solicitacoes.map((solicitacao) => {
-                        const StatusIcon = STATUS_INFO[solicitacao.status]?.icon || Clock;
+                      {solicitacoesPlanos.map((sol) => {
+                        const StatusIcon = STATUS_INFO[sol.status]?.icon || Clock;
                         return (
-                          <TableRow key={solicitacao.id}>
+                          <TableRow key={sol.id}>
                             <TableCell>
                               <div>
-                                <p className="font-medium">{solicitacao.usuario_nome}</p>
-                                <p className="text-sm text-gray-500">{solicitacao.usuario_email}</p>
+                                <p className="font-medium">{sol.usuario_nome}</p>
+                                <p className="text-sm text-gray-500">{sol.usuario_email}</p>
                               </div>
                             </TableCell>
                             <TableCell>
-                              <Badge className={PLANOS_INFO[solicitacao.plano_solicitado]?.cor}>
-                                <CreditCard className="w-3 h-3 mr-1" />
-                                {PLANOS_INFO[solicitacao.plano_solicitado]?.nome}
+                              <Badge className={PLANOS_INFO[sol.plano_solicitado]?.cor}>
+                                {PLANOS_INFO[sol.plano_solicitado]?.nome}
                               </Badge>
                             </TableCell>
                             <TableCell>
-                              <Badge className={STATUS_INFO[solicitacao.status]?.cor}>
+                              <Badge className={STATUS_INFO[sol.status]?.cor}>
                                 <StatusIcon className="w-3 h-3 mr-1" />
-                                {STATUS_INFO[solicitacao.status]?.label}
+                                {STATUS_INFO[sol.status]?.label}
                               </Badge>
                             </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2 text-sm">
-                                <Calendar className="w-4 h-4 text-gray-400" />
-                                {solicitacao.data_solicitacao
-                                  ? format(new Date(solicitacao.data_solicitacao), "dd/MM/yyyy HH:mm", { locale: ptBR })
-                                  : "-"}
-                              </div>
+                            <TableCell className="text-sm">
+                              {sol.data_solicitacao ? format(new Date(sol.data_solicitacao), "dd/MM/yyyy HH:mm", { locale: ptBR }) : "-"}
                             </TableCell>
                             <TableCell className="text-right">
                               <div className="flex items-center justify-end gap-2">
-                                {solicitacao.status !== "ativado_admin" && (
+                                {sol.status !== "ativado_admin" && (
                                   <Button
                                     onClick={() => {
-                                      setSolicitacaoSelecionada(solicitacao);
+                                      setSolicitacaoSelecionada(sol);
                                       setMostrarModalAtivar(true);
                                     }}
                                     size="sm"
@@ -568,7 +673,7 @@ export default function ControlePlanos() {
                                   </Button>
                                 )}
                                 <Button
-                                  onClick={() => handleExcluirSolicitacao(solicitacao)}
+                                  onClick={() => handleExcluirSolicitacao(sol)}
                                   size="sm"
                                   variant="outline"
                                   className="border-red-300 text-red-700 hover:bg-red-50"
@@ -588,6 +693,139 @@ export default function ControlePlanos() {
           </Card>
         )}
 
+        {/* ABA: IMPULSIONAMENTOS */}
+        {abaSelecionada === "impulsionamento" && (
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Solicitações de Impulsionamento</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {loadingSolicitacoesImpulsionamento ? (
+                <div className="flex justify-center py-12">
+                  <Loader2 className="w-8 h-8 animate-spin text-orange-600" />
+                </div>
+              ) : solicitacoesImpulsionamento.length === 0 ? (
+                <div className="text-center py-12">
+                  <Zap className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600">Nenhuma solicitação de impulsionamento encontrada</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Profissional</TableHead>
+                        <TableHead>Anúncio</TableHead>
+                        <TableHead>Plano</TableHead>
+                        <TableHead>Duração/Valor</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Data</TableHead>
+                        <TableHead className="text-right">Ações</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {solicitacoesImpulsionamento.map((sol) => {
+                        const StatusIcon = STATUS_INFO[sol.status]?.icon || Clock;
+                        const planoInfo = PLANOS_IMPULSIONAMENTO_INFO[sol.plano_impulsionamento];
+                        return (
+                          <TableRow key={sol.id}>
+                            <TableCell>
+                              <div>
+                                <p className="font-medium">{sol.usuario_nome}</p>
+                                <p className="text-sm text-gray-500">{sol.usuario_email}</p>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <p className="text-sm font-medium line-clamp-2">{sol.anuncio_titulo}</p>
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={planoInfo?.cor}>
+                                <Zap className="w-3 h-3 mr-1" />
+                                {planoInfo?.nome}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="text-sm">
+                                <p className="font-medium">{sol.duracao_dias} dias</p>
+                                <p className="text-gray-500">R$ {sol.valor?.toFixed(2)}</p>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={STATUS_INFO[sol.status]?.cor}>
+                                <StatusIcon className="w-3 h-3 mr-1" />
+                                {STATUS_INFO[sol.status]?.label}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-sm">
+                              {sol.data_solicitacao ? format(new Date(sol.data_solicitacao), "dd/MM/yyyy HH:mm", { locale: ptBR }) : "-"}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex items-center justify-end gap-2">
+                                {sol.status !== "ativado_admin" && (
+                                  <Button
+                                    onClick={() => handleAtivarImpulsionamento(sol)}
+                                    size="sm"
+                                    disabled={processando}
+                                    className="bg-orange-600 hover:bg-orange-700"
+                                  >
+                                    <Zap className="w-4 h-4 mr-1" />
+                                    Ativar
+                                  </Button>
+                                )}
+                                <Button
+                                  onClick={() => handleExcluirImpulsionamento(sol)}
+                                  size="sm"
+                                  variant="outline"
+                                  className="border-red-300 text-red-700 hover:bg-red-50"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* ABA: CLUBE DA BELEZA */}
+        {abaSelecionada === "clube_beleza" && (
+          <Card>
+            <CardContent className="p-12 text-center">
+              <Crown className="w-16 h-16 text-purple-400 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">
+                Clube da Beleza - Em Desenvolvimento
+              </h3>
+              <p className="text-gray-600">
+                Esta seção exibirá os planos e assinantes do Clube da Beleza
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* ABA: PATROCINADORES */}
+        {abaSelecionada === "patrocinadores" && (
+          <Card>
+            <CardContent className="p-12 text-center">
+              <Users className="w-16 h-16 text-blue-400 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">
+                Patrocinadores - Em Desenvolvimento
+              </h3>
+              <p className="text-gray-600">
+                Esta seção exibirá os patrocinadores e parcerias da plataforma
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* ABA: PROFISSIONAIS */}
         {abaSelecionada === "profissionais" && (
           <Card>
             <CardHeader>
@@ -631,7 +869,7 @@ export default function ControlePlanos() {
             <CardContent>
               {loadingUsuarios ? (
                 <div className="flex justify-center py-12">
-                  <Loader2 className="w-8 h-8 animate-spin text-pink-600" />
+                  <Loader2 className="w-8 h-8 animate-spin text-green-600" />
                 </div>
               ) : usuariosFiltrados.length === 0 ? (
                 <div className="text-center py-12">
@@ -647,7 +885,6 @@ export default function ControlePlanos() {
                         <TableHead>Contato</TableHead>
                         <TableHead>Localização</TableHead>
                         <TableHead>Plano Ativo</TableHead>
-                        <TableHead>Cadastro</TableHead>
                         <TableHead className="text-right">Ações</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -677,11 +914,6 @@ export default function ControlePlanos() {
                           <TableCell>
                             <Badge className={PLANOS_INFO[usuario.plano_ativo || 'cobre']?.cor}>
                               {PLANOS_INFO[usuario.plano_ativo || 'cobre']?.nome}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={usuario.cadastro_completo ? "default" : "secondary"}>
-                              {usuario.cadastro_completo ? "Completo" : "Incompleto"}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-right">
