@@ -72,7 +72,8 @@ const tiposAnuncio = [
   { valor: "troca_produto", label: "Troca de Produto" },
   { valor: "troca_aparelho", label: "Troca de Aparelho" },
   { valor: "venda_moveis", label: "Venda de Móveis" },
-  { valor: "troca_moveis", label: "Troca de Móveis" }
+  { valor: "troca_moveis", label: "Troca de Móveis" },
+  { valor: "evento", label: "Evento" }
 ];
 
 const faixasPreco = [
