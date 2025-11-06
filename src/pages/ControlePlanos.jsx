@@ -41,8 +41,6 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import jsPDF from "jspdf";
-import "jspdf-autotable";
 
 const PLANOS_INFO = {
   cobre: { nome: "Cobre", cor: "bg-orange-100 text-orange-800" },
@@ -174,61 +172,141 @@ export default function ControlePlanos() {
   };
 
   const exportarSolicitacoesPDF = () => {
-    const doc = new jsPDF();
+    const dataAtual = format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR });
     
-    doc.setFontSize(18);
-    doc.text("Solicitações de Planos - Mapa da Estética", 14, 20);
+    let htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Solicitações de Planos - Mapa da Estética</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; }
+          h1 { color: #2C2C2C; border-bottom: 3px solid #F7D426; padding-bottom: 10px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th { background: #2C2C2C; color: #F7D426; padding: 12px; text-align: left; }
+          td { padding: 10px; border-bottom: 1px solid #ddd; }
+          tr:nth-child(even) { background: #f8f9fa; }
+          .header-info { background: #FFF9E6; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        </style>
+      </head>
+      <body>
+        <h1>📋 Solicitações de Planos</h1>
+        <div class="header-info">
+          <p><strong>Gerado em:</strong> ${dataAtual}</p>
+          <p><strong>Total de Solicitações:</strong> ${solicitacoes.length}</p>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Email</th>
+              <th>Plano</th>
+              <th>Status</th>
+              <th>Data</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${solicitacoes.map(sol => `
+              <tr>
+                <td>${sol.usuario_nome}</td>
+                <td>${sol.usuario_email}</td>
+                <td>${PLANOS_INFO[sol.plano_solicitado]?.nome || sol.plano_solicitado}</td>
+                <td>${STATUS_INFO[sol.status]?.label || sol.status}</td>
+                <td>${sol.data_solicitacao ? format(new Date(sol.data_solicitacao), "dd/MM/yyyy HH:mm", { locale: ptBR }) : "-"}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        <div style="margin-top: 40px; text-align: center; color: #999; border-top: 1px solid #ddd; padding-top: 20px;">
+          <p><strong>Mapa da Estética - Clube da Beleza</strong></p>
+          <p>CNPJ: 46.792.168/0001-88</p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Solicitacoes_Planos_${format(new Date(), "yyyy-MM-dd")}.html`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
     
-    doc.setFontSize(10);
-    doc.text(`Gerado em: ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR })}`, 14, 28);
-    doc.text(`Total: ${solicitacoes.length} solicitações`, 14, 34);
-
-    const tableData = solicitacoes.map(sol => [
-      sol.usuario_nome,
-      sol.usuario_email,
-      PLANOS_INFO[sol.plano_solicitado]?.nome || sol.plano_solicitado,
-      STATUS_INFO[sol.status]?.label || sol.status,
-      sol.data_solicitacao ? format(new Date(sol.data_solicitacao), "dd/MM/yyyy", { locale: ptBR }) : "-"
-    ]);
-
-    doc.autoTable({
-      startY: 40,
-      head: [['Nome', 'Email', 'Plano', 'Status', 'Data']],
-      body: tableData,
-      styles: { fontSize: 9 },
-      headStyles: { fillColor: [247, 212, 38] },
-    });
-
-    doc.save(`solicitacoes-planos-${format(new Date(), "yyyy-MM-dd")}.pdf`);
+    alert('Arquivo HTML baixado! Para converter em PDF:\n\n1. Abra o arquivo no navegador\n2. Pressione Ctrl+P (Windows) ou Cmd+P (Mac)\n3. Selecione "Salvar como PDF"\n4. Clique em Salvar');
   };
 
   const exportarProfissionaisPDF = () => {
-    const doc = new jsPDF();
+    const dataAtual = format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR });
     
-    doc.setFontSize(18);
-    doc.text("Lista de Profissionais - Mapa da Estética", 14, 20);
+    let htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Lista de Profissionais - Mapa da Estética</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; }
+          h1 { color: #2C2C2C; border-bottom: 3px solid #F7D426; padding-bottom: 10px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th { background: #2C2C2C; color: #F7D426; padding: 12px; text-align: left; font-size: 12px; }
+          td { padding: 8px; border-bottom: 1px solid #ddd; font-size: 11px; }
+          tr:nth-child(even) { background: #f8f9fa; }
+          .header-info { background: #FFF9E6; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        </style>
+      </head>
+      <body>
+        <h1>👥 Lista de Profissionais</h1>
+        <div class="header-info">
+          <p><strong>Gerado em:</strong> ${dataAtual}</p>
+          <p><strong>Total de Profissionais:</strong> ${usuariosFiltrados.length}</p>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Email</th>
+              <th>Telefone</th>
+              <th>Cidade</th>
+              <th>Estado</th>
+              <th>Plano</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${usuariosFiltrados.map(user => `
+              <tr>
+                <td>${user.full_name}</td>
+                <td>${user.email}</td>
+                <td>${user.telefone || "-"}</td>
+                <td>${user.cidade || "-"}</td>
+                <td>${user.estado || "-"}</td>
+                <td>${PLANOS_INFO[user.plano_ativo || 'cobre']?.nome}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        <div style="margin-top: 40px; text-align: center; color: #999; border-top: 1px solid #ddd; padding-top: 20px;">
+          <p><strong>Mapa da Estética - Clube da Beleza</strong></p>
+          <p>CNPJ: 46.792.168/0001-88</p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Profissionais_${format(new Date(), "yyyy-MM-dd")}.html`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
     
-    doc.setFontSize(10);
-    doc.text(`Gerado em: ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR })}`, 14, 28);
-    doc.text(`Total: ${usuariosFiltrados.length} profissionais`, 14, 34);
-
-    const tableData = usuariosFiltrados.map(user => [
-      user.full_name,
-      user.email,
-      user.telefone || "-",
-      `${user.cidade || ""} - ${user.estado || ""}`,
-      PLANOS_INFO[user.plano_ativo]?.nome || "Cobre"
-    ]);
-
-    doc.autoTable({
-      startY: 40,
-      head: [['Nome', 'Email', 'Telefone', 'Localização', 'Plano']],
-      body: tableData,
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [247, 212, 38] },
-    });
-
-    doc.save(`profissionais-${format(new Date(), "yyyy-MM-dd")}.pdf`);
+    alert('Arquivo HTML baixado! Para converter em PDF:\n\n1. Abra o arquivo no navegador\n2. Pressione Ctrl+P (Windows) ou Cmd+P (Mac)\n3. Selecione "Salvar como PDF"\n4. Clique em Salvar');
   };
 
   const enviarRelatorioWhatsApp = async () => {
@@ -376,7 +454,7 @@ export default function ControlePlanos() {
                     disabled={solicitacoes.length === 0}
                   >
                     <Download className="w-4 h-4 mr-2" />
-                    Exportar PDF
+                    Exportar Relatório
                   </Button>
                   <Button
                     onClick={enviarRelatorioWhatsApp}
@@ -504,7 +582,7 @@ export default function ControlePlanos() {
                       disabled={usuarios.length === 0}
                     >
                       <Download className="w-4 h-4 mr-2" />
-                      Exportar PDF
+                      Exportar Relatório
                     </Button>
                     <Button
                       onClick={enviarRelatorioWhatsApp}
