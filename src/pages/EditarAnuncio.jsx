@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,6 +26,30 @@ const categorias = [
   "Maquiagem", "Penteados", "Tratamento Capilar",
   "Beauty Pet Shop", "Gastronomia Fit", "Boutique Fit",
   "Clínicas e Policlínicas", "Locação e Vendas Estética", "Outros"
+];
+
+const tiposAnuncio = [
+  { valor: "oferta", label: "Oferta/Serviço" },
+  { valor: "consultorio", label: "Consultório/Autônomo" },
+  { valor: "clinica", label: "Clínica/Empresa" },
+];
+
+const faixasPreco = [
+  { valor: "gratuito", label: "Grátis" },
+  { valor: "0-50", label: "Até R$50" },
+  { valor: "51-100", label: "R$51 - R$100" },
+  { valor: "101-200", label: "R$101 - R$200" },
+  { valor: "201-500", label: "R$201 - R$500" },
+  { valor: "501-1000", label: "R$501 - R$1000" },
+  { valor: "1000+", label: "Acima de R$1000" },
+];
+
+const tiposEstabelecimento = [
+  { valor: "Consultório", label: "Consultório", estrelas: 1 },
+  { valor: "Clínica", label: "Clínica", estrelas: 2 },
+  { valor: "Centro Clínico", label: "Centro Clínico (Médico)", estrelas: 3 },
+  { valor: "Centro de Especialidade", label: "Centro Estético", estrelas: 4 },
+  { valor: "Clínica de Luxo", label: "Clínica de Luxo", estrelas: 5 }
 ];
 
 const estados = [
@@ -117,13 +141,27 @@ export default function EditarAnuncio() {
     }));
   };
 
+  const handleInputChange = (field, value) => {
+    // Se for tipo_estabelecimento, também atualizar as estrelas
+    if (field === "tipo_estabelecimento") {
+      const tipoSelecionado = tiposEstabelecimento.find(t => t.valor === value);
+      setFormData(prev => ({
+        ...prev,
+        tipo_estabelecimento: value,
+        estrelas_estabelecimento: tipoSelecionado ? tipoSelecionado.estrelas : null
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, [field]: value }));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.titulo || !formData.descricao || !formData.categoria) {
       setErro("Por favor, preencha todos os campos obrigatórios");
       return;
     }
-    
+
     try {
       await atualizarAnuncioMutation.mutateAsync(formData);
     } catch (error) {
@@ -156,12 +194,12 @@ export default function EditarAnuncio() {
           cursor: pointer;
           position: relative;
         }
-        
+
         input[type="checkbox"]:checked {
           background-color: #3b82f6 !important;
           border-color: #3b82f6 !important;
         }
-        
+
         input[type="checkbox"]:checked::after {
           content: '✓';
           position: absolute;
@@ -211,90 +249,174 @@ export default function EditarAnuncio() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <Card className="border-none shadow-lg">
-            <CardContent className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Informações Básicas</h2>
-              <div className="space-y-4">
+            <CardHeader>
+              <CardTitle>Informações Básicas</CardTitle>
+            </CardHeader>
+            <CardContent className="p-6 space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="titulo">Título do Anúncio *</Label>
+                  <Label>Tipo de Anúncio *</Label>
+                  <Select
+                    value={formData.tipo_anuncio}
+                    onValueChange={(value) => handleInputChange("tipo_anuncio", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {tiposAnuncio.map(tipo => (
+                        <SelectItem key={tipo.valor} value={tipo.valor}>{tipo.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="categoria">Categoria *</Label>
+                  <Select
+                    value={formData.categoria}
+                    onValueChange={(value) => handleInputChange("categoria", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione a categoria" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categorias.map((cat) => (
+                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Tipo de Estabelecimento com Estrelas */}
+              {(formData.tipo_anuncio === "consultorio" || formData.tipo_anuncio === "clinica") && (
+                <div>
+                  <Label>Tipo de Estabelecimento</Label>
+                  <p className="text-xs text-gray-500 mb-2">
+                    Selecione o tipo do seu estabelecimento. Cada tipo possui uma classificação em estrelas.
+                  </p>
+                  <Select
+                    value={formData.tipo_estabelecimento}
+                    onValueChange={(value) => handleInputChange("tipo_estabelecimento", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o tipo de estabelecimento" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {tiposEstabelecimento.map(tipo => (
+                        <SelectItem key={tipo.valor} value={tipo.valor}>
+                          <div className="flex items-center gap-2">
+                            <span>{tipo.label}</span>
+                            <span className="text-yellow-500">
+                              {"⭐".repeat(tipo.estrelas)}
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  {formData.estrelas_estabelecimento && (
+                    <div className="mt-3 p-3 bg-gradient-to-r from-yellow-50 to-amber-50 rounded-lg border-2 border-yellow-300">
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl">
+                          {"⭐".repeat(formData.estrelas_estabelecimento)}
+                        </span>
+                        <div>
+                          <p className="font-bold text-yellow-900">
+                            {formData.tipo_estabelecimento}
+                          </p>
+                          <p className="text-xs text-yellow-700">
+                            Classificação: {formData.estrelas_estabelecimento} {formData.estrelas_estabelecimento === 1 ? "estrela" : "estrelas"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div>
+                <Label htmlFor="titulo">Título do Anúncio *</Label>
+                <Input
+                  id="titulo"
+                  value={formData.titulo || ""}
+                  onChange={(e) => handleInputChange("titulo", e.target.value)}
+                  required
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="descricao">Descrição *</Label>
+                <Textarea
+                  id="descricao"
+                  value={formData.descricao || ""}
+                  onChange={(e) => handleInputChange("descricao", e.target.value)}
+                  className="min-h-[150px]"
+                  required
+                />
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Status</Label>
+                  <Select
+                    value={formData.status}
+                    onValueChange={(value) => handleInputChange("status", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ativo">Ativo</SelectItem>
+                      <SelectItem value="pendente">Pendente</SelectItem>
+                      <SelectItem value="expirado">Expirado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Faixa de Preço</Label>
+                  <Select
+                    value={formData.faixa_preco}
+                    onValueChange={(value) => handleInputChange("faixa_preco", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione a faixa de preço" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {faixasPreco.map((faixa) => (
+                        <SelectItem key={faixa.valor} value={faixa.valor}>{faixa.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+
+              <div>
+                <Label>Tags / Hashtags</Label>
+                <div className="flex gap-2 mb-2">
                   <Input
-                    id="titulo"
-                    value={formData.titulo || ""}
-                    onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
-                    required
+                    value={novaTag}
+                    onChange={(e) => setNovaTag(e.target.value)}
+                    placeholder="Ex: #botox"
+                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), adicionarTag())}
                   />
+                  <Button type="button" onClick={adicionarTag}>
+                    <Plus className="w-4 h-4" />
+                  </Button>
                 </div>
-
-                <div>
-                  <Label htmlFor="descricao">Descrição *</Label>
-                  <Textarea
-                    id="descricao"
-                    value={formData.descricao || ""}
-                    onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
-                    className="min-h-[150px]"
-                    required
-                  />
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="categoria">Categoria *</Label>
-                    <Select
-                      value={formData.categoria}
-                      onValueChange={(value) => setFormData({ ...formData, categoria: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categorias.map((cat) => (
-                          <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label>Status</Label>
-                    <Select
-                      value={formData.status}
-                      onValueChange={(value) => setFormData({ ...formData, status: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="ativo">Ativo</SelectItem>
-                        <SelectItem value="pendente">Pendente</SelectItem>
-                        <SelectItem value="expirado">Expirado</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div>
-                  <Label>Tags / Hashtags</Label>
-                  <div className="flex gap-2 mb-2">
-                    <Input
-                      value={novaTag}
-                      onChange={(e) => setNovaTag(e.target.value)}
-                      placeholder="Ex: #botox"
-                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), adicionarTag())}
-                    />
-                    <Button type="button" onClick={adicionarTag}>
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {(formData.tags || []).map((tag, i) => (
-                      <Badge key={i} className="bg-pink-100 text-pink-800">
-                        {tag}
-                        <X 
-                          className="w-3 h-3 ml-1 cursor-pointer" 
-                          onClick={() => removerTag(tag)}
-                        />
-                      </Badge>
-                    ))}
-                  </div>
+                <div className="flex flex-wrap gap-2">
+                  {(formData.tags || []).map((tag, i) => (
+                    <Badge key={i} className="bg-pink-100 text-pink-800">
+                      {tag}
+                      <X
+                        className="w-3 h-3 ml-1 cursor-pointer"
+                        onClick={() => removerTag(tag)}
+                      />
+                    </Badge>
+                  ))}
                 </div>
               </div>
             </CardContent>
@@ -308,14 +430,14 @@ export default function EditarAnuncio() {
                   <Label>Telefone</Label>
                   <Input
                     value={formData.telefone || ""}
-                    onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
+                    onChange={(e) => handleInputChange("telefone", e.target.value)}
                   />
                 </div>
                 <div>
                   <Label>WhatsApp</Label>
                   <Input
                     value={formData.whatsapp || ""}
-                    onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
+                    onChange={(e) => handleInputChange("whatsapp", e.target.value)}
                   />
                 </div>
               </div>
@@ -330,7 +452,7 @@ export default function EditarAnuncio() {
                   <Label>Cidade *</Label>
                   <Input
                     value={formData.cidade || ""}
-                    onChange={(e) => setFormData({ ...formData, cidade: e.target.value })}
+                    onChange={(e) => handleInputChange("cidade", e.target.value)}
                     required
                   />
                 </div>
@@ -338,7 +460,7 @@ export default function EditarAnuncio() {
                   <Label>Estado *</Label>
                   <Select
                     value={formData.estado}
-                    onValueChange={(value) => setFormData({ ...formData, estado: value })}
+                    onValueChange={(value) => handleInputChange("estado", value)}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -373,7 +495,7 @@ export default function EditarAnuncio() {
                           size="icon"
                           variant="destructive"
                           className="absolute top-2 right-2"
-                          onClick={() => setFormData({ ...formData, imagem_principal: "" })}
+                          onClick={() => handleInputChange("imagem_principal", "")}
                         >
                           <X className="w-4 h-4" />
                         </Button>
@@ -409,7 +531,7 @@ export default function EditarAnuncio() {
                           size="icon"
                           variant="destructive"
                           className="absolute top-2 right-2"
-                          onClick={() => setFormData({ ...formData, logo: "" })}
+                          onClick={() => handleInputChange("logo", "")}
                         >
                           <X className="w-4 h-4" />
                         </Button>
