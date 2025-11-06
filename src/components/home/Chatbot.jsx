@@ -164,16 +164,23 @@ Responda de forma clara, objetiva e útil.`,
         )}
       </AnimatePresence>
 
-      {/* Janela do Chat - MOBILE OPTIMIZED */}
+      {/* Janela do Chat - MAIOR E FECHA AO CLICAR FORA */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
             initial={{ opacity: 0, y: 100 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 100 }}
-            className="fixed bottom-0 right-0 left-0 sm:bottom-6 sm:right-6 sm:left-auto z-50 sm:w-96 sm:max-w-[calc(100vw-3rem)]"
+            className="fixed inset-0 sm:inset-auto sm:bottom-6 sm:right-6 z-50 sm:w-[480px] sm:max-w-[calc(100vw-3rem)]"
           >
-            <Card className="border-none shadow-2xl overflow-hidden rounded-t-2xl sm:rounded-2xl h-[85vh] sm:h-auto flex flex-col">
+            {/* Overlay para fechar ao clicar fora - MOBILE */}
+            <div 
+              className="sm:hidden fixed inset-0 bg-black/20 backdrop-blur-sm"
+              onClick={() => setIsOpen(false)}
+            />
+
+            {/* Card do Chat */}
+            <Card className="relative sm:border-none shadow-2xl overflow-hidden rounded-t-2xl sm:rounded-2xl h-[90vh] sm:h-[600px] flex flex-col">
               {/* Header */}
               <div className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] p-4 flex items-center justify-between border-b-2 border-[#2C2C2C] flex-shrink-0">
                 <div className="flex items-center gap-3">
@@ -183,7 +190,7 @@ Responda de forma clara, objetiva e útil.`,
                       alt="Dr. Beleza"
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        e.target.onerror = null;
+                        e.target.style.display = 'none';
                         e.target.parentElement.innerHTML = '<span class="text-2xl">🩺</span>';
                       }}
                     />
@@ -282,6 +289,12 @@ Responda de forma clara, objetiva e útil.`,
                 </div>
               </div>
             </Card>
+
+            {/* Overlay para fechar ao clicar fora - DESKTOP */}
+            <div 
+              className="hidden sm:block fixed inset-0 -z-10"
+              onClick={() => setIsOpen(false)}
+            />
           </motion.div>
         )}
       </AnimatePresence>
