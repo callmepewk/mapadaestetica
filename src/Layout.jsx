@@ -52,7 +52,7 @@ export default function Layout({ children }) {
     const carrinhoSalvo = localStorage.getItem('carrinho_mapa_estetica');
     if (carrinhoSalvo) {
       try {
-        setCarrinho(JSON.parse(carrivoSalvo));
+        setCarrinho(JSON.parse(carrinhoSalvo));
       } catch (e) {
         console.error("Erro ao carregar carrinho:", e);
       }
@@ -391,6 +391,10 @@ export default function Layout({ children }) {
                           <DropdownMenuItem onClick={() => navigate(createPageUrl("ControlePlanos"))}>
                             <CreditCard className="w-4 h-4 mr-2" />
                             Controle de Planos
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => navigate(createPageUrl("ControleProdutos"))}>
+                            <ShoppingCart className="w-4 h-4 mr-2" />
+                            Controle de Produtos
                           </DropdownMenuItem>
                         </>
                       )}
