@@ -26,7 +26,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area"; // NEW IMPORT
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Sparkles,
   Upload,
@@ -43,7 +43,7 @@ import {
   FileText,
   MessageCircle,
   MapPin,
-  Plus // NEW IMPORT
+  Plus
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -79,6 +79,14 @@ const faixasPreco = [
   { valor: "$$$", label: "$$$ - R$ 1.000 a R$ 2.000" },
   { valor: "$$$$", label: "$$$$ - R$ 2.000 a R$ 5.000" },
   { valor: "$$$$$", label: "$$$$$ - Acima de R$ 5.000" }
+];
+
+const tiposEstabelecimento = [
+  { valor: "Consultorio", label: "Consultório", estrelas: 1 },
+  { valor: "Clinica", label: "Clínica", estrelas: 2 },
+  { valor: "Centro Clínico", label: "Centro Clínico (Médico)", estrelas: 3 },
+  { valor: "Centro de Especialidade", label: "Centro Estético", estrelas: 4 },
+  { valor: "Clinica de Luxo", label: "Clínica de Luxo", estrelas: 5 }
 ];
 
 // NEW: List of common procedures for the selector
@@ -165,7 +173,9 @@ export default function CadastrarAnuncio() {
     categoria: "",
     subcategoria: "",
     faixa_preco: "",
-    status_funcionamento: "", // New field
+    status_funcionamento: "",
+    tipo_estabelecimento: "", // NEW
+    estrelas_estabelecimento: null, // NEW
     profissional: "",
     telefone: "",
     whatsapp: "",
@@ -267,7 +277,17 @@ export default function CadastrarAnuncio() {
   }, []);
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    // Se for tipo_estabelecimento, também atualizar as estrelas
+    if (field === "tipo_estabelecimento") {
+      const tipoSelecionado = tiposEstabelecimento.find(t => t.valor === value);
+      setFormData(prev => ({
+        ...prev,
+        tipo_estabelecimento: value,
+        estrelas_estabelecimento: tipoSelecionado ? tipoSelecionado.estrelas : null
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, [field]: value }));
+    }
   };
 
   const handleAmenidadeChange = (amenidade, checked) => {
@@ -849,6 +869,54 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
                 </div>
               </div>
 
+              {/* NOVO: Tipo de Estabelecimento com Estrelas */}
+              {(formData.tipo_anuncio === "consultorio" || formData.tipo_anuncio === "clinica") && (
+                <div>
+                  <Label>Tipo de Estabelecimento</Label>
+                  <p className="text-xs text-gray-500 mb-2">
+                    Selecione o tipo do seu estabelecimento. Cada tipo possui uma classificação em estrelas.
+                  </p>
+                  <Select
+                    value={formData.tipo_estabelecimento}
+                    onValueChange={(value) => handleInputChange("tipo_estabelecimento", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o tipo de estabelecimento" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {tiposEstabelecimento.map(tipo => (
+                        <SelectItem key={tipo.valor} value={tipo.valor}>
+                          <div className="flex items-center gap-2">
+                            <span>{tipo.label}</span>
+                            <span className="text-yellow-500">
+                              {"⭐".repeat(tipo.estrelas)}
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  {formData.estrelas_estabelecimento && (
+                    <div className="mt-3 p-3 bg-gradient-to-r from-yellow-50 to-amber-50 rounded-lg border-2 border-yellow-300">
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl">
+                          {"⭐".repeat(formData.estrelas_estabelecimento)}
+                        </span>
+                        <div>
+                          <p className="font-bold text-yellow-900">
+                            {formData.tipo_estabelecimento}
+                          </p>
+                          <p className="text-xs text-yellow-700">
+                            Classificação: {formData.estrelas_estabelecimento} {formData.estrelas_estabelecimento === 1 ? "estrela" : "estrelas"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <Label>Título do Anúncio *</Label>
@@ -923,8 +991,8 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <Label>Status de Funcionamento</Label>
-                  <Select 
-                    value={formData.status_funcionamento || "N/D"} 
+                  <Select
+                    value={formData.status_funcionamento || "N/D"}
                     onValueChange={(value) => handleInputChange("status_funcionamento", value)}
                   >
                     <SelectTrigger>
@@ -975,14 +1043,14 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
                     Selecionar Procedimentos
                   </Button>
                 </div>
-                
+
                 {formData.procedimentos_servicos.length > 0 ? (
                   <div className="flex flex-wrap gap-2 p-4 bg-gray-50 rounded-lg border-2 border-gray-200">
                     {formData.procedimentos_servicos.map((proc, index) => (
                       <Badge key={index} variant="secondary" className="text-sm py-1.5 px-3">
                         {proc}
-                        <X 
-                          className="w-3 h-3 ml-2 cursor-pointer hover:text-red-600" 
+                        <X
+                          className="w-3 h-3 ml-2 cursor-pointer hover:text-red-600"
                           onClick={() => handleRemoverProcedimento(proc)}
                         />
                       </Badge>
@@ -1320,8 +1388,8 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
                 <Alert className="bg-blue-50 border-blue-200">
                   <MapPin className="h-4 w-4 text-blue-600" />
                   <AlertDescription className="text-blue-900">
-                    <strong>📍 Importante:</strong> Para garantir que seu estabelecimento apareça no 
-                    <strong> Mapa da Estética</strong>, preencha <strong>todas as informações de endereço</strong> 
+                    <strong>📍 Importante:</strong> Para garantir que seu estabelecimento apareça no
+                    <strong> Mapa da Estética</strong>, preencha <strong>todas as informações de endereço</strong>
                     (cidade, estado, endereço completo e CEP). Quanto mais completo, melhor sua visibilidade!
                   </AlertDescription>
                 </Alert>
