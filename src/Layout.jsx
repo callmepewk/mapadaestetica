@@ -142,7 +142,7 @@ export default function Layout({ children }) {
 
   const navigationItems = [
     { title: "Início", url: createPageUrl("Inicio"), icon: Home },
-    { title: "Anúncios", url: createPageUrl("Anuncios"), icon: Search },
+    { title: "Mapa", url: createPageUrl("Mapa"), icon: Search },
     { title: "Produtos", url: createPageUrl("Produtos"), icon: CreditCard },
     ...(!isPaciente ? [{ title: "Planos", url: createPageUrl("Planos"), icon: CreditCard }] : []),
     { title: "Blog", url: createPageUrl("Blog"), icon: Newspaper },
@@ -591,7 +591,7 @@ export default function Layout({ children }) {
               <h4 className="font-semibold mb-4 text-[#F7D426]">Links Rápidos</h4>
               <ul className="space-y-2 text-sm text-gray-400">
                 <li><Link to={createPageUrl("Inicio")} className="hover:text-[#F7D426] transition-colors">Início</Link></li>
-                <li><Link to={createPageUrl("Anuncios")} className="hover:text-[#F7D426] transition-colors">Anúncios</Link></li>
+                <li><Link to={createPageUrl("Mapa")} className="hover:text-[#F7D426] transition-colors">Mapa</Link></li>
                 <li><Link to={createPageUrl("Produtos")} className="hover:text-[#F7D426] transition-colors">Produtos</Link></li>
                 {!isPaciente && <li><Link to={createPageUrl("Planos")} className="hover:text-[#F7D426] transition-colors">Planos</Link></li>}
                 <li><Link to={createPageUrl("Blog")} className="hover:text-[#F7D426] transition-colors">Blog</Link></li>

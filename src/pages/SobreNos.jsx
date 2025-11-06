@@ -75,11 +75,18 @@ export default function SobreNos() {
         <div className="max-w-4xl mx-auto px-4 text-center">
           {/* Logo do Clube da Beleza */}
           <div className="mb-6 flex justify-center">
-            <img
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/b53be18d1_clubeimg.jpeg"
-              alt="Clube da Beleza"
-              className="h-32 w-auto object-contain"
-            />
+            <a 
+              href="https://clubdabeleza.com" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="hover:opacity-80 transition-opacity"
+            >
+              <img
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe2/b53be18d1_clubeimg.jpeg"
+                alt="Clube da Beleza"
+                className="h-32 w-auto object-contain"
+              />
+            </a>
           </div>
           <Badge className="mb-4 bg-amber-600 text-white border-none">
             Sobre o Clube da Beleza
@@ -99,6 +106,20 @@ export default function SobreNos() {
               {mostrarPlanos ? "Ocultar Planos Clube+" : "Ver Planos Clube+"}
               {mostrarPlanos ? <ChevronUp className="w-5 h-5 ml-2" /> : <ChevronDown className="w-5 h-5 ml-2" />}
             </Button>
+            <a 
+              href="https://clubdabeleza.com" 
+              target="_blank" 
+              rel="noopener noreferrer"
+            >
+              <Button
+                size="lg"
+                variant="outline"
+                className="w-full sm:w-auto border-2 border-amber-600 text-amber-600 hover:bg-amber-50 font-bold"
+              >
+                Visitar Site Clube da Beleza
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            </a>
           </div>
         </div>
       </section>

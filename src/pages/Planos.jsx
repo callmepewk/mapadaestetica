@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Check, Sparkles, Star, Zap, Crown, Gem, ArrowRight, X, MessageCircle, Headphones, AlertCircle, CreditCard, Users } from "lucide-react";
+import { Check, Sparkles, Star, Zap, Crown, Gem, ArrowRight, X, MessageCircle, Headphones, AlertCircle, CreditCard, Users, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -199,11 +199,14 @@ const planosPatrocinadores = [
   {
     nome: "COBRE",
     tipo: "cobre",
-    preco: "R$ 297/mês",
+    preco: "R$ 97/mês",
+    precoNumerico: 97,
+    minContratacao: "90 dias",
+    pacotes: "3, 6 ou 12 meses",
     cor: "from-orange-400 to-amber-600",
     icone: Star,
     destaque: false,
-    linkPagamento: null, // Configurar
+    linkPagamento: "https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=64f4c445e58443728fa6a1f17b709f77",
     beneficios: [
       "Logo na home page",
       "1 banner rotativo",
@@ -216,77 +219,95 @@ const planosPatrocinadores = [
   {
     nome: "PRATA",
     tipo: "prata",
-    preco: "R$ 497/mês",
+    preco: "R$ 297/mês",
+    precoNumerico: 297,
+    minContratacao: "90 dias",
+    pacotes: "3, 6 ou 12 meses",
     cor: "from-gray-300 to-gray-500",
     icone: Star,
     destaque: false,
-    linkPagamento: null,
+    linkPagamento: "https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=94d75f284b3e4070b4a45fc234473b64",
     beneficios: [
       "Logo destacado na home",
-      "3 banners rotativos",
+      "5 banners rotativos",
       "Link para site/redes sociais",
+      "Produtos na loja (a partir do Prata)",
       "Prioridade alta em buscas",
       "Post mensal no blog",
-      "Relatório semanal",
+      "Relatório mensal",
       "Suporte prioritário"
     ]
   },
   {
     nome: "OURO",
     tipo: "ouro",
-    preco: "R$ 997/mês",
+    preco: "R$ 497/mês",
+    precoNumerico: 497,
+    minContratacao: "90 dias",
+    pacotes: "3, 6 ou 12 meses",
     cor: "from-yellow-400 to-amber-500",
     icone: Crown,
     destaque: true,
-    linkPagamento: null,
+    linkPagamento: "https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=7a61721455d54390b2ab88cb00359c33",
     beneficios: [
       "Logo premium na home",
-      "5 banners rotativos",
+      "10 banners rotativos",
+      "Produtos na loja",
       "Seção exclusiva de patrocinador",
       "Artigos mensais no blog",
+      "Espaço Golden Doctors",
       "Prioridade máxima em buscas",
       "Campanhas personalizadas",
-      "Relatório diário",
-      "Suporte VIP 24/7"
+      "Relatório semanal",
+      "Suporte prioritário"
     ]
   },
   {
     nome: "DIAMANTE",
     tipo: "diamante",
-    preco: "R$ 1.997/mês",
+    preco: "R$ 997/mês",
+    precoNumerico: 997,
+    minContratacao: "90 dias",
+    pacotes: "3, 6 ou 12 meses",
     cor: "from-blue-400 to-cyan-500",
     icone: Gem,
     destaque: false,
-    linkPagamento: null,
+    linkPagamento: "https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=a56e5ac52e244ea5a987d3138b7114c6",
     beneficios: [
       "Logo destaque máximo",
-      "10 banners rotativos",
+      "15 banners rotativos",
+      "Produtos na loja",
       "Seção exclusiva premium",
       "2 artigos mensais no blog",
+      "Espaço Golden Doctors",
       "Campanhas de email marketing",
-      "Webinars mensais",
-      "Prioridade absoluta",
-      "Gerente de conta dedicado",
-      "Relatórios em tempo real"
+      "Prioridade absoluta com assistente de vendas virtual 24h",
+      "Relatório semanal",
+      "Dashboards personalizados"
     ]
   },
   {
     nome: "PLATINA",
     tipo: "platina",
-    preco: "Sob Consulta",
+    preco: "R$ 1.997/mês",
+    precoNumerico: 1997,
+    minContratacao: "90 dias",
+    pacotes: "3, 6 ou 12 meses",
     cor: "from-purple-500 to-pink-600",
     icone: Zap,
     destaque: false,
-    linkPagamento: null,
+    linkPagamento: "https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=adde87a060b34328a11e5cd77f56fbd8",
     beneficios: [
       "Parceria estratégica completa",
       "Banners ilimitados",
-      "Co-branding da plataforma",
-      "Eventos exclusivos",
+      "Produtos na loja",
+      "Programa de Afiliado",
+      "Clube Golden Doctors",
       "Conteúdo ilimitado no blog",
       "Campanhas de performance",
       "Integração API completa",
-      "Equipe dedicada",
+      "Assistente de Marketing Virtual",
+      "Relatórios em tempo real",
       "Dashboards personalizados",
       "Primeiro a saber novidades"
     ]
@@ -301,12 +322,19 @@ export default function Planos() {
   const [planoAtualizado, setPlanoAtualizado] = useState("");
   const [verificandoPagamento, setVerificandoPagamento] = useState(false);
 
-  const [mostrarModalConfirmacao, setMostrarModalConfirmacao] = useState(false);
-  const [planoSelecionado, setPlanoSelecionado] = useState(null);
-  const [aguardandoConfirmacao, setAguardandoConfirmacao] = useState(false);
+  const [mostrarModalConfirmacao, setMostrarModalConfirmacao] = useState(false); // For professional plans
+  const [planoSelecionado, setPlanoSelecionado] = useState(null); // For professional plans
+  const [aguardandoConfirmacao, setAguardandoConfirmacao] = useState(false); // For professional plans
 
   const [mostrarDrBeleza, setMostrarDrBeleza] = useState(false);
   const [abaPlanos, setAbaPlanos] = useState("mapa_estetica"); // NOVO
+
+  // NEW states for Sponsor plans
+  const [mostrarModalConfirmacaoPatrocinador, setMostrarModalConfirmacaoPatrocinador] = useState(false);
+  const [planoSelecionadoPatrocinador, setPlanoSelecionadoPatrocinador] = useState(null);
+  const [enviandoSolicitacao, setEnviandoSolicitacao] = useState(false);
+  const [mensagemSucesso, setMensagemSucesso] = useState(null);
+  const [mensagemErro, setMensagemErro] = useState(null);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -327,6 +355,7 @@ export default function Planos() {
       
       const collectionStatus = params.get('collection_status'); // approved, pending, rejected
       const planoParam = params.get('plano');
+      const tipoPlanoParam = params.get('tipo_plano'); // New: 'patrocinador' or default
 
       // Se tem collection_status, veio do Mercado Pago
       if (collectionStatus && user && planoParam) {
@@ -338,6 +367,7 @@ export default function Planos() {
             { 
               usuario_email: user.email, 
               plano_solicitado: planoParam,
+              tipo_plano: tipoPlanoParam || 'profissional' // Filter by type
             },
             '-created_date',
             1
@@ -357,14 +387,14 @@ export default function Planos() {
                 data_pagamento_mp: new Date().toISOString() 
               };
               
-              notificationType = "nova_confirmacao_plano";
-              notificationTitle = `✅ Pagamento Aprovado - Plano ${planoParam.toUpperCase()}`;
-              notificationMessage = `${user.full_name} (${user.email}) teve um pagamento APROVADO via Mercado Pago para o plano ${planoParam.toUpperCase()}. Verifique e ative o plano.`;
+              notificationType = `nova_confirmacao_plano_${tipoPlanoParam || 'profissional'}`;
+              notificationTitle = `✅ Pagamento Aprovado - Plano ${planoParam.toUpperCase()} (${tipoPlanoParam || 'Profissional'})`;
+              notificationMessage = `${user.full_name} (${user.email}) teve um pagamento APROVADO via Mercado Pago para o plano ${planoParam.toUpperCase()} (${tipoPlanoParam || 'Profissional'}). Verifique e ative o plano.`;
 
               setPlanoAtualizado(planoParam.toUpperCase());
               setMostrarSucesso(true);
               
-              alertMessage = `🎉 Parabéns! Seu pagamento foi aprovado pelo Mercado Pago!\n\nNossa equipe foi notificada e seu plano ${planoParam.toUpperCase()} será ativado em até 24 horas.\n\nVocê receberá um e-mail de confirmação assim que o plano estiver ativo.`;
+              alertMessage = `🎉 Parabéns! Seu pagamento foi aprovado pelo Mercado Pago!\n\nNossa equipe foi notificada e seu plano ${planoParam.toUpperCase()} (${tipoPlanoParam || 'Profissional'}) será ativado em até 24 horas.\n\nVocê receberá um e-mail de confirmação assim que o plano estiver ativo.`;
               
             } else if (collectionStatus === 'pending') {
               updateData = { 
@@ -405,6 +435,7 @@ export default function Planos() {
                 usuario_email: user.email,
                 usuario_nome: user.full_name,
                 plano_solicitado: planoParam,
+                tipo_plano: tipoPlanoParam || 'profissional', // Set type
                 link_mercadopago: "Retorno direto do MP",
                 status: "pagamento_aprovado_mp",
                 data_solicitacao: new Date().toISOString(),
@@ -413,15 +444,15 @@ export default function Planos() {
 
               await base44.entities.Notificacao.create({
                 usuario_email: "admin@mapadaestetica.com.br",
-                tipo: "nova_confirmacao_plano",
-                titulo: `✅ Pagamento Aprovado - Plano ${planoParam.toUpperCase()}`,
-                mensagem: `${user.full_name} (${user.email}) teve um pagamento APROVADO via Mercado Pago para o plano ${planoParam.toUpperCase()}. Verifique e ative o plano.`,
+                tipo: `nova_confirmacao_plano_${tipoPlanoParam || 'profissional'}`,
+                titulo: `✅ Pagamento Aprovado - Plano ${planoParam.toUpperCase()} (${tipoPlanoParam || 'Profissional'})`,
+                mensagem: `${user.full_name} (${user.email}) teve um pagamento APROVADO via Mercado Pago para o plano ${planoParam.toUpperCase()} (${tipoPlanoParam || 'Profissional'}). Verifique e ative o plano.`,
                 link_acao: `/solicitacoes-plano`
               });
 
               setPlanoAtualizado(planoParam.toUpperCase());
               setMostrarSucesso(true);
-              alert(`🎉 Parabéns! Seu pagamento foi aprovado!\n\nSeu plano ${planoParam.toUpperCase()} será ativado em até 24 horas.`);
+              alert(`🎉 Parabéns! Seu pagamento foi aprovado!\n\nSeu plano ${planoParam.toUpperCase()} (${tipoPlanoParam || 'Profissional'}) será ativado em até 24 horas.`);
             } else if (collectionStatus === 'pending') {
               alert("⏳ Seu pagamento está pendente. Aguarde a aprovação do Mercado Pago.");
             } else if (collectionStatus === 'rejected') {
@@ -433,7 +464,9 @@ export default function Planos() {
           alert("❌ Ocorreu um erro ao processar seu pagamento.\n\nPor favor, entre em contato com o suporte:\n(31) 97259-5643");
         } finally {
           setVerificandoPagamento(false);
-          window.history.replaceState({}, '', createPageUrl("Planos"));
+          // Clean URL parameters, ensuring 'tipo_plano' is also removed if present
+          const cleanUrl = createPageUrl("Planos");
+          window.history.replaceState({}, '', cleanUrl);
         }
       }
     };
@@ -480,6 +513,7 @@ export default function Planos() {
         usuario_email: user.email,
         usuario_nome: user.full_name,
         plano_solicitado: plano.tipo,
+        tipo_plano: "profissional", // Explicitly set type for professionals
         link_mercadopago: plano.linkPagamento,
         status: "aguardando_confirmacao",
         data_solicitacao: new Date().toISOString()
@@ -491,7 +525,10 @@ export default function Planos() {
     }
 
     // Abrir link do Mercado Pago em nova aba (SEM back_urls - já configurado no painel do MP)
-    window.open(plano.linkPagamento, '_blank');
+    // Add plano and tipo_plano to back_urls, if MP supports it. Otherwise, rely on original logic.
+    const redirectUrl = encodeURIComponent(`${window.location.origin}${createPageUrl("Planos")}?plano=${plano.tipo}&tipo_plano=profissional`);
+    const linkWithRedirect = `${plano.linkPagamento}&external_reference=${user.email}-${plano.tipo}&back_url_success=${redirectUrl}&back_url_pending=${redirectUrl}&back_url_failure=${redirectUrl}`;
+    window.open(linkWithRedirect, '_blank');
     
     // Mostrar modal de confirmação
     setMostrarModalConfirmacao(true);
@@ -507,6 +544,7 @@ export default function Planos() {
         { 
           usuario_email: user.email, 
           plano_solicitado: planoSelecionado.tipo,
+          tipo_plano: "profissional", // Ensure it's for professional plans
         },
         '-created_date',
         1
@@ -530,9 +568,9 @@ export default function Planos() {
 
         await base44.entities.Notificacao.create({
           usuario_email: "admin@mapadaestetica.com.br",
-          tipo: "nova_confirmacao_plano",
-          titulo: `💬 Usuário Confirmou Pagamento - Plano ${planoSelecionado.nome.toUpperCase()}`,
-          mensagem: `${user.full_name} (${user.email}) CONFIRMOU manualmente o pagamento do plano ${planoSelecionado.nome.toUpperCase()}. Verifique o pagamento no Mercado Pago e ative o plano.`,
+          tipo: "nova_confirmacao_plano_profissional",
+          titulo: `💬 Usuário Confirmou Pagamento - Plano ${planoSelecionado.nome.toUpperCase()} (Profissional)`,
+          mensagem: `${user.full_name} (${user.email}) CONFIRMOU manualmente o pagamento do plano ${planoSelecionado.nome.toUpperCase()} (Profissional). Verifique o pagamento no Mercado Pago e ative o plano.`,
           link_acao: `/solicitacoes-plano`
         });
 
@@ -543,13 +581,83 @@ export default function Planos() {
         
         alert("✅ Sua confirmação foi registrada!\n\nNossa equipe foi notificada e ativará seu plano em até 24 horas.\n\nVocê receberá um e-mail de confirmação.");
       } else {
-        alert("❌ Não encontramos uma solicitação de plano ativa.\n\nPor favor, tente novamente ou entre em contato:\n(31) 97259-5643");
+        alert("❌ Não encontramos uma solicitação de plano ativa para este tipo.\n\nPor favor, tente novamente ou entre em contato:\n(31) 97259-5643");
       }
     } catch (error) {
       console.error("Erro ao confirmar pagamento:", error);
       alert("❌ Erro ao processar sua confirmação.\n\nEntre em contato com o suporte:\n(31) 97259-5643");
     } finally {
       setAguardandoConfirmacao(false);
+    }
+  };
+
+  const handleContratarPatrocinador = (plano) => {
+    if (!user) {
+      alert("Por favor, faça login para contratar um plano de patrocinador.");
+      base44.auth.redirectToLogin(window.location.href);
+      return;
+    }
+
+    if (!plano.linkPagamento) {
+      alert("Link de pagamento em breve para este plano! Entre em contato pelo WhatsApp para mais informações.");
+      return;
+    }
+    setPlanoSelecionadoPatrocinador(plano);
+    setMostrarModalConfirmacaoPatrocinador(true);
+  };
+
+  const handleConfirmarPatrocinio = async () => {
+    if (!planoSelecionadoPatrocinador || !user) return;
+
+    setEnviandoSolicitacao(true);
+
+    try {
+      // Criar solicitação de ativação do plano patrocinador
+      await base44.entities.SolicitacaoAtivacaoPlano.create({
+        usuario_email: user.email,
+        usuario_nome: user.full_name,
+        plano_solicitado: planoSelecionadoPatrocinador.tipo,
+        tipo_plano: "patrocinador", // Explicitly set type for sponsors
+        link_mercadopago: planoSelecionadoPatrocinador.linkPagamento,
+        status: "aguardando_confirmacao",
+        data_solicitacao: new Date().toISOString(),
+        valor_mensal: planoSelecionadoPatrocinador.precoNumerico,
+        observacoes: `Plano de Patrocinador ${planoSelecionadoPatrocinador.nome} - Contratação mínima: ${planoSelecionadoPatrocinador.minContratacao}`
+      });
+
+      // Enviar notificação por email (via integração)
+      await base44.integrations.Core.SendEmail({
+        to: "suporte@mapadaestetica.com.br", // Or a dedicated commercial email
+        subject: `Nova Solicitação de Plano Patrocinador - ${planoSelecionadoPatrocinador.nome}`,
+        body: `
+          Nova solicitação de plano patrocinador recebida:
+          
+          Usuário: ${user.full_name}
+          Email: ${user.email}
+          Plano: ${planoSelecionadoPatrocinador.nome} (${planoSelecionadoPatrocinador.tipo})
+          Valor: ${planoSelecionadoPatrocinador.preco}
+          Contratação mínima: ${planoSelecionadoPatrocinador.minContratacao}
+          Data: ${new Date().toLocaleString('pt-BR')}
+          
+          Link de pagamento: ${planoSelecionadoPatrocinador.linkPagamento}
+        `
+      });
+
+      // Redirecionar para o Mercado Pago
+      // Add plano and tipo_plano to back_urls
+      const redirectUrl = encodeURIComponent(`${window.location.origin}${createPageUrl("Planos")}?plano=${planoSelecionadoPatrocinador.tipo}&tipo_plano=patrocinador`);
+      const linkWithRedirect = `${planoSelecionadoPatrocinador.linkPagamento}&external_reference=${user.email}-${planoSelecionadoPatrocinador.tipo}-patrocinador&back_url_success=${redirectUrl}&back_url_pending=${redirectUrl}&back_url_failure=${redirectUrl}`;
+      window.open(linkWithRedirect, '_blank');
+      
+      setMostrarModalConfirmacaoPatrocinador(false);
+      setMensagemSucesso("Solicitação de patrocínio enviada com sucesso! Você será redirecionado para o pagamento.");
+      setTimeout(() => setMensagemSucesso(null), 5000);
+    } catch (error) {
+      console.error("Erro ao enviar solicitação de patrocínio:", error);
+      setMensagemErro("Erro ao enviar solicitação de patrocínio. Por favor, tente novamente.");
+      setTimeout(() => setMensagemErro(null), 5000);
+    } finally {
+      setEnviandoSolicitacao(false);
     }
   };
 
@@ -577,6 +685,20 @@ export default function Planos() {
             🎉 <strong>Parabéns!</strong> Seu plano <strong>{planoAtualizado}</strong> foi ativado com sucesso! 
             Você receberá um e-mail de confirmação em breve.
           </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Generic Sucesso/Erro Messages */}
+      {mensagemSucesso && (
+        <Alert className="max-w-4xl mx-auto mb-6 bg-green-50 border-green-200">
+          <Check className="h-4 w-4 text-green-600" />
+          <AlertDescription className="text-green-800">{mensagemSucesso}</AlertDescription>
+        </Alert>
+      )}
+      {mensagemErro && (
+        <Alert className="max-w-4xl mx-auto mb-6 bg-red-50 border-red-200">
+          <X className="h-4 w-4 text-red-600" />
+          <AlertDescription className="text-red-800">{mensagemErro}</AlertDescription>
         </Alert>
       )}
 
@@ -664,7 +786,7 @@ export default function Planos() {
                     Fale com nossos especialistas e tire todas as suas dúvidas!
                   </p>
                   <a
-                    href="https://wa.me/5531972595643?text=Olá!%20Gostaria%20de%20informações%20sobre%20os%20planos%20do%20Mapa%20da%20Estética!%20💆‍♀️"
+                    href="https://wa.me/5531972595643?text=Olá%21%20Gostaria%20de%20informações%20sobre%20os%20planos%20do%20Mapa%20da%20Estética%21%20💆%uFE0F"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -880,6 +1002,8 @@ export default function Planos() {
               <Users className="h-5 w-5 text-blue-600" />
               <AlertDescription className="text-blue-900">
                 <strong>Planos de Patrocínio:</strong> Torne-se um parceiro estratégico do Mapa da Estética e alcance milhares de profissionais e pacientes da área de estética!
+                <br/>
+                <span className="text-sm mt-1 block">⏱️ Contratação mínima: 90 dias | Pacotes disponíveis: 3, 6 ou 12 meses</span>
               </AlertDescription>
             </Alert>
           </div>
@@ -913,8 +1037,9 @@ export default function Planos() {
                         <div className="relative z-10 text-white">
                           <IconComponent className="w-12 h-12 mb-4" />
                           <h3 className="text-2xl font-bold mb-2">{plano.nome}</h3>
-                          <div className="flex items-baseline gap-2">
+                          <div className="flex flex-col">
                             <span className="text-2xl font-bold">{plano.preco}</span>
+                            <span className="text-xs mt-1 opacity-80">Min: {plano.minContratacao}</span>
                           </div>
                         </div>
                       </div>
@@ -932,18 +1057,31 @@ export default function Planos() {
                               </div>
                             ))}
                           </div>
+                          
+                          <div className="mt-4 pt-4 border-t">
+                            <p className="text-xs text-gray-500 mb-1">📦 Pacotes:</p>
+                            <p className="text-xs font-semibold text-gray-700">{plano.pacotes}</p>
+                          </div>
                         </div>
 
                         <div className="space-y-2 mt-auto">
+                          <Button
+                            onClick={() => handleContratarPatrocinador(plano)}
+                            disabled={!plano.linkPagamento}
+                            className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+                          >
+                            {plano.linkPagamento ? "Contratar Agora" : "Em Breve"}
+                            <ArrowRight className="w-4 h-4 ml-2" />
+                          </Button>
                           <Button
                             onClick={() => {
                               const mensagem = `Olá! Tenho interesse no Plano de Patrocínio ${plano.nome} do Mapa da Estética! 🤝`;
                               window.open(`https://wa.me/5531972595643?text=${encodeURIComponent(mensagem)}`, '_blank');
                             }}
-                            className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+                            variant="outline"
+                            className="w-full text-sm"
                           >
                             Falar com Comercial
-                            <ArrowRight className="w-4 h-4 ml-2" />
                           </Button>
                         </div>
                       </CardContent>
@@ -1026,7 +1164,7 @@ export default function Planos() {
         </>
       )}
 
-      {/* Modal de Confirmação de Pagamento */}
+      {/* Modal de Confirmação de Pagamento (Profissional Plans) */}
       <Dialog open={mostrarModalConfirmacao} onOpenChange={setMostrarModalConfirmacao}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -1109,6 +1247,73 @@ export default function Planos() {
         open={mostrarDrBeleza}
         onClose={() => setMostrarDrBeleza(false)}
       />
+
+      {/* NOVO: Modal de Confirmação de Patrocínio */}
+      <Dialog open={mostrarModalConfirmacaoPatrocinador} onOpenChange={setMostrarModalConfirmacaoPatrocinador}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-center">Confirmar Contratação de Plano Patrocinador</DialogTitle>
+            <DialogDescription className="text-center">
+              Você está prestes a contratar o plano de Patrocínio:
+            </DialogDescription>
+          </DialogHeader>
+
+          {planoSelecionadoPatrocinador && (
+            <div className="space-y-4 py-4">
+              <Alert className="bg-blue-50 border-blue-200">
+                <AlertCircle className="h-4 w-4 text-blue-600" />
+                <AlertDescription className="text-blue-800 text-sm">
+                  <strong>Plano:</strong> {planoSelecionadoPatrocinador.nome}
+                  <br/>
+                  <strong>Valor:</strong> {planoSelecionadoPatrocinador.preco}
+                  <br/>
+                  <strong>Contratação mínima:</strong> {planoSelecionadoPatrocinador.minContratacao}
+                  <br/>
+                  <strong>Pacotes:</strong> {planoSelecionadoPatrocinador.pacotes}
+                </AlertDescription>
+              </Alert>
+
+              <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-4">
+                <p className="text-sm text-yellow-900">
+                  <strong>⚠️ Importante:</strong> Após clicar em "Confirmar e Pagar", você será redirecionado para o Mercado Pago para concluir o pagamento. 
+                  Uma solicitação será enviada automaticamente para nossa equipe de suporte.
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-3 pt-4">
+                <Button
+                  onClick={() => {
+                    setMostrarModalConfirmacaoPatrocinador(false);
+                    setPlanoSelecionadoPatrocinador(null);
+                  }}
+                  variant="outline"
+                  className="flex-1"
+                  disabled={enviandoSolicitacao}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  onClick={handleConfirmarPatrocinio}
+                  disabled={enviandoSolicitacao}
+                  className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+                >
+                  {enviandoSolicitacao ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Processando...
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-4 h-4 mr-2" />
+                      Confirmar e Pagar
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
