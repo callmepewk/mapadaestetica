@@ -135,7 +135,7 @@ const servicosContrataveis = [
       "Integração com redes sociais",
       "Formulário de contato",
       "SEO otimizado",
-      "Certificado SSL incluso",
+      "Certificado SSL incluson",
       "Manutenção por 6 meses"
     ],
     em_destaque: false,
@@ -712,7 +712,7 @@ export default function Produtos() {
               const precoEfetivo = produto.preco_promocional || produto.preco;
               const faixaPreco = determinarFaixaPreco(precoEfetivo);
               const pontosGanhos = calcularPontosPorFaixaPreco(faixaPreco);
-              const isExclusivoClube = (produto.preco === 0 || !produto.preco) || produto.requer_assinatura;
+              const isExclusivoClube = produto.preco === 0 || !produto.preco || produto.requer_assinatura;
 
               return (
                 <Card
