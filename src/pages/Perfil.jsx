@@ -46,13 +46,13 @@ import {
   CheckCircle,
   Upload,
   Loader2,
-  Bookmark, // New import for Saved Ads
-  Handshake, // New import for Indicações, and now Patrocinador
-  DollarSign, // New import for Beauty Coins
-  Briefcase, // New import for Informações Profissionais
-  Zap, // New import for Impulsionados
-  CreditCard, // New import for Meus Planos
-  Crown, // New import for Clube da Beleza
+  Bookmark,
+  Handshake,
+  Briefcase,
+  Zap,
+  CreditCard,
+  Crown,
+  DollarSign
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from 'date-fns';
@@ -611,7 +611,7 @@ export default function Perfil() {
                           />
                         </div>
                         <div>
-                          <Label htmlFor="estado">Estado</Label>
+                          <Label htmlFor="estado">Estado</l abel>
                           <Input
                             id="estado"
                             value={formData.estado || ""}
