@@ -65,6 +65,7 @@ const tiposAnuncio = [
   { valor: "consultorio", label: "Consultório" },
   { valor: "clinica", label: "Clínica" },
   { valor: "promocao", label: "Promoção" },
+  { valor: "evento", label: "Evento" },
   { valor: "venda_produto", label: "Venda de Produto" },
   { valor: "venda_aparelho", label: "Venda de Aparelho" },
   { valor: "aluguel_produto", label: "Aluguel de Produto" },
@@ -294,9 +295,8 @@ export default function CadastrarAnuncio() {
 
   const handleAmenidadeChange = (amenidade, checked) => {
     setFormData(prev => ({
-      ...prev,
+      ...prev.amenidades,
       amenidades: {
-        ...prev.amenidades,
         [amenidade]: checked
       }
     }));
