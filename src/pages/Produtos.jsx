@@ -335,6 +335,19 @@ export default function Produtos() {
   const [user, setUser] = useState(null);
   const [tipoBusca, setTipoBusca] = useState('produtos');
   const [mostrarLoginPrompt, setMostrarLoginPrompt] = useState(false);
+  const [carrinho, setCarrinho] = useState([]);
+
+  // Carregar carrinho do localStorage
+  useEffect(() => {
+    const carrinhoSalvo = localStorage.getItem('carrinho_mapa_estetica');
+    if (carrinhoSalvo) {
+      try {
+        setCarrinho(JSON.parse(carrinhoSalvo));
+      } catch (e) {
+        console.error("Erro ao carregar carrinho:", e);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -446,16 +459,35 @@ export default function Produtos() {
     }
   }, [tipoBusca, categoriasParaFiltro, categoriaFiltro]);
 
+  const handleAdicionarAoCarrinho = (produto) => {
+    if (!user) {
+      setMostrarLoginPrompt(true);
+      return;
+    }
+
+    // Adicionar ao carrinho
+    const novoCarrinho = [...carrinho, produto];
+    setCarrinho(novoCarrinho);
+    localStorage.setItem('carrinho_mapa_estetica', JSON.stringify(novoCarrinho));
+
+    // Feedback visual
+    alert(`✅ ${produto.nome} foi adicionado ao carrinho!`);
+  };
+
   const handleContratar = (servico) => {
     if (!user) {
       setMostrarLoginPrompt(true);
       return;
     }
     
-    const mensagem = `Olá! Tenho interesse em contratar: ${servico.nome}. Gostaria de mais informações sobre valores e como funciona! 💼`;
-    const whatsapp = "5531972595643";
-    const url = `https://wa.me/${whatsapp}?text=${encodeURIComponent(mensagem)}`;
-    window.open(url, '_blank');
+    // Para serviços exclusivos do clube, redirecionar para SobreNos
+    if (servico.preco === 0 || !servico.preco || servico.requer_assinatura) {
+      navigate(createPageUrl("SobreNos"));
+      return;
+    }
+
+    // Para outros serviços, adicionar ao carrinho
+    handleAdicionarAoCarrinho(servico);
   };
 
   // Redirecionar menções de pontos para a loja
@@ -465,20 +497,6 @@ export default function Produtos() {
       return;
     }
     navigate(createPageUrl("LojaPontos"));
-  };
-
-  // Função para processar compra de produto
-  const handleComprarProduto = (produto) => {
-    if (!user) {
-      setMostrarLoginPrompt(true);
-      return;
-    }
-
-    const precoFinal = produto.preco_promocional || produto.preco;
-    const mensagem = `Olá! Tenho interesse em comprar: ${produto.nome} - ${precoFinal ? `R$ ${precoFinal.toFixed(2)}` : 'Consultar preço'}`;
-    const whatsapp = "5531972595643";
-    const url = `https://wa.me/${whatsapp}?text=${encodeURIComponent(mensagem)}`;
-    window.open(url, '_blank');
   };
 
   return (
@@ -694,7 +712,7 @@ export default function Produtos() {
               const precoEfetivo = produto.preco_promocional || produto.preco;
               const faixaPreco = determinarFaixaPreco(precoEfetivo);
               const pontosGanhos = calcularPontosPorFaixaPreco(faixaPreco);
-              const isExclusivoClube = produto.preco === 0 || !produto.preco;
+              const isExclusivoClube = (produto.preco === 0 || !produto.preco) || produto.requer_assinatura;
 
               return (
                 <Card
@@ -785,7 +803,7 @@ export default function Produtos() {
                           } else if (produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" || produto.categoria === "Produtos para Pacientes") {
                             handleContratar(produto);
                           } else {
-                            handleComprarProduto(produto);
+                            handleAdicionarAoCarrinho(produto);
                           }
                         }}
                         className={isExclusivoClube
@@ -801,9 +819,15 @@ export default function Produtos() {
                             Assinar
                           </>
                         ) : (produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" || produto.categoria === "Produtos para Pacientes") ? (
-                          "Contratar"
+                          <>
+                            <Plus className="w-4 h-4 mr-1" />
+                            Adicionar
+                          </>
                         ) : (
-                          <ShoppingCart className="w-4 h-4" />
+                          <>
+                            <ShoppingCart className="w-4 h-4 mr-1" />
+                            Adicionar
+                          </>
                         )}
                       </Button>
                     </div>
