@@ -50,6 +50,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useNavigate } from "react-router-dom"; // Assuming react-router-dom for navigation
 
 const PLANOS_INFO = {
   cobre: { nome: "Cobre", cor: "bg-orange-100 text-orange-800" },
@@ -91,22 +92,26 @@ export default function ControlePlanos() {
   const [novoPlano, setNovoPlano] = useState("");
 
   const queryClient = useQueryClient();
+  const navigate = useNavigate(); // Initialize useNavigate
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const userData = await base44.auth.me();
         if (userData.role !== 'admin') {
-          window.location.href = '/';
+          alert("⚠️ Acesso negado. Apenas administradores podem acessar esta página.");
+          // Assuming "Inicio" maps to "/" or a defined route like "/inicio"
+          navigate("/inicio"); // Replaced createPageUrl("Inicio") with "/inicio" for functionality
           return;
         }
         setUser(userData);
       } catch (error) {
-        base44.auth.redirectToLogin(window.location.pathname);
+        alert("⚠️ Você precisa estar logado como administrador para acessar esta página.");
+        navigate("/inicio"); // Replaced createPageUrl("Inicio") with "/inicio" for functionality
       }
     };
     fetchUser();
-  }, []);
+  }, [navigate]); // Add navigate to dependency array
 
   const { data: solicitacoesPlanos = [], isLoading: loadingSolicitacoesPlanos } = useQuery({
     queryKey: ['solicitacoes-plano'],

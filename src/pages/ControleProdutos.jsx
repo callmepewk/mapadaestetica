@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -57,11 +58,13 @@ export default function ControleProdutos() {
       try {
         const userData = await base44.auth.me();
         if (userData.role !== 'admin') {
+          alert("⚠️ Acesso negado. Apenas administradores podem acessar esta página.");
           navigate(createPageUrl("Inicio"));
           return;
         }
         setUser(userData);
       } catch (error) {
+        alert("⚠️ Você precisa estar logado como administrador para acessar esta página.");
         navigate(createPageUrl("Inicio"));
       }
     };

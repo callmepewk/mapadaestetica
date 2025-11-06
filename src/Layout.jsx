@@ -557,7 +557,7 @@ export default function Layout({ children }) {
         <div className="max-w-7xl mx-auto px-4 py-8 sm:py-12">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
             <div>
-              {/* Logo do Mapa da Estética - SEMPRE VISÍVEL */}
+              {/* Logo do Mapa da Estética */}
               <img
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/fd230be55_mapaimg.jpg"
                 alt="Mapa da Estética"
@@ -573,6 +573,18 @@ export default function Layout({ children }) {
               <p className="text-gray-400 text-xs">
                 CNPJ: 46.792.168/0001-88
               </p>
+              
+              {/* Logo do Clube da Beleza */}
+              <div className="mt-6 pt-6 border-t border-gray-700">
+                <img
+                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/b53be18d1_clubeimg.jpeg"
+                  alt="Clube da Beleza"
+                  className="h-20 w-auto object-contain"
+                />
+                <p className="text-gray-400 text-xs mt-2">
+                  Clube de Benefícios Exclusivos
+                </p>
+              </div>
             </div>
 
             <div>

@@ -20,13 +20,14 @@ export default function Relatorios() {
     const checkAdmin = async () => {
       try {
         const userData = await base44.auth.me();
-        setUser(userData);
-        
         if (userData.role !== 'admin') {
-          alert("Acesso negado. Apenas administradores podem acessar relatórios.");
+          alert("⚠️ Acesso negado. Apenas administradores podem acessar relatórios.");
           navigate(createPageUrl("Inicio"));
+          return;
         }
+        setUser(userData);
       } catch (error) {
+        alert("⚠️ Você precisa estar logado como administrador para acessar esta página.");
         navigate(createPageUrl("Inicio"));
       }
     };

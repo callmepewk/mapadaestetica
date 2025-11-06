@@ -11,7 +11,8 @@ const planosClubeCliente = [
   {
     nome: "LIGHT",
     preco: "Grátis",
-    cor: "from-gray-400 to-gray-500",
+    cor: "from-amber-100 to-amber-200",
+    textColor: "text-amber-900",
     beneficios: [
       "Acesso ao aplicativo localizador",
       "Busca de profissionais por categoria",
@@ -23,7 +24,8 @@ const planosClubeCliente = [
   {
     nome: "GOLD",
     preco: "R$ 49,90/mês",
-    cor: "from-yellow-400 to-amber-500",
+    cor: "from-yellow-300 to-amber-400",
+    textColor: "text-amber-900",
     destaque: true,
     beneficios: [
       "Todos os benefícios do LIGHT",
@@ -39,7 +41,8 @@ const planosClubeCliente = [
   {
     nome: "VIP",
     preco: "R$ 99,90/mês",
-    cor: "from-purple-600 to-pink-600",
+    cor: "from-amber-400 to-yellow-600",
+    textColor: "text-amber-950",
     beneficios: [
       "Todos os benefícios do GOLD",
       "25% de desconto na rede parceira",
@@ -66,24 +69,32 @@ export default function SobreNos() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-white">
       {/* Hero */}
-      <section className="bg-gradient-to-r from-pink-600 to-rose-600 text-white py-20">
+      <section className="bg-gradient-to-r from-amber-100 via-yellow-100 to-amber-100 py-20">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <Badge className="mb-4 bg-white/20 text-white border-none">
+          {/* Logo do Clube da Beleza */}
+          <div className="mb-6 flex justify-center">
+            <img
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/b53be18d1_clubeimg.jpeg"
+              alt="Clube da Beleza"
+              className="h-32 w-auto object-contain"
+            />
+          </div>
+          <Badge className="mb-4 bg-amber-600 text-white border-none">
             Sobre o Clube da Beleza
           </Badge>
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">
+          <h1 className="text-4xl md:text-5xl font-bold text-amber-900 mb-6">
             E se você pudesse viver o melhor que a sua beleza pode proporcionar?
           </h1>
-          <p className="text-xl text-white/90 mb-8">
+          <p className="text-xl text-amber-800 mb-8">
             Somos o clube de benefícios mais completo do Brasil para quem ama cuidar da sua estética e bem-estar
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
               onClick={() => setMostrarPlanos(!mostrarPlanos)}
               size="lg"
-              className="bg-white text-pink-600 hover:bg-gray-100 font-bold"
+              className="bg-amber-600 text-white hover:bg-amber-700 font-bold"
             >
               {mostrarPlanos ? "Ocultar Planos Clube+" : "Ver Planos Clube+"}
               {mostrarPlanos ? <ChevronUp className="w-5 h-5 ml-2" /> : <ChevronDown className="w-5 h-5 ml-2" />}
@@ -94,40 +105,40 @@ export default function SobreNos() {
 
       {/* Planos Clube+ */}
       {mostrarPlanos && (
-        <section className="py-12 bg-gradient-to-br from-purple-50 to-pink-50">
+        <section className="py-12 bg-gradient-to-br from-amber-50 to-yellow-50">
           <div className="max-w-7xl mx-auto px-4">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              <h2 className="text-3xl font-bold text-amber-900 mb-4">
                 Escolha Seu Plano do Clube da Beleza
               </h2>
-              <p className="text-gray-600">
+              <p className="text-amber-800">
                 Benefícios exclusivos para você cuidar da sua beleza com economia
               </p>
             </div>
             <div className="grid md:grid-cols-3 gap-8">
               {planosClubeCliente.map((plano, index) => (
-                <Card key={index} className={`border-none shadow-xl hover:shadow-2xl transition-all ${plano.destaque ? 'ring-4 ring-yellow-500 transform scale-105' : ''}`}>
+                <Card key={index} className={`border-2 border-amber-300 shadow-xl hover:shadow-2xl transition-all ${plano.destaque ? 'ring-4 ring-amber-500 transform scale-105' : ''}`}>
                   {plano.destaque && (
-                    <div className="bg-gradient-to-r from-yellow-500 to-amber-500 text-white text-center py-2 font-bold text-sm">
+                    <div className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-center py-2 font-bold text-sm">
                       🌟 MAIS POPULAR
                     </div>
                   )}
-                  <div className={`h-32 bg-gradient-to-br ${plano.cor} p-6 flex flex-col justify-center items-center text-white`}>
-                    <h3 className="text-2xl font-bold mb-2">{plano.nome}</h3>
-                    <p className="text-3xl font-bold">{plano.preco}</p>
+                  <div className={`h-32 bg-gradient-to-br ${plano.cor} p-6 flex flex-col justify-center items-center`}>
+                    <h3 className={`text-2xl font-bold ${plano.textColor} mb-2`}>{plano.nome}</h3>
+                    <p className={`text-3xl font-bold ${plano.textColor}`}>{plano.preco}</p>
                   </div>
                   <CardContent className="p-6">
                     <div className="space-y-3 mb-6">
                       {plano.beneficios.map((beneficio, i) => (
                         <div key={i} className="flex items-start gap-3">
-                          <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                          <span className="text-sm text-gray-600">{beneficio}</span>
+                          <Check className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                          <span className="text-sm text-gray-700">{beneficio}</span>
                         </div>
                       ))}
                     </div>
                     <Button
                       onClick={() => handleSelecionarPlano(plano)}
-                      className={`w-full ${plano.destaque ? 'bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700' : 'bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700'}`}
+                      className={`w-full ${plano.destaque ? 'bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700' : 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600'} text-white`}
                     >
                       <MessageCircle className="w-4 h-4 mr-2" />
                       Selecionar Plano
@@ -144,10 +155,10 @@ export default function SobreNos() {
       <section className="py-16">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-amber-900 mb-4">
               Olá! Seja Bem-vindo(a)
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-xl text-amber-800 max-w-3xl mx-auto">
               Um clube que oferece benefícios para os associados que consomem serviços e produtos 
               para sua estética e bem-estar. Além de fazer bem, também faz bem no seu bolso!
             </p>
@@ -155,39 +166,39 @@ export default function SobreNos() {
 
           {/* Features Grid */}
           <div className="grid md:grid-cols-3 gap-8 mb-16">
-            <Card className="border-none shadow-xl hover:shadow-2xl transition-all">
+            <Card className="border-2 border-amber-200 shadow-xl hover:shadow-2xl transition-all">
               <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-pink-500 to-rose-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Heart className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-xl font-bold mb-3">Clube de Benefícios</h3>
-                <p className="text-gray-600">
+                <h3 className="text-xl font-bold text-amber-900 mb-3">Clube de Benefícios</h3>
+                <p className="text-amber-800">
                   Descontos exclusivos, programa de fidelidade que converte seus gastos em pontos 
                   e prêmios para você e seus entes queridos
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="border-none shadow-xl hover:shadow-2xl transition-all">
+            <Card className="border-2 border-amber-200 shadow-xl hover:shadow-2xl transition-all">
               <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Users className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-xl font-bold mb-3">Aplicativo Localizador</h3>
-                <p className="text-gray-600">
+                <h3 className="text-xl font-bold text-amber-900 mb-3">Aplicativo Localizador</h3>
+                <p className="text-amber-800">
                   O primeiro app do mundo exclusivo para TODO o ramo da estética! 
                   Mais de 64 categorias de serviços, profissionais e produtos
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="border-none shadow-xl hover:shadow-2xl transition-all">
+            <Card className="border-2 border-amber-200 shadow-xl hover:shadow-2xl transition-all">
               <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-yellow-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Target className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-xl font-bold mb-3">Agendamento Online</h3>
-                <p className="text-gray-600">
+                <h3 className="text-xl font-bold text-amber-900 mb-3">Agendamento Online</h3>
+                <p className="text-amber-800">
                   Serviço de teleatendimento para agendar, tirar dúvidas sobre tratamentos, 
                   baixar pontos e até teleconsulta com especialistas
                 </p>
@@ -256,8 +267,8 @@ export default function SobreNos() {
             </Card>
           </div>
 
-          {/* Statistics */}
-          <Card className="border-none shadow-2xl bg-gradient-to-r from-pink-600 to-rose-600 text-white">
+          {/* Statistics - ATUALIZADO COM CORES */}
+          <Card className="border-none shadow-2xl bg-gradient-to-r from-amber-600 to-yellow-600 text-white">
             <CardContent className="p-12">
               <h2 className="text-3xl font-bold text-center mb-12">
                 Clube da Beleza em Números
@@ -286,23 +297,23 @@ export default function SobreNos() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-br from-pink-50 to-rose-50">
+      <section className="py-20 bg-gradient-to-br from-amber-50 to-yellow-50">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+          <h2 className="text-3xl md:text-4xl font-bold text-amber-900 mb-6">
             Pronto para Transformar Sua Experiência com Beleza?
           </h2>
-          <p className="text-xl text-gray-600 mb-8">
+          <p className="text-xl text-amber-800 mb-8">
             Junte-se a milhares de pessoas que já fazem parte do Clube da Beleza
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to={createPageUrl("FaleConosco")}>
-              <Button size="lg" className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700">
+              <Button size="lg" className="bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 text-white">
                 Fale Conosco
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>
             <Link to={createPageUrl("Anuncios")}>
-              <Button size="lg" variant="outline">
+              <Button size="lg" variant="outline" className="border-amber-600 text-amber-600 hover:bg-amber-50">
                 Ver Profissionais
               </Button>
             </Link>

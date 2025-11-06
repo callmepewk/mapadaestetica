@@ -23,7 +23,7 @@ import { motion } from "framer-motion";
 
 const planosDisponiveis = {
   cobre: {
-    nome: "COBRE",
+    nome: "FREE",
     cor: "from-orange-400 to-amber-600",
     icone: Sparkles,
     beneficios: [
@@ -42,7 +42,7 @@ const planosDisponiveis = {
     }
   },
   prata: {
-    nome: "PRATA",
+    nome: "BÁSICO",
     cor: "from-gray-300 to-gray-500",
     icone: Star,
     beneficios: [
@@ -63,7 +63,7 @@ const planosDisponiveis = {
     }
   },
   ouro: {
-    nome: "OURO",
+    nome: "PRO",
     cor: "from-yellow-400 to-amber-500",
     icone: Crown,
     beneficios: [
@@ -75,7 +75,7 @@ const planosDisponiveis = {
       "Perfil premium com destaque dourado",
       "Suporte VIP",
       "Estatísticas completas",
-      "Selo Ouro Verificado",
+      "Selo PRO Verificado",
       "Aparece em posição privilegiada",
       "Galeria ampliada"
     ],
@@ -86,7 +86,7 @@ const planosDisponiveis = {
     }
   },
   diamante: {
-    nome: "DIAMANTE",
+    nome: "PRIME",
     cor: "from-blue-400 to-cyan-500",
     icone: Zap,
     beneficios: [
@@ -95,10 +95,10 @@ const planosDisponiveis = {
       "20 Tags premium",
       "21 dias de exposição",
       "Prioridade máxima nas buscas",
-      "Perfil diamante exclusivo",
+      "Perfil PRIME exclusivo",
       "Suporte VIP 24/7",
       "Relatórios profissionais completos",
-      "Selo Diamante Verificado",
+      "Selo PRIME Verificado",
       "Destaque na home",
       "Galeria ilimitada",
       "WhatsApp Business básico"
@@ -110,7 +110,7 @@ const planosDisponiveis = {
     }
   },
   platina: {
-    nome: "PLATINA",
+    nome: "DELUXE",
     cor: "from-purple-500 to-pink-600",
     icone: Crown,
     beneficios: [
@@ -126,7 +126,7 @@ const planosDisponiveis = {
       "Gerente de conta exclusivo",
       "Analytics profissional completo",
       "Marketing digital incluso",
-      "Selo Platina Premium",
+      "Selo DELUXE Premium",
       "Conteúdo patrocinado mensal",
       "Campanhas personalizadas"
     ],
@@ -172,11 +172,8 @@ export default function MeuPlano() {
   const planoInfo = planosDisponiveis[planoAtual];
   const IconeAtual = planoInfo.icone;
 
-  const planoNome = planoAtual === 'cobre' ? 'COBRE' :
-                   planoAtual === 'prata' ? 'PRATA' :
-                   planoAtual === 'ouro' ? 'OURO' :
-                   planoAtual === 'diamante' ? 'DIAMANTE' :
-                   planoAtual === 'platina' ? 'PLATINA' : 'COBRE';
+  // The planoNome logic is now simplified by directly using planoInfo.nome
+  const planoNome = planoInfo.nome;
 
   const outrosPlanos = Object.entries(planosDisponiveis).filter(([key]) => key !== planoAtual);
 

@@ -15,13 +15,13 @@ import DrBelezaPlanosModal from "../components/home/DrBelezaPlanosModal";
 
 const planos = [
   {
-    nome: "COBRE",
+    nome: "FREE",
     tipo: "cobre",
     preco: "Grátis",
     cor: "from-orange-400 to-amber-600",
     icone: Sparkles,
     destaque: false,
-    linkPagamento: null, // No Mercado Pago link for free plan
+    linkPagamento: null,
     limites: {
       especialidades: 1,
       anuncios: 1,
@@ -49,7 +49,7 @@ const planos = [
     ]
   },
   {
-    nome: "PRATA",
+    nome: "BÁSICO",
     tipo: "prata",
     preco: "R$ 99/mês",
     cor: "from-gray-300 to-gray-500",
@@ -85,7 +85,7 @@ const planos = [
     ]
   },
   {
-    nome: "OURO",
+    nome: "PRO",
     tipo: "ouro",
     preco: "R$ 197/mês",
     cor: "from-yellow-400 to-amber-500",
@@ -108,7 +108,7 @@ const planos = [
       "Perfil premium com destaque dourado",
       "Suporte VIP com chat direto",
       "Relatórios completos",
-      "Selo de Profissional Verificado Ouro",
+      "Selo de Profissional Verificado PRO",
       "Aparece em posição privilegiada",
       "Galeria de fotos ampliada"
     ],
@@ -122,7 +122,7 @@ const planos = [
     ]
   },
   {
-    nome: "DIAMANTE",
+    nome: "PRIME",
     tipo: "diamante",
     preco: "R$ 297/mês",
     cor: "from-blue-400 to-cyan-500",
@@ -142,10 +142,10 @@ const planos = [
       "20 Tags/palavras-chave premium",
       "21 dias de exposição por anúncio",
       "Prioridade máxima nas buscas",
-      "Perfil diamante com destaque exclusivo",
+      "Perfil PRIME com destaque exclusivo",
       "Suporte VIP 24/7",
       "Relatórios profissionais completos",
-      "Selo Diamante Verificado",
+      "Selo PRIME Verificado",
       "Destaque na home page",
       "Galeria de fotos e vídeos ilimitada",
       "Integração básica WhatsApp Business"
@@ -159,7 +159,7 @@ const planos = [
     ]
   },
   {
-    nome: "PLATINA",
+    nome: "DELUXE",
     tipo: "platina",
     preco: "R$ 997/mês",
     cor: "from-purple-500 to-pink-600",
@@ -186,7 +186,7 @@ const planos = [
       "Gerente de conta exclusivo",
       "Analytics profissional completo",
       "Marketing digital incluso",
-      "Selo Platina Premium Exclusivo",
+      "Selo DELUXE Premium Exclusivo",
       "Conteúdo patrocinado mensal",
       "Campanhas personalizadas"
     ],
