@@ -70,7 +70,9 @@ const tiposAnuncio = [
   { valor: "aluguel_produto", label: "Aluguel de Produto" },
   { valor: "aluguel_aparelho", label: "Aluguel de Aparelho" },
   { valor: "troca_produto", label: "Troca de Produto" },
-  { valor: "troca_aparelho", label: "Troca de Aparelho" }
+  { valor: "troca_aparelho", label: "Troca de Aparelho" },
+  { valor: "venda_moveis", label: "Venda de Móveis" },
+  { valor: "troca_moveis", label: "Troca de Móveis" }
 ];
 
 const faixasPreco = [
