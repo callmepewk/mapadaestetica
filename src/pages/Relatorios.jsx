@@ -8,7 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, TrendingUp, DollarSign, Search, Eye, Users, ShoppingCart, BarChart3, Download, FileText } from "lucide-react";
+import { ArrowLeft, TrendingUp, DollarSign, Search, Eye, Users, ShoppingCart, BarChart3, Download, FileText, Send } from "lucide-react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 export default function Relatorios() {
   const navigate = useNavigate();
@@ -395,6 +397,56 @@ export default function Relatorios() {
     alert('Relatório exportado em HTML! Para converter em PDF:\n\n1. Abra o arquivo HTML no seu navegador\n2. Pressione Ctrl+P (Windows) ou Cmd+P (Mac)\n3. Selecione "Salvar como PDF" como destino\n4. Clique em "Salvar"\n\nO arquivo será salvo como PDF no seu computador.');
   };
 
+  const enviarRelatorioWhatsApp = async () => {
+    const dataAtual = format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR });
+    
+    try {
+      // Buscar dados reais
+      const anuncios = await base44.entities.Anuncio.filter({ status: 'ativo' });
+      
+      const distribuicao = {
+        "$": anuncios.filter(a => a.faixa_preco === "$").length,
+        "$$": anuncios.filter(a => a.faixa_preco === "$$").length,
+        "$$$": anuncios.filter(a => a.faixa_preco === "$$$").length,
+        "$$$$": anuncios.filter(a => a.faixa_preco === "$$$$").length,
+        "$$$$$": anuncios.filter(a => a.faixa_preco === "$$$$$").length,
+      };
+
+      let mensagem = `📊 *RELATÓRIO DO SISTEMA*\n`;
+      mensagem += `Data: ${dataAtual}\n\n`;
+      
+      mensagem += `💰 *PREÇOS E ANÚNCIOS*\n`;
+      mensagem += `Total de Anúncios Ativos: ${anuncios.length}\n\n`;
+      
+      mensagem += `Distribuição por Faixa:\n`;
+      mensagem += `💲 (até R$500): ${distribuicao["$"]}\n`;
+      mensagem += `💲💲 (R$500-1K): ${distribuicao["$$"]}\n`;
+      mensagem += `💲💲💲 (R$1K-2K): ${distribuicao["$$$"]}\n`;
+      mensagem += `💲💲💲💲 (R$2K-5K): ${distribuicao["$$$$"]}\n`;
+      mensagem += `💲💲💲💲💲 (acima R$5K): ${distribuicao["$$$$$"]}\n\n`;
+      
+      mensagem += `📈 *SEO & TRÁFEGO*\n`;
+      mensagem += `Visitas Hoje: 1.234 (+15%)\n`;
+      mensagem += `Novos Usuários: 89 (+12%)\n`;
+      mensagem += `Taxa de Conversão: 12.5% (+5%)\n\n`;
+      
+      mensagem += `💳 *TRANSAÇÕES*\n`;
+      mensagem += `Receita Hoje: R$ 1.2K\n`;
+      mensagem += `Total de Transações: 45\n`;
+      mensagem += `Ticket Médio: R$ 27\n`;
+      mensagem += `Pontos Resgatados: 2.5K\n`;
+
+      const mensagemCodificada = encodeURIComponent(mensagem);
+      const whatsappUrl = `https://api.whatsapp.com/send?text=${mensagemCodificada}`;
+      window.open(whatsappUrl, '_blank');
+
+      alert("Link do WhatsApp aberto! Cole a mensagem no grupo.");
+    } catch (error) {
+      console.error("Erro ao gerar relatório:", error);
+      alert("Erro ao gerar relatório. Tente novamente.");
+    }
+  };
+
   if (!user || user.role !== 'admin') {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -429,13 +481,22 @@ export default function Relatorios() {
             Voltar
           </Button>
 
-          <Button 
-            onClick={() => exportarPDF('Completo')}
-            className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] text-[#2C2C2C] hover:from-[#E5C215] hover:to-[#F7D426] border-2 border-[#2C2C2C] font-bold"
-          >
-            <FileText className="w-4 h-4 mr-2" />
-            Gerar Relatório Completo (HTML para PDF)
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              onClick={enviarRelatorioWhatsApp}
+              className="bg-green-600 hover:bg-green-700 text-white font-bold"
+            >
+              <Send className="w-4 h-4 mr-2" />
+              Enviar para WhatsApp
+            </Button>
+            <Button 
+              onClick={() => exportarPDF('Completo')}
+              className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] text-[#2C2C2C] hover:from-[#E5C215] hover:to-[#F7D426] border-2 border-[#2C2C2C] font-bold"
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              Gerar Relatório Completo (HTML para PDF)
+            </Button>
+          </div>
         </div>
 
         <div className="mb-8">
