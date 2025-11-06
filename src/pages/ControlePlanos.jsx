@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent } from "@/components/ui/card";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -20,150 +23,300 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ArrowLeft, Search, Crown, Filter, Check, X, AlertCircle } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { createPageUrl } from "@/utils";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  CheckCircle,
+  Clock,
+  XCircle,
+  AlertCircle,
+  CreditCard,
+  User,
+  Calendar,
+  FileText,
+  Loader2,
+  Download,
+  Send,
+  Trash2,
+  X as XIcon
+} from "lucide-react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
-const planosDisponiveis = [
-  { value: "cobre", label: "COBRE", cor: "from-orange-500 to-amber-600" },
-  { value: "prata", label: "PRATA", cor: "from-gray-400 to-gray-600" },
-  { value: "ouro", label: "OURO", cor: "from-yellow-400 to-amber-500" },
-  { value: "diamante", label: "DIAMANTE", cor: "from-cyan-500 to-blue-600" },
-  { value: "platina", label: "PLATINA", cor: "from-purple-600 to-pink-600" }
-];
+const PLANOS_INFO = {
+  cobre: { nome: "Cobre", cor: "bg-orange-100 text-orange-800" },
+  prata: { nome: "Prata", cor: "bg-gray-100 text-gray-800" },
+  ouro: { nome: "Ouro", cor: "bg-yellow-100 text-yellow-800" },
+  diamante: { nome: "Diamante", cor: "bg-blue-100 text-blue-800" },
+  platina: { nome: "Platina", cor: "bg-purple-100 text-purple-800" }
+};
+
+const STATUS_INFO = {
+  aguardando_confirmacao: { label: "Aguardando Confirmação", cor: "bg-yellow-100 text-yellow-800", icon: Clock },
+  confirmado_usuario: { label: "Confirmado pelo Usuário", cor: "bg-blue-100 text-blue-800", icon: CheckCircle },
+  pagamento_aprovado_mp: { label: "Pagamento Aprovado", cor: "bg-green-100 text-green-800", icon: CheckCircle },
+  pagamento_pendente_mp: { label: "Pagamento Pendente", cor: "bg-orange-100 text-orange-800", icon: Clock },
+  pagamento_rejeitado_mp: { label: "Pagamento Rejeitado", cor: "bg-red-100 text-red-800", icon: XCircle },
+  ativado_admin: { label: "Ativado", cor: "bg-green-100 text-green-800", icon: CheckCircle },
+  cancelado: { label: "Cancelado", cor: "bg-gray-100 text-gray-800", icon: XCircle }
+};
 
 export default function ControlePlanos() {
-  const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const [busca, setBusca] = useState("");
-  const [filtroPlano, setFiltroPlano] = useState("todos");
-  const [filtroStatus, setFiltroStatus] = useState("todos");
-  const [alterandoPlano, setAlterandoPlano] = useState(null);
-  const [sucessoMsg, setSucessoMsg] = useState("");
+  const [solicitacaoSelecionada, setSolicitacaoSelecionada] = useState(null);
+  const [mostrarModalAtivar, setMostrarModalAtivar] = useState(false);
+  const [observacoes, setObservacoes] = useState("");
+  const [processando, setProcessando] = useState(false);
+  const [erro, setErro] = useState(null);
+  const [sucesso, setSucesso] = useState(null);
+  const [abaSelecionada, setAbaSelecionada] = useState("solicitacoes");
+  const [buscaProfissional, setBuscaProfissional] = useState("");
+  const [enviandoWhatsApp, setEnviandoWhatsApp] = useState(false);
+
+  const queryClient = useQueryClient();
 
   useEffect(() => {
-    const checkAuth = async () => {
+    const fetchUser = async () => {
       try {
         const userData = await base44.auth.me();
-        setUser(userData);
-        
-        // Verificar se é admin
         if (userData.role !== 'admin') {
-          navigate(createPageUrl("Inicio"));
+          window.location.href = '/';
+          return;
         }
-      } catch {
-        navigate(createPageUrl("Inicio"));
+        setUser(userData);
+      } catch (error) {
+        base44.auth.redirectToLogin(window.location.pathname);
       }
     };
-    checkAuth();
-  }, [navigate]);
+    fetchUser();
+  }, []);
 
-  // Buscar solicitações de ativação
-  const { data: solicitacoes = [], isLoading, refetch } = useQuery({
-    queryKey: ['solicitacoes-planos'],
-    queryFn: async () => {
-      const todas = await base44.entities.SolicitacaoAtivacaoPlano.list('-created_date', 100);
-      return todas;
-    },
-    enabled: !!user?.role && user.role === 'admin',
+  const { data: solicitacoes = [], isLoading: loadingSolicitacoes } = useQuery({
+    queryKey: ['solicitacoes-plano'],
+    queryFn: () => base44.entities.SolicitacaoAtivacaoPlano.list('-created_date', 50),
+    enabled: !!user,
   });
 
-  // Buscar todos os usuários profissionais
-  const { data: profissionais = [] } = useQuery({
-    queryKey: ['profissionais-todos'],
+  const { data: usuarios = [], isLoading: loadingUsuarios } = useQuery({
+    queryKey: ['usuarios-profissionais'],
     queryFn: async () => {
-      const users = await base44.entities.User.list('', 500);
-      return users.filter(u => u.tipo_usuario === 'profissional');
+      const allUsers = await base44.entities.User.list('-created_date', 500);
+      return allUsers.filter(u => u.tipo_usuario === 'profissional');
     },
-    enabled: !!user?.role && user.role === 'admin',
+    enabled: !!user,
   });
 
-  const handleAlterarPlano = async (usuarioEmail, novoPlano) => {
-    const confirma = window.confirm(
-      `Confirmar alteração de plano?\n\nUsuário: ${usuarioEmail}\nNovo plano: ${novoPlano.toUpperCase()}\n\nEsta ação não pode ser desfeita.`
-    );
-
-    if (!confirma) return;
-
-    try {
-      setAlterandoPlano(usuarioEmail);
-      
-      // Atualizar o plano do usuário
-      const usuarios = await base44.entities.User.filter({ email: usuarioEmail });
-      if (usuarios.length > 0) {
-        await base44.entities.User.update(usuarios[0].id, {
-          plano_ativo: novoPlano,
-          data_adesao_plano: new Date().toISOString().split('T')[0]
-        });
-        
-        setSucessoMsg(`✅ Plano de ${usuarioEmail} alterado para ${novoPlano.toUpperCase()} com sucesso!`);
-        setTimeout(() => setSucessoMsg(""), 5000);
-        refetch();
-      }
-    } catch (error) {
-      console.error("Erro ao alterar plano:", error);
-      alert("Erro ao alterar plano. Tente novamente.");
-    } finally {
-      setAlterandoPlano(null);
+  const deletarSolicitacaoMutation = useMutation({
+    mutationFn: (id) => base44.entities.SolicitacaoAtivacaoPlano.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['solicitacoes-plano'] });
+      setSucesso("Solicitação excluída com sucesso!");
+      setTimeout(() => setSucesso(null), 3000);
+    },
+    onError: (error) => {
+      console.error("Erro ao excluir:", error);
+      setErro("Erro ao excluir solicitação");
+      setTimeout(() => setErro(null), 3000);
     }
-  };
+  });
 
-  const handleMarcarComoAtivado = async (solicitacaoId, usuarioEmail, planoSolicitado) => {
-    const confirma = window.confirm(
-      `Ativar plano ${planoSolicitado.toUpperCase()} para ${usuarioEmail}?`
-    );
-
-    if (!confirma) return;
-
-    try {
-      // Atualizar solicitação
+  const ativarPlanoMutation = useMutation({
+    mutationFn: async ({ usuarioEmail, plano, solicitacaoId }) => {
+      await base44.auth.updateUser(usuarioEmail, { plano_ativo: plano });
+      
       await base44.entities.SolicitacaoAtivacaoPlano.update(solicitacaoId, {
-        status: 'ativado_admin',
-        data_ativacao: new Date().toISOString()
+        status: "ativado_admin",
+        data_ativacao: new Date().toISOString(),
+        observacoes: observacoes
       });
 
-      // Atualizar plano do usuário
-      await handleAlterarPlano(usuarioEmail, planoSolicitado);
-    } catch (error) {
+      await base44.integrations.Core.SendEmail({
+        to: usuarioEmail,
+        subject: "Plano Ativado - Mapa da Estética",
+        body: `Olá! Seu plano ${PLANOS_INFO[plano].nome} foi ativado com sucesso! 🎉\n\nVocê já pode aproveitar todos os benefícios.\n\nObrigado por fazer parte do Mapa da Estética!`
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['solicitacoes-plano'] });
+      queryClient.invalidateQueries({ queryKey: ['usuarios-profissionais'] });
+      setMostrarModalAtivar(false);
+      setSolicitacaoSelecionada(null);
+      setObservacoes("");
+      setSucesso("Plano ativado e email enviado com sucesso!");
+      setTimeout(() => setSucesso(null), 3000);
+    },
+    onError: (error) => {
       console.error("Erro ao ativar plano:", error);
-      alert("Erro ao ativar plano. Tente novamente.");
+      setErro("Erro ao ativar plano. Tente novamente.");
+      setTimeout(() => setErro(null), 5000);
+    }
+  });
+
+  const handleAtivarPlano = async () => {
+    if (!solicitacaoSelecionada) return;
+    setProcessando(true);
+    try {
+      await ativarPlanoMutation.mutateAsync({
+        usuarioEmail: solicitacaoSelecionada.usuario_email,
+        plano: solicitacaoSelecionada.plano_solicitado,
+        solicitacaoId: solicitacaoSelecionada.id
+      });
+    } finally {
+      setProcessando(false);
     }
   };
 
-  // Filtrar dados
-  const solicitacoesFiltradas = solicitacoes.filter(sol => {
-    const matchBusca = !busca || 
-      sol.usuario_email?.toLowerCase().includes(busca.toLowerCase()) ||
-      sol.usuario_nome?.toLowerCase().includes(busca.toLowerCase());
-    
-    const matchStatus = filtroStatus === "todos" || sol.status === filtroStatus;
-    
-    return matchBusca && matchStatus;
-  });
+  const handleExcluirSolicitacao = (solicitacao) => {
+    if (confirm(`Tem certeza que deseja excluir a solicitação de ${solicitacao.usuario_nome}?`)) {
+      deletarSolicitacaoMutation.mutate(solicitacao.id);
+    }
+  };
 
-  const profissionaisFiltrados = profissionais.filter(prof => {
-    const matchBusca = !busca ||
-      prof.email?.toLowerCase().includes(busca.toLowerCase()) ||
-      prof.full_name?.toLowerCase().includes(busca.toLowerCase()) ||
-      prof.telefone?.includes(busca);
+  const exportarSolicitacoesPDF = () => {
+    const doc = new jsPDF();
     
-    const matchPlano = filtroPlano === "todos" || prof.plano_ativo === filtroPlano;
+    doc.setFontSize(18);
+    doc.text("Solicitações de Planos - Mapa da Estética", 14, 20);
     
-    return matchBusca && matchPlano;
-  });
+    doc.setFontSize(10);
+    doc.text(`Gerado em: ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR })}`, 14, 28);
+    doc.text(`Total: ${solicitacoes.length} solicitações`, 14, 34);
 
-  if (!user || user.role !== 'admin') {
+    const tableData = solicitacoes.map(sol => [
+      sol.usuario_nome,
+      sol.usuario_email,
+      PLANOS_INFO[sol.plano_solicitado]?.nome || sol.plano_solicitado,
+      STATUS_INFO[sol.status]?.label || sol.status,
+      sol.data_solicitacao ? format(new Date(sol.data_solicitacao), "dd/MM/yyyy", { locale: ptBR }) : "-"
+    ]);
+
+    doc.autoTable({
+      startY: 40,
+      head: [['Nome', 'Email', 'Plano', 'Status', 'Data']],
+      body: tableData,
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [247, 212, 38] },
+    });
+
+    doc.save(`solicitacoes-planos-${format(new Date(), "yyyy-MM-dd")}.pdf`);
+  };
+
+  const exportarProfissionaisPDF = () => {
+    const doc = new jsPDF();
+    
+    doc.setFontSize(18);
+    doc.text("Lista de Profissionais - Mapa da Estética", 14, 20);
+    
+    doc.setFontSize(10);
+    doc.text(`Gerado em: ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR })}`, 14, 28);
+    doc.text(`Total: ${usuariosFiltrados.length} profissionais`, 14, 34);
+
+    const tableData = usuariosFiltrados.map(user => [
+      user.full_name,
+      user.email,
+      user.telefone || "-",
+      `${user.cidade || ""} - ${user.estado || ""}`,
+      PLANOS_INFO[user.plano_ativo]?.nome || "Cobre"
+    ]);
+
+    doc.autoTable({
+      startY: 40,
+      head: [['Nome', 'Email', 'Telefone', 'Localização', 'Plano']],
+      body: tableData,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [247, 212, 38] },
+    });
+
+    doc.save(`profissionais-${format(new Date(), "yyyy-MM-dd")}.pdf`);
+  };
+
+  const enviarRelatorioWhatsApp = async () => {
+    setEnviandoWhatsApp(true);
+    
+    try {
+      const solicitacoesPendentes = solicitacoes.filter(s => 
+        s.status === 'aguardando_confirmacao' || 
+        s.status === 'confirmado_usuario' ||
+        s.status === 'pagamento_pendente_mp'
+      );
+
+      let mensagemSolicitacoes = `📋 *SOLICITAÇÕES DE PLANOS*\n`;
+      mensagemSolicitacoes += `Data: ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR })}\n`;
+      mensagemSolicitacoes += `Total de Solicitações: ${solicitacoes.length}\n`;
+      mensagemSolicitacoes += `Pendentes: ${solicitacoesPendentes.length}\n\n`;
+
+      if (solicitacoesPendentes.length > 0) {
+        mensagemSolicitacoes += `*🔔 SOLICITAÇÕES PENDENTES:*\n\n`;
+        solicitacoesPendentes.forEach((sol, i) => {
+          mensagemSolicitacoes += `${i + 1}. ${sol.usuario_nome}\n`;
+          mensagemSolicitacoes += `   📧 ${sol.usuario_email}\n`;
+          mensagemSolicitacoes += `   💎 Plano: ${PLANOS_INFO[sol.plano_solicitado]?.nome}\n`;
+          mensagemSolicitacoes += `   ⏰ Status: ${STATUS_INFO[sol.status]?.label}\n\n`;
+        });
+      }
+
+      const solicitacoesAtivadas = solicitacoes.filter(s => s.status === 'ativado_admin');
+      if (solicitacoesAtivadas.length > 0) {
+        mensagemSolicitacoes += `\n*✅ ATIVADAS (${solicitacoesAtivadas.length}):*\n`;
+        solicitacoesAtivadas.forEach((sol, i) => {
+          mensagemSolicitacoes += `${i + 1}. ${sol.usuario_nome} - ${PLANOS_INFO[sol.plano_solicitado]?.nome}\n`;
+        });
+      }
+
+      let mensagemProfissionais = `\n\n👥 *LISTA DE PROFISSIONAIS*\n`;
+      mensagemProfissionais += `Total: ${usuarios.length} profissionais\n\n`;
+
+      const porPlano = {
+        cobre: usuarios.filter(u => u.plano_ativo === 'cobre' || !u.plano_ativo).length,
+        prata: usuarios.filter(u => u.plano_ativo === 'prata').length,
+        ouro: usuarios.filter(u => u.plano_ativo === 'ouro').length,
+        diamante: usuarios.filter(u => u.plano_ativo === 'diamante').length,
+        platina: usuarios.filter(u => u.plano_ativo === 'platina').length,
+      };
+
+      mensagemProfissionais += `*Distribuição por Plano:*\n`;
+      mensagemProfissionais += `🥉 Cobre: ${porPlano.cobre}\n`;
+      mensagemProfissionais += `🥈 Prata: ${porPlano.prata}\n`;
+      mensagemProfissionais += `🥇 Ouro: ${porPlano.ouro}\n`;
+      mensagemProfissionais += `💎 Diamante: ${porPlano.diamante}\n`;
+      mensagemProfissionais += `👑 Platina: ${porPlano.platina}\n`;
+
+      const mensagemCompleta = mensagemSolicitacoes + mensagemProfissionais;
+
+      await base44.integrations.Core.SendEmail({
+        to: "pedro_hbfreitas@hotmail.com",
+        subject: `📊 Relatório Semanal de Planos - ${format(new Date(), "dd/MM/yyyy")}`,
+        body: mensagemCompleta
+      });
+
+      setSucesso("Relatório enviado por email com sucesso! (WhatsApp requer configuração manual)");
+      
+      const whatsappUrl = `https://chat.whatsapp.com/Ln4ZWIdmFd53acNSm4mayz`;
+      window.open(whatsappUrl, '_blank');
+      
+    } catch (error) {
+      console.error("Erro ao enviar relatório:", error);
+      setErro("Erro ao gerar relatório");
+    } finally {
+      setEnviandoWhatsApp(false);
+      setTimeout(() => {
+        setSucesso(null);
+        setErro(null);
+      }, 5000);
+    }
+  };
+
+  const usuariosFiltrados = usuarios.filter(u => 
+    !buscaProfissional || 
+    u.full_name?.toLowerCase().includes(buscaProfissional.toLowerCase()) ||
+    u.email?.toLowerCase().includes(buscaProfissional.toLowerCase()) ||
+    u.cidade?.toLowerCase().includes(buscaProfissional.toLowerCase())
+  );
+
+  if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold mb-2">Acesso Negado</h2>
-          <p className="text-gray-600 mb-4">Apenas administradores podem acessar esta página.</p>
-          <Button onClick={() => navigate(createPageUrl("Inicio"))}>
-            Voltar ao Início
-          </Button>
-        </div>
+        <Loader2 className="w-8 h-8 animate-spin text-pink-600" />
       </div>
     );
   }
@@ -171,236 +324,342 @@ export default function ControlePlanos() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
       <div className="max-w-7xl mx-auto px-4">
-        {/* Header */}
-        <div className="mb-6">
-          <Button
-            variant="ghost"
-            onClick={() => navigate(createPageUrl("Inicio"))}
-            className="mb-4"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Voltar
-          </Button>
-
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Controle de Planos
-              </h1>
-              <p className="text-gray-600">
-                Gerencie planos e ativações de usuários
-              </p>
-            </div>
-            <Badge className="bg-purple-600 text-white text-lg px-4 py-2">
-              <Crown className="w-5 h-5 mr-2" />
-              Admin
-            </Badge>
-          </div>
+        <div className="mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+            Controle de Planos
+          </h1>
+          <p className="text-gray-600">Gerencie solicitações e planos ativos dos profissionais</p>
         </div>
 
-        {/* Mensagem de Sucesso */}
-        {sucessoMsg && (
-          <Alert className="mb-6 bg-green-50 border-green-200">
-            <Check className="h-4 w-4 text-green-600" />
-            <AlertDescription className="text-green-800">
-              {sucessoMsg}
-            </AlertDescription>
+        {erro && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{erro}</AlertDescription>
           </Alert>
         )}
 
-        {/* Filtros */}
-        <Card className="mb-6 border-none shadow-lg">
-          <CardContent className="p-6">
-            <div className="grid md:grid-cols-3 gap-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
-                <Input
-                  placeholder="Buscar por nome, email ou telefone..."
-                  value={busca}
-                  onChange={(e) => setBusca(e.target.value)}
-                  className="pl-10"
-                />
+        {sucesso && (
+          <Alert className="mb-6 bg-green-50 border-green-200">
+            <CheckCircle className="h-4 w-4 text-green-600" />
+            <AlertDescription className="text-green-800">{sucesso}</AlertDescription>
+          </Alert>
+        )}
+
+        <div className="flex gap-4 mb-6">
+          <Button
+            onClick={() => setAbaSelecionada("solicitacoes")}
+            variant={abaSelecionada === "solicitacoes" ? "default" : "outline"}
+            className={abaSelecionada === "solicitacoes" ? "bg-pink-600 hover:bg-pink-700" : ""}
+          >
+            <FileText className="w-4 h-4 mr-2" />
+            Solicitações ({solicitacoes.length})
+          </Button>
+          <Button
+            onClick={() => setAbaSelecionada("profissionais")}
+            variant={abaSelecionada === "profissionais" ? "default" : "outline"}
+            className={abaSelecionada === "profissionais" ? "bg-pink-600 hover:bg-pink-700" : ""}
+          >
+            <User className="w-4 h-4 mr-2" />
+            Profissionais ({usuarios.length})
+          </Button>
+        </div>
+
+        {abaSelecionada === "solicitacoes" && (
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Solicitações de Ativação de Planos</CardTitle>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={exportarSolicitacoesPDF}
+                    variant="outline"
+                    size="sm"
+                    disabled={solicitacoes.length === 0}
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Exportar PDF
+                  </Button>
+                  <Button
+                    onClick={enviarRelatorioWhatsApp}
+                    variant="outline"
+                    size="sm"
+                    disabled={enviandoWhatsApp}
+                    className="border-green-300 text-green-700 hover:bg-green-50"
+                  >
+                    {enviandoWhatsApp ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Send className="w-4 h-4 mr-2" />
+                    )}
+                    Enviar Relatório
+                  </Button>
+                </div>
               </div>
-
-              <Select value={filtroPlano} onValueChange={setFiltroPlano}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Filtrar por plano" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos os Planos</SelectItem>
-                  {planosDisponiveis.map(p => (
-                    <SelectItem key={p.value} value={p.value}>
-                      {p.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select value={filtroStatus} onValueChange={setFiltroStatus}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Filtrar por status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos os Status</SelectItem>
-                  <SelectItem value="aguardando_confirmacao">Aguardando Confirmação</SelectItem>
-                  <SelectItem value="confirmado_usuario">Confirmado pelo Usuário</SelectItem>
-                  <SelectItem value="ativado_admin">Ativado</SelectItem>
-                  <SelectItem value="cancelado">Cancelado</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Tabs */}
-        <div className="mb-6 flex gap-2">
-          <Button
-            variant="outline"
-            className="border-2"
-            onClick={() => document.getElementById('solicitacoes').scrollIntoView({ behavior: 'smooth' })}
-          >
-            Solicitações Pendentes ({solicitacoesFiltradas.filter(s => s.status !== 'ativado_admin').length})
-          </Button>
-          <Button
-            variant="outline"
-            className="border-2"
-            onClick={() => document.getElementById('profissionais').scrollIntoView({ behavior: 'smooth' })}
-          >
-            Todos os Profissionais ({profissionaisFiltrados.length})
-          </Button>
-        </div>
-
-        {/* Solicitações de Ativação */}
-        <div id="solicitacoes" className="mb-12">
-          <h2 className="text-2xl font-bold mb-4">Solicitações de Ativação</h2>
-          <Card className="border-none shadow-lg overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-gradient-to-r from-purple-600 to-pink-600">
-                  <TableHead className="text-white">Data</TableHead>
-                  <TableHead className="text-white">Usuário</TableHead>
-                  <TableHead className="text-white">Email</TableHead>
-                  <TableHead className="text-white">Plano</TableHead>
-                  <TableHead className="text-white">Status</TableHead>
-                  <TableHead className="text-white text-center">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8">
-                      Carregando...
-                    </TableCell>
-                  </TableRow>
-                ) : solicitacoesFiltradas.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                      Nenhuma solicitação encontrada
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  solicitacoesFiltradas.map((sol) => (
-                    <TableRow key={sol.id}>
-                      <TableCell>
-                        {new Date(sol.created_date).toLocaleDateString('pt-BR')}
-                      </TableCell>
-                      <TableCell className="font-medium">{sol.usuario_nome}</TableCell>
-                      <TableCell>{sol.usuario_email}</TableCell>
-                      <TableCell>
-                        <Badge className={`bg-gradient-to-r ${planosDisponiveis.find(p => p.value === sol.plano_solicitado)?.cor} text-white`}>
-                          {sol.plano_solicitado?.toUpperCase()}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={
-                          sol.status === 'ativado_admin' ? 'default' :
-                          sol.status === 'confirmado_usuario' ? 'secondary' :
-                          sol.status === 'cancelado' ? 'destructive' : 'outline'
-                        }>
-                          {sol.status === 'aguardando_confirmacao' && 'Aguardando'}
-                          {sol.status === 'confirmado_usuario' && 'Confirmado'}
-                          {sol.status === 'ativado_admin' && 'Ativado'}
-                          {sol.status === 'cancelado' && 'Cancelado'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {sol.status !== 'ativado_admin' && sol.status !== 'cancelado' && (
-                          <Button
-                            size="sm"
-                            onClick={() => handleMarcarComoAtivado(sol.id, sol.usuario_email, sol.plano_solicitado)}
-                            className="bg-green-600 hover:bg-green-700"
-                          >
-                            <Check className="w-4 h-4 mr-1" />
-                            Ativar
-                          </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+            </CardHeader>
+            <CardContent>
+              {loadingSolicitacoes ? (
+                <div className="flex justify-center py-12">
+                  <Loader2 className="w-8 h-8 animate-spin text-pink-600" />
+                </div>
+              ) : solicitacoes.length === 0 ? (
+                <div className="text-center py-12">
+                  <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600">Nenhuma solicitação encontrada</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Profissional</TableHead>
+                        <TableHead>Plano</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Data Solicitação</TableHead>
+                        <TableHead className="text-right">Ações</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {solicitacoes.map((solicitacao) => {
+                        const StatusIcon = STATUS_INFO[solicitacao.status]?.icon || Clock;
+                        return (
+                          <TableRow key={solicitacao.id}>
+                            <TableCell>
+                              <div>
+                                <p className="font-medium">{solicitacao.usuario_nome}</p>
+                                <p className="text-sm text-gray-500">{solicitacao.usuario_email}</p>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={PLANOS_INFO[solicitacao.plano_solicitado]?.cor}>
+                                <CreditCard className="w-3 h-3 mr-1" />
+                                {PLANOS_INFO[solicitacao.plano_solicitado]?.nome}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={STATUS_INFO[solicitacao.status]?.cor}>
+                                <StatusIcon className="w-3 h-3 mr-1" />
+                                {STATUS_INFO[solicitacao.status]?.label}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2 text-sm">
+                                <Calendar className="w-4 h-4 text-gray-400" />
+                                {solicitacao.data_solicitacao
+                                  ? format(new Date(solicitacao.data_solicitacao), "dd/MM/yyyy HH:mm", { locale: ptBR })
+                                  : "-"}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex items-center justify-end gap-2">
+                                {solicitacao.status !== "ativado_admin" && (
+                                  <Button
+                                    onClick={() => {
+                                      setSolicitacaoSelecionada(solicitacao);
+                                      setMostrarModalAtivar(true);
+                                    }}
+                                    size="sm"
+                                    className="bg-green-600 hover:bg-green-700"
+                                  >
+                                    <CheckCircle className="w-4 h-4 mr-1" />
+                                    Ativar
+                                  </Button>
+                                )}
+                                <Button
+                                  onClick={() => handleExcluirSolicitacao(solicitacao)}
+                                  size="sm"
+                                  variant="outline"
+                                  className="border-red-300 text-red-700 hover:bg-red-50"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
           </Card>
-        </div>
+        )}
 
-        {/* Lista de Todos os Profissionais */}
-        <div id="profissionais">
-          <h2 className="text-2xl font-bold mb-4">Todos os Profissionais</h2>
-          <Card className="border-none shadow-lg overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-gradient-to-r from-blue-600 to-cyan-600">
-                  <TableHead className="text-white">Nome</TableHead>
-                  <TableHead className="text-white">Email</TableHead>
-                  <TableHead className="text-white">Telefone</TableHead>
-                  <TableHead className="text-white">Plano Atual</TableHead>
-                  <TableHead className="text-white text-center">Alterar Plano</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {profissionaisFiltrados.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8 text-gray-500">
-                      Nenhum profissional encontrado
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  profissionaisFiltrados.map((prof) => (
-                    <TableRow key={prof.id}>
-                      <TableCell className="font-medium">{prof.full_name}</TableCell>
-                      <TableCell>{prof.email}</TableCell>
-                      <TableCell>{prof.telefone || 'Não informado'}</TableCell>
-                      <TableCell>
-                        <Badge className={`bg-gradient-to-r ${planosDisponiveis.find(p => p.value === prof.plano_ativo)?.cor} text-white`}>
-                          {prof.plano_ativo?.toUpperCase() || 'COBRE'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Select
-                          value={prof.plano_ativo || 'cobre'}
-                          onValueChange={(novoPlano) => handleAlterarPlano(prof.email, novoPlano)}
-                          disabled={alterandoPlano === prof.email}
-                        >
-                          <SelectTrigger className="w-40">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {planosDisponiveis.map(p => (
-                              <SelectItem key={p.value} value={p.value}>
-                                {p.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+        {abaSelecionada === "profissionais" && (
+          <Card>
+            <CardHeader>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <CardTitle>Lista de Profissionais</CardTitle>
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                  <Input
+                    placeholder="Buscar profissional..."
+                    value={buscaProfissional}
+                    onChange={(e) => setBuscaProfissional(e.target.value)}
+                    className="w-full sm:w-64"
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={exportarProfissionaisPDF}
+                      variant="outline"
+                      size="sm"
+                      disabled={usuarios.length === 0}
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Exportar PDF
+                    </Button>
+                    <Button
+                      onClick={enviarRelatorioWhatsApp}
+                      variant="outline"
+                      size="sm"
+                      disabled={enviandoWhatsApp}
+                      className="border-green-300 text-green-700 hover:bg-green-50"
+                    >
+                      {enviandoWhatsApp ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Send className="w-4 h-4 mr-2" />
+                      )}
+                      Enviar
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {loadingUsuarios ? (
+                <div className="flex justify-center py-12">
+                  <Loader2 className="w-8 h-8 animate-spin text-pink-600" />
+                </div>
+              ) : usuariosFiltrados.length === 0 ? (
+                <div className="text-center py-12">
+                  <User className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600">Nenhum profissional encontrado</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Nome</TableHead>
+                        <TableHead>Contato</TableHead>
+                        <TableHead>Localização</TableHead>
+                        <TableHead>Plano Ativo</TableHead>
+                        <TableHead>Cadastro</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {usuariosFiltrados.map((usuario) => (
+                        <TableRow key={usuario.id}>
+                          <TableCell>
+                            <div>
+                              <p className="font-medium">{usuario.full_name}</p>
+                              <p className="text-sm text-gray-500">{usuario.email}</p>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm">
+                              <p>{usuario.telefone || "-"}</p>
+                              {usuario.whatsapp && (
+                                <p className="text-green-600">WhatsApp: {usuario.whatsapp}</p>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm">
+                              <p>{usuario.cidade || "-"}</p>
+                              <p className="text-gray-500">{usuario.estado || "-"}</p>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={PLANOS_INFO[usuario.plano_ativo || 'cobre']?.cor}>
+                              {PLANOS_INFO[usuario.plano_ativo || 'cobre']?.nome}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={usuario.cadastro_completo ? "default" : "secondary"}>
+                              {usuario.cadastro_completo ? "Completo" : "Incompleto"}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
           </Card>
-        </div>
+        )}
       </div>
+
+      <Dialog open={mostrarModalAtivar} onOpenChange={setMostrarModalAtivar}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Ativar Plano</DialogTitle>
+            <DialogDescription>
+              Confirme a ativação do plano para {solicitacaoSelecionada?.usuario_nome}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">Profissional:</span>
+                <span className="font-medium">{solicitacaoSelecionada?.usuario_nome}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">Email:</span>
+                <span className="font-medium">{solicitacaoSelecionada?.usuario_email}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">Plano:</span>
+                <Badge className={PLANOS_INFO[solicitacaoSelecionada?.plano_solicitado]?.cor}>
+                  {PLANOS_INFO[solicitacaoSelecionada?.plano_solicitado]?.nome}
+                </Badge>
+              </div>
+            </div>
+
+            <div>
+              <Label>Observações (opcional)</Label>
+              <Input
+                value={observacoes}
+                onChange={(e) => setObservacoes(e.target.value)}
+                placeholder="Adicione observações sobre esta ativação..."
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setMostrarModalAtivar(false);
+                setSolicitacaoSelecionada(null);
+                setObservacoes("");
+              }}
+              disabled={processando}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleAtivarPlano}
+              disabled={processando}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {processando ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Processando...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Confirmar Ativação
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
