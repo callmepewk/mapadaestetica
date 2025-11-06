@@ -8,6 +8,27 @@ import { Badge } from "@/components/ui/badge";
 import { MessageCircle, X, Send, Sparkles, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
+const perguntasSugeridas = {
+  paciente: [
+    "🔍 Como encontrar profissionais verificados?",
+    "💰 Qual o preço médio dos procedimentos?",
+    "📍 Quais profissionais estão próximos a mim?",
+    "💉 Como funciona o preenchimento facial?",
+    "✨ Quais são os tratamentos de pele mais indicados?",
+    "🌟 Como escolher um bom profissional?",
+    "📅 Como marcar uma consulta?"
+  ],
+  profissional: [
+    "📢 Como cadastrar meu anúncio?",
+    "⭐ Como verificar meu perfil profissional?",
+    "💎 Quais são os benefícios dos planos?",
+    "🚀 Como impulsionar meu anúncio?",
+    "📊 Como atrair mais clientes?",
+    "🎯 Como me destacar na plataforma?",
+    "💳 Como funciona o sistema de pontos?"
+  ]
+};
+
 export default function Chatbot({ user, onCompletarCadastro }) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
@@ -20,14 +41,21 @@ export default function Chatbot({ user, onCompletarCadastro }) {
   ]);
   const [inputMessage, setInputMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [mostrarSugestoes, setMostrarSugestoes] = useState(true);
 
-  const handleSendMessage = async () => {
-    if (!inputMessage.trim()) return;
+  const tipoPerguntasSugeridas = user?.tipo_usuario === 'profissional' 
+    ? perguntasSugeridas.profissional 
+    : perguntasSugeridas.paciente;
+
+  const handleSendMessage = async (mensagemTexto) => {
+    const messageToSend = mensagemTexto || inputMessage.trim();
+    
+    if (!messageToSend) return;
 
     // Verificar se usuário está logado
     if (!user) {
       setMessages(prev => [...prev, 
-        { type: "user", text: inputMessage },
+        { type: "user", text: messageToSend },
         { 
           type: "bot", 
           text: "Para usar o chat, você precisa fazer login ou criar uma conta gratuita! 🔐",
@@ -35,13 +63,14 @@ export default function Chatbot({ user, onCompletarCadastro }) {
         }
       ]);
       setInputMessage("");
+      setMostrarSugestoes(false);
       return;
     }
 
     // Verificar se cadastro está completo
     if (!user.cadastro_completo) {
       setMessages(prev => [...prev,
-        { type: "user", text: inputMessage },
+        { type: "user", text: messageToSend },
         {
           type: "bot",
           text: "Para usar o chat, você precisa completar seu cadastro primeiro! 📝",
@@ -49,12 +78,13 @@ export default function Chatbot({ user, onCompletarCadastro }) {
         }
       ]);
       setInputMessage("");
+      setMostrarSugestoes(false);
       return;
     }
 
-    const userMessage = inputMessage;
     setInputMessage("");
-    setMessages(prev => [...prev, { type: "user", text: userMessage }]);
+    setMostrarSugestoes(false);
+    setMessages(prev => [...prev, { type: "user", text: messageToSend }]);
     setLoading(true);
 
     try {
@@ -72,10 +102,11 @@ Sua missão: Ajudar o usuário com dúvidas sobre:
 2. Encontrar profissionais qualificados
 3. Navegar pela plataforma
 4. Tirar dúvidas sobre tratamentos
+${user.tipo_usuario === 'profissional' ? '5. Cadastrar e gerenciar anúncios\n6. Planos e recursos para profissionais\n7. Dicas para atrair mais clientes' : ''}
 
 Seja amigável, profissional e sempre incentive o usuário a consultar profissionais qualificados.
 
-Pergunta do usuário: ${userMessage}
+Pergunta do usuário: ${messageToSend}
 
 Responda de forma clara, objetiva e útil.`,
       });
@@ -89,6 +120,12 @@ Responda de forma clara, objetiva e útil.`,
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSugestaoClick = (sugestao) => {
+    // Remover emoji da sugestão
+    const perguntaLimpa = sugestao.replace(/^[^\s]+\s/, '');
+    handleSendMessage(perguntaLimpa);
   };
 
   const handleActionClick = (action) => {
@@ -254,6 +291,28 @@ Responda de forma clara, objetiva e útil.`,
                   </div>
                 ))}
 
+                {/* SUGESTÕES DE PERGUNTAS */}
+                {mostrarSugestoes && user && user.cadastro_completo && messages.length <= 1 && (
+                  <div className="space-y-3">
+                    <div className="text-center">
+                      <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+                        {user.tipo_usuario === 'profissional' ? '💼 Perguntas para Profissionais' : '💆‍♀️ Perguntas Frequentes'}
+                      </Badge>
+                    </div>
+                    <div className="grid grid-cols-1 gap-2">
+                      {tipoPerguntasSugeridas.map((sugestao, index) => (
+                        <button
+                          key={index}
+                          onClick={() => handleSugestaoClick(sugestao)}
+                          className="text-left p-3 rounded-lg bg-white border-2 border-gray-200 hover:border-[#F7D426] hover:bg-[#FFF9E6] transition-all text-sm shadow-sm"
+                        >
+                          {sugestao}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {loading && (
                   <div className="flex justify-start">
                     <div className="bg-white shadow-md rounded-2xl p-3">
@@ -279,7 +338,7 @@ Responda de forma clara, objetiva e útil.`,
                     disabled={!user || !user.cadastro_completo}
                   />
                   <Button
-                    onClick={handleSendMessage}
+                    onClick={() => handleSendMessage()}
                     disabled={loading || !inputMessage.trim() || !user || !user.cadastro_completo}
                     className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] hover:from-[#E5C215] hover:to-[#F7D426] text-[#2C2C2C] border-2 border-[#2C2C2C] w-11 h-11 p-0"
                     size="icon"
