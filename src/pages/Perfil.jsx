@@ -54,6 +54,7 @@ import {
   CreditCard, // New import for Planos Ativos
   Crown, // New import for Clube da Beleza
   Users, // New import for Patrocinador
+  Award, // Adicionado para especialização
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from 'date-fns';
@@ -103,6 +104,11 @@ export default function Perfil() {
           possui_ar_condicionado: userData.possui_ar_condicionado || false, // New professional field
           possui_estacionamento: userData.possui_estacionamento || false, // New professional field
           tem_google_negocios: userData.tem_google_negocios || false, // New professional field
+          formacao: userData.formacao || "", // NOVO
+          especializacao: userData.especializacao || "", // NOVO
+          tem_especializacao: userData.tem_especializacao || false, // NOVO
+          faz_parte_golden_doctors: userData.faz_parte_golden_doctors || false, // NOVO
+          quer_fazer_parte_golden_doctors: userData.quer_fazer_parte_golden_doctors || false, // NOVO
         });
       } catch (error) {
         navigate(createPageUrl("Inicio"));
@@ -185,12 +191,28 @@ export default function Perfil() {
 
   const salvarMutation = useMutation({ // Renamed from updatePerfilMutation
     mutationFn: async (data) => {
-      await base44.auth.updateMe(data);
+      // Verificar se deve marcar como profissional especializado
+      const profissionalEspecializado = !!(data.formacao && data.especializacao);
+
+      // Atualizar o perfil do usuário
+      await base44.auth.updateMe({
+        ...data,
+        profissional_especializado: profissionalEspecializado,
+        tem_especializacao: !!(data.especializacao)
+      });
+
+      // Se o profissional agora é especializado, atualizar todos os anúncios dele
+      if (profissionalEspecializado && user?.email) {
+        const anuncios = await base44.entities.Anuncio.filter({ created_by: user.email });
+        for (const anuncio of anuncios) {
+          await base44.entities.Anuncio.update(anuncio.id, { profissional_especializado: true });
+        }
+      }
     },
     onSuccess: async () => {
       const userData = await base44.auth.me();
       setUser(userData);
-      // Update formData with fresh user data, including new fields
+      // Update formData with fresh user data
       setFormData({
         full_name: userData.full_name || "",
         telefone: userData.telefone || "",
@@ -208,9 +230,15 @@ export default function Perfil() {
         possui_ar_condicionado: userData.possui_ar_condicionado || false,
         possui_estacionamento: userData.possui_estacionamento || false,
         tem_google_negocios: userData.tem_google_negocios || false,
+        formacao: userData.formacao || "",
+        especializacao: userData.especializacao || "",
+        tem_especializacao: userData.tem_especializacao || false,
+        faz_parte_golden_doctors: userData.faz_parte_golden_doctors || false,
+        quer_fazer_parte_golden_doctors: userData.quer_fazer_parte_golden_doctors || false,
       });
-      setEditando(false); // Exit edit mode
+      setEditando(false);
       queryClient.invalidateQueries(['user']);
+      queryClient.invalidateQueries(['meus-anuncios']);
     },
   });
 
@@ -254,6 +282,11 @@ export default function Perfil() {
       possui_ar_condicionado: user?.possui_ar_condicionado || false,
       possui_estacionamento: user?.possui_estacionamento || false,
       tem_google_negocios: user?.tem_google_negocios || false,
+      formacao: user?.formacao || "",
+      especializacao: user?.especializacao || "",
+      tem_especializacao: user?.tem_especializacao || false,
+      faz_parte_golden_doctors: user?.faz_parte_golden_doctors || false,
+      quer_fazer_parte_golden_doctors: user?.quer_fazer_parte_golden_doctors || false,
     });
   };
 
@@ -278,6 +311,11 @@ export default function Perfil() {
         possui_ar_condicionado: user?.possui_ar_condicionado || false,
         possui_estacionamento: user?.possui_estacionamento || false,
         tem_google_negocios: user?.tem_google_negocios || false,
+        formacao: user?.formacao || "",
+        especializacao: user?.especializacao || "",
+        tem_especializacao: user?.tem_especializacao || false,
+        faz_parte_golden_doctors: user?.faz_parte_golden_doctors || false,
+        quer_fazer_parte_golden_doctors: user?.quer_fazer_parte_golden_doctors || false,
       });
     }
   };
@@ -485,13 +523,30 @@ export default function Perfil() {
                           </div>
                         )}
 
-                        {isProfissional && (user.especialidade || user.tempo_formacao_anos > 0 || user.possui_clinica || user.possui_ar_condicionado || user.possui_estacionamento || user.tem_google_negocios) && (
+                        {/* Informações Profissionais - VIEW MODE */}
+                        {isProfissional && (user.formacao || user.especializacao || user.especialidade || user.tempo_formacao_anos > 0 || user.possui_clinica || user.possui_ar_condicionado || user.possui_estacionamento || user.tem_google_negocios || user.faz_parte_golden_doctors || user.quer_fazer_parte_golden_doctors) && (
                           <div className="pt-6 border-t mt-6">
                             <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
                               <Briefcase className="w-5 h-5 text-purple-600" />
                               Informações Profissionais
                             </h3>
                             <div className="space-y-3">
+                              {user.formacao && (
+                                <div className="flex items-start gap-2 text-sm">
+                                  <Shield className="w-4 h-4 text-purple-400 mt-0.5 flex-shrink-0" />
+                                  <div>
+                                    <span className="font-semibold">Formação:</span> {user.formacao}
+                                  </div>
+                                </div>
+                              )}
+                              {user.especializacao && (
+                                <div className="flex items-start gap-2 text-sm">
+                                  <Award className="w-4 h-4 text-purple-400 mt-0.5 flex-shrink-0" />
+                                  <div>
+                                    <span className="font-semibold">Especialização:</span> {user.especializacao}
+                                  </div>
+                                </div>
+                              )}
                               {user.especialidade && (
                                 <div className="flex items-center gap-2 text-sm">
                                   <Star className="w-4 h-4 text-gray-400" />
@@ -511,6 +566,37 @@ export default function Perfil() {
                                   {user.possui_ar_condicionado && <p className="text-sm">• Ar condicionado</p>}
                                   {user.possui_estacionamento && <p className="text-sm">• Estacionamento</p>}
                                   {user.tem_google_negocios && <p className="text-sm">• Tem Google Negócios</p>}
+                                </div>
+                              )}
+
+                              {/* NOVO: Golden Doctors */}
+                              {(user.faz_parte_golden_doctors || user.quer_fazer_parte_golden_doctors) && (
+                                <div className="mt-4 pt-4 border-t border-purple-200 bg-gradient-to-r from-yellow-50 to-amber-50 p-4 rounded-lg">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <Crown className="w-5 h-5 text-amber-600" />
+                                    <h4 className="font-bold text-amber-900">Golden Doctors</h4>
+                                  </div>
+                                  {user.faz_parte_golden_doctors ? (
+                                    <div className="flex items-center gap-2">
+                                      <CheckCircle className="w-5 h-5 text-green-600" />
+                                      <span className="text-sm font-semibold text-green-800">Membro Ativo do Clube</span>
+                                    </div>
+                                  ) : user.quer_fazer_parte_golden_doctors ? (
+                                    <div>
+                                      <p className="text-sm text-amber-800 mb-2">Interessado em fazer parte do Golden Doctors</p>
+                                      <Button
+                                        size="sm"
+                                        onClick={() => {
+                                          const mensagem = `Olá! Tenho interesse em fazer parte do Golden Doctors!\n\nNome: ${user.full_name}\nEmail: ${user.email}`;
+                                          window.open(`https://wa.me/5531972595643?text=${encodeURIComponent(mensagem)}`, '_blank');
+                                        }}
+                                        className="bg-amber-600 hover:bg-amber-700 text-white"
+                                      >
+                                        <Phone className="w-3 h-3 mr-2" />
+                                        Entrar em Contato
+                                      </Button>
+                                    </div>
+                                  ) : null}
                                 </div>
                               )}
                             </div>
@@ -655,7 +741,7 @@ export default function Perfil() {
                           </div>
                         )}
 
-                        {/* Informações Profissionais - PROFISSIONAIS */}
+                        {/* Informações Profissionais - EDIT MODE */}
                         {isProfissional && (
                           <div className="pt-6 border-t">
                             <h4 className="font-bold text-lg mb-4 flex items-center gap-2">
@@ -663,6 +749,54 @@ export default function Perfil() {
                               Informações Profissionais Adicionais
                             </h4>
                             <div className="space-y-4">
+                              {/* NOVO: Formação */}
+                              <div>
+                                <Label htmlFor="formacao" className="flex items-center gap-2">
+                                  <Shield className="w-4 h-4 text-purple-600" />
+                                  Formação Acadêmica
+                                </Label>
+                                <Input
+                                  id="formacao"
+                                  placeholder="Ex: Graduação em Estética e Cosmética pela USP"
+                                  value={formData.formacao || ""}
+                                  onChange={(e) => setFormData({ ...formData, formacao: e.target.value })}
+                                  className="mt-1"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Informe sua formação acadêmica principal
+                                </p>
+                              </div>
+
+                              {/* NOVO: Especialização */}
+                              <div>
+                                <Label htmlFor="especializacao" className="flex items-center gap-2">
+                                  <Award className="w-4 h-4 text-purple-600" />
+                                  Especialização
+                                </Label>
+                                <Input
+                                  id="especializacao"
+                                  placeholder="Ex: Pós-graduação em Dermatologia Estética"
+                                  value={formData.especializacao || ""}
+                                  onChange={(e) => setFormData({
+                                    ...formData,
+                                    especializacao: e.target.value,
+                                    tem_especializacao: e.target.value.length > 0
+                                  })}
+                                  className="mt-1"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Informe suas especializações (pós-graduação, MBA, cursos avançados)
+                                </p>
+                                {formData.formacao && formData.especializacao && (
+                                  <Alert className="mt-3 bg-purple-50 border-purple-200">
+                                    <Award className="h-4 w-4 text-purple-600" />
+                                    <AlertDescription className="text-purple-800 text-sm">
+                                      ⭐ <strong>Parabéns!</strong> Ao preencher formação e especialização, seus anúncios receberão o selo de <strong>"Profissional Especializado"</strong>!
+                                    </AlertDescription>
+                                  </Alert>
+                                )}
+                              </div>
+
                               <div>
                                 <Label htmlFor="tempo_formacao">Tempo de Formação (anos)</Label>
                                 <Input
@@ -718,6 +852,80 @@ export default function Perfil() {
                                     />
                                     <span className="text-sm">Tenho Google Negócios</span>
                                   </label>
+                                </div>
+                              </div>
+
+                              {/* NOVO: Golden Doctors */}
+                              <div className="pt-4 border-t">
+                                <div className="flex items-center gap-2 mb-3">
+                                  <Crown className="w-5 h-5 text-amber-600" />
+                                  <Label className="font-semibold text-lg">Golden Doctors</Label>
+                                </div>
+                                <p className="text-sm text-gray-600 mb-4">
+                                  Clube exclusivo da área médica da medicina estética com recursos e benefícios exclusivos
+                                </p>
+
+                                <div className="space-y-3">
+                                  <label className="flex items-start gap-3 cursor-pointer p-3 bg-amber-50 rounded-lg border-2 border-amber-200 hover:border-amber-400 transition-colors">
+                                    <input
+                                      type="checkbox"
+                                      checked={formData.faz_parte_golden_doctors || false}
+                                      onChange={(e) => setFormData({
+                                        ...formData,
+                                        faz_parte_golden_doctors: e.target.checked,
+                                        quer_fazer_parte_golden_doctors: e.target.checked ? false : formData.quer_fazer_parte_golden_doctors
+                                      })}
+                                      className="w-5 h-5 rounded mt-0.5"
+                                    />
+                                    <div>
+                                      <span className="text-sm font-semibold flex items-center gap-2">
+                                        <CheckCircle className="w-4 h-4 text-green-600" />
+                                        Já faço parte do Golden Doctors
+                                      </span>
+                                      <p className="text-xs text-gray-600 mt-1">Sou membro ativo do clube</p>
+                                    </div>
+                                  </label>
+
+                                  <label className="flex items-start gap-3 cursor-pointer p-3 bg-blue-50 rounded-lg border-2 border-blue-200 hover:border-blue-400 transition-colors">
+                                    <input
+                                      type="checkbox"
+                                      checked={formData.quer_fazer_parte_golden_doctors || false}
+                                      onChange={(e) => setFormData({
+                                        ...formData,
+                                        quer_fazer_parte_golden_doctors: e.target.checked,
+                                        faz_parte_golden_doctors: e.target.checked ? false : formData.faz_parte_golden_doctors
+                                      })}
+                                      className="w-5 h-5 rounded mt-0.5"
+                                      disabled={formData.faz_parte_golden_doctors}
+                                    />
+                                    <div>
+                                      <span className="text-sm font-semibold flex items-center gap-2">
+                                        <Star className="w-4 h-4 text-blue-600" />
+                                        Quero fazer parte do Golden Doctors
+                                      </span>
+                                      <p className="text-xs text-gray-600 mt-1">Tenho interesse em conhecer o clube</p>
+                                    </div>
+                                  </label>
+
+                                  {formData.quer_fazer_parte_golden_doctors && (
+                                    <Alert className="bg-blue-50 border-blue-200">
+                                      <AlertCircle className="h-4 w-4 text-blue-600" />
+                                      <AlertDescription className="text-blue-800 text-sm">
+                                        <p className="font-semibold mb-2">📞 Entre em contato com nossa Central de Vendas:</p>
+                                        <Button
+                                          size="sm"
+                                          onClick={() => {
+                                            const mensagem = `Olá! Tenho interesse em fazer parte do Golden Doctors!\n\nNome: ${formData.full_name || user?.full_name}\nEmail: ${user?.email}\n\nGostaria de mais informações sobre o clube.`;
+                                            window.open(`https://wa.me/5531972595643?text=${encodeURIComponent(mensagem)}`, '_blank');
+                                          }}
+                                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                                        >
+                                          <Phone className="w-3 h-3 mr-2" />
+                                          (31) 97259-5643
+                                        </Button>
+                                      </AlertDescription>
+                                    </Alert>
+                                  )}
                                 </div>
                               </div>
                             </div>
