@@ -25,6 +25,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   CheckCircle,
   Clock,
   XCircle,
@@ -79,6 +86,9 @@ export default function ControlePlanos() {
   const [abaSelecionada, setAbaSelecionada] = useState("planos_mapa");
   const [buscaProfissional, setBuscaProfissional] = useState("");
   const [enviandoWhatsApp, setEnviandoWhatsApp] = useState(false);
+  const [planoSelecionadoUsuario, setPlanoSelecionadoUsuario] = useState(null);
+  const [mostrarModalTrocarPlano, setMostrarModalTrocarPlano] = useState(false);
+  const [novoPlano, setNovoPlano] = useState("");
 
   const queryClient = useQueryClient();
 
@@ -200,6 +210,27 @@ export default function ControlePlanos() {
     }
   });
 
+  const trocarPlanoMutation = useMutation({
+    mutationFn: async ({ email, plano }) => {
+      await base44.entities.User.update(email, {
+        plano_ativo: plano,
+        data_adesao_plano: new Date().toISOString().split('T')[0]
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['usuarios-profissionais'] });
+      setSucesso("Plano atualizado com sucesso!");
+      setTimeout(() => setSucesso(null), 3000);
+      setMostrarModalTrocarPlano(false);
+      setPlanoSelecionadoUsuario(null);
+      setNovoPlano("");
+    },
+    onError: () => {
+      setErro("Erro ao trocar plano");
+      setTimeout(() => setErro(null), 3000);
+    }
+  });
+
   const handleAtivarPlano = async () => {
     if (!solicitacaoSelecionada) return;
     setProcessando(true);
@@ -273,8 +304,25 @@ export default function ControlePlanos() {
   };
 
   const handleExcluirProfissional = (usuario) => {
-    if (confirm(`Tem certeza que deseja remover ${usuario.full_name} como profissional? Esta ação irá converter a conta para paciente.`)) {
+    if (confirm(`Tem certeza que deseja remover ${usuario.full_name} como profissional? Esta ação irá converter a conta para paciente e plano Cobre.`)) {
       deletarProfissionalMutation.mutate(usuario.email);
+    }
+  };
+
+  const handleTrocarPlano = (usuario) => {
+    setPlanoSelecionadoUsuario(usuario);
+    setNovoPlano(usuario.plano_ativo || 'cobre'); // Default to 'cobre' if no plan
+    setMostrarModalTrocarPlano(true);
+  };
+
+  const confirmarTrocaPlano = () => {
+    if (!planoSelecionadoUsuario || !novoPlano) return;
+    
+    if (confirm(`Confirma a troca do plano de ${planoSelecionadoUsuario.full_name} para ${PLANOS_INFO[novoPlano]?.nome}?`)) {
+      trocarPlanoMutation.mutate({
+        email: planoSelecionadoUsuario.email,
+        plano: novoPlano
+      });
     }
   };
 
@@ -917,15 +965,29 @@ export default function ControlePlanos() {
                             </Badge>
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button
-                              onClick={() => handleExcluirProfissional(usuario)}
-                              size="sm"
-                              variant="outline"
-                              className="border-red-300 text-red-700 hover:bg-red-50"
-                            >
-                              <Trash2 className="w-4 h-4 mr-1" />
-                              Remover
-                            </Button>
+                            <div className="flex items-center justify-end gap-2">
+                              <Button
+                                onClick={() => handleTrocarPlano(usuario)}
+                                size="sm"
+                                className="bg-blue-600 hover:bg-blue-700"
+                              >
+                                <CreditCard className="w-4 h-4 mr-1" />
+                                Trocar Plano
+                              </Button>
+                              <Button
+                                onClick={() => {
+                                  if (confirm(`Remover ${usuario.full_name} como profissional? Esta ação irá converter a conta para paciente e plano Cobre.`)) {
+                                    handleExcluirProfissional(usuario);
+                                  }
+                                }}
+                                size="sm"
+                                variant="outline"
+                                className="border-red-300 text-red-700 hover:bg-red-50"
+                              >
+                                <Trash2 className="w-4 h-4 mr-1" />
+                                Remover
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -1005,6 +1067,103 @@ export default function ControlePlanos() {
               )}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* NOVO: Modal de Trocar Plano */}
+      <Dialog open={mostrarModalTrocarPlano} onOpenChange={setMostrarModalTrocarPlano}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Trocar Plano do Profissional</DialogTitle>
+            <DialogDescription>
+              {planoSelecionadoUsuario && (
+                <>Altere o plano de <strong>{planoSelecionadoUsuario.full_name}</strong></>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div>
+              <Label>Selecione o Novo Plano</Label>
+              <Select value={novoPlano} onValueChange={setNovoPlano}>
+                <SelectTrigger className="mt-2">
+                  <SelectValue placeholder="Selecione um plano" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="cobre">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-orange-500"></div>
+                      <span>COBRE (Grátis)</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="prata">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-gray-400"></div>
+                      <span>PRATA (R$ 99/mês)</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="ouro">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                      <span>OURO (R$ 197/mês)</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="diamante">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                      <span>DIAMANTE (R$ 297/mês)</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="platina">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-purple-500"></div>
+                      <span>PLATINA (R$ 997/mês)</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {planoSelecionadoUsuario && (
+              <Alert className="bg-blue-50 border-blue-200">
+                <AlertCircle className="h-4 w-4 text-blue-600" />
+                <AlertDescription className="text-blue-800 text-sm">
+                  <strong>Plano atual:</strong> {PLANOS_INFO[planoSelecionadoUsuario.plano_ativo || 'cobre']?.nome}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            <div className="flex gap-3 pt-4">
+              <Button
+                onClick={() => {
+                  setMostrarModalTrocarPlano(false);
+                  setPlanoSelecionadoUsuario(null);
+                  setNovoPlano(""); // Clear new plan selection on cancel
+                }}
+                variant="outline"
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={confirmarTrocaPlano}
+                disabled={trocarPlanoMutation.isPending || !novoPlano}
+                className="flex-1 bg-blue-600 hover:bg-blue-700"
+              >
+                {trocarPlanoMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Processando...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Confirmar Troca
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
