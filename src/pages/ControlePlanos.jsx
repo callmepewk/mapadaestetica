@@ -119,6 +119,26 @@ export default function ControlePlanos() {
     }
   });
 
+  const deletarProfissionalMutation = useMutation({
+    mutationFn: async (email) => {
+      // Como não podemos deletar usuários diretamente, vamos desativar
+      await base44.auth.updateUser(email, {
+        tipo_usuario: 'paciente', // Converte para paciente
+        plano_ativo: 'cobre'
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['usuarios-profissionais'] });
+      setSucesso("Profissional removido com sucesso!");
+      setTimeout(() => setSucesso(null), 3000);
+    },
+    onError: (error) => {
+      console.error("Erro ao remover profissional:", error);
+      setErro("Erro ao remover profissional");
+      setTimeout(() => setErro(null), 3000);
+    }
+  });
+
   const ativarPlanoMutation = useMutation({
     mutationFn: async ({ usuarioEmail, plano, solicitacaoId }) => {
       await base44.auth.updateUser(usuarioEmail, { plano_ativo: plano });
@@ -168,6 +188,12 @@ export default function ControlePlanos() {
   const handleExcluirSolicitacao = (solicitacao) => {
     if (confirm(`Tem certeza que deseja excluir a solicitação de ${solicitacao.usuario_nome}?`)) {
       deletarSolicitacaoMutation.mutate(solicitacao.id);
+    }
+  };
+
+  const handleExcluirProfissional = (usuario) => {
+    if (confirm(`Tem certeza que deseja remover ${usuario.full_name} como profissional? Esta ação irá converter a conta para paciente.`)) {
+      deletarProfissionalMutation.mutate(usuario.email);
     }
   };
 
@@ -622,6 +648,7 @@ export default function ControlePlanos() {
                         <TableHead>Localização</TableHead>
                         <TableHead>Plano Ativo</TableHead>
                         <TableHead>Cadastro</TableHead>
+                        <TableHead className="text-right">Ações</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -656,6 +683,17 @@ export default function ControlePlanos() {
                             <Badge variant={usuario.cadastro_completo ? "default" : "secondary"}>
                               {usuario.cadastro_completo ? "Completo" : "Incompleto"}
                             </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              onClick={() => handleExcluirProfissional(usuario)}
+                              size="sm"
+                              variant="outline"
+                              className="border-red-300 text-red-700 hover:bg-red-50"
+                            >
+                              <Trash2 className="w-4 h-4 mr-1" />
+                              Remover
+                            </Button>
                           </TableCell>
                         </TableRow>
                       ))}
