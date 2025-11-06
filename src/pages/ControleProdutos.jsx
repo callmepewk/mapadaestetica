@@ -7,6 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -24,8 +32,10 @@ import {
   Package,
   Loader2,
   Search,
-  Eye,
-  Check
+  Check,
+  Download,
+  MessageCircle,
+  FileText
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -36,8 +46,11 @@ export default function ControleProdutos() {
   const queryClient = useQueryClient();
   const [user, setUser] = useState(null);
   const [busca, setBusca] = useState("");
+  const [filtroStatus, setFiltroStatus] = useState("");
+  const [filtroUsuario, setFiltroUsuario] = useState("");
   const [sucesso, setSucesso] = useState(null);
   const [erro, setErro] = useState(null);
+  const [gerandoRelatorio, setGerandoRelatorio] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -57,7 +70,7 @@ export default function ControleProdutos() {
 
   const { data: pedidos = [], isLoading } = useQuery({
     queryKey: ['pedidos-produtos'],
-    queryFn: () => base44.entities.PedidoProduto.list('-created_date', 200),
+    queryFn: () => base44.entities.PedidoProduto.list('-created_date', 500),
     enabled: !!user,
   });
 
@@ -95,19 +108,191 @@ export default function ControleProdutos() {
     }
   });
 
+  // Obter usuários únicos dos pedidos
+  const usuariosUnicos = [...new Set(pedidos.map(p => p.usuario_email))].sort();
+
   const pedidosFiltrados = pedidos.filter(pedido => {
-    if (!busca) return true;
-    const searchLower = busca.toLowerCase();
-    return (
-      pedido.usuario_email?.toLowerCase().includes(searchLower) ||
-      pedido.produto_nome?.toLowerCase().includes(searchLower) ||
-      pedido.id?.toLowerCase().includes(searchLower)
-    );
+    const matchBusca = !busca || 
+      pedido.usuario_email?.toLowerCase().includes(busca.toLowerCase()) ||
+      pedido.produto_nome?.toLowerCase().includes(busca.toLowerCase()) ||
+      pedido.id?.toLowerCase().includes(busca.toLowerCase());
+    
+    const matchStatus = !filtroStatus || pedido.status_pedido === filtroStatus;
+    const matchUsuario = !filtroUsuario || pedido.usuario_email === filtroUsuario;
+    
+    return matchBusca && matchStatus && matchUsuario;
   });
 
   const pedidosPendentes = pedidosFiltrados.filter(p => p.status_pedido === 'aguardando_pagamento');
   const pedidosAprovados = pedidosFiltrados.filter(p => p.status_pedido === 'pago' || p.status_pedido === 'entregue');
   const pedidosCancelados = pedidosFiltrados.filter(p => p.status_pedido === 'cancelado');
+
+  // Agrupar pedidos por usuário
+  const pedidosPorUsuario = pedidosFiltrados.reduce((acc, pedido) => {
+    if (!acc[pedido.usuario_email]) {
+      acc[pedido.usuario_email] = [];
+    }
+    acc[pedido.usuario_email].push(pedido);
+    return acc;
+  }, {});
+
+  // Função para gerar relatório via WhatsApp
+  const handleEnviarWhatsApp = (emailUsuario = null) => {
+    const pedidosParaRelatorio = emailUsuario 
+      ? pedidosPorUsuario[emailUsuario] 
+      : pedidosFiltrados;
+
+    if (pedidosParaRelatorio.length === 0) {
+      alert("Nenhum pedido para gerar relatório!");
+      return;
+    }
+
+    let mensagem = `📊 *RELATÓRIO DE COMPRAS - MAPA DA ESTÉTICA*\n\n`;
+    
+    if (emailUsuario) {
+      mensagem += `👤 *Cliente:* ${emailUsuario}\n`;
+      mensagem += `📦 *Total de Pedidos:* ${pedidosParaRelatorio.length}\n\n`;
+    } else {
+      mensagem += `📦 *Total de Pedidos:* ${pedidosParaRelatorio.length}\n`;
+      mensagem += `👥 *Total de Clientes:* ${Object.keys(pedidosPorUsuario).length}\n\n`;
+    }
+
+    mensagem += `━━━━━━━━━━━━━━━━━━━━\n\n`;
+
+    if (emailUsuario) {
+      // Relatório individual
+      pedidosParaRelatorio.forEach((pedido, index) => {
+        mensagem += `*${index + 1}. ${pedido.produto_nome}*\n`;
+        mensagem += `   Tipo: ${pedido.tipo === 'servico' ? 'Serviço' : 'Produto'}\n`;
+        mensagem += `   Valor: R$ ${pedido.valor_total?.toFixed(2)}\n`;
+        mensagem += `   Status: ${pedido.status_pedido.replace(/_/g, ' ')}\n`;
+        mensagem += `   Data: ${format(new Date(pedido.created_date), "dd/MM/yyyy", { locale: ptBR })}\n\n`;
+      });
+
+      const totalGasto = pedidosParaRelatorio.reduce((sum, p) => sum + (p.valor_total || 0), 0);
+      mensagem += `━━━━━━━━━━━━━━━━━━━━\n`;
+      mensagem += `💰 *TOTAL GASTO: R$ ${totalGasto.toFixed(2)}*\n`;
+    } else {
+      // Relatório geral
+      Object.entries(pedidosPorUsuario).forEach(([email, pedidosUsuario]) => {
+        const totalUsuario = pedidosUsuario.reduce((sum, p) => sum + (p.valor_total || 0), 0);
+        mensagem += `👤 *${email}*\n`;
+        mensagem += `   Pedidos: ${pedidosUsuario.length}\n`;
+        mensagem += `   Total: R$ ${totalUsuario.toFixed(2)}\n\n`;
+      });
+
+      const totalGeral = pedidosFiltrados.reduce((sum, p) => sum + (p.valor_total || 0), 0);
+      mensagem += `━━━━━━━━━━━━━━━━━━━━\n`;
+      mensagem += `💰 *TOTAL GERAL: R$ ${totalGeral.toFixed(2)}*\n`;
+    }
+
+    mensagem += `\n📅 Gerado em: ${format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}`;
+
+    const whatsapp = "5531972595643";
+    const url = `https://wa.me/${whatsapp}?text=${encodeURIComponent(mensagem)}`;
+    window.open(url, '_blank');
+  };
+
+  // Função para salvar PDF (simulação - requer biblioteca externa em produção)
+  const handleSalvarPDF = async (emailUsuario = null) => {
+    setGerandoRelatorio(true);
+    
+    try {
+      const pedidosParaRelatorio = emailUsuario 
+        ? pedidosPorUsuario[emailUsuario] 
+        : pedidosFiltrados;
+
+      if (pedidosParaRelatorio.length === 0) {
+        alert("Nenhum pedido para gerar relatório!");
+        return;
+      }
+
+      // Gerar HTML do relatório
+      let htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>Relatório de Compras - Mapa da Estética</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 40px; }
+            h1 { color: #F7D426; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+            th { background-color: #F7D426; color: #2C2C2C; }
+            .total { font-weight: bold; font-size: 18px; margin-top: 20px; }
+          </style>
+        </head>
+        <body>
+          <h1>📊 Relatório de Compras - Mapa da Estética</h1>
+          <p><strong>Data:</strong> ${format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}</p>
+      `;
+
+      if (emailUsuario) {
+        htmlContent += `<p><strong>Cliente:</strong> ${emailUsuario}</p>`;
+        htmlContent += `<p><strong>Total de Pedidos:</strong> ${pedidosParaRelatorio.length}</p>`;
+      } else {
+        htmlContent += `<p><strong>Total de Pedidos:</strong> ${pedidosParaRelatorio.length}</p>`;
+        htmlContent += `<p><strong>Total de Clientes:</strong> ${Object.keys(pedidosPorUsuario).length}</p>`;
+      }
+
+      htmlContent += `
+        <table>
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Cliente</th>
+              <th>Produto/Serviço</th>
+              <th>Tipo</th>
+              <th>Valor</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      pedidosParaRelatorio.forEach(pedido => {
+        htmlContent += `
+          <tr>
+            <td>${format(new Date(pedido.created_date), "dd/MM/yyyy", { locale: ptBR })}</td>
+            <td>${pedido.usuario_email}</td>
+            <td>${pedido.produto_nome}</td>
+            <td>${pedido.tipo === 'servico' ? 'Serviço' : 'Produto'}</td>
+            <td>R$ ${pedido.valor_total?.toFixed(2)}</td>
+            <td>${pedido.status_pedido.replace(/_/g, ' ')}</td>
+          </tr>
+        `;
+      });
+
+      const totalGeral = pedidosParaRelatorio.reduce((sum, p) => sum + (p.valor_total || 0), 0);
+      
+      htmlContent += `
+          </tbody>
+        </table>
+        <p class="total">💰 TOTAL: R$ ${totalGeral.toFixed(2)}</p>
+        </body>
+        </html>
+      `;
+
+      // Criar blob e fazer download
+      const blob = new Blob([htmlContent], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `relatorio-compras-${emailUsuario || 'geral'}-${format(new Date(), 'yyyyMMdd')}.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      alert("✅ Relatório HTML gerado! Você pode abrir no navegador e salvar como PDF.");
+    } catch (error) {
+      console.error("Erro ao gerar relatório:", error);
+      alert("Erro ao gerar relatório");
+    } finally {
+      setGerandoRelatorio(false);
+    }
+  };
 
   if (!user) {
     return (
@@ -124,7 +309,7 @@ export default function ControleProdutos() {
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
             Controle de Produtos e Serviços
           </h1>
-          <p className="text-gray-600">Gerencie pedidos e aprovações de compras</p>
+          <p className="text-gray-600">Gerencie pedidos e gere relatórios de compras</p>
         </div>
 
         {sucesso && (
@@ -148,7 +333,7 @@ export default function ControleProdutos() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Total de Pedidos</p>
-                  <p className="text-3xl font-bold text-gray-900">{pedidos.length}</p>
+                  <p className="text-3xl font-bold text-gray-900">{pedidosFiltrados.length}</p>
                 </div>
                 <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
                   <ShoppingCart className="w-6 h-6 text-blue-600" />
@@ -200,17 +385,83 @@ export default function ControleProdutos() {
           </Card>
         </div>
 
-        {/* Busca */}
+        {/* Filtros */}
         <Card className="mb-6 border-none shadow-lg">
-          <CardContent className="p-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <Input
-                placeholder="Buscar por email, produto ou ID do pedido..."
-                value={busca}
-                onChange={(e) => setBusca(e.target.value)}
-                className="pl-10"
-              />
+          <CardHeader>
+            <CardTitle>Filtros de Busca</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-4 gap-4">
+              <div>
+                <Label>Buscar</Label>
+                <div className="relative mt-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <Input
+                    placeholder="Email, produto ou ID..."
+                    value={busca}
+                    onChange={(e) => setBusca(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label>Status</Label>
+                <Select value={filtroStatus} onValueChange={setFiltroStatus}>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Todos" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={null}>Todos</SelectItem>
+                    <SelectItem value="aguardando_pagamento">Aguardando Pagamento</SelectItem>
+                    <SelectItem value="pago">Pago</SelectItem>
+                    <SelectItem value="processando">Processando</SelectItem>
+                    <SelectItem value="enviado">Enviado</SelectItem>
+                    <SelectItem value="em_transito">Em Trânsito</SelectItem>
+                    <SelectItem value="entregue">Entregue</SelectItem>
+                    <SelectItem value="cancelado">Cancelado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label>Cliente</Label>
+                <Select value={filtroUsuario} onValueChange={setFiltroUsuario}>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Todos" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={null}>Todos</SelectItem>
+                    {usuariosUnicos.map(email => (
+                      <SelectItem key={email} value={email}>{email}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-end gap-2">
+                <Button
+                  onClick={() => handleEnviarWhatsApp()}
+                  className="flex-1 bg-green-600 hover:bg-green-700"
+                  disabled={pedidosFiltrados.length === 0}
+                >
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  WhatsApp
+                </Button>
+                <Button
+                  onClick={() => handleSalvarPDF()}
+                  variant="outline"
+                  className="flex-1"
+                  disabled={pedidosFiltrados.length === 0 || gerandoRelatorio}
+                >
+                  {gerandoRelatorio ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Download className="w-4 h-4 mr-2" />
+                  )}
+                  PDF
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -218,7 +469,7 @@ export default function ControleProdutos() {
         {/* Tabela de Pedidos */}
         <Card className="border-none shadow-lg">
           <CardHeader>
-            <CardTitle>Lista de Pedidos</CardTitle>
+            <CardTitle>Lista de Pedidos ({pedidosFiltrados.length})</CardTitle>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -235,22 +486,32 @@ export default function ControleProdutos() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead>Data</TableHead>
                       <TableHead>Cliente</TableHead>
                       <TableHead>Produto/Serviço</TableHead>
                       <TableHead>Tipo</TableHead>
                       <TableHead>Valor</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead>Data</TableHead>
                       <TableHead className="text-right">Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {pedidosFiltrados.map((pedido) => (
                       <TableRow key={pedido.id}>
+                        <TableCell className="text-sm">
+                          {format(new Date(pedido.created_date), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                        </TableCell>
                         <TableCell>
                           <div>
                             <p className="font-medium text-sm">{pedido.usuario_email}</p>
-                            <p className="text-xs text-gray-500">ID: {pedido.id.slice(0, 8)}</p>
+                            <Button
+                              variant="link"
+                              size="sm"
+                              className="p-0 h-auto text-xs"
+                              onClick={() => handleEnviarWhatsApp(pedido.usuario_email)}
+                            >
+                              Ver relatório do cliente
+                            </Button>
                           </div>
                         </TableCell>
                         <TableCell>
@@ -280,9 +541,6 @@ export default function ControleProdutos() {
                             {pedido.status_pedido.replace(/_/g, ' ')}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-sm">
-                          {pedido.created_date ? format(new Date(pedido.created_date), "dd/MM/yyyy HH:mm", { locale: ptBR }) : "-"}
-                        </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">
                             {pedido.status_pedido === 'aguardando_pagamento' && (
@@ -311,11 +569,6 @@ export default function ControleProdutos() {
                                   Rejeitar
                                 </Button>
                               </>
-                            )}
-                            {pedido.status_pedido !== 'aguardando_pagamento' && (
-                              <Badge variant="outline">
-                                {pedido.status_pedido === 'cancelado' ? 'Rejeitado' : 'Processado'}
-                              </Badge>
                             )}
                           </div>
                         </TableCell>
