@@ -469,49 +469,47 @@ export default function Anuncios() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-4 sm:py-8 pb-24 sm:pb-8">
-      <div className="max-w-7xl mx-auto px-2 sm:px-4">
-        <div className="mb-4 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-4 sm:py-8 pb-20 sm:pb-8 px-2 sm:px-4">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-4 sm:mb-6 md:mb-8">
+          <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
             Encontre Profissionais de Estética
           </h1>
-          <p className="text-sm sm:text-base text-gray-600">
+          <p className="text-xs sm:text-sm md:text-base text-gray-600">
             Explore os melhores profissionais de estética perto de você
           </p>
         </div>
 
-        {/* Abas: Lista e Mapa - MOBILE FRIENDLY */}
-        <div className="flex gap-2 mb-4 sm:mb-6 overflow-x-auto pb-2">
+        {/* Abas: Lista e Mapa - MOBILE OPTIMIZED */}
+        <div className="flex gap-2 mb-4 sm:mb-6 overflow-x-auto pb-2 -mx-2 px-2">
           <Button
             onClick={() => setAbaAtiva("lista")}
             variant={abaAtiva === "lista" ? "default" : "outline"}
-            className={`flex-shrink-0 ${abaAtiva === "lista" ? "bg-pink-600 hover:bg-pink-700" : ""}`}
-            size="sm"
+            className={`flex-shrink-0 h-9 sm:h-10 text-xs sm:text-sm ${abaAtiva === "lista" ? "bg-pink-600 hover:bg-pink-700" : ""}`}
           >
-            <List className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-            <span className="text-xs sm:text-sm">Lista ({anuncios.length})</span>
+            <List className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
+            <span>Lista ({anuncios.length})</span>
           </Button>
           <Button
             onClick={() => setAbaAtiva("mapa")}
             variant={abaAtiva === "mapa" ? "default" : "outline"}
-            className={`flex-shrink-0 ${abaAtiva === "mapa" ? "bg-pink-600 hover:bg-pink-700" : ""}`}
-            size="sm"
+            className={`flex-shrink-0 h-9 sm:h-10 text-xs sm:text-sm ${abaAtiva === "mapa" ? "bg-pink-600 hover:bg-pink-700" : ""}`}
           >
-            <MapPin className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-            <span className="text-xs sm:text-sm">Mapa ({anunciosComLocalizacao.length})</span>
+            <MapPin className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
+            <span>Mapa ({anunciosComLocalizacao.length})</span>
           </Button>
         </div>
 
         {abaAtiva === "lista" ? (
           <>
             {/* Filtros - MOBILE OPTIMIZED */}
-            <Card className="p-2 sm:p-4 md:p-6 mb-4 sm:mb-8 shadow-lg border-none">
-              <CardContent className="p-2 sm:p-4 md:p-6">
+            <Card className="p-3 sm:p-4 md:p-6 mb-4 sm:mb-6 md:mb-8 shadow-lg border-none">
+              <CardContent className="p-0 sm:p-2 md:p-4">
                 <div className="space-y-3 sm:space-y-4">
                   {/* Primeira linha de filtros */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                     <div>
-                      <Label className="mb-1 sm:mb-2 block font-semibold text-xs sm:text-sm">Buscar</Label>
+                      <Label className="mb-1.5 sm:mb-2 block font-semibold text-xs sm:text-sm">Buscar</Label>
                       <Input
                         placeholder="Digite aqui..."
                         value={buscaTexto}
@@ -519,12 +517,12 @@ export default function Anuncios() {
                           setBuscaTexto(e.target.value);
                           setPaginaAtual(1);
                         }}
-                        className="w-full h-10 sm:h-12 text-sm"
+                        className="w-full h-9 sm:h-10 md:h-11 text-sm"
                       />
                     </div>
 
                     <div>
-                      <Label className="mb-1 sm:mb-2 block font-semibold text-xs sm:text-sm">Categoria</Label>
+                      <Label className="mb-1.5 sm:mb-2 block font-semibold text-xs sm:text-sm">Categoria</Label>
                       <Select
                         value={categoriaFiltro}
                         onValueChange={(value) => {
@@ -532,10 +530,10 @@ export default function Anuncios() {
                           setPaginaAtual(1);
                         }}
                       >
-                        <SelectTrigger className="h-10 sm:h-12 text-sm">
+                        <SelectTrigger className="h-9 sm:h-10 md:h-11 text-sm">
                           <SelectValue placeholder="Categoria" />
                         </SelectTrigger>
-                        <SelectContent className="max-h-[300px]">
+                        <SelectContent className="max-h-[200px] sm:max-h-[300px]">
                           {categorias.map((cat) => (
                             <SelectItem key={cat} value={cat} className="text-sm">
                               {cat}
@@ -546,7 +544,7 @@ export default function Anuncios() {
                     </div>
 
                     <div>
-                      <Label className="mb-1 sm:mb-2 block font-semibold text-xs sm:text-sm">Procedimento</Label>
+                      <Label className="mb-1.5 sm:mb-2 block font-semibold text-xs sm:text-sm">Procedimento</Label>
                       <div className="flex gap-2">
                         <Input
                           placeholder="Ex: Botox..."
@@ -555,13 +553,13 @@ export default function Anuncios() {
                             setProcedimentoFiltro(e.target.value);
                             setPaginaAtual(1);
                           }}
-                          className="h-10 sm:h-12 text-sm flex-1"
+                          className="h-9 sm:h-10 md:h-11 text-sm flex-1"
                         />
                         <Button
                           type="button"
                           onClick={() => setMostrarSeletorProcedimentos(true)}
                           variant="outline"
-                          className="h-10 sm:h-12 px-3"
+                          className="h-9 sm:h-10 md:h-11 px-2.5 sm:px-3 flex-shrink-0"
                           title="Selecionar da lista"
                         >
                           <Search className="w-4 h-4" />
@@ -571,9 +569,9 @@ export default function Anuncios() {
                   </div>
 
                   {/* Segunda linha de filtros */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
                     <div>
-                      <Label className="mb-1 sm:mb-2 block font-semibold text-xs sm:text-sm">Cidade</Label>
+                      <Label className="mb-1.5 block font-semibold text-xs sm:text-sm">Cidade</Label>
                       <Input
                         placeholder="Digite a cidade"
                         value={cidadeFiltro}
@@ -581,12 +579,12 @@ export default function Anuncios() {
                           setCidadeFiltro(e.target.value);
                           setPaginaAtual(1);
                         }}
-                        className="h-10 sm:h-12 text-sm"
+                        className="h-9 sm:h-10 text-sm"
                       />
                     </div>
 
                     <div>
-                      <Label className="mb-1 sm:mb-2 block font-semibold text-xs sm:text-sm">Estado</Label>
+                      <Label className="mb-1.5 block font-semibold text-xs sm:text-sm">Estado</Label>
                       <Select
                         value={estadoFiltro}
                         onValueChange={(value) => {
@@ -594,10 +592,10 @@ export default function Anuncios() {
                           setPaginaAtual(1);
                         }}
                       >
-                        <SelectTrigger className="h-10 sm:h-12 text-sm">
-                          <SelectValue placeholder="Estado" />
+                        <SelectTrigger className="h-9 sm:h-10 text-sm">
+                          <SelectValue placeholder="UF" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="max-h-[200px]">
                           <SelectItem value={null} className="text-sm">Todos</SelectItem>
                           {estados.map((estado) => (
                             <SelectItem key={estado} value={estado} className="text-sm">{estado}</SelectItem>
@@ -607,7 +605,7 @@ export default function Anuncios() {
                     </div>
 
                     <div>
-                      <Label className="mb-1 sm:mb-2 block font-semibold text-xs sm:text-sm">Preço</Label>
+                      <Label className="mb-1.5 block font-semibold text-xs sm:text-sm">Preço</Label>
                       <Select
                         value={faixaPrecoFiltro}
                         onValueChange={(value) => {
@@ -615,13 +613,13 @@ export default function Anuncios() {
                           setPaginaAtual(1);
                         }}
                       >
-                        <SelectTrigger className="h-10 sm:h-12 text-sm">
-                          <SelectValue placeholder="Preço" />
+                        <SelectTrigger className="h-9 sm:h-10 text-sm">
+                          <SelectValue placeholder="R$" />
                         </SelectTrigger>
                         <SelectContent>
                           {faixasPreco.map((faixa) => (
                             <SelectItem key={faixa} value={faixa} className="text-sm">
-                              {faixa === "Todas" ? "Todas" : getFaixaPrecoInfo(faixa) ? `${faixa}` : faixa}
+                              {faixa === "Todas" ? "Todas" : faixa}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -629,8 +627,8 @@ export default function Anuncios() {
                     </div>
 
                     <div>
-                      <Label className="mb-1 sm:mb-2 block font-semibold text-xs sm:text-sm">Verificação</Label>
-                      <label className="flex items-center gap-2 mt-2 cursor-pointer h-10">
+                      <Label className="mb-1.5 block font-semibold text-xs sm:text-sm">Verificação</Label>
+                      <label className="flex items-center gap-2 mt-2 cursor-pointer h-9">
                         <input
                           type="checkbox"
                           checked={apenasVerificados}
@@ -645,10 +643,10 @@ export default function Anuncios() {
                     </div>
                   </div>
 
-                  {/* Terceira linha - Novos filtros + Tipo de Estabelecimento */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+                  {/* Terceira linha - MOBILE GRID OPTIMIZED */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
                     <div>
-                      <Label className="mb-1 sm:mb-2 block font-semibold text-xs sm:text-sm">Tipo de Anúncio</Label>
+                      <Label className="mb-1.5 block font-semibold text-xs sm:text-sm">Tipo de Anúncio</Label>
                       <Select
                         value={filtroTipoAnuncio}
                         onValueChange={(value) => {
@@ -656,10 +654,10 @@ export default function Anuncios() {
                           setPaginaAtual(1);
                         }}
                       >
-                        <SelectTrigger className="h-10 sm:h-12 text-sm">
-                          <SelectValue placeholder="Todos os tipos" />
+                        <SelectTrigger className="h-9 sm:h-10 text-sm">
+                          <SelectValue placeholder="Todos" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="max-h-[250px]">
                           <SelectItem value={null} className="text-sm">Todos os tipos</SelectItem>
                           {tiposAnuncio.map((tipo) => (
                             <SelectItem key={tipo.valor} value={tipo.valor} className="text-sm">
@@ -671,7 +669,7 @@ export default function Anuncios() {
                     </div>
 
                     <div>
-                      <Label className="mb-1 sm:mb-2 block font-semibold text-xs sm:text-sm">Tipo de Estabelecimento</Label>
+                      <Label className="mb-1.5 block font-semibold text-xs sm:text-sm">Tipo Estabelecimento</Label>
                       <Select
                         value={filtroTipoEstabelecimento}
                         onValueChange={(value) => {
@@ -679,7 +677,7 @@ export default function Anuncios() {
                           setPaginaAtual(1);
                         }}
                       >
-                        <SelectTrigger className="h-10 sm:h-12 text-sm">
+                        <SelectTrigger className="h-9 sm:h-10 text-sm">
                           <SelectValue placeholder="Tipo" />
                         </SelectTrigger>
                         <SelectContent>
@@ -693,7 +691,7 @@ export default function Anuncios() {
                     </div>
 
                     <div>
-                      <Label className="mb-1 sm:mb-2 block font-semibold text-xs sm:text-sm">Distância</Label>
+                      <Label className="mb-1.5 block font-semibold text-xs sm:text-sm">Distância</Label>
                       <Select
                         value={filtroDistancia}
                         onValueChange={(value) => {
@@ -702,10 +700,10 @@ export default function Anuncios() {
                         }}
                         disabled={!minhaLocalizacao}
                       >
-                        <SelectTrigger className="h-10 sm:h-12 text-sm">
-                          <SelectValue placeholder={minhaLocalizacao ? "Distância" : "Use localização"} />
+                        <SelectTrigger className="h-9 sm:h-10 text-sm">
+                          <SelectValue placeholder={minhaLocalizacao ? "Distância" : "Use GPS"} />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="max-h-[200px]">
                           {faixasDistancia.map((faixa) => (
                             <SelectItem key={faixa.valor} value={faixa.valor} className="text-sm">
                               {faixa.label}
@@ -714,14 +712,12 @@ export default function Anuncios() {
                         </SelectContent>
                       </Select>
                       {!minhaLocalizacao && (
-                        <p className="text-xs text-gray-500 mt-1">
-                          Use sua localização primeiro
-                        </p>
+                        <p className="text-xs text-gray-500 mt-0.5">Use GPS primeiro</p>
                       )}
                     </div>
 
                     <div>
-                      <Label className="mb-1 sm:mb-2 block font-semibold text-xs sm:text-sm">Tempo de Formação</Label>
+                      <Label className="mb-1.5 block font-semibold text-xs sm:text-sm">Tempo Formação</Label>
                       <Select
                         value={filtroTempoFormacao}
                         onValueChange={(value) => {
@@ -729,8 +725,8 @@ export default function Anuncios() {
                           setPaginaAtual(1);
                         }}
                       >
-                        <SelectTrigger className="h-10 sm:h-12 text-sm">
-                          <SelectValue placeholder="Formação" />
+                        <SelectTrigger className="h-9 sm:h-10 text-sm">
+                          <SelectValue placeholder="Anos" />
                         </SelectTrigger>
                         <SelectContent>
                           {faixasTempoFormacao.map((faixa) => (
@@ -743,14 +739,14 @@ export default function Anuncios() {
                     </div>
                   </div>
 
-                  {/* Botão Limpar Filtros */}
+                  {/* Botão Limpar Filtros - MOBILE */}
                   {temFiltrosAtivos && (
                     <div className="flex justify-end pt-2">
                       <Button
                         onClick={limparFiltros}
                         variant="outline"
                         size="sm"
-                        className="border-2 border-gray-300 text-gray-700 hover:bg-gray-100 text-xs sm:text-sm"
+                        className="border-2 border-gray-300 text-gray-700 hover:bg-gray-100 text-xs h-8 sm:h-auto"
                       >
                         <X className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                         Limpar
@@ -762,15 +758,15 @@ export default function Anuncios() {
             </Card>
 
             {/* Localização e Ordenação - MOBILE */}
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-stretch sm:items-center mb-4">
+            <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center mb-4">
               <Button
                 onClick={usarMinhaLocalizacao}
                 disabled={localizando}
                 variant="outline"
                 size="sm"
-                className="w-full sm:w-auto h-10 text-xs sm:text-sm"
+                className="w-full sm:w-auto h-9 sm:h-10 text-xs sm:text-sm"
               >
-                <Locate className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <Locate className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
                 {localizando ? "Localizando..." : "Minha Localização"}
               </Button>
               
@@ -781,7 +777,7 @@ export default function Anuncios() {
                   setPaginaAtual(1);
                 }}
               >
-                <SelectTrigger className="w-full sm:w-64 h-10 text-xs sm:text-sm">
+                <SelectTrigger className="w-full sm:w-52 md:w-64 h-9 sm:h-10 text-xs sm:text-sm">
                   <SelectValue placeholder="Ordenar" />
                 </SelectTrigger>
                 <SelectContent>
@@ -792,21 +788,21 @@ export default function Anuncios() {
               </Select>
             </div>
 
-            {/* Resultados e Modo de Visualização */}
-            <div className="flex items-center justify-between mt-4 pt-4 border-t">
-              <div className="flex items-center gap-2">
+            {/* Resultados e Modo de Visualização - MOBILE */}
+            <div className="flex items-center justify-between mt-4 pt-3 sm:pt-4 border-t">
+              <div className="flex items-center gap-1.5 sm:gap-2">
                 <Filter className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
                 <span className="text-xs sm:text-sm text-gray-600">
-                  {anuncios.length} resultado{anuncios.length !== 1 ? 's' : ''}
+                  {anuncios.length} {anuncios.length !== 1 ? 'resultados' : 'resultado'}
                 </span>
               </div>
 
-              <div className="flex gap-1 sm:gap-2">
+              <div className="flex gap-1.5 sm:gap-2">
                 <Button
                   variant={viewMode === "grid" ? "default" : "outline"}
                   size="icon"
                   onClick={() => setViewMode("grid")}
-                  className={`w-8 h-8 sm:w-10 sm:h-10 ${viewMode === "grid" ? "bg-pink-600 hover:bg-pink-700" : ""}`}
+                  className={`w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 ${viewMode === "grid" ? "bg-pink-600 hover:bg-pink-700" : ""}`}
                 >
                   <Grid className="w-3 h-3 sm:w-4 sm:h-4" />
                 </Button>
@@ -814,7 +810,7 @@ export default function Anuncios() {
                   variant={viewMode === "list" ? "default" : "outline"}
                   size="icon"
                   onClick={() => setViewMode("list")}
-                  className={`w-8 h-8 sm:w-10 sm:h-10 ${viewMode === "list" ? "bg-pink-600 hover:bg-pink-700" : ""}`}
+                  className={`w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 ${viewMode === "list" ? "bg-pink-600 hover:bg-pink-700" : ""}`}
                 >
                   <List className="w-3 h-3 sm:w-4 sm:h-4" />
                 </Button>
@@ -822,61 +818,63 @@ export default function Anuncios() {
             </div>
 
             {isLoading ? (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mt-4 sm:mt-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mt-4 sm:mt-6 md:mt-8">
                 {Array(6).fill(0).map((_, i) => (
-                  <Card key={i} className="h-64 sm:h-96 animate-pulse bg-gray-100" />
+                  <Card key={i} className="h-64 sm:h-80 md:h-96 animate-pulse bg-gray-100" />
                 ))}
               </div>
             ) : anuncios.length === 0 ? (
-              <Card className="p-8 sm:p-12 text-center mt-4 sm:mt-8">
-                <div className="text-4xl sm:text-6xl mb-4">🔍</div>
-                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
+              <Card className="p-6 sm:p-8 md:p-12 text-center mt-4 sm:mt-6 md:mt-8">
+                <div className="text-4xl sm:text-5xl md:text-6xl mb-3 sm:mb-4">🔍</div>
+                <h3 className="text-base sm:text-lg md:text-xl font-semibold text-gray-900 mb-2">
                   Nenhum anúncio encontrado
                 </h3>
-                <p className="text-sm sm:text-base text-gray-600">
+                <p className="text-xs sm:text-sm md:text-base text-gray-600">
                   Tente ajustar os filtros ou fazer uma nova busca
                 </p>
               </Card>
             ) : (
               <>
                 <div className={viewMode === "grid" 
-                  ? "grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mt-4 sm:mt-8" 
-                  : "space-y-4 mt-4 sm:mt-8"
+                  ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mt-4 sm:mt-6 md:mt-8" 
+                  : "space-y-3 sm:space-y-4 mt-4 sm:mt-6 md:mt-8"
                 }>
                   {anunciosPaginados.map((anuncio) => (
                     <CardAnuncio key={anuncio.id} anuncio={anuncio} />
                   ))}
                 </div>
 
+                {/* Pagination - MOBILE OPTIMIZED */}
                 {totalPaginas > 1 && (
-                  <div className="mt-8 sm:mt-12 flex justify-center">
+                  <div className="mt-6 sm:mt-8 md:mt-12 flex justify-center">
                     <Pagination>
-                      <PaginationContent>
+                      <PaginationContent className="gap-1">
                         <PaginationItem>
                           <PaginationPrevious
                             onClick={() => paginaAtual > 1 && handlePaginaChange(paginaAtual - 1)}
-                            className={paginaAtual === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                            className={`h-8 sm:h-10 text-xs sm:text-sm ${paginaAtual === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}`}
                           />
                         </PaginationItem>
                         
-                        {Array.from({ length: Math.min(5, totalPaginas) }, (_, i) => {
+                        {/* Show fewer pages on mobile */}
+                        {Array.from({ length: Math.min(3, totalPaginas) }, (_, i) => {
                           let pageNum;
-                          if (totalPaginas <= 5) {
+                          if (totalPaginas <= 3) {
                             pageNum = i + 1;
-                          } else if (paginaAtual <= 3) {
+                          } else if (paginaAtual <= 2) {
                             pageNum = i + 1;
-                          } else if (paginaAtual >= totalPaginas - 2) {
-                            pageNum = totalPaginas - 4 + i;
+                          } else if (paginaAtual >= totalPaginas - 1) {
+                            pageNum = totalPaginas - 2 + i;
                           } else {
-                            pageNum = paginaAtual - 2 + i;
+                            pageNum = paginaAtual - 1 + i;
                           }
                           
                           return (
-                            <PaginationItem key={pageNum}>
+                            <PaginationItem key={pageNum} className="hidden sm:block">
                               <PaginationLink
                                 onClick={() => handlePaginaChange(pageNum)}
                                 isActive={paginaAtual === pageNum}
-                                className="cursor-pointer"
+                                className="cursor-pointer h-10 text-sm"
                               >
                                 {pageNum}
                               </PaginationLink>
@@ -884,10 +882,20 @@ export default function Anuncios() {
                           );
                         })}
 
+                        {/* Mobile: show current page only */}
+                        <PaginationItem className="sm:hidden">
+                          <PaginationLink
+                            isActive={true}
+                            className="h-8 text-xs px-3"
+                          >
+                            {paginaAtual}
+                          </PaginationLink>
+                        </PaginationItem>
+
                         <PaginationItem>
                           <PaginationNext
                             onClick={() => paginaAtual < totalPaginas && handlePaginaChange(paginaAtual + 1)}
-                            className={paginaAtual === totalPaginas ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                            className={`h-8 sm:h-10 text-xs sm:text-sm ${paginaAtual === totalPaginas ? "pointer-events-none opacity-50" : "cursor-pointer"}`}
                           />
                         </PaginationItem>
                       </PaginationContent>
@@ -898,18 +906,18 @@ export default function Anuncios() {
             )}
           </>
         ) : (
-          /* MAPA DA ESTÉTICA - MOBILE OPTIMIZED */
+          /* MAPA - MOBILE OPTIMIZED */
           <div className="space-y-4 sm:space-y-6">
-            <Card className="p-2 sm:p-4 md:p-6 shadow-lg border-none">
-              <CardContent className="p-2 sm:p-4 md:p-6">
-                <div className="mb-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+            <Card className="p-3 sm:p-4 md:p-6 shadow-lg border-none">
+              <CardContent className="p-0 sm:p-2 md:p-4">
+                <div className="mb-4 sm:mb-6">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
+                    <div className="w-full sm:w-auto">
+                      <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-2">
                         🗺️ Mapa da Estética Interativo
                       </h2>
-                      <p className="text-sm sm:text-base text-gray-600">
-                        Visualize {anunciosComLocalizacao.length} profissionais próximos a você
+                      <p className="text-xs sm:text-sm md:text-base text-gray-600">
+                        Visualize {anunciosComLocalizacao.length} profissionais próximos
                       </p>
                     </div>
                     
@@ -917,18 +925,17 @@ export default function Anuncios() {
                       <Button
                         onClick={usarMinhaLocalizacao}
                         disabled={localizando}
-                        className="bg-pink-600 hover:bg-pink-700"
-                        size="sm"
+                        className="bg-pink-600 hover:bg-pink-700 w-full sm:w-auto h-9 sm:h-10 text-xs sm:text-sm"
                       >
-                        <Locate className="w-4 h-4 mr-2" />
+                        <Locate className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                         {localizando ? "Localizando..." : "Minha Localização"}
                       </Button>
                     )}
                   </div>
 
                   {minhaLocalizacao && (
-                    <div className="bg-green-50 border-2 border-green-200 rounded-lg p-3 mb-4">
-                      <p className="text-sm text-green-800 font-semibold">
+                    <div className="bg-green-50 border-2 border-green-200 rounded-lg p-2.5 sm:p-3 mb-3 sm:mb-4">
+                      <p className="text-xs sm:text-sm text-green-800 font-semibold">
                         ✓ Sua localização: {cidadeFiltro} - {estadoFiltro}
                       </p>
                     </div>
@@ -945,41 +952,40 @@ export default function Anuncios() {
                       calcularDistancia={calcularDistancia}
                     />
 
-                    <div className="mt-4 p-4 bg-gray-50 rounded-lg border-2 border-gray-200">
-                      <h4 className="font-semibold mb-2 text-sm">Legenda:</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
+                    <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-gray-50 rounded-lg border-2 border-gray-200">
+                      <h4 className="font-semibold mb-2 text-xs sm:text-sm">Legenda:</h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs sm:text-sm">
                         <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-red-500 rounded-full flex-shrink-0"></div>
                           <span>Sua localização</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-500 rounded-full flex-shrink-0"></div>
                           <span>Profissional Verificado ✓</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-blue-500 rounded-full flex-shrink-0"></div>
                           <span>Profissional</span>
                         </div>
                       </div>
                     </div>
                   </>
                 ) : (
-                  <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-gray-200">
-                    <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">
+                  <div className="text-center py-8 sm:py-12 bg-gray-50 rounded-lg border-2 border-gray-200">
+                    <MapPin className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-3 sm:mb-4" />
+                    <h3 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 mb-2">
                       Nenhum profissional com localização encontrado
                     </h3>
-                    <p className="text-sm sm:text-base text-gray-600 mb-4">
+                    <p className="text-xs sm:text-sm md:text-base text-gray-600 mb-3 sm:mb-4 px-4">
                       Ajuste os filtros para encontrar profissionais próximos a você
                     </p>
                     {!minhaLocalizacao && (
                       <Button
                         onClick={usarMinhaLocalizacao}
                         disabled={localizando}
-                        className="bg-pink-600 hover:bg-pink-700"
-                        size="sm"
+                        className="bg-pink-600 hover:bg-pink-700 h-9 sm:h-10 text-xs sm:text-sm"
                       >
-                        <Locate className="w-4 h-4 mr-2" />
+                        <Locate className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                         {localizando ? "Localizando..." : "Usar Minha Localização"}
                       </Button>
                     )}
@@ -991,7 +997,7 @@ export default function Anuncios() {
         )}
       </div>
 
-      {/* Modal de Seletor de Procedimentos */}
+      {/* Modal de Seletor de Procedimentos - MOBILE */}
       <SeletorProcedimentos
         open={mostrarSeletorProcedimentos}
         onClose={() => setMostrarSeletorProcedimentos(false)}

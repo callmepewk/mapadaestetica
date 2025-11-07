@@ -295,8 +295,9 @@ export default function CadastrarAnuncio() {
 
   const handleAmenidadeChange = (amenidade, checked) => {
     setFormData(prev => ({
-      ...prev.amenidades,
-      amenidades: {
+      ...prev,
+      amenidades: { // Correctly updating nested state
+        ...prev.amenidades,
         [amenidade]: checked
       }
     }));
@@ -768,32 +769,32 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
-      <div className="max-w-4xl mx-auto px-4">
-        <div className="text-center mb-8">
-          <Badge className="mb-4 bg-[#F7D426] text-[#2C2C2C] font-bold">
-            <Sparkles className="w-4 h-4 mr-2" />
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-4 sm:py-6 md:py-8 px-2 sm:px-4">
+      <div className="max-w-4xl mx-auto">
+        <div className="text-center mb-6 sm:mb-8">
+          <Badge className="mb-3 sm:mb-4 bg-[#F7D426] text-[#2C2C2C] font-bold text-xs sm:text-sm">
+            <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
             Cadastro de Anúncio
           </Badge>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 px-2">
             Crie Seu Anúncio Profissional
           </h1>
-          <p className="text-gray-600 max-w-2xl mx-auto">
+          <p className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto px-4">
             Preencha as informações abaixo ou use nosso assistente de IA para criar um anúncio otimizado
           </p>
         </div>
 
-        {/* Botões de Assistência IA */}
-        <div className="grid md:grid-cols-2 gap-4 mb-8">
+        {/* Botões de Assistência IA - MOBILE OPTIMIZED */}
+        <div className="grid sm:grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
           <Card className="border-2 border-purple-200 hover:border-purple-400 transition-colors cursor-pointer" onClick={() => setMostrarGeradorIA(true)}>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                  <Wand2 className="w-6 h-6 text-white" />
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Wand2 className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-lg mb-1">Gerar Anúncio com IA</h3>
-                  <p className="text-sm text-gray-600">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-sm sm:text-base md:text-lg mb-1">Gerar Anúncio com IA</h3>
+                  <p className="text-xs sm:text-sm text-gray-600 line-clamp-2">
                     Preencha informações básicas e deixe a IA criar seu anúncio completo
                   </p>
                 </div>
@@ -802,14 +803,14 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
           </Card>
 
           <Card className="border-2 border-blue-200 hover:border-blue-400 transition-colors cursor-pointer" onClick={handleSolicitarAjudaDescricao}>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center">
-                  <Lightbulb className="w-6 h-6 text-white" />
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Lightbulb className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-lg mb-1">Ajuda com Descrição IA</h3>
-                  <p className="text-sm text-gray-600">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-sm sm:text-base md:text-lg mb-1">Ajuda com Descrição IA</h3>
+                  <p className="text-xs sm:text-sm text-gray-600 line-clamp-2">
                     Receba sugestões de descrição baseadas no seu título e categoria
                   </p>
                 </div>
@@ -834,37 +835,37 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
           </Alert>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Informações Básicas */}
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+          {/* Informações Básicas - MOBILE OPTIMIZED */}
           <Card>
-            <CardHeader>
-              <CardTitle>Informações Básicas</CardTitle>
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-lg sm:text-xl">Informações Básicas</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
+            <CardContent className="p-4 sm:p-6 space-y-3 sm:space-y-4">
+              <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <Label>Tipo de Anúncio *</Label>
+                  <Label className="text-sm">Tipo de Anúncio *</Label>
                   <Select value={formData.tipo_anuncio} onValueChange={(value) => handleInputChange("tipo_anuncio", value)}>
-                    <SelectTrigger>
+                    <SelectTrigger className="mt-1 h-10 sm:h-11 text-sm">
                       <SelectValue placeholder="Selecione o tipo" />
                     </SelectTrigger>
                     <SelectContent>
                       {tiposAnuncio.map(tipo => (
-                        <SelectItem key={tipo.valor} value={tipo.valor}>{tipo.label}</SelectItem>
+                        <SelectItem key={tipo.valor} value={tipo.valor} className="text-sm">{tipo.label}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div>
-                  <Label>Categoria *</Label>
+                  <Label className="text-sm">Categoria *</Label>
                   <Select value={formData.categoria} onValueChange={(value) => handleInputChange("categoria", value)}>
-                    <SelectTrigger>
+                    <SelectTrigger className="mt-1 h-10 sm:h-11 text-sm">
                       <SelectValue placeholder="Selecione a categoria" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="max-h-[200px] sm:max-h-[300px]">
                       {categorias.map(cat => (
-                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                        <SelectItem key={cat} value={cat} className="text-sm">{cat}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -874,7 +875,7 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
               {/* NOVO: Tipo de Estabelecimento com Estrelas */}
               {(formData.tipo_anuncio === "consultorio" || formData.tipo_anuncio === "clinica") && (
                 <div>
-                  <Label>Tipo de Estabelecimento</Label>
+                  <Label className="text-sm">Tipo de Estabelecimento</Label>
                   <p className="text-xs text-gray-500 mb-2">
                     Selecione o tipo do seu estabelecimento. Cada tipo possui uma classificação em estrelas.
                   </p>
@@ -882,12 +883,12 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
                     value={formData.tipo_estabelecimento}
                     onValueChange={(value) => handleInputChange("tipo_estabelecimento", value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="mt-1 h-10 sm:h-11 text-sm">
                       <SelectValue placeholder="Selecione o tipo de estabelecimento" />
                     </SelectTrigger>
                     <SelectContent>
                       {tiposEstabelecimento.map(tipo => (
-                        <SelectItem key={tipo.valor} value={tipo.valor}>
+                        <SelectItem key={tipo.valor} value={tipo.valor} className="text-sm">
                           <div className="flex items-center gap-2">
                             <span>{tipo.label}</span>
                             <span className="text-yellow-500">
@@ -921,15 +922,16 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <Label>Título do Anúncio *</Label>
+                  <Label className="text-sm">Título do Anúncio *</Label>
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
                     onClick={handleSolicitarAjudaTitulo}
                     disabled={!formData.categoria}
+                    className="text-xs sm:text-sm h-8 px-2 sm:h-auto sm:px-4"
                   >
-                    <Lightbulb className="w-4 h-4 mr-2" />
+                    <Lightbulb className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                     Pedir Ajuda IA
                   </Button>
                 </div>
@@ -938,20 +940,22 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
                   onChange={(e) => handleInputChange("titulo", e.target.value)}
                   placeholder="Ex: Harmonização Facial Completa com Especialista"
                   required
+                  className="h-10 sm:h-11 text-sm"
                 />
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <Label>Descrição *</Label>
+                  <Label className="text-sm">Descrição *</Label>
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
                     onClick={handleSolicitarAjudaDescricao}
                     disabled={!formData.titulo || !formData.categoria}
+                    className="text-xs sm:text-sm h-8 px-2 sm:h-auto sm:px-4"
                   >
-                    <Lightbulb className="w-4 h-4 mr-2" />
+                    <Lightbulb className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                     Pedir Ajuda IA
                   </Button>
                 </div>
@@ -961,28 +965,30 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
                   placeholder="Descreva detalhadamente os serviços oferecidos..."
                   rows={6}
                   required
+                  className="text-sm"
                 />
               </div>
 
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <Label>Subcategoria</Label>
+                  <Label className="text-sm">Subcategoria</Label>
                   <Input
                     value={formData.subcategoria}
                     onChange={(e) => handleInputChange("subcategoria", e.target.value)}
                     placeholder="Ex: Preenchimento Labial"
+                    className="h-10 sm:h-11 text-sm"
                   />
                 </div>
 
                 <div>
-                  <Label>Faixa de Preço *</Label>
+                  <Label className="text-sm">Faixa de Preço *</Label>
                   <Select value={formData.faixa_preco} onValueChange={(value) => handleInputChange("faixa_preco", value)}>
-                    <SelectTrigger>
+                    <SelectTrigger className="mt-1 h-10 sm:h-11 text-sm">
                       <SelectValue placeholder="Selecione a faixa" />
                     </SelectTrigger>
                     <SelectContent>
                       {faixasPreco.map(faixa => (
-                        <SelectItem key={faixa.valor} value={faixa.valor}>{faixa.label}</SelectItem>
+                        <SelectItem key={faixa.valor} value={faixa.valor} className="text-sm">{faixa.label}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -990,37 +996,38 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
               </div>
 
               {/* NEW FIELDS */}
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <Label>Status de Funcionamento</Label>
+                  <Label className="text-sm">Status de Funcionamento</Label>
                   <Select
                     value={formData.status_funcionamento || "N/D"}
                     onValueChange={(value) => handleInputChange("status_funcionamento", value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="mt-1 h-10 sm:h-11 text-sm">
                       <SelectValue placeholder="Selecione o status" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="N/D">Não Informado</SelectItem>
-                      <SelectItem value="Aberto Agora">Aberto Agora</SelectItem>
-                      <SelectItem value="Fechado">Fechado</SelectItem>
-                      <SelectItem value="Sempre Aberto">Sempre Aberto (24h)</SelectItem>
+                      <SelectItem value="N/D" className="text-sm">Não Informado</SelectItem>
+                      <SelectItem value="Aberto Agora" className="text-sm">Aberto Agora</SelectItem>
+                      <SelectItem value="Fechado" className="text-sm">Fechado</SelectItem>
+                      <SelectItem value="Sempre Aberto" className="text-sm">Sempre Aberto (24h)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div>
-                  <Label>Horário de Funcionamento</Label>
+                  <Label className="text-sm">Horário de Funcionamento</Label>
                   <Input
                     value={formData.horario_funcionamento}
                     onChange={(e) => handleInputChange("horario_funcionamento", e.target.value)}
                     placeholder="Ex: Seg a Sex: 9h às 18h"
+                    className="h-10 sm:h-11 text-sm"
                   />
                 </div>
               </div>
 
               <div>
-                <Label>Palavras-chave / Hashtags</Label>
+                <Label className="text-sm">Palavras-chave / Hashtags</Label>
                 <p className="text-xs text-gray-500 mb-2">
                   Adicione palavras-chave para melhorar a busca do seu anúncio (ex: botox, harmonização)
                 </p>
@@ -1028,28 +1035,30 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
                   value={formData.tags?.join(", ") || ""}
                   onChange={(e) => handleInputChange("tags", e.target.value.split(",").map(t => t.trim()).filter(Boolean))}
                   placeholder="Ex: botox, harmonização, preenchimento"
+                  className="h-10 sm:h-11 text-sm"
                 />
               </div>
 
               {/* NEW: Procedimentos/Serviços */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <Label>Procedimentos/Serviços Oferecidos</Label>
+                  <Label className="text-sm">Procedimentos/Serviços Oferecidos</Label>
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
                     onClick={() => setMostrarSeletorProcedimentos(true)}
+                    className="text-xs sm:text-sm h-8 px-2 sm:h-auto sm:px-4"
                   >
-                    <Plus className="w-4 h-4 mr-2" />
+                    <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                     Selecionar Procedimentos
                   </Button>
                 </div>
 
                 {formData.procedimentos_servicos.length > 0 ? (
-                  <div className="flex flex-wrap gap-2 p-4 bg-gray-50 rounded-lg border-2 border-gray-200">
+                  <div className="flex flex-wrap gap-2 p-3 sm:p-4 bg-gray-50 rounded-lg border-2 border-gray-200">
                     {formData.procedimentos_servicos.map((proc, index) => (
-                      <Badge key={index} variant="secondary" className="text-sm py-1.5 px-3">
+                      <Badge key={index} variant="secondary" className="text-xs sm:text-sm py-1.5 px-3">
                         {proc}
                         <X
                           className="w-3 h-3 ml-2 cursor-pointer hover:text-red-600"
@@ -1059,7 +1068,7 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
                     ))}
                   </div>
                 ) : (
-                  <div className="p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 text-center">
+                  <div className="p-3 sm:p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 text-center">
                     <p className="text-sm text-gray-500">
                       Nenhum procedimento adicionado. Clique em "Selecionar Procedimentos" para adicionar.
                     </p>
@@ -1071,24 +1080,24 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
 
           {/* Upload de Imagens */}
           <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Imagens do Anúncio</CardTitle>
+            <CardHeader className="p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
+                <CardTitle className="text-lg sm:text-xl">Imagens do Anúncio</CardTitle>
                 <Button
                   type="button"
                   variant="outline"
                   onClick={handleGerarImagem}
-                  className="border-purple-300 text-purple-700 hover:bg-purple-50"
+                  className="border-purple-300 text-purple-700 hover:bg-purple-50 text-xs sm:text-sm h-9 px-3 sm:h-auto sm:px-4 w-full sm:w-auto"
                 >
-                  <Wand2 className="w-4 h-4 mr-2" />
+                  <Wand2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                   Gerar Imagem com Design Profissional
                 </Button>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="p-4 sm:p-6 space-y-3 sm:space-y-4">
               {/* Logo/Foto do Profissional */}
               <div>
-                <Label>Logo / Foto do Profissional</Label>
+                <Label className="text-sm">Logo / Foto do Profissional</Label>
                 <p className="text-xs text-gray-500 mb-2">Imagem que aparecerá como identificação do seu perfil</p>
                 <div className="mt-2">
                   {formData.logo ? (
@@ -1096,23 +1105,23 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
                       <img
                         src={formData.logo}
                         alt="Logo"
-                        className="w-32 h-32 object-cover rounded-full border-4 border-gray-200"
+                        className="w-24 h-24 sm:w-32 sm:h-32 object-cover rounded-full border-4 border-gray-200"
                       />
                       <Button
                         type="button"
                         variant="destructive"
                         size="sm"
-                        className="absolute -top-2 -right-2 rounded-full w-8 h-8 p-0"
+                        className="absolute -top-2 -right-2 rounded-full w-7 h-7 p-0 sm:w-8 sm:h-8"
                         onClick={() => setFormData(prev => ({ ...prev, logo: "" }))}
                       >
-                        <X className="w-4 h-4" />
+                        <X className="w-3 h-3 sm:w-4 sm:h-4" />
                       </Button>
                     </div>
                   ) : (
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center max-w-xs">
-                      <Upload className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 sm:p-8 text-center max-w-xs">
+                      <Upload className="w-10 h-10 sm:w-12 sm:h-12 mx-auto text-gray-400 mb-3 sm:mb-4" />
                       <Label htmlFor="logo" className="cursor-pointer">
-                        <span className="text-blue-600 hover:text-blue-700">
+                        <span className="text-blue-600 hover:text-blue-700 text-sm">
                           {uploadingLogo ? "Enviando..." : "Clique para enviar logo"}
                         </span>
                       </Label>
@@ -1131,7 +1140,7 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
               </div>
 
               <div>
-                <Label>Imagem Principal *</Label>
+                <Label className="text-sm">Imagem Principal *</Label>
                 <p className="text-xs text-gray-500 mb-2">Imagem de capa do seu anúncio</p>
                 <div className="mt-2">
                   {formData.imagem_principal ? (
@@ -1139,23 +1148,23 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
                       <img
                         src={formData.imagem_principal}
                         alt="Imagem principal"
-                        className="w-full h-64 object-cover rounded-lg"
+                        className="w-full h-48 sm:h-64 object-cover rounded-lg"
                       />
                       <Button
                         type="button"
                         variant="destructive"
                         size="sm"
-                        className="absolute top-2 right-2"
+                        className="absolute top-2 right-2 w-7 h-7 p-0 sm:w-8 sm:h-8"
                         onClick={() => setFormData(prev => ({ ...prev, imagem_principal: "" }))}
                       >
-                        <X className="w-4 h-4" />
+                        <X className="w-3 h-3 sm:w-4 sm:h-4" />
                       </Button>
                     </div>
                   ) : (
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                      <Upload className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 sm:p-8 text-center">
+                      <Upload className="w-10 h-10 sm:w-12 sm:h-12 mx-auto text-gray-400 mb-3 sm:mb-4" />
                       <Label htmlFor="imagem-principal" className="cursor-pointer">
-                        <span className="text-blue-600 hover:text-blue-700">
+                        <span className="text-blue-600 hover:text-blue-700 text-sm">
                           {uploadingImagemPrincipal ? "Enviando..." : "Clique para enviar"}
                         </span>
                       </Label>
@@ -1174,21 +1183,21 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
               </div>
 
               <div>
-                <Label>Galeria de Imagens (até 10 imagens)</Label>
+                <Label className="text-sm">Galeria de Imagens (até 10 imagens)</Label>
                 <div className="mt-2">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-4">
                     {formData.imagens_galeria.map((img, index) => (
                       <div key={index} className="relative">
                         <img
                           src={img}
                           alt={`Galeria ${index + 1}`}
-                          className="w-full h-32 object-cover rounded-lg"
+                          className="w-full h-24 sm:h-32 object-cover rounded-lg"
                         />
                         <Button
                           type="button"
                           variant="destructive"
                           size="sm"
-                          className="absolute top-1 right-1"
+                          className="absolute top-1 right-1 w-6 h-6 p-0 sm:w-7 sm:h-7"
                           onClick={() => handleRemoverImagemGaleria(index)}
                         >
                           <X className="w-3 h-3" />
@@ -1198,8 +1207,8 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
                   </div>
 
                   {formData.imagens_galeria.length < 10 && (
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                      <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 sm:p-6 text-center">
+                      <Upload className="w-7 h-7 sm:w-8 sm:h-8 mx-auto text-gray-400 mb-2" />
                       <Label htmlFor="galeria" className="cursor-pointer">
                         <span className="text-blue-600 hover:text-blue-700 text-sm">
                           {uploadingGaleria ? "Enviando..." : "Adicionar mais imagens"}
@@ -1223,48 +1232,52 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
 
           {/* Contato */}
           <Card>
-            <CardHeader>
-              <CardTitle>Informações de Contato</CardTitle>
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-lg sm:text-xl">Informações de Contato</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
+            <CardContent className="p-4 sm:p-6 space-y-3 sm:space-y-4">
+              <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <Label>Profissional *</Label>
+                  <Label className="text-sm">Profissional *</Label>
                   <Input
                     value={formData.profissional}
                     onChange={(e) => handleInputChange("profissional", e.target.value)}
                     required
+                    className="h-10 sm:h-11 text-sm"
                   />
                 </div>
 
                 <div>
-                  <Label>Telefone *</Label>
+                  <Label className="text-sm">Telefone *</Label>
                   <Input
                     value={formData.telefone}
                     onChange={(e) => handleInputChange("telefone", e.target.value)}
                     placeholder="(00) 00000-0000"
                     required
+                    className="h-10 sm:h-11 text-sm"
                   />
                 </div>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <Label>WhatsApp</Label>
+                  <Label className="text-sm">WhatsApp</Label>
                   <Input
                     value={formData.whatsapp}
                     onChange={(e) => handleInputChange("whatsapp", e.target.value)}
                     placeholder="(00) 00000-0000"
+                    className="h-10 sm:h-11 text-sm"
                   />
                 </div>
 
                 <div>
-                  <Label>Email *</Label>
+                  <Label className="text-sm">Email *</Label>
                   <Input
                     type="email"
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
                     required
+                    className="h-10 sm:h-11 text-sm"
                   />
                 </div>
               </div>
@@ -1273,18 +1286,18 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
 
           {/* Amenidades */}
           <Card>
-            <CardHeader>
-              <CardTitle>Amenidades do Estabelecimento</CardTitle>
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-lg sm:text-xl">Amenidades do Estabelecimento</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-2 gap-4">
+            <CardContent className="p-4 sm:p-6">
+              <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="estacionamento"
                     checked={formData.amenidades.estacionamento}
                     onCheckedChange={(checked) => handleAmenidadeChange("estacionamento", checked)}
                   />
-                  <Label htmlFor="estacionamento" className="cursor-pointer">
+                  <Label htmlFor="estacionamento" className="cursor-pointer text-sm">
                     🅿️ Estacionamento
                   </Label>
                 </div>
@@ -1295,7 +1308,7 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
                     checked={formData.amenidades.estacionamento_valet}
                     onCheckedChange={(checked) => handleAmenidadeChange("estacionamento_valet", checked)}
                   />
-                  <Label htmlFor="estacionamento_valet" className="cursor-pointer">
+                  <Label htmlFor="estacionamento_valet" className="cursor-pointer text-sm">
                     🚗 Estacionamento com Valet
                   </Label>
                 </div>
@@ -1306,7 +1319,7 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
                     checked={formData.amenidades.aceita_pet}
                     onCheckedChange={(checked) => handleAmenidadeChange("aceita_pet", checked)}
                   />
-                  <Label htmlFor="aceita_pet" className="cursor-pointer">
+                  <Label htmlFor="aceita_pet" className="cursor-pointer text-sm">
                     🐕 Aceita Pets
                   </Label>
                 </div>
@@ -1317,7 +1330,7 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
                     checked={formData.amenidades.lounge}
                     onCheckedChange={(checked) => handleAmenidadeChange("lounge", checked)}
                   />
-                  <Label htmlFor="lounge" className="cursor-pointer">
+                  <Label htmlFor="lounge" className="cursor-pointer text-sm">
                     🛋️ Lounge
                   </Label>
                 </div>
@@ -1328,7 +1341,7 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
                     checked={formData.amenidades.lounge_bar}
                     onCheckedChange={(checked) => handleAmenidadeChange("lounge_bar", checked)}
                   />
-                  <Label htmlFor="lounge_bar" className="cursor-pointer">
+                  <Label htmlFor="lounge_bar" className="cursor-pointer text-sm">
                     🍷 Lounge Bar
                   </Label>
                 </div>
@@ -1339,7 +1352,7 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
                     checked={formData.amenidades.musica_ambiente}
                     onCheckedChange={(checked) => handleAmenidadeChange("musica_ambiente", checked)}
                   />
-                  <Label htmlFor="musica_ambiente" className="cursor-pointer">
+                  <Label htmlFor="musica_ambiente" className="cursor-pointer text-sm">
                     🎵 Música Ambiente
                   </Label>
                 </div>
@@ -1350,7 +1363,7 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
                     checked={formData.amenidades.seguranca}
                     onCheckedChange={(checked) => handleAmenidadeChange("seguranca", checked)}
                   />
-                  <Label htmlFor="seguranca" className="cursor-pointer">
+                  <Label htmlFor="seguranca" className="cursor-pointer text-sm">
                     🛡️ Segurança 24h
                   </Label>
                 </div>
@@ -1360,36 +1373,36 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
 
           {/* Localização COM ALERTA */}
           <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Localização</CardTitle>
+            <CardHeader className="p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
+                <CardTitle className="text-lg sm:text-xl">Localização</CardTitle>
                 <Button
                   type="button"
                   variant="outline"
                   onClick={handleUsarMinhaLocalizacao}
                   disabled={buscandoLocalizacao}
-                  className="border-blue-300 text-blue-700 hover:bg-blue-50"
+                  className="border-blue-300 text-blue-700 hover:bg-blue-50 text-xs sm:text-sm h-9 px-3 sm:h-auto sm:px-4 w-full sm:w-auto"
                 >
                   {buscandoLocalizacao ? (
                     <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin" />
                       Buscando...
                     </>
                   ) : (
                     <>
-                      <MapPin className="w-4 h-4 mr-2" />
+                      <MapPin className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                       Usar Minha Localização
                     </>
                   )}
                 </Button>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="p-4 sm:p-6 space-y-3 sm:space-y-4">
               {/* ALERTA IMPORTANTE */}
               {(formData.tipo_anuncio === "clinica" || formData.tipo_anuncio === "consultorio") && (
                 <Alert className="bg-blue-50 border-blue-200">
                   <MapPin className="h-4 w-4 text-blue-600" />
-                  <AlertDescription className="text-blue-900">
+                  <AlertDescription className="text-blue-900 text-sm">
                     <strong>📍 Importante:</strong> Para garantir que seu estabelecimento apareça no
                     <strong> Mapa da Estética</strong>, preencha <strong>todas as informações de endereço</strong>
                     (cidade, estado, endereço completo e CEP). Quanto mais completo, melhor sua visibilidade!
@@ -1397,42 +1410,46 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
                 </Alert>
               )}
 
-              <div className="grid md:grid-cols-3 gap-4">
+              <div className="grid sm:grid-cols-3 gap-3 sm:gap-4">
                 <div>
-                  <Label>Cidade *</Label>
+                  <Label className="text-sm">Cidade *</Label>
                   <Input
                     value={formData.cidade}
                     onChange={(e) => handleInputChange("cidade", e.target.value)}
                     required
+                    className="h-10 sm:h-11 text-sm"
                   />
                 </div>
 
                 <div>
-                  <Label>Estado *</Label>
+                  <Label className="text-sm">Estado *</Label>
                   <Input
                     value={formData.estado}
                     onChange={(e) => handleInputChange("estado", e.target.value)}
                     maxLength={2}
                     required
+                    className="h-10 sm:h-11 text-sm"
                   />
                 </div>
 
                 <div>
-                  <Label>CEP</Label>
+                  <Label className="text-sm">CEP</Label>
                   <Input
                     value={formData.cep}
                     onChange={(e) => handleInputChange("cep", e.target.value)}
                     placeholder="00000-000"
+                    className="h-10 sm:h-11 text-sm"
                   />
                 </div>
               </div>
 
               <div>
-                <Label>Endereço Completo</Label>
+                <Label className="text-sm">Endereço Completo</Label>
                 <Input
                   value={formData.endereco}
                   onChange={(e) => handleInputChange("endereco", e.target.value)}
                   placeholder="Rua, número, bairro"
+                  className="h-10 sm:h-11 text-sm"
                 />
               </div>
             </CardContent>
@@ -1440,28 +1457,28 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
 
           {/* Torne-se um Profissional Verificado */}
           <Card className="border-2 border-blue-300 bg-gradient-to-br from-blue-50 to-cyan-50">
-            <CardHeader>
+            <CardHeader className="p-4 sm:p-6">
               <div className="flex items-center gap-2">
-                <Shield className="w-6 h-6 text-blue-600" />
-                <CardTitle className="text-blue-900">Torne-se um Profissional Verificado</CardTitle>
+                <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
+                <CardTitle className="text-lg sm:text-xl text-blue-900">Torne-se um Profissional Verificado</CardTitle>
               </div>
               <p className="text-sm text-blue-700 mt-2">
                 Ganhe o selo de verificação ✓ similar ao Meta e aumente sua credibilidade!
               </p>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="p-4 sm:p-6 space-y-3 sm:space-y-4">
               <Alert className="bg-white border-blue-200">
                 <AlertCircle className="h-4 w-4 text-blue-600" />
-                <AlertDescription className="text-blue-900">
+                <AlertDescription className="text-blue-900 text-sm">
                   <strong>Como funciona:</strong> Envie os 3 documentos abaixo e nossa equipe irá verificar.
                   Após aprovação, você receberá o selo de profissional verificado no seu anúncio!
                 </AlertDescription>
               </Alert>
 
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {/* Licença Sanitária */}
                 <div>
-                  <Label className="flex items-center gap-2">
+                  <Label className="flex items-center gap-2 text-sm">
                     <FileText className="w-4 h-4 text-blue-600" />
                     Licença Sanitária
                   </Label>
@@ -1473,6 +1490,7 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
                         variant="outline"
                         size="sm"
                         onClick={() => setDocumentosVerificacao(prev => ({ ...prev, licenca_sanitaria: null }))}
+                        className="h-8 px-2"
                       >
                         Remover
                       </Button>
@@ -1505,7 +1523,7 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
 
                 {/* Alvará de Funcionamento */}
                 <div>
-                  <Label className="flex items-center gap-2">
+                  <Label className="flex items-center gap-2 text-sm">
                     <FileText className="w-4 h-4 text-blue-600" />
                     Alvará de Funcionamento
                   </Label>
@@ -1517,6 +1535,7 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
                         variant="outline"
                         size="sm"
                         onClick={() => setDocumentosVerificacao(prev => ({ ...prev, alvara_funcionamento: null }))}
+                        className="h-8 px-2"
                       >
                         Remover
                       </Button>
@@ -1549,7 +1568,7 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
 
                 {/* Registro Profissional */}
                 <div>
-                  <Label className="flex items-center gap-2">
+                  <Label className="flex items-center gap-2 text-sm">
                     <FileText className="w-4 h-4 text-blue-600" />
                     Registro Profissional (CRO, CREFITO, etc)
                   </Label>
@@ -1561,6 +1580,7 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
                         variant="outline"
                         size="sm"
                         onClick={() => setDocumentosVerificacao(prev => ({ ...prev, registro_profissional: null }))}
+                        className="h-8 px-2"
                       >
                         Remover
                       </Button>
@@ -1596,7 +1616,7 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
                 type="button"
                 onClick={handleEnviarVerificacao}
                 disabled={!Object.values(documentosVerificacao).every(doc => doc !== null)}
-                className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+                className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 h-11"
               >
                 <Shield className="w-4 h-4 mr-2" />
                 Enviar para Verificação
@@ -1604,19 +1624,19 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
             </CardContent>
           </Card>
 
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <Button
               type="button"
               variant="outline"
               onClick={() => navigate(createPageUrl("Inicio"))}
-              className="flex-1"
+              className="w-full sm:flex-1 h-11 sm:h-auto order-2 sm:order-1"
             >
               Cancelar
             </Button>
             <Button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
+              className="w-full sm:flex-1 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 h-11 sm:h-auto order-1 sm:order-2"
             >
               {loading ? "Cadastrando..." : "Cadastrar Anúncio"}
             </Button>
@@ -1626,7 +1646,7 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
 
       {/* Modal de Assistente de Título */}
       <Dialog open={mostrarAssistenteTitulo} onOpenChange={setMostrarAssistenteTitulo}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Lightbulb className="w-5 h-5 text-blue-600" />
@@ -1700,7 +1720,7 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
 
       {/* Modal de Assistente de Descrição */}
       <Dialog open={mostrarAssistenteDescricao} onOpenChange={setMostrarAssistenteDescricao}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Lightbulb className="w-5 h-5 text-blue-600" />
@@ -1774,7 +1794,7 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
 
       {/* Modal de Geração de Imagem */}
       <Dialog open={mostrarModalImagem} onOpenChange={setMostrarModalImagem}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="w-6 h-6 text-purple-600" />
@@ -1786,45 +1806,45 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
           </DialogHeader>
 
           <div className="space-y-6 py-4">
-            <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-8 rounded-xl border-2 border-purple-200 text-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Wand2 className="w-10 h-10 text-white" />
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 sm:p-8 rounded-xl border-2 border-purple-200 text-center">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                <Wand2 className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 sm:mb-3">
                 Deseja Contratar Este Serviço Exclusivo?
               </h3>
-              <p className="text-gray-700 mb-6 leading-relaxed">
+              <p className="text-sm sm:text-base text-gray-700 mb-5 sm:mb-6 leading-relaxed">
                 Nossa equipe de design profissional criará imagens personalizadas e de alta qualidade
                 para o seu anúncio, garantindo que você se destaque da concorrência!
               </p>
 
-              <div className="grid md:grid-cols-3 gap-4 mb-6 text-left">
-                <div className="bg-white p-4 rounded-lg">
+              <div className="grid sm:grid-cols-3 gap-3 sm:gap-4 mb-5 sm:mb-6 text-left">
+                <div className="bg-white p-3 sm:p-4 rounded-lg">
                   <div className="flex items-center gap-2 mb-2">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
                     <span className="font-semibold text-sm">Design Profissional</span>
                   </div>
                   <p className="text-xs text-gray-600">Imagens criadas por designers especializados</p>
                 </div>
 
-                <div className="bg-white p-4 rounded-lg">
+                <div className="bg-white p-3 sm:p-4 rounded-lg">
                   <div className="flex items-center gap-2 mb-2">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
                     <span className="font-semibold text-sm">Alta Qualidade</span>
                   </div>
                   <p className="text-xs text-gray-600">Imagens em alta resolução e otimizadas</p>
                 </div>
 
-                <div className="bg-white p-4 rounded-lg">
+                <div className="bg-white p-3 sm:p-4 rounded-lg">
                   <div className="flex items-center gap-2 mb-2">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
                     <span className="font-semibold text-sm">Personalização</span>
                   </div>
                   <p className="text-xs text-gray-600">100% adaptado à sua identidade visual</p>
                 </div>
               </div>
 
-              <Alert className="bg-yellow-50 border-yellow-200 mb-6">
+              <Alert className="bg-yellow-50 border-yellow-200 mb-5 sm:mb-6">
                 <AlertCircle className="h-4 w-4 text-yellow-600" />
                 <AlertDescription className="text-yellow-800 text-sm">
                   <strong>Investimento:</strong> Entre em contato para saber valores e prazos personalizados para suas necessidades!
@@ -1837,13 +1857,13 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
             <Button
               variant="outline"
               onClick={() => setMostrarModalImagem(false)}
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto h-10 sm:h-auto"
             >
               Talvez Depois
             </Button>
             <Button
               onClick={handleContratarDesign}
-              className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 font-bold"
+              className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 font-bold h-10 sm:h-auto"
             >
               <MessageCircle className="w-4 h-4 mr-2" />
               Falar com Equipe de Design
@@ -1854,7 +1874,7 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
 
       {/* Modal de Gerador de Anúncio com IA */}
       <Dialog open={mostrarGeradorIA} onOpenChange={setMostrarGeradorIA}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-[95vw] sm:max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Wand2 className="w-5 h-5 text-purple-600" />
