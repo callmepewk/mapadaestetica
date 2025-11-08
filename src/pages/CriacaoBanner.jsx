@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
@@ -28,14 +29,50 @@ import {
   Link as LinkIcon,
   CheckCircle,
   Sparkles,
+  Clock, // Added Clock icon
 } from "lucide-react";
 
 const dimensoesPorPlano = {
-  cobre: { largura: 728, altura: 90, descricao: "Banner Leaderboard (728x90px)", limite: 1 },
-  prata: { largura: 970, altura: 250, descricao: "Banner Billboard (970x250px)", limite: 5 },
-  ouro: { largura: 1200, altura: 300, descricao: "Banner Premium (1200x300px)", limite: 10 },
-  diamante: { largura: 1400, altura: 350, descricao: "Banner Destaque (1400x350px)", limite: 15 },
-  platina: { largura: 1920, altura: 400, descricao: "Banner Full Width (1920x400px)", limite: 999 }
+  cobre: {
+    largura: 728,
+    altura: 90,
+    descricao: "Banner Leaderboard (728x90px)",
+    limite: 1,
+    diasExibicao: 10,
+    posicoes: ["home_rodape"]
+  },
+  prata: {
+    largura: 970,
+    altura: 250,
+    descricao: "Banner Billboard (970x250px)",
+    limite: 5,
+    diasExibicao: 15,
+    posicoes: ["home_topo", "home_rodape", "sidebar"]
+  },
+  ouro: {
+    largura: 1200,
+    altura: 300,
+    descricao: "Banner Premium (1200x300px)",
+    limite: 10,
+    diasExibicao: 20,
+    posicoes: ["home_topo", "home_meio", "home_rodape", "sidebar", "blog", "produtos"]
+  },
+  diamante: {
+    largura: 1400,
+    altura: 350,
+    descricao: "Banner Destaque (1400x350px)",
+    limite: 15,
+    diasExibicao: 25,
+    posicoes: ["home_topo", "home_meio", "home_rodape", "sidebar", "blog", "produtos", "mapa"]
+  },
+  platina: {
+    largura: 1920,
+    altura: 400,
+    descricao: "Banner Full Width (1920x400px)",
+    limite: 999,
+    diasExibicao: 30,
+    posicoes: ["home_topo", "home_meio", "home_rodape", "sidebar", "blog", "produtos", "mapa"]
+  }
 };
 
 const posicoesDisponiveis = [
@@ -80,6 +117,10 @@ export default function CriacaoBanner() {
     data_fim: "",
     dimensoes_banner: { largura: 0, altura: 0 },
     limite_banners: 0,
+    dias_exibicao_mes: 0, // Novo
+    tempo_exibicao_segundos: 5, // Novo
+    frequencia_exibicao: "sempre", // Novo
+    pode_fechar: true, // Novo
     prioridade: 0
   });
 
@@ -93,28 +134,31 @@ export default function CriacaoBanner() {
     const fetchUser = async () => {
       try {
         const userData = await base44.auth.me();
-        
+
         const isPatrocinador = userData.plano_patrocinador && userData.plano_patrocinador !== 'nenhum';
         const isAdmin = userData.role === 'admin';
-        
+
         if (!isPatrocinador && !isAdmin) {
           alert("Acesso negado! Esta área é exclusiva para Patrocinadores e Administradores.");
           navigate(createPageUrl("Inicio"));
           return;
         }
-        
+
         setUser(userData);
-        
-        // Definir plano automaticamente
+
         const plano = isAdmin ? 'platina' : userData.plano_patrocinador;
         const dimensoes = dimensoesPorPlano[plano];
-        
+
         setFormData(prev => ({
           ...prev,
           plano_patrocinador: plano,
           nome_empresa: userData.full_name || userData.nome_empresa || "",
           dimensoes_banner: { largura: dimensoes.largura, altura: dimensoes.altura },
           limite_banners: dimensoes.limite,
+          dias_exibicao_mes: dimensoes.diasExibicao, // Inicializa dias_exibicao_mes
+          tempo_exibicao_segundos: 5, // Default para 5 segundos
+          frequencia_exibicao: "sempre", // Default
+          pode_fechar: true, // Default
           prioridade: plano === 'platina' ? 5 : plano === 'diamante' ? 4 : plano === 'ouro' ? 3 : plano === 'prata' ? 2 : 1
         }));
       } catch (error) {
@@ -183,9 +227,16 @@ export default function CriacaoBanner() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!formData.titulo || !formData.imagem_banner || !formData.nome_empresa) {
       setErro("Preencha os campos obrigatórios: título, imagem do banner e nome da empresa");
+      return;
+    }
+
+    // Verificar se a posição é permitida para o plano
+    const currentDimensoes = dimensoesPorPlano[formData.plano_patrocinador];
+    if (!currentDimensoes.posicoes.includes(formData.posicao)) {
+      setErro(`Seu plano ${formData.plano_patrocinador.toUpperCase()} não permite exibição na posição "${posicoesDisponiveis.find(p => p.valor === formData.posicao)?.label || formData.posicao}". Posições disponíveis: ${currentDimensoes.posicoes.map(p => posicoesDisponiveis.find(pos => pos.valor === p)?.label || p).join(', ')}`);
       return;
     }
 
@@ -193,14 +244,20 @@ export default function CriacaoBanner() {
     setErro(null);
 
     try {
+      const mesAtual = new Date().toISOString().substring(0, 7); // YYYY-MM
+
       await base44.entities.Banner.create({
         ...formData,
+        mes_referencia: mesAtual, // Novo campo
+        dias_exibidos_mes_atual: 0, // Novo campo
         metricas: {
           visualizacoes: 0,
           cliques: 0,
           tempo_medio_visualizacao: 0,
           compartilhamentos: 0,
-          conversoes_produtos: 0
+          conversoes_produtos: 0,
+          banners_fechados: 0, // Novo campo
+          banners_pulados: 0 // Novo campo
         },
         historico_metricas: []
       });
@@ -255,28 +312,71 @@ export default function CriacaoBanner() {
           </p>
         </div>
 
-        {/* Plano e Dimensões */}
+        {/* Plano e Restrições - EXPANDIDO */}
         <Card className="mb-4 sm:mb-6 border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50">
           <CardContent className="p-4 sm:p-6">
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <h3 className="font-bold text-base sm:text-lg mb-2 flex items-center gap-2">
-                  <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
-                  Seu Plano: {formData.plano_patrocinador.toUpperCase()}
-                </h3>
-                <p className="text-xs sm:text-sm text-gray-700">
-                  Limite de banners rotativos: <strong>{dimensoes?.limite}</strong>
-                </p>
+            <div className="space-y-4">
+              {/* Informações do Plano */}
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <h3 className="font-bold text-base sm:text-lg mb-2 flex items-center gap-2">
+                    <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+                    Seu Plano: {formData.plano_patrocinador.toUpperCase()}
+                  </h3>
+                  <div className="space-y-1 text-xs sm:text-sm">
+                    <p className="text-gray-700">
+                      📊 Limite de banners: <strong>{dimensoes?.limite}</strong>
+                    </p>
+                    <p className="text-gray-700">
+                      📅 Dias de exibição/mês: <strong>{dimensoes?.diasExibicao} dias</strong>
+                    </p>
+                    <p className="text-gray-700">
+                      ⏱️ Tempo por banner: <strong>5 segundos (máximo)</strong>
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-sm sm:text-base mb-2">Dimensões Obrigatórias:</h4>
+                  <div className="bg-white p-3 rounded border-2 border-purple-300">
+                    <p className="text-xs sm:text-sm text-purple-800 font-mono font-bold">
+                      {dimensoes?.largura} x {dimensoes?.altura} pixels
+                    </p>
+                    <p className="text-xs text-gray-600 mt-1">
+                      {dimensoes?.descricao}
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div>
-                <h4 className="font-semibold text-sm sm:text-base mb-2">Dimensões do Banner:</h4>
-                <p className="text-xs sm:text-sm text-purple-800 font-mono bg-white px-3 py-2 rounded border">
-                  {dimensoes?.largura} x {dimensoes?.altura} pixels
-                </p>
-                <p className="text-xs text-gray-600 mt-1">
-                  {dimensoes?.descricao}
-                </p>
+
+              {/* Posições Disponíveis */}
+              <div className="pt-4 border-t border-purple-200">
+                <h4 className="font-semibold text-sm sm:text-base mb-3">📍 Posições Disponíveis no Seu Plano:</h4>
+                <div className="flex flex-wrap gap-2">
+                  {dimensoes?.posicoes.map((pos) => {
+                    const posInfo = posicoesDisponiveis.find(p => p.valor === pos);
+                    return (
+                      <Badge key={pos} className="bg-green-100 text-green-800 text-xs">
+                        ✓ {posInfo?.label || pos}
+                      </Badge>
+                    );
+                  })}
+                </div>
               </div>
+
+              {/* Restrições */}
+              <Alert className="bg-yellow-50 border-yellow-300">
+                <AlertCircle className="h-4 w-4 text-yellow-600" />
+                <AlertDescription className="text-yellow-900 text-xs sm:text-sm">
+                  <p className="font-semibold mb-2">⚠️ Importante - Regras do Plano {formData.plano_patrocinador.toUpperCase()}:</p>
+                  <ul className="space-y-1 text-xs list-disc list-inside">
+                    <li>Seu banner será exibido por <strong>{dimensoes?.diasExibicao} dias no mês</strong></li>
+                    <li>Cada banner aparece por <strong>máximo de 5 segundos</strong> antes de rotacionar</li>
+                    <li>Usuários podem <strong>pular ou fechar</strong> o banner a qualquer momento</li>
+                    <li>Você pode ter até <strong>{dimensoes?.limite} banners</strong> em rotação</li>
+                    <li>Dimensões obrigatórias: <strong>{dimensoes?.largura}x{dimensoes?.altura}px</strong></li>
+                  </ul>
+                </AlertDescription>
+              </Alert>
             </div>
           </CardContent>
         </Card>
@@ -357,22 +457,95 @@ export default function CriacaoBanner() {
                   />
                 </div>
               </div>
+            </CardContent>
+          </Card>
 
+          {/* Configurações de Exibição - NOVO */}
+          <Card className="border-none shadow-lg">
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-lg sm:text-xl flex items-center gap-2">
+                <Clock className="w-5 h-5 text-blue-600" />
+                Configurações de Exibição
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6 space-y-4">
               <div>
-                <Label className="text-sm sm:text-base">Posição de Exibição</Label>
+                <Label className="text-sm sm:text-base">Posição de Exibição *</Label>
                 <Select value={formData.posicao} onValueChange={(value) => setFormData({ ...formData, posicao: value })}>
                   <SelectTrigger className="mt-1.5 h-10 sm:h-11 text-sm sm:text-base">
                     <SelectValue placeholder="Selecione onde o banner aparecerá" />
                   </SelectTrigger>
                   <SelectContent>
-                    {posicoesDisponiveis.map((pos) => (
-                      <SelectItem key={pos.valor} value={pos.valor} className="text-sm sm:text-base">
-                        {pos.label}
-                      </SelectItem>
-                    ))}
+                    {posicoesDisponiveis.map((pos) => {
+                      const permitido = dimensoes.posicoes.includes(pos.valor);
+                      return (
+                        <SelectItem
+                          key={pos.valor}
+                          value={pos.valor}
+                          disabled={!permitido}
+                          className="text-sm sm:text-base"
+                        >
+                          {permitido ? "✓ " : "🔒 "}{pos.label}
+                          {!permitido && " (Não disponível no seu plano)"}
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               </div>
+
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm sm:text-base">Tempo de Exibição (segundos)</Label>
+                  <Input
+                    type="number"
+                    min="3"
+                    max="5"
+                    value={formData.tempo_exibicao_segundos}
+                    onChange={(e) => setFormData({ ...formData, tempo_exibicao_segundos: Math.min(5, Math.max(3, parseInt(e.target.value) || 5)) })}
+                    className="mt-1.5 h-10 sm:h-11 text-sm sm:text-base"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Mínimo: 3 segundos, Máximo: 5 segundos</p>
+                </div>
+
+                <div>
+                  <Label className="text-sm sm:text-base">Frequência de Exibição</Label>
+                  <Select
+                    value={formData.frequencia_exibicao}
+                    onValueChange={(value) => setFormData({ ...formData, frequencia_exibicao: value })}
+                  >
+                    <SelectTrigger className="mt-1.5 h-10 sm:h-11 text-sm sm:text-base">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sempre">Sempre que possível</SelectItem>
+                      <SelectItem value="uma_vez_por_sessao">Uma vez por sessão</SelectItem>
+                      <SelectItem value="uma_vez_por_dia">Uma vez por dia</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="pode_fechar"
+                  checked={formData.pode_fechar}
+                  onChange={(e) => setFormData({ ...formData, pode_fechar: e.target.checked })}
+                  className="w-4 h-4 rounded"
+                />
+                <Label htmlFor="pode_fechar" className="text-sm cursor-pointer">
+                  Permitir que usuários fechem o banner
+                </Label>
+              </div>
+
+              <Alert className="bg-blue-50 border-blue-200">
+                <AlertCircle className="h-4 w-4 text-blue-600" />
+                <AlertDescription className="text-blue-800 text-xs sm:text-sm">
+                  💡 <strong>Dica:</strong> Usuários sempre podem pular para o próximo banner usando as setas de navegação.
+                  Banners mais criativos e relevantes têm maior taxa de engajamento!
+                </AlertDescription>
+              </Alert>
             </CardContent>
           </Card>
 
@@ -487,6 +660,16 @@ export default function CriacaoBanner() {
             </CardContent>
           </Card>
 
+          {/* VALIDAÇÃO DE DIMENSÕES - ALERTA */}
+          {formData.imagem_banner && (
+            <Alert className="bg-green-50 border-green-200">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              <AlertDescription className="text-green-800 text-xs sm:text-sm">
+                ✅ Imagem carregada! Certifique-se de que as dimensões estão corretas: <strong>{dimensoes?.largura}x{dimensoes?.altura}px</strong>
+              </AlertDescription>
+            </Alert>
+          )}
+
           {/* Links */}
           <Card className="border-none shadow-lg">
             <CardHeader className="p-4 sm:p-6">
@@ -525,7 +708,7 @@ export default function CriacaoBanner() {
               {/* Adicionar novo link */}
               <div className="p-3 sm:p-4 bg-blue-50 rounded-lg border-2 border-blue-200 space-y-3">
                 <h4 className="font-semibold text-sm sm:text-base">Adicionar Novo Link</h4>
-                
+
                 <div className="grid sm:grid-cols-2 gap-3">
                   <div>
                     <Label className="text-xs sm:text-sm">Tipo de Link</Label>

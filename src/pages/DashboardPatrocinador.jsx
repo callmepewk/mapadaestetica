@@ -26,6 +26,8 @@ import {
   Trash2,
   Loader2,
   AlertCircle,
+  X, // Added X icon for closed banners
+  ChevronRight, // Added ChevronRight icon for skipped banners
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
@@ -112,8 +114,7 @@ export default function DashboardPatrocinador() {
     
     try {
       await base44.entities.Banner.delete(id);
-      alert("Banner excluído com sucesso!");
-      refetchBanners();
+      window.location.reload(); // Per outline request
     } catch (error) {
       console.error("Erro ao excluir banner:", error);
       alert("Erro ao excluir banner");
@@ -125,8 +126,7 @@ export default function DashboardPatrocinador() {
     
     try {
       await base44.entities.Produto.delete(id);
-      alert("Produto excluído com sucesso!");
-      refetchProdutos();
+      window.location.reload(); // Per outline request
     } catch (error) {
       console.error("Erro ao excluir produto:", error);
       alert("Erro ao excluir produto");
@@ -138,8 +138,7 @@ export default function DashboardPatrocinador() {
     
     try {
       await base44.entities.ArtigoBlog.delete(id);
-      alert("Artigo excluído com sucesso!");
-      refetchArtigos();
+      window.location.reload(); // Per outline request
     } catch (error) {
       console.error("Erro ao excluir artigo:", error);
       alert("Erro ao excluir artigo");
@@ -154,53 +153,114 @@ export default function DashboardPatrocinador() {
         <meta charset="UTF-8">
         <title>Relatório de Performance - ${user?.full_name}</title>
         <style>
-          body { font-family: Arial, sans-serif; padding: 20px; }
-          h1 { color: #7C3AED; }
-          .metric { background: #F3F4F6; padding: 15px; margin: 10px 0; border-radius: 8px; }
+          body { font-family: Arial, sans-serif; padding: 20px; max-width: 1200px; margin: 0 auto; }
+          h1 { color: #7C3AED; border-bottom: 3px solid #7C3AED; padding-bottom: 10px; }
+          .header { background: linear-gradient(135deg, #7C3AED 0%, #EC4899 100%); color: white; padding: 20px; border-radius: 10px; margin-bottom: 30px; }
+          .metric { background: #F3F4F6; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 4px solid #7C3AED; }
           .metric h3 { margin: 0 0 10px 0; color: #374151; }
           .metric p { margin: 5px 0; font-size: 14px; }
+          .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin: 20px 0; }
+          .card { background: white; border: 2px solid #E5E7EB; padding: 15px; border-radius: 8px; }
+          .card h4 { margin: 0 0 10px 0; color: #7C3AED; }
           table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-          th, td { border: 1px solid #E5E7EB; padding: 8px; text-align: left; }
+          th, td { border: 1px solid #E5E7EB; padding: 12px 8px; text-align: left; font-size: 14px; }
           th { background: #7C3AED; color: white; }
+          .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 2px solid #E5E7EB; color: #6B7280; font-size: 12px; }
+          @media print {
+            .no-print { display: none; }
+            body { padding: 10px; }
+          }
         </style>
       </head>
       <body>
-        <h1>Relatório de Performance - ${periodoRelatorio.toUpperCase().replace('_', ' ')}</h1>
-        <p><strong>Patrocinador:</strong> ${user?.full_name || user?.nome_empresa}</p>
-        <p><strong>Plano:</strong> ${user?.plano_patrocinador?.toUpperCase()}</p>
-        <p><strong>Período:</strong> ${new Date().toLocaleDateString('pt-BR')}</p>
+        <div class="header">
+          <h1 style="margin: 0; color: white; border: none;">📊 Relatório de Performance</h1>
+          <p style="margin: 10px 0 0 0; font-size: 16px;"><strong>Período:</strong> ${periodoRelatorio.toUpperCase().replace('_', ' ')}</p>
+        </div>
         
-        <div class="metric">
-          <h3>📊 Métricas Gerais</h3>
-          <p><strong>Total de Visualizações:</strong> ${totalVisualizacoesBanners}</p>
-          <p><strong>Total de Cliques:</strong> ${totalCliquesBanners}</p>
-          <p><strong>Taxa de Cliques (CTR):</strong> ${totalVisualizacoesBanners > 0 ? ((totalCliquesBanners / totalVisualizacoesBanners) * 100).toFixed(2) : 0}%</p>
-          <p><strong>Compartilhamentos:</strong> ${totalCompartilhamentos}</p>
-          <p><strong>Conversões:</strong> ${totalConversoes}</p>
+        <div style="background: #F9FAFB; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+          <p style="margin: 5px 0;"><strong>Patrocinador:</strong> ${user?.full_name || user?.nome_empresa}</p>
+          <p style="margin: 5px 0;"><strong>Plano:</strong> ${user?.plano_patrocinador?.toUpperCase()}</p>
+          <p style="margin: 5px 0;"><strong>Data do Relatório:</strong> ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}</p>
+        </div>
+        
+        <div class="grid">
+          <div class="card">
+            <h4>👁️ Visualizações</h4>
+            <p style="font-size: 32px; font-weight: bold; color: #3B82F6; margin: 10px 0;">${totalVisualizacoesBanners.toLocaleString()}</p>
+          </div>
+          <div class="card">
+            <h4>🖱️ Cliques</h4>
+            <p style="font-size: 32px; font-weight: bold; color: #10B981; margin: 10px 0;">${totalCliquesBanners.toLocaleString()}</p>
+          </div>
+          <div class="card">
+            <h4>📊 Taxa de Cliques (CTR)</h4>
+            <p style="font-size: 32px; font-weight: bold; color: #8B5CF6; margin: 10px 0;">${totalVisualizacoesBanners > 0 ? ((totalCliquesBanners / totalVisualizacoesBanners) * 100).toFixed(2) : 0}%</p>
+          </div>
+          <div class="card">
+            <h4>🎯 Conversões</h4>
+            <p style="font-size: 32px; font-weight: bold; color: #F59E0B; margin: 10px 0;">${totalConversoes.toLocaleString()}</p>
+          </div>
         </div>
 
         <div class="metric">
           <h3>🎨 Banners</h3>
           <p><strong>Total de Banners:</strong> ${banners.length}</p>
           <p><strong>Banners Ativos:</strong> ${banners.filter(b => b.status === 'ativo').length}</p>
+          <p><strong>Banners Pausados:</strong> ${banners.filter(b => b.status === 'pausado').length}</p>
+          <p><strong>Total de Compartilhamentos:</strong> ${totalCompartilhamentos}</p>
+          <p><strong>Banners Fechados por Usuários:</strong> ${banners.reduce((acc, b) => acc + (b.metricas?.banners_fechados || 0), 0)}</p>
+          <p><strong>Banners Pulados:</strong> ${banners.reduce((acc, b) => acc + (b.metricas?.banners_pulados || 0), 0)}</p>
         </div>
 
         <div class="metric">
           <h3>🛍️ Produtos na Loja</h3>
           <p><strong>Total de Produtos:</strong> ${meusProdutos.length}</p>
           <p><strong>Produtos Ativos:</strong> ${meusProdutos.filter(p => p.status === 'ativo').length}</p>
+          <p><strong>Produtos Inativos:</strong> ${meusProdutos.filter(p => p.status === 'inativo').length}</p>
+          <p><strong>Produtos Esgotados:</strong> ${meusProdutos.filter(p => p.status === 'esgotado').length}</p>
         </div>
 
         <div class="metric">
           <h3>📰 Posts no Blog</h3>
           <p><strong>Total de Posts:</strong> ${meusArtigos.length}</p>
+          <p><strong>Posts Publicados:</strong> ${meusArtigos.filter(a => a.status === 'publicado').length}</p>
+          <p><strong>Posts Programados:</strong> ${meusArtigos.filter(a => a.status === 'programado').length}</p>
           <p><strong>Total de Visualizações:</strong> ${meusArtigos.reduce((acc, a) => acc + (a.visualizacoes || 0), 0)}</p>
           <p><strong>Total de Curtidas:</strong> ${meusArtigos.reduce((acc, a) => acc + (a.total_curtidas || 0), 0)}</p>
         </div>
 
-        <p style="margin-top: 30px; text-align: center; color: #6B7280; font-size: 12px;">
-          Relatório gerado em ${new Date().toLocaleString('pt-BR')} - Mapa da Estética
-        </p>
+        <h2 style="margin-top: 40px; color: #374151;">📋 Detalhamento de Banners</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Banner</th>
+              <th>Status</th>
+              <th>Visualizações</th>
+              <th>Cliques</th>
+              <th>CTR</th>
+              <th>Conversões</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${banners.map(b => `
+              <tr>
+                <td>${b.titulo}</td>
+                <td>${b.status}</td>
+                <td>${b.metricas?.visualizacoes || 0}</td>
+                <td>${b.metricas?.cliques || 0}</td>
+                <td>${b.metricas?.visualizacoes > 0 ? ((b.metricas?.cliques / b.metricas?.visualizacoes) * 100).toFixed(2) : 0}%</td>
+                <td>${b.metricas?.conversoes_produtos || 0}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+
+        <div class="footer">
+          <p><strong>Mapa da Estética</strong> - Plataforma de Marketing para Profissionais de Estética</p>
+          <p>Relatório gerado em ${new Date().toLocaleString('pt-BR')}</p>
+          <p>www.mapadaestetica.com.br | Suporte: (31) 97259-5643</p>
+        </div>
       </body>
       </html>
     `;
@@ -209,56 +269,65 @@ export default function DashboardPatrocinador() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `relatorio-${periodoRelatorio}-${new Date().toISOString().split('T')[0]}.html`;
+    a.download = `relatorio-patrocinador-${periodoRelatorio}-${new Date().toISOString().split('T')[0]}.html`;
     a.click();
     URL.revokeObjectURL(url);
 
-    alert("📄 Relatório HTML baixado!\n\n1. Abra o arquivo no navegador\n2. Clique com botão direito\n3. Selecione 'Imprimir' ou 'Salvar como PDF'");
+    alert("📄 Relatório HTML baixado!\n\nPara converter em PDF:\n1. Abra o arquivo no navegador\n2. Pressione Ctrl+P (Cmd+P no Mac)\n3. Selecione 'Salvar como PDF'\n4. Clique em 'Salvar'");
   };
 
   const gerarMensagemWhatsApp = () => {
     const mensagem = `
-📊 *RELATÓRIO DE PERFORMANCE - ${periodoRelatorio.toUpperCase().replace('_', ' ')}*
+📊 *RELATÓRIO DE PERFORMANCE*
+*${periodoRelatorio.toUpperCase().replace('_', ' ')}*
 
-*Patrocinador:* ${user?.full_name || user?.nome_empresa}
-*Plano:* ${user?.plano_patrocinador?.toUpperCase()}
-*Data:* ${new Date().toLocaleDateString('pt-BR')}
+👤 *Patrocinador:* ${user?.full_name || user?.nome_empresa}
+🏆 *Plano:* ${user?.plano_patrocinador?.toUpperCase()}
+📅 *Data:* ${new Date().toLocaleDateString('pt-BR')}
 
-━━━━━━━━━━━━━━━━━
-📈 *MÉTRICAS GERAIS*
-━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━
+📈 *MÉTRICAS PRINCIPAIS*
+━━━━━━━━━━━━━━━━━━━━━
 
-👁️ Visualizações: *${totalVisualizacoesBanners}*
-🖱️ Cliques: *${totalCliquesBanners}*
-📊 CTR: *${totalVisualizacoesBanners > 0 ? ((totalCliquesBanners / totalVisualizacoesBanners) * 100).toFixed(2) : 0}%*
-📤 Compartilhamentos: *${totalCompartilhamentos}*
-🎯 Conversões: *${totalConversoes}*
+👁️ *Visualizações:* ${totalVisualizacoesBanners.toLocaleString()}
+🖱️ *Cliques:* ${totalCliquesBanners.toLocaleString()}
+📊 *CTR:* ${totalVisualizacoesBanners > 0 ? ((totalCliquesBanners / totalVisualizacoesBanners) * 100).toFixed(2) : 0}%
+📤 *Compartilhamentos:* ${totalCompartilhamentos.toLocaleString()}
+🎯 *Conversões:* ${totalConversoes.toLocaleString()}
 
-━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━
 🎨 *BANNERS*
-━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━
 
 📋 Total: ${banners.length}
 ✅ Ativos: ${banners.filter(b => b.status === 'ativo').length}
+⏸️ Pausados: ${banners.filter(b => b.status === 'pausado').length}
+❌ Fechados por usuários: ${banners.reduce((acc, b) => acc + (b.metricas?.banners_fechados || 0), 0)}
+⏭️ Pulados: ${banners.reduce((acc, b) => acc + (b.metricas?.banners_pulados || 0), 0)}
 
-━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━
 🛍️ *PRODUTOS NA LOJA*
-━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━
 
 📦 Total: ${meusProdutos.length}
 ✅ Ativos: ${meusProdutos.filter(p => p.status === 'ativo').length}
+🎯 Conversões: ${totalConversoes}
 
-━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━
 📰 *POSTS NO BLOG*
-━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━
 
-📝 Total Posts: ${meusArtigos.length}
-👁️ Visualizações: ${meusArtigos.reduce((acc, a) => acc + (a.visualizacoes || 0), 0)}
-❤️ Curtidas: ${meusArtigos.reduce((acc, a) => acc + (a.total_curtidas || 0), 0)}
+📝 Total: ${meusArtigos.length}
+✅ Publicados: ${meusArtigos.filter(a => a.status === 'publicado').length}
+📅 Programados: ${meusArtigos.filter(a => a.status === 'programado').length}
+👁️ Visualizações: ${meusArtigos.reduce((acc, a) => acc + (a.visualizacoes || 0), 0).toLocaleString()}
+❤️ Curtidas: ${meusArtigos.reduce((acc, a) => acc + (a.total_curtidas || 0), 0).toLocaleString()}
 
-━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━
 📱 *Mapa da Estética*
+━━━━━━━━━━━━━━━━━━━━━
 www.mapadaestetica.com.br
+📞 Suporte: (31) 97259-5643
     `.trim();
 
     return mensagem;
@@ -275,6 +344,7 @@ www.mapadaestetica.com.br
     const url = `https://wa.me/${numeroLimpo}?text=${encodeURIComponent(mensagem)}`;
     window.open(url, '_blank');
     setMostrarExportWhatsApp(false);
+    setNumeroWhatsApp(""); // Clear number after sending
   };
 
   if (loading) {
@@ -415,7 +485,7 @@ www.mapadaestetica.com.br
             </TabsTrigger>
           </TabsList>
 
-          {/* Tab Banners - COM PAGINAÇÃO */}
+          {/* Tab Banners - COM PAGINAÇÃO E MÉTRICAS EXPANDIDAS */}
           <TabsContent value="banners">
             <Card className="border-none shadow-lg">
               <CardHeader className="p-4 sm:p-6">
@@ -430,7 +500,7 @@ www.mapadaestetica.com.br
                         disabled={paginaBanners === 1}
                         className="h-8 text-xs"
                       >
-                        Anterior
+                        ←
                       </Button>
                       <span className="flex items-center px-3 text-xs sm:text-sm">
                         {paginaBanners} / {totalPaginasBanners}
@@ -442,7 +512,7 @@ www.mapadaestetica.com.br
                         disabled={paginaBanners === totalPaginasBanners}
                         className="h-8 text-xs"
                       >
-                        Próxima
+                        →
                       </Button>
                     </div>
                   )}
@@ -476,28 +546,48 @@ www.mapadaestetica.com.br
                               <div className="min-w-0 flex-1">
                                 <h3 className="font-bold text-sm sm:text-base truncate">{banner.titulo}</h3>
                                 <p className="text-xs sm:text-sm text-gray-600 line-clamp-2">{banner.descricao}</p>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <Badge className={banner.status === 'ativo' ? 'bg-green-100 text-green-800 text-xs' : 'bg-gray-100 text-gray-800 text-xs'}>
+                                    {banner.status}
+                                  </Badge>
+                                  <span className="text-xs text-gray-500">
+                                    📅 {banner.dias_exibidos_mes_atual || 0}/{banner.dias_exibicao_mes || 0} dias este mês
+                                  </span>
+                                </div>
                               </div>
-                              <Badge className={banner.status === 'ativo' ? 'bg-green-100 text-green-800 text-xs' : 'bg-gray-100 text-gray-800 text-xs'}>
-                                {banner.status}
-                              </Badge>
                             </div>
                             
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mt-3 text-xs sm:text-sm">
-                              <div className="flex items-center gap-1">
-                                <Eye className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
-                                <span>{banner.metricas?.visualizacoes || 0}</span>
+                            {/* Métricas Detalhadas */}
+                            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mt-3 text-xs">
+                              <div className="text-center">
+                                <Eye className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 mx-auto mb-0.5" />
+                                <p className="font-bold">{banner.metricas?.visualizacoes || 0}</p>
+                                <p className="text-gray-500 text-xs">Views</p>
                               </div>
-                              <div className="flex items-center gap-1">
-                                <MousePointer className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
-                                <span>{banner.metricas?.cliques || 0}</span>
+                              <div className="text-center">
+                                <MousePointer className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 mx-auto mb-0.5" />
+                                <p className="font-bold">{banner.metricas?.cliques || 0}</p>
+                                <p className="text-gray-500 text-xs">Cliques</p>
                               </div>
-                              <div className="flex items-center gap-1">
-                                <Share2 className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
-                                <span>{banner.metricas?.compartilhamentos || 0}</span>
+                              <div className="text-center">
+                                <Share2 className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 mx-auto mb-0.5" />
+                                <p className="font-bold">{banner.metricas?.compartilhamentos || 0}</p>
+                                <p className="text-gray-500 text-xs">Shares</p>
                               </div>
-                              <div className="flex items-center gap-1">
-                                <Package className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
-                                <span>{banner.metricas?.conversoes_produtos || 0}</span>
+                              <div className="text-center">
+                                <Package className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 mx-auto mb-0.5" />
+                                <p className="font-bold">{banner.metricas?.conversoes_produtos || 0}</p>
+                                <p className="text-gray-500 text-xs">Vendas</p>
+                              </div>
+                              <div className="text-center">
+                                <X className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 mx-auto mb-0.5" />
+                                <p className="font-bold">{banner.metricas?.banners_fechados || 0}</p>
+                                <p className="text-gray-500 text-xs">Fechado</p>
+                              </div>
+                              <div className="text-center">
+                                <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 mx-auto mb-0.5" />
+                                <p className="font-bold">{banner.metricas?.banners_pulados || 0}</p>
+                                <p className="text-gray-500 text-xs">Pulado</p>
                               </div>
                             </div>
 
@@ -525,6 +615,19 @@ www.mapadaestetica.com.br
                         </div>
                       </div>
                     ))}
+
+                    {/* Alerta de Limite */}
+                    {banners.length > 0 && (
+                      <Alert className="mt-4 bg-purple-50 border-purple-200">
+                        <AlertCircle className="h-4 w-4 text-purple-600" />
+                        <AlertDescription className="text-purple-800 text-xs sm:text-sm">
+                          📊 Você tem <strong>{banners.length}</strong> banners cadastrados. 
+                          {banners.filter(b => b.status === 'ativo').length < (user?.plano_patrocinador === 'platina' ? 999 : 15) && 
+                            ` Você ainda pode criar mais banners!`
+                          }
+                        </AlertDescription>
+                      </Alert>
+                    )}
                   </div>
                 )}
               </CardContent>
@@ -583,7 +686,7 @@ www.mapadaestetica.com.br
             </div>
           </TabsContent>
 
-          {/* Tab Relatórios - COM EXPORTAÇÃO */}
+          {/* Tab Relatórios - ATUALIZADO COM MÉTRICAS DE ENGAJAMENTO */}
           <TabsContent value="relatorios">
             <Card className="border-none shadow-lg">
               <CardHeader className="p-4 sm:p-6">
@@ -597,7 +700,7 @@ www.mapadaestetica.com.br
                         onClick={() => setPeriodoRelatorio("tempo_real")}
                         className="flex-shrink-0 h-8 sm:h-9 text-xs"
                       >
-                        Tempo Real
+                        ⚡ Tempo Real
                       </Button>
                       <Button
                         size="sm"
@@ -605,7 +708,7 @@ www.mapadaestetica.com.br
                         onClick={() => setPeriodoRelatorio("semanal")}
                         className="flex-shrink-0 h-8 sm:h-9 text-xs"
                       >
-                        Semanal
+                        📅 Semanal
                       </Button>
                       <Button
                         size="sm"
@@ -613,7 +716,7 @@ www.mapadaestetica.com.br
                         onClick={() => setPeriodoRelatorio("mensal")}
                         className="flex-shrink-0 h-8 sm:h-9 text-xs"
                       >
-                        Mensal
+                        📊 Mensal
                       </Button>
                     </div>
                   </div>
@@ -732,6 +835,36 @@ www.mapadaestetica.com.br
                         <span className="text-gray-700">Alcance Estimado:</span>
                         <span className="font-bold text-green-900">
                           {(totalCompartilhamentos * 150).toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* NOVA: Engajamento dos Banners */}
+                  <div className="p-3 sm:p-4 bg-gradient-to-br from-red-50 to-rose-50 rounded-lg border-2 border-red-200">
+                    <h4 className="font-semibold text-sm sm:text-base mb-3 flex items-center gap-2">
+                      <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
+                      Engajamento
+                    </h4>
+                    <div className="space-y-2 text-xs sm:text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-700">Taxa de Engajamento:</span>
+                        <span className="font-bold text-red-900">
+                          {totalVisualizacoesBanners > 0 
+                            ? (((totalCliquesBanners + totalCompartilhamentos) / totalVisualizacoesBanners) * 100).toFixed(2) 
+                            : 0}%
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-700">Banners Fechados:</span>
+                        <span className="font-bold text-red-900">
+                          {banners.reduce((acc, b) => acc + (b.metricas?.banners_fechados || 0), 0)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-700">Banners Pulados:</span>
+                        <span className="font-bold text-red-900">
+                          {banners.reduce((acc, b) => acc + (b.metricas?.banners_pulados || 0), 0)}
                         </span>
                       </div>
                     </div>
@@ -1005,7 +1138,7 @@ www.mapadaestetica.com.br
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
-              <Label htmlFor="whatsapp-number" className="text-sm sm:text-base">Número do WhatsApp</Label>
+              <Label htmlFor="whatsapp-number" className="text-sm sm:text-base">Número do WhatsApp (com DDD)</Label>
               <InputUI
                 id="whatsapp-number"
                 value={numeroWhatsApp}
@@ -1014,7 +1147,7 @@ www.mapadaestetica.com.br
                 className="mt-1.5 h-10 sm:h-11 text-sm sm:text-base"
               />
               <p className="text-xs text-gray-500 mt-1">
-                Formato: Código do país + DDD + número (sem espaços)
+                Formato: Código do país + DDD + número (apenas números)
               </p>
             </div>
 
@@ -1028,9 +1161,10 @@ www.mapadaestetica.com.br
               </Button>
               <Button
                 onClick={handleEnviarWhatsApp}
+                disabled={!numeroWhatsApp}
                 className="flex-1 bg-green-600 hover:bg-green-700"
               >
-                Enviar
+                📱 Enviar
               </Button>
             </div>
           </div>

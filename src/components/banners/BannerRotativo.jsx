@@ -1,81 +1,161 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
+import { ChevronLeft, ChevronRight, ExternalLink, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function BannerRotativo({ posicao = "home_topo" }) {
   const [indiceAtivo, setIndiceAtivo] = useState(0);
   const [tempoVisualizacao, setTempoVisualizacao] = useState(0);
+  const [progresso, setProgresso] = useState(0);
+  const [bannerFechado, setBannerFechado] = useState(false);
+  const [bannersVistosHoje, setBannersVistosHoje] = useState([]);
+  const intervaloRef = useRef(null);
+  const startTimeRef = useRef(null);
 
   const { data: banners = [] } = useQuery({
     queryKey: ['banners-ativos', posicao],
     queryFn: async () => {
       const hoje = new Date().toISOString().split('T')[0];
+      const mesAtual = new Date().toISOString().substring(0, 7);
+      
       const bannersAtivos = await base44.entities.Banner.filter({
         status: 'ativo',
         posicao: posicao,
         data_inicio: { $lte: hoje }
-      }, '-prioridade', 20);
+      }, '-prioridade', 50);
       
-      return bannersAtivos.filter(b => !b.data_fim || b.data_fim >= hoje);
+      // Filtrar por data fim, dias de exibição no mês, e frequência
+      const bannersFiltrados = [];
+      
+      for (const banner of bannersAtivos) {
+        // Verificar data fim
+        if (banner.data_fim && banner.data_fim < hoje) continue;
+        
+        // Resetar contador se mudou de mês
+        if (banner.mes_referencia !== mesAtual) {
+          await base44.entities.Banner.update(banner.id, {
+            mes_referencia: mesAtual,
+            dias_exibidos_mes_atual: 0
+          });
+          banner.dias_exibidos_mes_atual = 0;
+        }
+        
+        // Verificar se ainda tem dias disponíveis no mês
+        if (banner.dias_exibidos_mes_atual >= banner.dias_exibicao_mes) continue;
+        
+        bannersFiltrados.push(banner);
+      }
+      
+      return bannersFiltrados;
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 2 * 60 * 1000,
+    refetchInterval: 5 * 60 * 1000,
   });
 
-  // Auto-rotação dos banners
+  // Verificar banners vistos hoje (localStorage)
   useEffect(() => {
-    if (banners.length <= 1) return;
+    const hoje = new Date().toISOString().split('T')[0];
+    const stored = localStorage.getItem(`banners_vistos_${hoje}`);
+    if (stored) {
+      setBannersVistosHoje(JSON.parse(stored));
+    }
+  }, []);
+
+  // Filtrar por frequência
+  const bannersVisiveis = banners.filter(banner => {
+    if (banner.frequencia_exibicao === 'uma_vez_por_dia') {
+      return !bannersVistosHoje.includes(banner.id);
+    }
+    return true;
+  });
+
+  // Auto-rotação com tempo configurável por banner
+  useEffect(() => {
+    if (bannersVisiveis.length <= 1 || bannerFechado) return;
+
+    const bannerAtual = bannersVisiveis[indiceAtivo];
+    const tempoExibicao = (bannerAtual?.tempo_exibicao_segundos || 5) * 1000;
+
+    startTimeRef.current = Date.now();
     
-    const interval = setInterval(() => {
-      setIndiceAtivo((prev) => (prev + 1) % banners.length);
-    }, 8000);
+    // Atualizar progresso
+    const progressInterval = setInterval(() => {
+      const elapsed = Date.now() - startTimeRef.current;
+      setProgresso((elapsed / tempoExibicao) * 100);
+    }, 50);
 
-    return () => clearInterval(interval);
-  }, [banners.length]);
-
-  // Rastrear tempo de visualização
-  useEffect(() => {
-    if (banners.length === 0) return;
-
-    const startTime = Date.now();
-    const interval = setInterval(() => {
-      setTempoVisualizacao(Math.floor((Date.now() - startTime) / 1000));
-    }, 1000);
+    // Rotacionar banner
+    const timeout = setTimeout(() => {
+      handleProximoBanner();
+    }, tempoExibicao);
 
     return () => {
-      clearInterval(interval);
-      // Atualizar métrica de tempo de visualização
-      if (banners[indiceAtivo]) {
-        try {
-          const banner = banners[indiceAtivo];
-          const novoTempo = Math.floor((Date.now() - startTime) / 1000);
-          const mediaAtual = banner.metricas?.tempo_medio_visualizacao || 0;
-          const views = banner.metricas?.visualizacoes || 0;
-          const novaMedia = views > 0 ? (mediaAtual * views + novoTempo) / (views + 1) : novoTempo;
-          
-          base44.entities.Banner.update(banner.id, {
-            metricas: {
-              ...banner.metricas,
-              tempo_medio_visualizacao: Math.floor(novaMedia)
-            }
-          });
-        } catch (error) {
-          console.error("Erro ao atualizar tempo de visualização:", error);
-        }
-      }
+      clearTimeout(timeout);
+      clearInterval(progressInterval);
     };
-  }, [indiceAtivo, banners]);
+  }, [indiceAtivo, bannersVisiveis.length, bannerFechado]);
+
+  const handleProximoBanner = () => {
+    setIndiceAtivo((prev) => (prev + 1) % bannersVisiveis.length);
+    setProgresso(0);
+  };
+
+  const handleAnteriorBanner = () => {
+    setIndiceAtivo((prev) => (prev - 1 + bannersVisiveis.length) % bannersVisiveis.length);
+    setProgresso(0);
+  };
+
+  const handlePularBanner = async () => {
+    const bannerAtual = bannersVisiveis[indiceAtivo];
+    if (bannerAtual) {
+      try {
+        await base44.entities.Banner.update(bannerAtual.id, {
+          metricas: {
+            ...bannerAtual.metricas,
+            banners_pulados: (bannerAtual.metricas?.banners_pulados || 0) + 1
+          }
+        });
+      } catch (error) {
+        console.error("Erro ao registrar pulo:", error);
+      }
+    }
+    handleProximoBanner();
+  };
+
+  const handleFecharBanner = async () => {
+    const bannerAtual = bannersVisiveis[indiceAtivo];
+    if (bannerAtual) {
+      try {
+        await base44.entities.Banner.update(bannerAtual.id, {
+          metricas: {
+            ...bannerAtual.metricas,
+            banners_fechados: (bannerAtual.metricas?.banners_fechados || 0) + 1
+          }
+        });
+      } catch (error) {
+        console.error("Erro ao registrar fechamento:", error);
+      }
+    }
+    setBannerFechado(true);
+  };
 
   // Incrementar visualização quando banner muda
   useEffect(() => {
-    if (banners.length === 0 || !banners[indiceAtivo]) return;
+    if (bannersVisiveis.length === 0 || !bannersVisiveis[indiceAtivo] || bannerFechado) return;
 
     const incrementarVisualizacao = async () => {
       try {
-        const banner = banners[indiceAtivo];
+        const banner = bannersVisiveis[indiceAtivo];
+        
+        // Marcar como visto hoje
+        const hoje = new Date().toISOString().split('T')[0];
+        const novosVistos = [...bannersVistosHoje, banner.id];
+        setBannersVistosHoje(novosVistos);
+        localStorage.setItem(`banners_vistos_${hoje}`, JSON.stringify(novosVistos));
+        
         await base44.entities.Banner.update(banner.id, {
           metricas: {
             ...banner.metricas,
@@ -88,7 +168,7 @@ export default function BannerRotativo({ posicao = "home_topo" }) {
     };
 
     incrementarVisualizacao();
-  }, [indiceAtivo, banners]);
+  }, [indiceAtivo, bannersVisiveis.length, bannerFechado]);
 
   const handleClique = async (banner) => {
     try {
@@ -99,7 +179,6 @@ export default function BannerRotativo({ posicao = "home_topo" }) {
         }
       });
 
-      // Abrir link principal se existir
       if (banner.links && banner.links.length > 0) {
         window.open(banner.links[0].url, '_blank');
       }
@@ -108,17 +187,36 @@ export default function BannerRotativo({ posicao = "home_topo" }) {
     }
   };
 
-  const bannerAtual = banners[indiceAtivo];
+  const bannerAtual = bannersVisiveis[indiceAtivo];
 
-  if (!banners || banners.length === 0) {
+  if (!bannersVisiveis || bannersVisiveis.length === 0 || bannerFechado) {
     return null;
   }
 
   return (
     <div className="w-full max-w-7xl mx-auto px-2 sm:px-4 mb-4 sm:mb-6 md:mb-8">
-      <Card className="overflow-hidden border-none shadow-xl">
+      <Card className="overflow-hidden border-none shadow-xl relative">
+        {/* Botão Fechar - SE PERMITIDO */}
+        {bannerAtual.pode_fechar && (
+          <Button
+            size="icon"
+            variant="ghost"
+            className="absolute top-1 right-1 sm:top-2 sm:right-2 z-20 bg-white/90 hover:bg-white w-7 h-7 sm:w-8 sm:h-8 rounded-full shadow-lg"
+            onClick={handleFecharBanner}
+          >
+            <X className="w-4 h-4 sm:w-5 sm:h-5" />
+          </Button>
+        )}
+
+        {/* Barra de Progresso */}
+        <div className="absolute top-0 left-0 w-full h-1 bg-gray-200 z-10">
+          <div 
+            className="h-full bg-gradient-to-r from-purple-600 to-pink-600 transition-all duration-100"
+            style={{ width: `${progresso}%` }}
+          />
+        </div>
+
         <div className="relative group">
-          {/* Banner Image */}
           <div 
             onClick={() => handleClique(bannerAtual)}
             className="cursor-pointer relative overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200"
@@ -127,9 +225,12 @@ export default function BannerRotativo({ posicao = "home_topo" }) {
               src={bannerAtual.imagem_banner}
               alt={bannerAtual.titulo}
               className="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-105"
+              style={{
+                maxHeight: '400px',
+                objectFit: 'contain'
+              }}
             />
             
-            {/* Overlay com info */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3 sm:p-4 md:p-6">
               <div className="text-white w-full">
                 <div className="flex items-center justify-between">
@@ -146,7 +247,6 @@ export default function BannerRotativo({ posicao = "home_topo" }) {
               </div>
             </div>
 
-            {/* Logo da empresa */}
             {bannerAtual.logo_empresa && (
               <div className="absolute top-2 left-2 sm:top-4 sm:left-4 bg-white/90 backdrop-blur-sm p-1.5 sm:p-2 md:p-3 rounded-lg">
                 <img
@@ -157,14 +257,13 @@ export default function BannerRotativo({ posicao = "home_topo" }) {
               </div>
             )}
 
-            {/* Badge do plano */}
-            <Badge className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs">
+            <Badge className="absolute top-2 right-10 sm:top-4 sm:right-14 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs">
               {bannerAtual.plano_patrocinador.toUpperCase()}
             </Badge>
           </div>
 
-          {/* Navegação - apenas se houver múltiplos banners */}
-          {banners.length > 1 && (
+          {/* Navegação Manual - SEMPRE DISPONÍVEL */}
+          {bannersVisiveis.length > 1 && (
             <>
               <Button
                 size="icon"
@@ -172,7 +271,7 @@ export default function BannerRotativo({ posicao = "home_topo" }) {
                 className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setIndiceAtivo((prev) => (prev - 1 + banners.length) % banners.length);
+                  handleAnteriorBanner();
                 }}
               >
                 <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
@@ -183,7 +282,7 @@ export default function BannerRotativo({ posicao = "home_topo" }) {
                 className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setIndiceAtivo((prev) => (prev + 1) % banners.length);
+                  handlePularBanner();
                 }}
               >
                 <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
@@ -191,12 +290,13 @@ export default function BannerRotativo({ posicao = "home_topo" }) {
 
               {/* Indicadores */}
               <div className="absolute bottom-2 sm:bottom-3 md:bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 sm:gap-2">
-                {banners.map((_, index) => (
+                {bannersVisiveis.map((_, index) => (
                   <button
                     key={index}
                     onClick={(e) => {
                       e.stopPropagation();
                       setIndiceAtivo(index);
+                      setProgresso(0);
                     }}
                     className={`transition-all rounded-full ${
                       indiceAtivo === index 
@@ -210,7 +310,7 @@ export default function BannerRotativo({ posicao = "home_topo" }) {
           )}
         </div>
 
-        {/* Links da empresa - MOBILE OPTIMIZED */}
+        {/* Links e Info - MOBILE OPTIMIZED */}
         {bannerAtual.links && bannerAtual.links.length > 0 && (
           <div className="p-3 sm:p-4 bg-gray-50 border-t">
             <div className="flex flex-wrap gap-2">
@@ -220,6 +320,18 @@ export default function BannerRotativo({ posicao = "home_topo" }) {
                   href={link.url}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={async () => {
+                    try {
+                      await base44.entities.Banner.update(bannerAtual.id, {
+                        metricas: {
+                          ...bannerAtual.metricas,
+                          cliques: (bannerAtual.metricas?.cliques || 0) + 1
+                        }
+                      });
+                    } catch (error) {
+                      console.error("Erro ao registrar clique no link:", error);
+                    }
+                  }}
                   className="text-xs sm:text-sm text-purple-600 hover:text-purple-800 flex items-center gap-1 hover:underline"
                 >
                   {link.titulo}
@@ -227,8 +339,23 @@ export default function BannerRotativo({ posicao = "home_topo" }) {
                 </a>
               ))}
             </div>
+            
+            {/* Indicador de tempo restante */}
+            <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
+              <span>
+                {bannersVisiveis.length > 1 ? `${indiceAtivo + 1} de ${bannersVisiveis.length}` : ''}
+              </span>
+              <span className="flex items-center gap-1">
+                ⏱️ {Math.max(0, (bannerAtual.tempo_exibicao_segundos || 5) - Math.floor(progresso / 20))}s
+              </span>
+            </div>
           </div>
         )}
+
+        {/* Dica para usuário */}
+        <div className="px-3 sm:px-4 py-2 bg-purple-50 border-t text-xs text-center text-purple-700">
+          💡 Use as setas {bannersVisiveis.length > 1 && '← →'} para navegar ou {bannerAtual.pode_fechar && 'clique no X para fechar'}
+        </div>
       </Card>
     </div>
   );
