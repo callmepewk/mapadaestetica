@@ -2162,7 +2162,7 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
 
           {/* ============================================ */}
           {/* TAB CONTROLE DE PRODUTOS - ATUALIZADA COM RELATÓRIOS */}
-          {============================================ */}
+          {/* ============================================ */}
           <TabsContent value="produtos">
             {/* Stats Cards */}
             <div className="grid md:grid-cols-4 gap-4 mb-6">
@@ -3937,7 +3937,7 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
                         <li><strong>Contato:</strong> Email, telefone e WhatsApp do patrocinador</li>
                         <li><strong>Baixar Arquivo:</strong> Download da imagem do banner</li>
                         <li><strong>Pausar/Ativar:</strong> Gerenciar status dos banners</li>
-                        <li><strong>Relatórios:</strong> PDF ou WhatsApp com filtros aplicados</li>
+                        <li><strong>Relatórios:</strong> Exportar PDF ou enviar resumo via WhatsApp com filtros aplicados</li>
                       </ul>
                     </div>
                   </div>
