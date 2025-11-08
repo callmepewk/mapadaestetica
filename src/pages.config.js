@@ -18,11 +18,10 @@ import RelatorioPrecoMedio from './pages/RelatorioPrecoMedio';
 import LojaPontos from './pages/LojaPontos';
 import Relatorios from './pages/Relatorios';
 import AdicionarProduto from './pages/AdicionarProduto';
-import ControlePlanos from './pages/ControlePlanos';
-import ControleProdutos from './pages/ControleProdutos';
 import CriacaoBanner from './pages/CriacaoBanner';
 import DashboardPatrocinador from './pages/DashboardPatrocinador';
 import Novidades from './pages/Novidades';
+import ControleAdmin from './pages/ControleAdmin';
 import Layout from './Layout.jsx';
 
 
@@ -47,11 +46,10 @@ export const PAGES = {
     "LojaPontos": LojaPontos,
     "Relatorios": Relatorios,
     "AdicionarProduto": AdicionarProduto,
-    "ControlePlanos": ControlePlanos,
-    "ControleProdutos": ControleProdutos,
     "CriacaoBanner": CriacaoBanner,
     "DashboardPatrocinador": DashboardPatrocinador,
     "Novidades": Novidades,
+    "ControleAdmin": ControleAdmin,
 }
 
 export const pagesConfig = {

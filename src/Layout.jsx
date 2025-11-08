@@ -396,13 +396,9 @@ export default function Layout({ children }) {
                             <TrendingUp className="w-4 h-4 mr-2" />
                             Relatórios
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => navigate(createPageUrl("ControlePlanos"))}>
+                          <DropdownMenuItem onClick={() => navigate(createPageUrl("ControleAdmin"))}>
                             <CreditCard className="w-4 h-4 mr-2" />
-                            Controle de Planos
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => navigate(createPageUrl("ControleProdutos"))}>
-                            <ShoppingCart className="w-4 h-4 mr-2" />
-                            Controle de Produtos
+                            Painel Admin
                           </DropdownMenuItem>
                         </>
                       )}
