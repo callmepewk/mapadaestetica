@@ -21,6 +21,7 @@ import {
   AlertCircle,
   Eye, // Added for anuncio summary
   Heart, // Added for anuncio summary
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
