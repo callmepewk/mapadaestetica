@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -196,17 +197,15 @@ export default function BannerRotativo({ posicao = "home_topo" }) {
   return (
     <div className="w-full max-w-7xl mx-auto px-2 sm:px-4 mb-4 sm:mb-6 md:mb-8">
       <Card className="overflow-hidden border-none shadow-xl relative">
-        {/* Botão Fechar - SE PERMITIDO */}
-        {bannerAtual.pode_fechar && (
-          <Button
-            size="icon"
-            variant="ghost"
-            className="absolute top-1 right-1 sm:top-2 sm:right-2 z-20 bg-white/90 hover:bg-white w-7 h-7 sm:w-8 sm:h-8 rounded-full shadow-lg"
-            onClick={handleFecharBanner}
-          >
-            <X className="w-4 h-4 sm:w-5 sm:h-5" />
-          </Button>
-        )}
+        {/* Botão Fechar - SEMPRE DISPONÍVEL */}
+        <Button
+          size="icon"
+          variant="ghost"
+          className="absolute top-1 right-1 sm:top-2 sm:right-2 z-20 bg-white/90 hover:bg-white w-7 h-7 sm:w-8 sm:h-8 rounded-full shadow-lg"
+          onClick={handleFecharBanner}
+        >
+          <X className="w-4 h-4 sm:w-5 sm:h-5" />
+        </Button>
 
         {/* Barra de Progresso */}
         <div className="absolute top-0 left-0 w-full h-1 bg-gray-200 z-10">

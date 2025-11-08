@@ -109,18 +109,18 @@ export default function CriacaoBanner() {
     descricao: "",
     plano_patrocinador: "",
     imagem_banner: "",
+    dimensoes_banner: { largura: 0, altura: 0 },
     logo_empresa: "",
     nome_empresa: "",
     links: [],
     posicao: "home_topo",
+    status: "ativo", // Added status field
     data_inicio: new Date().toISOString().split('T')[0],
     data_fim: "",
-    dimensoes_banner: { largura: 0, altura: 0 },
+    tempo_exibicao_segundos: 5,
+    dias_exibicao_mes: 0,
+    frequencia_exibicao: "sempre",
     limite_banners: 0,
-    dias_exibicao_mes: 0, // Novo
-    tempo_exibicao_segundos: 5, // Novo
-    frequencia_exibicao: "sempre", // Novo
-    pode_fechar: true, // Novo
     prioridade: 0
   });
 
@@ -158,7 +158,6 @@ export default function CriacaoBanner() {
           dias_exibicao_mes: dimensoes.diasExibicao, // Inicializa dias_exibicao_mes
           tempo_exibicao_segundos: 5, // Default para 5 segundos
           frequencia_exibicao: "sempre", // Default
-          pode_fechar: true, // Default
           prioridade: plano === 'platina' ? 5 : plano === 'diamante' ? 4 : plano === 'ouro' ? 3 : plano === 'prata' ? 2 : 1
         }));
       } catch (error) {
@@ -502,10 +501,10 @@ export default function CriacaoBanner() {
                     min="3"
                     max="5"
                     value={formData.tempo_exibicao_segundos}
-                    onChange={(e) => setFormData({ ...formData, tempo_exibicao_segundos: Math.min(5, Math.max(3, parseInt(e.target.value) || 5)) })}
+                    onChange={(e) => setFormData({ ...formData, tempo_exibicao_segundos: Math.min(5, parseInt(e.target.value) || 5) })}
                     className="mt-1.5 h-10 sm:h-11 text-sm sm:text-base"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Mínimo: 3 segundos, Máximo: 5 segundos</p>
+                  <p className="text-xs text-gray-500 mt-1">Máximo: 5 segundos</p>
                 </div>
 
                 <div>
@@ -526,23 +525,10 @@ export default function CriacaoBanner() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="pode_fechar"
-                  checked={formData.pode_fechar}
-                  onChange={(e) => setFormData({ ...formData, pode_fechar: e.target.checked })}
-                  className="w-4 h-4 rounded"
-                />
-                <Label htmlFor="pode_fechar" className="text-sm cursor-pointer">
-                  Permitir que usuários fechem o banner
-                </Label>
-              </div>
-
               <Alert className="bg-blue-50 border-blue-200">
                 <AlertCircle className="h-4 w-4 text-blue-600" />
                 <AlertDescription className="text-blue-800 text-xs sm:text-sm">
-                  💡 <strong>Dica:</strong> Usuários sempre podem pular para o próximo banner usando as setas de navegação.
+                  💡 <strong>Interação do Usuário:</strong> Todos os usuários podem fechar seu banner (botão ❌) ou pular para o próximo usando as setas ← →. 
                   Banners mais criativos e relevantes têm maior taxa de engajamento!
                 </AlertDescription>
               </Alert>
