@@ -58,6 +58,9 @@ import {
   Phone,
   Mail,
   ExternalLink,
+  Edit,
+  Star,
+  DollarSign,
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -113,7 +116,7 @@ export default function ControleAdmin() {
   const [filtroUsuario, setFiltroUsuario] = useState("");
   const [gerandoRelatorio, setGerandoRelatorio] = useState(false);
 
-  // NOVOS Estados para Banners e Posts
+  // Estados para Banners e Posts
   const [bannerSelecionado, setBannerSelecionado] = useState(null);
   const [postSelecionado, setPostSelecionado] = useState(null);
   const [mostrarDetalhesBanner, setMostrarDetalhesBanner] = useState(false);
@@ -122,6 +125,12 @@ export default function ControleAdmin() {
   const [filtroStatusBanner, setFiltroStatusBanner] = useState("");
   const [buscaPost, setBuscaPost] = useState("");
   const [filtroStatusPost, setFiltroStatusPost] = useState("");
+
+  // NOVOS Estados
+  const [usuarioEditandoPontos, setUsuarioEditandoPontos] = useState(null);
+  const [mostrarModalPontos, setMostrarModalPontos] = useState(false);
+  const [novosPontos, setNovosPontos] = useState(0);
+  const [novosBeautyCoins, setNovosBeautyCoins] = useState(0);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -168,7 +177,7 @@ export default function ControleAdmin() {
     enabled: !!user,
   });
 
-  // NOVAS Queries para Banners e Posts
+  // Queries para Banners e Posts
   const { data: banners = [], isLoading: loadingBanners } = useQuery({
     queryKey: ['admin-banners'],
     queryFn: () => base44.entities.Banner.list('-created_date', 200),
@@ -178,6 +187,15 @@ export default function ControleAdmin() {
   const { data: posts = [], isLoading: loadingPosts } = useQuery({
     queryKey: ['admin-posts'],
     queryFn: () => base44.entities.ArtigoBlog.list('-created_date', 200),
+    enabled: !!user,
+  });
+
+  // NOVA Query: Todos os usuários (não só profissionais)
+  const { data: todosUsuarios = [], isLoading: loadingTodosUsuarios } = useQuery({
+    queryKey: ['todos-usuarios'],
+    queryFn: async () => {
+      return await base44.entities.User.list('-created_date', 1000);
+    },
     enabled: !!user,
   });
 
@@ -270,12 +288,12 @@ export default function ControleAdmin() {
     },
   });
 
-  // NOVAS Mutations para Banners e Posts
+  // NOVAS Mutations
   const deletarBannerMutation = useMutation({
     mutationFn: (id) => base44.entities.Banner.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-banners'] });
-      setSucesso("Banner excluído com sucesso!");
+      setSucesso("Banner excluído!");
       setTimeout(() => setSucesso(null), 3000);
     },
     onError: (error) => {
@@ -303,7 +321,7 @@ export default function ControleAdmin() {
     mutationFn: (id) => base44.entities.ArtigoBlog.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-posts'] });
-      setSucesso("Post excluído com sucesso!");
+      setSucesso("Post excluído!");
       setTimeout(() => setSucesso(null), 3000);
     },
     onError: (error) => {
@@ -327,6 +345,48 @@ export default function ControleAdmin() {
     }
   });
 
+  const excluirProfissionalMutation = useMutation({
+    mutationFn: async (email) => {
+      // Não podemos deletar usuários, então convertemos para paciente
+      await base44.entities.User.update(email, {
+        tipo_usuario: 'paciente',
+        plano_ativo: 'cobre',
+        plano_patrocinador: 'nenhum'
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['usuarios-profissionais'] });
+      queryClient.invalidateQueries({ queryKey: ['todos-usuarios'] }); // Invalidate for other tabs too
+      setSucesso("Profissional removido! Conta convertida para paciente.");
+      setTimeout(() => setSucesso(null), 3000);
+    },
+    onError: (error) => {
+      setErro("Erro ao remover profissional: " + error.message);
+      setTimeout(() => setErro(null), 3000);
+    }
+  });
+
+  const atualizarPontosMutation = useMutation({
+    mutationFn: async ({ email, pontos, beautyCoins }) => {
+      await base44.entities.User.update(email, {
+        pontos_acumulados: pontos,
+        beauty_coins: beautyCoins
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['todos-usuarios'] });
+      queryClient.invalidateQueries({ queryKey: ['usuarios-profissionais'] });
+      setMostrarModalPontos(false);
+      setUsuarioEditandoPontos(null);
+      setSucesso("Pontos e Beauty Coins atualizados!");
+      setTimeout(() => setSucesso(null), 3000);
+    },
+    onError: (error) => {
+      setErro("Erro ao atualizar pontos/Beauty Coins: " + error.message);
+      setTimeout(() => setErro(null), 3000);
+    }
+  });
+
   // Handlers para Planos
   const handleAtivarPlano = async () => {
     if (!solicitacaoSelecionada) return;
@@ -337,6 +397,9 @@ export default function ControleAdmin() {
         plano: solicitacaoSelecionada.plano_solicitado,
         solicitacaoId: solicitacaoSelecionada.id
       });
+    } catch (error) {
+      setErro("Erro ao ativar plano: " + error.message);
+      setTimeout(() => setErro(null), 3000);
     } finally {
       setProcessando(false);
     }
@@ -377,7 +440,7 @@ export default function ControleAdmin() {
       setSucesso("Impulsionamento ativado!");
       setTimeout(() => setSucesso(null), 3000);
     } catch (error) {
-      setErro("Erro ao ativar impulsionamento");
+      setErro("Erro ao ativar impulsionamento: " + error.message);
       setTimeout(() => setErro(null), 3000);
     } finally {
       setProcessando(false);
@@ -496,7 +559,7 @@ export default function ControleAdmin() {
     }
   };
 
-  // NOVOS Handlers para Banners
+  // Handlers para Banners
   const handleVerDetalhesBanner = (banner) => {
     setBannerSelecionado(banner);
     setMostrarDetalhesBanner(true);
@@ -514,7 +577,7 @@ export default function ControleAdmin() {
     }
   };
 
-  // NOVOS Handlers para Posts
+  // Handlers para Posts
   const handleVerDetalhesPost = (post) => {
     setPostSelecionado(post);
     setMostrarDetalhesPost(true);
@@ -535,6 +598,45 @@ export default function ControleAdmin() {
     if (confirm(`Tem certeza que deseja excluir o post "${post.titulo}"?`)) {
       deletarPostMutation.mutate(post.id);
     }
+  };
+
+  // NOVOS Handlers
+  const handleExcluirProfissional = (usuario) => {
+    if (confirm(`ATENÇÃO: Remover ${usuario.full_name} como profissional?\n\nEsta ação irá:\n- Converter a conta para Paciente\n- Resetar plano para Cobre\n- Remover plano de patrocinador`)) {
+      excluirProfissionalMutation.mutate(usuario.email);
+    }
+  };
+
+  const handleEditarPontos = (usuario) => {
+    setUsuarioEditandoPontos(usuario);
+    setNovosPontos(usuario.pontos_acumulados || 0);
+    setNovosBeautyCoins(usuario.beauty_coins || 0);
+    setMostrarModalPontos(true);
+  };
+
+  const confirmarEditarPontos = () => {
+    if (!usuarioEditandoPontos) return;
+    
+    if (confirm(`Atualizar pontos e Beauty Coins de ${usuarioEditandoPontos.full_name}?\n\nPontos: ${novosPontos}\nBeauty Coins: ${novosBeautyCoins}`)) {
+      atualizarPontosMutation.mutate({
+        email: usuarioEditandoPontos.email,
+        pontos: novosPontos,
+        beautyCoins: novosBeautyCoins
+      });
+    }
+  };
+
+  const handleSincronizarClubeBeleza = (usuario) => {
+    const dados = {
+      email: usuario.email,
+      nome: usuario.full_name,
+      plano_clube: usuario.plano_clube_beleza || 'nenhum',
+      beauty_coins: usuario.beauty_coins || 0,
+      origem: 'mapa_estetica'
+    };
+    
+    const params = new URLSearchParams(dados);
+    window.open(`https://clube-da-beleza.base44.app?${params.toString()}`, '_blank');
   };
 
   const usuariosFiltrados = usuarios.filter(u => 
@@ -571,6 +673,10 @@ export default function ControleAdmin() {
     return matchBusca && matchStatus;
   });
 
+  // Filtros para Clube e Patrocinadores (using todosUsuarios)
+  const usuariosClube = todosUsuarios.filter(u => u.plano_clube_beleza && u.plano_clube_beleza !== 'nenhum');
+  const usuariosPatrocinadores = todosUsuarios.filter(u => u.plano_patrocinador && u.plano_patrocinador !== 'nenhum');
+
   const usuariosUnicos = [...new Set(pedidos.map(p => p.usuario_email))].sort();
   const pedidosPendentes = pedidosFiltrados.filter(p => p.status_pedido === 'aguardando_pagamento');
 
@@ -606,7 +712,7 @@ export default function ControleAdmin() {
           </Alert>
         )}
 
-        {/* Tabs Principais - ATUALIZADAS COM BANNERS E POSTS */}
+        {/* Tabs Principais */}
         <Tabs value={abaSelecionada} onValueChange={setAbaSelecionada} className="w-full">
           <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 mb-6 gap-1">
             <TabsTrigger value="planos">
@@ -647,11 +753,11 @@ export default function ControleAdmin() {
                 </TabsTrigger>
                 <TabsTrigger value="clube" className="text-xs sm:text-sm">
                   <Crown className="w-4 h-4 mr-2" />
-                  Clube
+                  Clube ({usuariosClube.length})
                 </TabsTrigger>
                 <TabsTrigger value="patrocinadores" className="text-xs sm:text-sm">
                   <Users className="w-4 h-4 mr-2" />
-                  Patrocinadores
+                  Patrocinadores ({usuariosPatrocinadores.length})
                 </TabsTrigger>
               </TabsList>
 
@@ -879,7 +985,7 @@ export default function ControleAdmin() {
                 </Card>
               </TabsContent>
 
-              {/* Sub-aba: Profissionais */}
+              {/* Sub-aba: Profissionais - ATUALIZADA */}
               <TabsContent value="profissionais">
                 <Card>
                   <CardHeader>
@@ -911,7 +1017,8 @@ export default function ControleAdmin() {
                               <TableHead>Nome</TableHead>
                               <TableHead>Contato</TableHead>
                               <TableHead>Localização</TableHead>
-                              <TableHead>Plano Ativo</TableHead>
+                              <TableHead>Plano</TableHead>
+                              <TableHead>Pontos/Coins</TableHead>
                               <TableHead className="text-right">Ações</TableHead>
                             </TableRow>
                           </TableHeader>
@@ -943,15 +1050,46 @@ export default function ControleAdmin() {
                                     {PLANOS_INFO[usuario.plano_ativo || 'cobre']?.nome}
                                   </Badge>
                                 </TableCell>
+                                <TableCell>
+                                  <div className="text-sm">
+                                    <p className="flex items-center gap-1">
+                                      <Star className="w-3 h-3 text-yellow-500" />
+                                      {usuario.pontos_acumulados || 0} pts
+                                    </p>
+                                    <p className="flex items-center gap-1">
+                                      <DollarSign className="w-3 h-3 text-purple-500" />
+                                      {usuario.beauty_coins || 0} BC
+                                    </p>
+                                  </div>
+                                </TableCell>
                                 <TableCell className="text-right">
-                                  <Button
-                                    onClick={() => handleTrocarPlano(usuario)}
-                                    size="sm"
-                                    className="bg-blue-600 hover:bg-blue-700"
-                                  >
-                                    <CreditCard className="w-4 h-4 mr-1" />
-                                    Trocar Plano
-                                  </Button>
+                                  <div className="flex items-center justify-end gap-2 flex-wrap">
+                                    <Button
+                                      onClick={() => handleTrocarPlano(usuario)}
+                                      size="sm"
+                                      className="bg-blue-600 hover:bg-blue-700"
+                                    >
+                                      <CreditCard className="w-4 h-4 mr-1" />
+                                      Plano
+                                    </Button>
+                                    <Button
+                                      onClick={() => handleEditarPontos(usuario)}
+                                      size="sm"
+                                      variant="outline"
+                                      className="border-purple-300 text-purple-700"
+                                    >
+                                      <Star className="w-4 h-4 mr-1" />
+                                      Pontos
+                                    </Button>
+                                    <Button
+                                      onClick={() => handleExcluirProfissional(usuario)}
+                                      size="sm"
+                                      variant="outline"
+                                      className="border-red-300 text-red-700"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                  </div>
                                 </TableCell>
                               </TableRow>
                             ))}
@@ -963,32 +1101,217 @@ export default function ControleAdmin() {
                 </Card>
               </TabsContent>
 
-              {/* Sub-aba: Clube */}
+              {/* Sub-aba: Clube da Beleza - IMPLEMENTADA */}
               <TabsContent value="clube">
                 <Card>
-                  <CardContent className="p-12 text-center">
-                    <Crown className="w-16 h-16 text-purple-400 mx-auto mb-4" />
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">
-                      Clube da Beleza - Em Desenvolvimento
-                    </h3>
-                    <p className="text-gray-600">
-                      Esta seção exibirá os planos do Clube da Beleza
-                    </p>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2">
+                        <Crown className="w-6 h-6 text-purple-600" />
+                        Membros do Clube da Beleza
+                      </CardTitle>
+                      <Button
+                        onClick={() => window.open('https://clube-da-beleza.base44.app', '_blank')}
+                        className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                      >
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        Acessar Clube
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {loadingTodosUsuarios ? (
+                      <div className="flex justify-center py-12">
+                        <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+                      </div>
+                    ) : usuariosClube.length === 0 ? (
+                      <div className="text-center py-12">
+                        <Crown className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-600">Nenhum membro do clube encontrado</p>
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Membro</TableHead>
+                              <TableHead>Plano Clube</TableHead>
+                              <TableHead>Beauty Coins</TableHead>
+                              <TableHead>Data Adesão</TableHead>
+                              <TableHead className="text-right">Ações</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {usuariosClube.map((usuario) => (
+                              <TableRow key={usuario.id}>
+                                <TableCell>
+                                  <div>
+                                    <p className="font-medium">{usuario.full_name}</p>
+                                    <p className="text-sm text-gray-500">{usuario.email}</p>
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <Badge className="bg-purple-100 text-purple-800">
+                                    {usuario.plano_clube_beleza?.toUpperCase()}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex items-center gap-1 font-bold text-purple-600">
+                                    <DollarSign className="w-4 h-4" />
+                                    {usuario.beauty_coins || 0}
+                                  </div>
+                                </TableCell>
+                                <TableCell className="text-sm">
+                                  {usuario.data_adesao_plano_clube ? 
+                                    format(new Date(usuario.data_adesao_plano_clube), "dd/MM/yyyy", { locale: ptBR }) : 
+                                    "-"
+                                  }
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  <div className="flex items-center justify-end gap-2">
+                                    <Button
+                                      onClick={() => handleEditarPontos(usuario)}
+                                      size="sm"
+                                      variant="outline"
+                                      className="border-purple-300 text-purple-700"
+                                    >
+                                      <Edit className="w-4 h-4 mr-1" />
+                                      Editar
+                                    </Button>
+                                    <Button
+                                      onClick={() => handleSincronizarClubeBeleza(usuario)}
+                                      size="sm"
+                                      className="bg-purple-600 hover:bg-purple-700"
+                                    >
+                                      <ExternalLink className="w-4 h-4 mr-1" />
+                                      Sincronizar
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+                    
+                    <Alert className="mt-6 bg-purple-50 border-purple-200">
+                      <AlertCircle className="h-4 w-4 text-purple-600" />
+                      <AlertDescription className="text-purple-800 text-sm">
+                        💡 <strong>Integração com Clube da Beleza:</strong> Use o botão "Sincronizar" para enviar os dados do usuário ao site do clube com as informações de Beauty Coins e plano.
+                      </AlertDescription>
+                    </Alert>
                   </CardContent>
                 </Card>
               </TabsContent>
 
-              {/* Sub-aba: Patrocinadores */}
+              {/* Sub-aba: Patrocinadores - IMPLEMENTADA */}
               <TabsContent value="patrocinadores">
                 <Card>
-                  <CardContent className="p-12 text-center">
-                    <Users className="w-16 h-16 text-blue-400 mx-auto mb-4" />
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">
-                      Patrocinadores - Em Desenvolvimento
-                    </h3>
-                    <p className="text-gray-600">
-                      Esta seção exibirá os patrocinadores da plataforma
-                    </p>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Users className="w-6 h-6 text-blue-600" />
+                      Patrocinadores Ativos
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {loadingTodosUsuarios ? (
+                      <div className="flex justify-center py-12">
+                        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                      </div>
+                    ) : usuariosPatrocinadores.length === 0 ? (
+                      <div className="text-center py-12">
+                        <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-600">Nenhum patrocinador encontrado</p>
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Patrocinador</TableHead>
+                              <TableHead>Plano</TableHead>
+                              <TableHead>Banners</TableHead>
+                              <TableHead>Posts</TableHead>
+                              <TableHead>Data Adesão</TableHead>
+                              <TableHead className="text-right">Ações</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {usuariosPatrocinadores.map((usuario) => {
+                              const bannersPat = banners.filter(b => b.created_by === usuario.email);
+                              const postsPat = posts.filter(p => p.created_by === usuario.email);
+                              
+                              return (
+                                <TableRow key={usuario.id}>
+                                  <TableCell>
+                                    <div>
+                                      <p className="font-medium">{usuario.full_name}</p>
+                                      <p className="text-sm text-gray-500">{usuario.email}</p>
+                                      {usuario.nome_empresa && (
+                                        <p className="text-xs text-gray-500">Empresa: {usuario.nome_empresa}</p>
+                                      )}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Badge className={PLANOS_INFO[usuario.plano_patrocinador]?.cor || "bg-gray-100 text-gray-800"}>
+                                      {PLANOS_INFO[usuario.plano_patrocinador]?.nome || usuario.plano_patrocinador}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="text-sm">
+                                      <p className="font-medium">{bannersPat.length} banners</p>
+                                      <p className="text-xs text-gray-500">
+                                        {bannersPat.filter(b => b.status === 'ativo').length} ativos
+                                      </p>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="text-sm">
+                                      <p className="font-medium">{postsPat.length} posts</p>
+                                      <p className="text-xs text-gray-500">
+                                        {postsPat.filter(p => p.status === 'publicado').length} publicados
+                                      </p>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell className="text-sm">
+                                    {usuario.data_adesao_plano_patrocinador ? 
+                                      format(new Date(usuario.data_adesao_plano_patrocinador), "dd/MM/yyyy", { locale: ptBR }) : 
+                                      "-"
+                                    }
+                                  </TableCell>
+                                  <TableCell className="text-right">
+                                    <div className="flex items-center justify-end gap-2">
+                                      <Button
+                                        onClick={() => handleEditarPontos(usuario)}
+                                        size="sm"
+                                        variant="outline"
+                                        className="border-purple-300 text-purple-700"
+                                      >
+                                        <Star className="w-4 h-4 mr-1" />
+                                        Pontos
+                                      </Button>
+                                      <Button
+                                        onClick={() => {
+                                          const mensagem = `Olá ${usuario.full_name}!\n\nSobre seu plano de Patrocinador no Mapa da Estética...`;
+                                          window.open(`https://wa.me/${usuario.whatsapp?.replace(/\D/g, '')}?text=${encodeURIComponent(mensagem)}`, '_blank');
+                                        }}
+                                        size="sm"
+                                        className="bg-green-600 hover:bg-green-700"
+                                        disabled={!usuario.whatsapp}
+                                      >
+                                        <MessageCircle className="w-4 h-4 mr-1" />
+                                        WhatsApp
+                                      </Button>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -1573,7 +1896,7 @@ export default function ControleAdmin() {
                       <TableBody>
                         {postsFiltrados.map((post) => {
                           // Buscar dados do usuário autor
-                          const autorData = usuarios.find(u => u.email === post.created_by);
+                          const autorData = todosUsuarios.find(u => u.email === post.created_by);
                           const planoPatrocinador = autorData?.plano_patrocinador || 'nenhum';
                           
                           return (
@@ -1811,7 +2134,99 @@ export default function ControleAdmin() {
           </DialogContent>
         </Dialog>
 
-        {/* NOVO: Modal Detalhes Banner */}
+        {/* NOVO: Modal Editar Pontos e Beauty Coins */}
+        <Dialog open={mostrarModalPontos} onOpenChange={setMostrarModalPontos}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Editar Pontos e Beauty Coins</DialogTitle>
+              <DialogDescription>
+                {usuarioEditandoPontos && (
+                  <>Gerenciar pontos de <strong>{usuarioEditandoPontos.full_name}</strong></>
+                )}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              {usuarioEditandoPontos && (
+                <div className="bg-gray-50 p-4 rounded-lg space-y-2 text-sm">
+                  <p><strong>Usuário:</strong> {usuarioEditandoPontos.full_name}</p>
+                  <p><strong>Email:</strong> {usuarioEditandoPontos.email}</p>
+                  <p><strong>Tipo:</strong> {usuarioEditandoPontos.tipo_usuario}</p>
+                </div>
+              )}
+              
+              <div>
+                <Label className="flex items-center gap-2">
+                  <Star className="w-4 h-4 text-yellow-500" />
+                  Pontos Acumulados
+                </Label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={novosPontos}
+                  onChange={(e) => setNovosPontos(parseInt(e.target.value) || 0)}
+                  className="mt-2"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Valor atual: {usuarioEditandoPontos?.pontos_acumulados || 0} pontos
+                </p>
+              </div>
+
+              <div>
+                <Label className="flex items-center gap-2">
+                  <DollarSign className="w-4 h-4 text-purple-500" />
+                  Beauty Coins
+                </Label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={novosBeautyCoins}
+                  onChange={(e) => setNovosBeautyCoins(parseInt(e.target.value) || 0)}
+                  className="mt-2"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Valor atual: {usuarioEditandoPontos?.beauty_coins || 0} BC
+                </p>
+              </div>
+
+              <Alert className="bg-blue-50 border-blue-200">
+                <AlertCircle className="h-4 w-4 text-blue-600" />
+                <AlertDescription className="text-blue-800 text-sm">
+                  💡 Estas alterações serão refletidas imediatamente no perfil do usuário e sincronizadas com o Clube da Beleza.
+                </AlertDescription>
+              </Alert>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setMostrarModalPontos(false);
+                  setUsuarioEditandoPontos(null);
+                }}
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={confirmarEditarPontos}
+                disabled={atualizarPontosMutation.isPending}
+                className="bg-purple-600 hover:bg-purple-700"
+              >
+                {atualizarPontosMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Salvando...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Salvar
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Modal Detalhes Banner */}
         <Dialog open={mostrarDetalhesBanner} onOpenChange={setMostrarDetalhesBanner}>
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
@@ -1926,30 +2341,29 @@ export default function ControleAdmin() {
                         {bannerSelecionado.created_by}
                       </a>
                     </div>
-                    {/* Tentar buscar telefone do usuário */}
-                    {usuarios.find(u => u.email === bannerSelecionado.created_by)?.telefone && (
+                    {todosUsuarios.find(u => u.email === bannerSelecionado.created_by)?.telefone && (
                       <div className="flex items-center gap-2">
                         <Phone className="w-4 h-4 text-gray-400" />
                         <span className="text-gray-600">Telefone:</span>
                         <a 
-                          href={`tel:${usuarios.find(u => u.email === bannerSelecionado.created_by).telefone}`}
+                          href={`tel:${todosUsuarios.find(u => u.email === bannerSelecionado.created_by).telefone}`}
                           className="font-medium text-blue-600 hover:underline"
                         >
-                          {usuarios.find(u => u.email === bannerSelecionado.created_by).telefone}
+                          {todosUsuarios.find(u => u.email === bannerSelecionado.created_by).telefone}
                         </a>
                       </div>
                     )}
-                    {usuarios.find(u => u.email === bannerSelecionado.created_by)?.whatsapp && (
+                    {todosUsuarios.find(u => u.email === bannerSelecionado.created_by)?.whatsapp && (
                       <div className="flex items-center gap-2">
                         <MessageCircle className="w-4 h-4 text-gray-400" />
                         <span className="text-gray-600">WhatsApp:</span>
                         <a 
-                          href={`https://wa.me/${usuarios.find(u => u.email === bannerSelecionado.created_by).whatsapp.replace(/\D/g, '')}`}
+                          href={`https://wa.me/${todosUsuarios.find(u => u.email === bannerSelecionado.created_by).whatsapp.replace(/\D/g, '')}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="font-medium text-green-600 hover:underline"
                         >
-                          {usuarios.find(u => u.email === bannerSelecionado.created_by).whatsapp}
+                          {todosUsuarios.find(u => u.email === bannerSelecionado.created_by).whatsapp}
                         </a>
                       </div>
                     )}
@@ -2004,7 +2418,7 @@ export default function ControleAdmin() {
           </DialogContent>
         </Dialog>
 
-        {/* NOVO: Modal Detalhes Post */}
+        {/* Modal Detalhes Post */}
         <Dialog open={mostrarDetalhesPost} onOpenChange={setMostrarDetalhesPost}>
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
@@ -2079,24 +2493,24 @@ export default function ControleAdmin() {
                         {postSelecionado.created_by}
                       </a>
                     </div>
-                    {usuarios.find(u => u.email === postSelecionado.created_by)?.full_name && (
+                    {todosUsuarios.find(u => u.email === postSelecionado.created_by)?.full_name && (
                       <div className="flex items-center gap-2">
                         <User className="w-4 h-4 text-gray-400" />
                         <span className="text-gray-600">Nome:</span>
                         <span className="font-medium">
-                          {usuarios.find(u => u.email === postSelecionado.created_by).full_name}
+                          {todosUsuarios.find(u => u.email === postSelecionado.created_by).full_name}
                         </span>
                       </div>
                     )}
-                    {usuarios.find(u => u.email === postSelecionado.created_by)?.telefone && (
+                    {todosUsuarios.find(u => u.email === postSelecionado.created_by)?.telefone && (
                       <div className="flex items-center gap-2">
                         <Phone className="w-4 h-4 text-gray-400" />
                         <span className="text-gray-600">Telefone:</span>
                         <a 
-                          href={`tel:${usuarios.find(u => u.email === postSelecionado.created_by).telefone}`}
+                          href={`tel:${todosUsuarios.find(u => u.email === postSelecionado.created_by).telefone}`}
                           className="font-medium text-blue-600 hover:underline"
                         >
-                          {usuarios.find(u => u.email === postSelecionado.created_by).telefone}
+                          {todosUsuarios.find(u => u.email === postSelecionado.created_by).telefone}
                         </a>
                       </div>
                     )}
@@ -2104,9 +2518,9 @@ export default function ControleAdmin() {
                       <Crown className="w-4 h-4 text-gray-400" />
                       <span className="text-gray-600">Plano Patrocinador:</span>
                       <Badge className={
-                        PLANOS_INFO[usuarios.find(u => u.email === postSelecionado.created_by)?.plano_patrocinador]?.cor || "bg-gray-100 text-gray-800"
+                        PLANOS_INFO[todosUsuarios.find(u => u.email === postSelecionado.created_by)?.plano_patrocinador]?.cor || "bg-gray-100 text-gray-800"
                       }>
-                        {PLANOS_INFO[usuarios.find(u => u.email === postSelecionado.created_by)?.plano_patrocinador]?.nome || 'Nenhum'}
+                        {PLANOS_INFO[todosUsuarios.find(u => u.email === postSelecionado.created_by)?.plano_patrocinador]?.nome || 'Nenhum'}
                       </Badge>
                     </div>
                   </div>
