@@ -1976,7 +1976,7 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
 
           {/* ============================================ */}
           {/* TAB CONTROLE DE PRODUTOS - ATUALIZADA COM RELATÓRIOS */}
-          {============================================ */}
+          {/* ============================================ */}
           <TabsContent value="produtos">
             {/* Stats Cards */}
             <div className="grid md:grid-cols-4 gap-4 mb-6">
