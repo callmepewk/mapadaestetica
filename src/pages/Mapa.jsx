@@ -26,7 +26,12 @@ import {
   Loader2,
   ExternalLink,
   Crown,
+  Eye,
+  Heart,
+  Sparkles,
 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import CardAnuncio from "../components/anuncios/CardAnuncio";
 
 // Fix Leaflet default marker icons
 delete L.Icon.Default.prototype._getIconUrl;
@@ -94,6 +99,7 @@ export default function Mapa() {
   const [localizacaoUsuario, setLocalizacaoUsuario] = useState(null);
   const [buscandoLocalizacao, setBuscandoLocalizacao] = useState(false);
   const [centralizarEm, setCentralizarEm] = useState(null);
+  const [abaSelecionada, setAbaSelecionada] = useState("mapa");
   
   // Filtros
   const [buscaCidade, setBuscaCidade] = useState("");
@@ -102,10 +108,22 @@ export default function Mapa() {
   const [ordenacao, setOrdenacao] = useState("distancia");
 
   // Query estabelecimentos
-  const { data: estabelecimentos = [], isLoading } = useQuery({
+  const { data: estabelecimentos = [], isLoading: isLoadingEstabelecimentos } = useQuery({
     queryKey: ['estabelecimentos-parceiros'],
     queryFn: async () => {
       return await base44.entities.EstabelecimentoParceiro.list('-created_date', 500);
+    },
+  });
+
+  // Query anúncios
+  const { data: anuncios = [], isLoading: isLoadingAnuncios } = useQuery({
+    queryKey: ['anuncios-mapa'],
+    queryFn: async () => {
+      return await base44.entities.Anuncio.filter(
+        { status: 'ativo' },
+        '-created_date',
+        100
+      );
     },
   });
 
@@ -166,7 +184,17 @@ export default function Mapa() {
     return matchCidade && matchCategoria && matchPlano;
   });
 
-  // Calcular distâncias e ordenar
+  // Filtrar anúncios
+  const anunciosFiltrados = anuncios.filter(anuncio => {
+    const matchCidade = !buscaCidade || 
+      anuncio.cidade?.toLowerCase().includes(buscaCidade.toLowerCase()) ||
+      anuncio.estado?.toLowerCase().includes(buscaCidade.toLowerCase());
+    const matchCategoria = !filtroCategoria || anuncio.categoria === filtroCategoria;
+    
+    return matchCidade && matchCategoria;
+  });
+
+  // Calcular distâncias e ordenar estabelecimentos
   const estabelecimentosComDistancia = estabelecimentosFiltrados.map(est => {
     let distancia = null;
     if (localizacaoUsuario && est.latitude && est.longitude) {
@@ -232,10 +260,10 @@ export default function Mapa() {
       <div className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] py-6 px-4">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-3xl md:text-4xl font-bold text-[#2C2C2C] mb-2">
-            🗺️ Mapa de Estabelecimentos Parceiros
+            🗺️ Mapa de Profissionais e Estabelecimentos
           </h1>
           <p className="text-[#2C2C2C]/80">
-            Encontre os melhores estabelecimentos perto de você
+            Encontre os melhores profissionais e estabelecimentos perto de você
           </p>
         </div>
       </div>
@@ -312,267 +340,317 @@ export default function Mapa() {
         </div>
       </div>
 
-      {/* Mapa + Lista */}
-      <div className="grid lg:grid-cols-3 gap-0 h-[calc(100vh-280px)]">
-        {/* Lista Lateral */}
-        <div className="lg:col-span-1 bg-white border-r overflow-y-auto p-4">
-          <div className="mb-4">
-            <h2 className="font-bold text-lg text-gray-900 mb-2">
-              📍 {estabelecimentosOrdenados.length} estabelecimentos encontrados
-            </h2>
-            {localizacaoUsuario && (
-              <p className="text-sm text-gray-600">
-                Mostrando por proximidade da sua localização
-              </p>
-            )}
-          </div>
+      {/* Tabs: Anúncios e Estabelecimentos */}
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        <Tabs value={abaSelecionada} onValueChange={setAbaSelecionada}>
+          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-6">
+            <TabsTrigger value="anuncios" className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4" />
+              Anúncios ({anunciosFiltrados.length})
+            </TabsTrigger>
+            <TabsTrigger value="mapa" className="flex items-center gap-2">
+              <MapPin className="w-4 h-4" />
+              Mapa Clube ({estabelecimentosFiltrados.length})
+            </TabsTrigger>
+          </TabsList>
 
-          {isLoading ? (
-            <div className="flex justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-[#F7D426]" />
+          {/* ABA: ANÚNCIOS */}
+          <TabsContent value="anuncios">
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">Profissionais Próximos a Você</h2>
+                  <p className="text-gray-600">
+                    {anunciosFiltrados.length} anúncios encontrados
+                  </p>
+                </div>
+              </div>
+
+              {isLoadingAnuncios ? (
+                <div className="flex justify-center py-12">
+                  <Loader2 className="w-8 h-8 animate-spin text-[#F7D426]" />
+                </div>
+              ) : anunciosFiltrados.length === 0 ? (
+                <div className="text-center py-12">
+                  <Sparkles className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600">Nenhum anúncio encontrado para os filtros selecionados</p>
+                  <p className="text-sm text-gray-500 mt-2">Tente ajustar os filtros ou buscar outra cidade</p>
+                </div>
+              ) : (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {anunciosFiltrados.map((anuncio) => (
+                    <CardAnuncio key={anuncio.id} anuncio={anuncio} />
+                  ))}
+                </div>
+              )}
             </div>
-          ) : estabelecimentosOrdenados.length === 0 ? (
-            <div className="text-center py-12">
-              <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">Nenhum estabelecimento encontrado</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {estabelecimentosOrdenados.map((est) => {
-                const descontoInfo = getDescontoInfo(est.plano_desconto);
-                
-                return (
-                  <Card
-                    key={est.id}
-                    className="cursor-pointer hover:shadow-lg transition-all border-2 border-gray-200 hover:border-[#F7D426]"
-                    onClick={() => handleCentralizarEstabelecimento(est)}
-                  >
-                    <CardContent className="p-4">
-                      {/* Foto */}
-                      {est.foto && (
-                        <div className="w-full h-32 bg-gray-100 rounded-lg mb-3 overflow-hidden">
-                          <img
-                            src={est.foto}
-                            alt={est.nome}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      )}
+          </TabsContent>
 
-                      {/* Nome e Categoria */}
-                      <div className="mb-3">
-                        <h3 className="font-bold text-lg text-gray-900 mb-1">{est.nome}</h3>
-                        <Badge variant="outline" className="text-xs">
-                          {est.categoria}
-                        </Badge>
-                      </div>
+          {/* ABA: MAPA (Estabelecimentos do Clube) */}
+          <TabsContent value="mapa">
+            <div className="grid lg:grid-cols-3 gap-0 h-[calc(100vh-400px)] min-h-[600px]">
+              {/* Lista Lateral */}
+              <div className="lg:col-span-1 bg-white border-r overflow-y-auto p-4">
+                <div className="mb-4">
+                  <h2 className="font-bold text-lg text-gray-900 mb-2">
+                    📍 {estabelecimentosOrdenados.length} estabelecimentos do Clube da Beleza
+                  </h2>
+                  {localizacaoUsuario && (
+                    <p className="text-sm text-gray-600">
+                      Mostrando por proximidade da sua localização
+                    </p>
+                  )}
+                </div>
 
-                      {/* Endereço */}
-                      <div className="flex items-start gap-2 mb-2 text-sm text-gray-600">
-                        <MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                        <span>{est.endereco}, {est.cidade} - {est.estado}</span>
-                      </div>
-
-                      {/* Distância */}
-                      {est.distancia !== null && (
-                        <div className="flex items-center gap-2 mb-3 text-sm">
-                          <Navigation className="w-4 h-4 text-[#F7D426]" />
-                          <span className="font-bold text-[#F7D426]">
-                            {est.distancia.toFixed(1)} km de você
-                          </span>
-                        </div>
-                      )}
-
-                      {/* Desconto do Clube */}
-                      {descontoInfo && (
-                        <div className="mb-3">
-                          <Badge className={`${descontoInfo.cor} font-bold`}>
-                            <Crown className="w-3 h-3 mr-1" />
-                            {descontoInfo.badge} - {descontoInfo.desconto} OFF
-                          </Badge>
-                        </div>
-                      )}
-
-                      {/* Horário */}
-                      {est.horario_funcionamento && (
-                        <div className="flex items-center gap-2 mb-3 text-sm text-gray-600">
-                          <Clock className="w-4 h-4" />
-                          <span>{est.horario_funcionamento}</span>
-                        </div>
-                      )}
-
-                      {/* Ações */}
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleComoChegar(est);
-                          }}
-                          className="flex-1 bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C]"
-                          disabled={!localizacaoUsuario}
-                        >
-                          <Navigation className="w-3 h-3 mr-1" />
-                          Como Chegar
-                        </Button>
-
-                        {est.whatsapp && (
-                          <Button
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              window.open(`https://wa.me/${est.whatsapp.replace(/\D/g, '')}`, '_blank');
-                            }}
-                            className="flex-1 bg-green-600 hover:bg-green-700"
-                          >
-                            <MessageCircle className="w-3 h-3 mr-1" />
-                            WhatsApp
-                          </Button>
-                        )}
-
-                        {est.telefone && !est.whatsapp && (
-                          <Button
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              window.open(`tel:${est.telefone}`, '_blank');
-                            }}
-                            variant="outline"
-                            className="flex-1"
-                          >
-                            <Phone className="w-3 h-3 mr-1" />
-                            Ligar
-                          </Button>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* Mapa */}
-        <div className="lg:col-span-2 relative">
-          <MapContainer
-            center={localizacaoUsuario ? [localizacaoUsuario.lat, localizacaoUsuario.lng] : [-15.7801, -47.9292]}
-            zoom={13}
-            style={{ height: '100%', width: '100%' }}
-            className="z-0"
-          >
-            <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            />
-
-            {/* Marcador do Usuário */}
-            {localizacaoUsuario && (
-              <Marker
-                position={[localizacaoUsuario.lat, localizacaoUsuario.lng]}
-                icon={criarIconeUsuario()}
-              >
-                <Popup>
-                  <div className="text-center p-2">
-                    <p className="font-bold text-blue-600">📍 Você está aqui</p>
+                {isLoadingEstabelecimentos ? (
+                  <div className="flex justify-center py-12">
+                    <Loader2 className="w-8 h-8 animate-spin text-[#F7D426]" />
                   </div>
-                </Popup>
-              </Marker>
-            )}
-
-            {/* Marcadores dos Estabelecimentos */}
-            {estabelecimentosOrdenados.map((est) => {
-              if (!est.latitude || !est.longitude) return null;
-              
-              const descontoInfo = getDescontoInfo(est.plano_desconto);
-              
-              return (
-                <Marker
-                  key={est.id}
-                  position={[est.latitude, est.longitude]}
-                  icon={criarIconeEstabelecimento(est.categoria)}
-                >
-                  <Popup>
-                    <div className="p-2 min-w-[200px]">
-                      <h3 className="font-bold text-gray-900 mb-2">{est.nome}</h3>
+                ) : estabelecimentosOrdenados.length === 0 ? (
+                  <div className="text-center py-12">
+                    <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600">Nenhum estabelecimento encontrado</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {estabelecimentosOrdenados.map((est) => {
+                      const descontoInfo = getDescontoInfo(est.plano_desconto);
                       
-                      {descontoInfo && (
-                        <Badge className={`${descontoInfo.cor} mb-2`}>
-                          <Crown className="w-3 h-3 mr-1" />
-                          {descontoInfo.badge} - {descontoInfo.desconto} OFF
-                        </Badge>
-                      )}
-                      
-                      <p className="text-sm text-gray-600 mb-2">
-                        {est.endereco}, {est.cidade}
-                      </p>
-                      
-                      {est.distancia !== null && (
-                        <p className="text-sm font-bold text-[#F7D426] mb-2">
-                          📍 {est.distancia.toFixed(1)} km de você
-                        </p>
-                      )}
-                      
-                      {est.telefone && (
-                        <p className="text-sm text-gray-600 mb-2">
-                          📞 {est.telefone}
-                        </p>
-                      )}
-                      
-                      <div className="flex gap-2 mt-3">
-                        <Button
-                          size="sm"
-                          onClick={() => handleComoChegar(est)}
-                          className="flex-1 bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C]"
+                      return (
+                        <Card
+                          key={est.id}
+                          className="cursor-pointer hover:shadow-lg transition-all border-2 border-gray-200 hover:border-[#F7D426]"
+                          onClick={() => handleCentralizarEstabelecimento(est)}
                         >
-                          Como Chegar
-                        </Button>
-                        {est.whatsapp && (
-                          <Button
-                            size="sm"
-                            onClick={() => window.open(`https://wa.me/${est.whatsapp.replace(/\D/g, '')}`, '_blank')}
-                            className="flex-1 bg-green-600 hover:bg-green-700"
-                          >
-                            WhatsApp
-                          </Button>
-                        )}
-                      </div>
+                          <CardContent className="p-4">
+                            {/* Foto */}
+                            {est.foto && (
+                              <div className="w-full h-32 bg-gray-100 rounded-lg mb-3 overflow-hidden">
+                                <img
+                                  src={est.foto}
+                                  alt={est.nome}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            )}
+
+                            {/* Nome e Categoria */}
+                            <div className="mb-3">
+                              <h3 className="font-bold text-lg text-gray-900 mb-1">{est.nome}</h3>
+                              <Badge variant="outline" className="text-xs">
+                                {est.categoria}
+                              </Badge>
+                            </div>
+
+                            {/* Endereço */}
+                            <div className="flex items-start gap-2 mb-2 text-sm text-gray-600">
+                              <MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                              <span>{est.endereco}, {est.cidade} - {est.estado}</span>
+                            </div>
+
+                            {/* Distância */}
+                            {est.distancia !== null && (
+                              <div className="flex items-center gap-2 mb-3 text-sm">
+                                <Navigation className="w-4 h-4 text-[#F7D426]" />
+                                <span className="font-bold text-[#F7D426]">
+                                  {est.distancia.toFixed(1)} km de você
+                                </span>
+                              </div>
+                            )}
+
+                            {/* Desconto do Clube */}
+                            {descontoInfo && (
+                              <div className="mb-3">
+                                <Badge className={`${descontoInfo.cor} font-bold`}>
+                                  <Crown className="w-3 h-3 mr-1" />
+                                  {descontoInfo.badge} - {descontoInfo.desconto} OFF
+                                </Badge>
+                              </div>
+                            )}
+
+                            {/* Horário */}
+                            {est.horario_funcionamento && (
+                              <div className="flex items-center gap-2 mb-3 text-sm text-gray-600">
+                                <Clock className="w-4 h-4" />
+                                <span>{est.horario_funcionamento}</span>
+                              </div>
+                            )}
+
+                            {/* Ações */}
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleComoChegar(est);
+                                }}
+                                className="flex-1 bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C]"
+                                disabled={!localizacaoUsuario}
+                              >
+                                <Navigation className="w-3 h-3 mr-1" />
+                                Como Chegar
+                              </Button>
+
+                              {est.whatsapp && (
+                                <Button
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    window.open(`https://wa.me/${est.whatsapp.replace(/\D/g, '')}`, '_blank');
+                                  }}
+                                  className="flex-1 bg-green-600 hover:bg-green-700"
+                                >
+                                  <MessageCircle className="w-3 h-3 mr-1" />
+                                  WhatsApp
+                                </Button>
+                              )}
+
+                              {est.telefone && !est.whatsapp && (
+                                <Button
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    window.open(`tel:${est.telefone}`, '_blank');
+                                  }}
+                                  variant="outline"
+                                  className="flex-1"
+                                >
+                                  <Phone className="w-3 h-3 mr-1" />
+                                  Ligar
+                                </Button>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Mapa */}
+              <div className="lg:col-span-2 relative">
+                <MapContainer
+                  center={localizacaoUsuario ? [localizacaoUsuario.lat, localizacaoUsuario.lng] : [-15.7801, -47.9292]}
+                  zoom={13}
+                  style={{ height: '100%', width: '100%' }}
+                  className="z-0"
+                >
+                  <TileLayer
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                  />
+
+                  {/* Marcador do Usuário */}
+                  {localizacaoUsuario && (
+                    <Marker
+                      position={[localizacaoUsuario.lat, localizacaoUsuario.lng]}
+                      icon={criarIconeUsuario()}
+                    >
+                      <Popup>
+                        <div className="text-center p-2">
+                          <p className="font-bold text-blue-600">📍 Você está aqui</p>
+                        </div>
+                      </Popup>
+                    </Marker>
+                  )}
+
+                  {/* Marcadores dos Estabelecimentos */}
+                  {estabelecimentosOrdenados.map((est) => {
+                    if (!est.latitude || !est.longitude) return null;
+                    
+                    const descontoInfo = getDescontoInfo(est.plano_desconto);
+                    
+                    return (
+                      <Marker
+                        key={est.id}
+                        position={[est.latitude, est.longitude]}
+                        icon={criarIconeEstabelecimento(est.categoria)}
+                      >
+                        <Popup>
+                          <div className="p-2 min-w-[200px]">
+                            <h3 className="font-bold text-gray-900 mb-2">{est.nome}</h3>
+                            
+                            {descontoInfo && (
+                              <Badge className={`${descontoInfo.cor} mb-2`}>
+                                <Crown className="w-3 h-3 mr-1" />
+                                {descontoInfo.badge} - {descontoInfo.desconto} OFF
+                              </Badge>
+                            )}
+                            
+                            <p className="text-sm text-gray-600 mb-2">
+                              {est.endereco}, {est.cidade}
+                            </p>
+                            
+                            {est.distancia !== null && (
+                              <p className="text-sm font-bold text-[#F7D426] mb-2">
+                                📍 {est.distancia.toFixed(1)} km de você
+                              </p>
+                            )}
+                            
+                            {est.telefone && (
+                              <p className="text-sm text-gray-600 mb-2">
+                                📞 {est.telefone}
+                              </p>
+                            )}
+                            
+                            <div className="flex gap-2 mt-3">
+                              <Button
+                                size="sm"
+                                onClick={() => handleComoChegar(est)}
+                                className="flex-1 bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C]"
+                              >
+                                Como Chegar
+                              </Button>
+                              {est.whatsapp && (
+                                <Button
+                                  size="sm"
+                                  onClick={() => window.open(`https://wa.me/${est.whatsapp.replace(/\D/g, '')}`, '_blank')}
+                                  className="flex-1 bg-green-600 hover:bg-green-700"
+                                >
+                                  WhatsApp
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        </Popup>
+                      </Marker>
+                    );
+                  })}
+
+                  {/* Componente para centralizar */}
+                  {centralizarEm && <CentralizarMapa center={centralizarEm} />}
+                </MapContainer>
+
+                {/* Badge de Info no Mapa */}
+                <div className="absolute top-4 right-4 z-[1000] bg-white rounded-lg shadow-lg p-3 border-2 border-[#F7D426]">
+                  <div className="flex items-center gap-2 mb-2">
+                    <MapPin className="w-5 h-5 text-[#F7D426]" />
+                    <span className="font-bold text-gray-900">Legenda:</span>
+                  </div>
+                  <div className="space-y-1 text-sm">
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 bg-blue-500 rounded-full border-2 border-white"></div>
+                      <span>Você</span>
                     </div>
-                  </Popup>
-                </Marker>
-              );
-            })}
-
-            {/* Componente para centralizar */}
-            {centralizarEm && <CentralizarMapa center={centralizarEm} />}
-          </MapContainer>
-
-          {/* Badge de Info no Mapa */}
-          <div className="absolute top-4 right-4 z-[1000] bg-white rounded-lg shadow-lg p-3 border-2 border-[#F7D426]">
-            <div className="flex items-center gap-2 mb-2">
-              <MapPin className="w-5 h-5 text-[#F7D426]" />
-              <span className="font-bold text-gray-900">Legenda:</span>
-            </div>
-            <div className="space-y-1 text-sm">
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-blue-500 rounded-full border-2 border-white"></div>
-                <span>Você</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xl">💇</span>
-                <span>Salão de Beleza</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xl">💆</span>
-                <span>Clínica de Estética</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xl">🌿</span>
-                <span>Spa</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">💇</span>
+                      <span>Salão de Beleza</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">💆</span>
+                      <span>Clínica de Estética</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">🌿</span>
+                      <span>Spa</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Info sobre Clube da Beleza */}
