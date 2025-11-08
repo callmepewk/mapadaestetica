@@ -190,7 +190,7 @@ export default function ControleAdmin() {
     queryKey: ['usuarios-profissionais'],
     queryFn: async () => {
       const allUsers = await base44.entities.User.list('-created_date', 500);
-      return allUsers.filter(u => u.tipo_usuario === 'profissional' || u.tipo_usuario === 'admin'); // Admins can also be authors/sponsors
+      return allUsers.filter(u => u.tipo_usuario === 'profissional' || u.tipo_usuario === 'admin');
     },
     enabled: !!user,
   });
@@ -201,7 +201,6 @@ export default function ControleAdmin() {
     enabled: !!user,
   });
 
-  // Queries para Banners e Posts
   const { data: banners = [], isLoading: loadingBanners } = useQuery({
     queryKey: ['admin-banners'],
     queryFn: () => base44.entities.Banner.list('-created_date', 200),
@@ -214,7 +213,6 @@ export default function ControleAdmin() {
     enabled: !!user,
   });
 
-  // NOVA Query: Todos os usuários (não só profissionais)
   const { data: todosUsuarios = [], isLoading: loadingTodosUsuarios } = useQuery({
     queryKey: ['todos-usuarios'],
     queryFn: async () => {
@@ -223,14 +221,12 @@ export default function ControleAdmin() {
     enabled: !!user,
   });
 
-  // NOVA Query para Novidades/Atualizações
   const { data: atualizacoes = [], isLoading: loadingAtualizacoes } = useQuery({
     queryKey: ['atualizacoes-sistema'],
     queryFn: () => base44.entities.Novidade.list('-created_date', 50),
     enabled: !!user,
   });
 
-  // NOVA Query para Agendamentos
   const { data: agendamentos = [], isLoading: loadingAgendamentos } = useQuery({
     queryKey: ['agendamentos-atualizacao'],
     queryFn: async () => {
@@ -241,7 +237,7 @@ export default function ControleAdmin() {
       );
     },
     enabled: !!user,
-    refetchInterval: 60000, // Verificar a cada minuto
+    refetchInterval: 60000,
   });
 
   // Mutations para Planos
@@ -2166,7 +2162,7 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
 
           {/* ============================================ */}
           {/* TAB CONTROLE DE PRODUTOS - ATUALIZADA COM RELATÓRIOS */}
-          {/* ============================================ */}
+          {============================================ */}
           <TabsContent value="produtos">
             {/* Stats Cards */}
             <div className="grid md:grid-cols-4 gap-4 mb-6">
@@ -3359,7 +3355,7 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
                       <p className="text-2xl font-bold text-purple-600">{bannerSelecionado.metricas?.compartilhamentos || 0}</p>
                     </div>
                     <div>
-                      <p className="text-gray-600">Conversões</p>
+                      <p className="text-gray-600">Conversoes</p>
                       <p className="text-2xl font-bold text-orange-600">{bannerSelecionado.metricas?.conversoes_produtos || 0}</p>
                     </div>
                   </div>
