@@ -347,6 +347,15 @@ export default function Planos() {
     };
     fetchUser();
   }, []);
+  
+  // NOVO: Verificar parâmetro 'aba' na URL ao carregar
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const abaParam = params.get('aba');
+    if (abaParam === 'patrocinadores') {
+      setAbaPlanos('patrocinadores');
+    }
+  }, [location.search]);
 
   // Verificar parâmetros de retorno do Mercado Pago
   useEffect(() => {
@@ -716,7 +725,7 @@ export default function Planos() {
           </p>
         </div>
 
-        {/* NOVO: Navegação por Abas */}
+        {/* NAVEGAÇÃO POR ABAS - ATUALIZADA */}
         <div className="flex justify-center gap-4 mb-8">
           <Button
             onClick={() => setAbaPlanos("mapa_estetica")}

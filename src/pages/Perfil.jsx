@@ -59,6 +59,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function Perfil() {
   const navigate = useNavigate();
@@ -80,6 +81,10 @@ export default function Perfil() {
     alvara_funcionamento: false,
     registro_profissional: false
   });
+
+  // NOVO: Estado para exportação de relatórios
+  const [mostrarExportRelatorio, setMostrarExportRelatorio] = useState(false);
+  const [numeroWhatsAppRelatorio, setNumeroWhatsAppRelatorio] = useState("");
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -378,6 +383,183 @@ export default function Perfil() {
   const handleSolicitarMudancaTipo = () => {
     const mensagem = `Olá! Gostaria de alterar o tipo de conta no Mapa da Estética.\n\nDados do usuário:\nNome: ${user.full_name}\nEmail: ${user.email}\nTipo atual: ${user.tipo_usuario}\n\nPor favor, me ajudem com essa alteração.`;
     window.open(`mailto:pedro_hbfreitas@hotmail.com?subject=Solicitação de Alteração de Tipo de Conta&body=${encodeURIComponent(mensagem)}`, '_blank');
+  };
+
+  // NOVO: Gerar relatório HTML de performance
+  const gerarRelatorioPerformanceHTML = () => {
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Relatório de Performance - ${user?.full_name}</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; max-width: 1200px; margin: 0 auto; }
+          h1 { color: #EC4899; border-bottom: 3px solid #EC4899; padding-bottom: 10px; }
+          .header { background: linear-gradient(135deg, #EC4899 0%, #F43F5E 100%); color: white; padding: 20px; border-radius: 10px; margin-bottom: 30px; }
+          .metric { background: #F3F4F6; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 4px solid #EC4899; }
+          .metric h3 { margin: 0 0 10px 0; color: #374151; }
+          .metric p { margin: 5px 0; font-size: 14px; }
+          .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }
+          .card { background: white; border: 2px solid #E5E7EB; padding: 15px; border-radius: 8px; text-align: center; }
+          .card h4 { margin: 0 0 10px 0; color: #EC4899; font-size: 14px; }
+          .card p { font-size: 32px; font-weight: bold; margin: 10px 0; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th, td { border: 1px solid #E5E7EB; padding: 12px 8px; text-align: left; font-size: 14px; }
+          th { background: #EC4899; color: white; }
+          .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 2px solid #E5E7EB; color: #6B7280; font-size: 12px; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1 style="margin: 0; color: white; border: none;">📊 Relatório de Performance</h1>
+          <p style="margin: 10px 0 0 0; font-size: 16px;">Mapa da Estética</p>
+        </div>
+        
+        <div style="background: #F9FAFB; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+          <p style="margin: 5px 0;"><strong>Profissional:</strong> ${user?.full_name}</p>
+          <p style="margin: 5px 0;"><strong>Email:</strong> ${user?.email}</p>
+          <p style="margin: 5px 0;"><strong>Plano:</strong> ${planoNome}</p>
+          <p style="margin: 5px 0;"><strong>Data do Relatório:</strong> ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}</p>
+        </div>
+        
+        <div class="grid">
+          <div class="card">
+            <h4>👁️ Visualizações Totais</h4>
+            <p style="color: #3B82F6;">${totalVisualizacoes}</p>
+          </div>
+          <div class="card">
+            <h4>📋 Anúncios Ativos</h4>
+            <p style="color: #10B981;">${anunciosAtivos}</p>
+          </div>
+          <div class="card">
+            <h4>⭐ Anúncios em Destaque</h4>
+            <p style="color: #F59E0B;">${anunciosDestaque}</p>
+          </div>
+          <div class="card">
+            <h4>🚀 Anúncios Impulsionados</h4>
+            <p style="color: #F97316;">${anunciosImpulsionados.length}</p>
+          </div>
+        </div>
+
+        <div class="metric">
+          <h3>📊 Resumo de Anúncios</h3>
+          <p><strong>Total de Anúncios:</strong> ${meusAnuncios.length}</p>
+          <p><strong>Ativos:</strong> ${anunciosAtivos}</p>
+          <p><strong>Pendentes:</strong> ${anunciosPendentes}</p>
+          <p><strong>Em Destaque:</strong> ${anunciosDestaque}</p>
+          <p><strong>Expirados:</strong> ${anunciosExpirados}</p>
+        </div>
+
+        <h2 style="margin-top: 40px; color: #374151;">📋 Detalhamento por Anúncio</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Anúncio</th>
+              <th>Status</th>
+              <th>Categoria</th>
+              <th>Visualizações</th>
+              <th>Curtidas</th>
+              <th>Comentários</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${meusAnuncios.map(a => `
+              <tr>
+                <td>${a.titulo}</td>
+                <td>${a.status}</td>
+                <td>${a.categoria}</td>
+                <td>${a.visualizacoes || 0}</td>
+                <td>${a.curtidas || 0}</td>
+                <td>${a.comentarios?.length || 0}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+
+        <div class="footer">
+          <p><strong>Mapa da Estética</strong> - A maior plataforma de profissionais de estética do Brasil</p>
+          <p>Relatório gerado em ${new Date().toLocaleString('pt-BR')}</p>
+          <p>www.mapadaestetica.com.br | Suporte: (31) 97259-5643</p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `relatorio-performance-${new Date().toISOString().split('T')[0]}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    alert("📄 Relatório HTML baixado!\n\nPara converter em PDF:\n1. Abra o arquivo no navegador\n2. Pressione Ctrl+P (Cmd+P no Mac)\n3. Selecione 'Salvar como PDF'\n4. Clique em 'Salvar'");
+  };
+
+  // NOVO: Gerar mensagem WhatsApp de relatório
+  const gerarMensagemRelatorioWhatsApp = () => {
+    const mensagem = `
+📊 *RELATÓRIO DE PERFORMANCE*
+*Mapa da Estética*
+
+👤 *Profissional:* ${user?.full_name}
+📧 *Email:* ${user?.email}
+🏆 *Plano:* ${planoNome}
+📅 *Data:* ${new Date().toLocaleDateString('pt-BR')}
+
+━━━━━━━━━━━━━━━━━━━━━
+📈 *MÉTRICAS PRINCIPAIS*
+━━━━━━━━━━━━━━━━━━━━━
+
+👁️ *Visualizações Totais:* ${totalVisualizacoes}
+📋 *Anúncios Ativos:* ${anunciosAtivos}
+⭐ *Anúncios em Destaque:* ${anunciosDestaque}
+🚀 *Anúncios Impulsionados:* ${anunciosImpulsionados.length}
+
+━━━━━━━━━━━━━━━━━━━━━
+📊 *RESUMO DE ANÚNCIOS*
+━━━━━━━━━━━━━━━━━━━━━
+
+📝 Total: ${meusAnuncios.length}
+✅ Ativos: ${anunciosAtivos}
+⏳ Pendentes: ${anunciosPendentes}
+⭐ Em Destaque: ${anunciosDestaque}
+⏰ Expirados: ${anunciosExpirados}
+
+━━━━━━━━━━━━━━━━━━━━━
+🎯 *TOP 3 ANÚNCIOS*
+━━━━━━━━━━━━━━━━━━━━━
+
+${meusAnuncios.sort((a, b) => (b.visualizacoes || 0) - (a.visualizacoes || 0)).slice(0, 3).map((a, i) => `
+${i + 1}. *${a.titulo}*
+   👁️ ${a.visualizacoes || 0} views | ❤️ ${a.curtidas || 0} curtidas | 💬 ${a.comentarios?.length || 0} comentários
+`).join('')}
+
+━━━━━━━━━━━━━━━━━━━━━
+📱 *Mapa da Estética*
+━━━━━━━━━━━━━━━━━━━━━
+www.mapadaestetica.com.br
+📞 Suporte: (31) 97259-5643
+    `.trim();
+
+    return mensagem;
+  };
+
+  // NOVO: Enviar relatório via WhatsApp
+  const handleEnviarRelatorioWhatsApp = () => {
+    const numeroDestino = numeroWhatsAppRelatorio || user?.whatsapp?.replace(/\D/g, '');
+    
+    if (!numeroDestino) {
+      alert("Digite o número do WhatsApp");
+      return;
+    }
+
+    const mensagem = gerarMensagemRelatorioWhatsApp();
+    const url = `https://wa.me/${numeroDestino}?text=${encodeURIComponent(mensagem)}`;
+    window.open(url, '_blank');
+    setMostrarExportRelatorio(false);
+    setNumeroWhatsAppRelatorio("");
   };
 
   if (!user) {
@@ -1474,10 +1656,31 @@ export default function Perfil() {
 
                   <Card className="border-none shadow-lg">
                     <CardContent className="p-6">
-                      <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                        <TrendingUp className="w-5 h-5 text-pink-600" />
-                        Relatórios de Performance
-                      </h3>
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-semibold text-lg flex items-center gap-2">
+                          <TrendingUp className="w-5 h-5 text-pink-600" />
+                          Relatórios de Performance
+                        </h3>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={gerarRelatorioPerformanceHTML}
+                            className="text-xs sm:text-sm"
+                          >
+                            📄 Exportar PDF
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setMostrarExportRelatorio(true)}
+                            className="text-xs sm:text-sm"
+                          >
+                            💬 Enviar WhatsApp
+                          </Button>
+                        </div>
+                      </div>
+                      
                       <p className="text-sm text-gray-600 mb-6">
                         Acompanhe o desempenho dos seus anúncios com relatórios detalhados, similar ao Google Negócios
                       </p>
@@ -1856,8 +2059,9 @@ export default function Perfil() {
                         size="sm"
                         variant="outline"
                         className="w-full mt-3 text-xs border-purple-300 text-purple-700 hover:bg-purple-50"
-                        onClick={() => alert("Funcionalidade em breve! Entre em contato conosco.")}
+                        onClick={() => navigate(createPageUrl("SobreNos"))}
                       >
+                        <Crown className="w-3 h-3 mr-1" />
                         Assinar Clube
                       </Button>
                     )}
@@ -1890,10 +2094,17 @@ export default function Perfil() {
                           variant="outline"
                           className="w-full mt-3 text-xs border-blue-300 text-blue-700 hover:bg-blue-50"
                           onClick={() => {
-                            const mensagem = `Olá! Tenho interesse em contratar um plano de Patrocinador no Mapa da Estética.\n\nDados:\nNome: ${user.full_name}\nEmail: ${user.email}`;
-                            window.open(`https://wa.me/5531972595643?text=${encodeURIComponent(mensagem)}`, '_blank');
+                            // Navegar para a página de Planos direto na aba de Patrocinadores
+                            navigate(createPageUrl("Planos"));
+                            // Usar setTimeout para garantir que a página carregou antes de mudar a aba
+                            setTimeout(() => {
+                              const urlParams = new URLSearchParams(window.location.search);
+                              urlParams.set('aba', 'patrocinadores');
+                              window.history.replaceState({}, '', `${window.location.pathname}?${urlParams.toString()}`);
+                            }, 100);
                           }}
                         >
+                          <Users className="w-3 h-3 mr-1" />
                           Ser Patrocinador
                         </Button>
                       )}
@@ -2021,6 +2232,45 @@ export default function Perfil() {
             </div>
           </div>
         )}
+
+        {/* NOVO: Modal de Exportação WhatsApp para Relatórios */}
+        <Dialog open={mostrarExportRelatorio} onOpenChange={setMostrarExportRelatorio}>
+          <DialogContent className="max-w-[95vw] sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-lg sm:text-xl">Enviar Relatório via WhatsApp</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div>
+                <Label className="text-sm sm:text-base">Número do WhatsApp</Label>
+                <Input
+                  value={numeroWhatsAppRelatorio}
+                  onChange={(e) => setNumeroWhatsAppRelatorio(e.target.value)}
+                  placeholder={user?.whatsapp || "Ex: 5531999999999"}
+                  className="mt-1.5 h-10 sm:h-11 text-sm sm:text-base"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Deixe vazio para enviar para seu próprio WhatsApp ({user?.whatsapp || 'não cadastrado'})
+                </p>
+              </div>
+
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => setMostrarExportRelatorio(false)}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  onClick={handleEnviarRelatorioWhatsApp}
+                  className="flex-1 bg-green-600 hover:bg-green-700"
+                >
+                  📱 Enviar
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
