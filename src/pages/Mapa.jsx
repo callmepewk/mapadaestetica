@@ -416,17 +416,17 @@ export default function Mapa() {
         </div>
       </div>
 
-      {/* Tabs: Anúncios e Mapa Clube */}
+      {/* Tabs: Anúncios e Mapa da Estética */}
       <div className="max-w-7xl mx-auto px-4 py-6">
         <Tabs value={abaSelecionada} onValueChange={setAbaSelecionada}>
           <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-6">
             <TabsTrigger value="anuncios" className="flex items-center gap-2">
               <Sparkles className="w-4 h-4" />
-              Mapa da Estética ({anunciosFiltrados.length})
+              Anúncios ({anunciosFiltrados.length})
             </TabsTrigger>
             <TabsTrigger value="mapa" className="flex items-center gap-2">
-              <Crown className="w-4 h-4" />
-              Mapa Clube ({estabelecimentosFiltrados.length})
+              <MapPin className="w-4 h-4" />
+              Mapa da Estética ({estabelecimentosFiltrados.length})
             </TabsTrigger>
           </TabsList>
 
@@ -687,7 +687,7 @@ export default function Mapa() {
             </div>
           </TabsContent>
 
-          {/* ABA: MAPA (Estabelecimentos do Clube) */}
+          {/* ABA: MAPA DA ESTÉTICA (Estabelecimentos) */}
           <TabsContent value="mapa">
             {/* Filtros do Mapa */}
             <div className="bg-white border rounded-lg shadow-sm mb-6 p-4">
@@ -754,7 +754,7 @@ export default function Mapa() {
               <div className="lg:col-span-1 bg-white border-r overflow-y-auto p-4">
                 <div className="mb-4">
                   <h2 className="font-bold text-lg text-gray-900 mb-2">
-                    📍 {estabelecimentosOrdenados.length} estabelecimentos do Clube
+                    📍 {estabelecimentosOrdenados.length} estabelecimentos do Mapa da Estética
                   </h2>
                   {localizacaoUsuario && (
                     <p className="text-sm text-gray-600">
