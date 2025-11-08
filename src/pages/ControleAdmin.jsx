@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -51,6 +52,12 @@ import {
   Check,
   MessageCircle,
   FileText,
+  Image as ImageIcon,
+  Newspaper,
+  Eye,
+  Phone,
+  Mail,
+  ExternalLink,
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -106,6 +113,16 @@ export default function ControleAdmin() {
   const [filtroUsuario, setFiltroUsuario] = useState("");
   const [gerandoRelatorio, setGerandoRelatorio] = useState(false);
 
+  // NOVOS Estados para Banners e Posts
+  const [bannerSelecionado, setBannerSelecionado] = useState(null);
+  const [postSelecionado, setPostSelecionado] = useState(null);
+  const [mostrarDetalhesBanner, setMostrarDetalhesBanner] = useState(false);
+  const [mostrarDetalhesPost, setMostrarDetalhesPost] = useState(false);
+  const [buscaBanner, setBuscaBanner] = useState("");
+  const [filtroStatusBanner, setFiltroStatusBanner] = useState("");
+  const [buscaPost, setBuscaPost] = useState("");
+  const [filtroStatusPost, setFiltroStatusPost] = useState("");
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -140,7 +157,7 @@ export default function ControleAdmin() {
     queryKey: ['usuarios-profissionais'],
     queryFn: async () => {
       const allUsers = await base44.entities.User.list('-created_date', 500);
-      return allUsers.filter(u => u.tipo_usuario === 'profissional');
+      return allUsers.filter(u => u.tipo_usuario === 'profissional' || u.tipo_usuario === 'admin'); // Admins can also be authors/sponsors
     },
     enabled: !!user,
   });
@@ -148,6 +165,19 @@ export default function ControleAdmin() {
   const { data: pedidos = [], isLoading: loadingPedidos } = useQuery({
     queryKey: ['pedidos-produtos'],
     queryFn: () => base44.entities.PedidoProduto.list('-created_date', 500),
+    enabled: !!user,
+  });
+
+  // NOVAS Queries para Banners e Posts
+  const { data: banners = [], isLoading: loadingBanners } = useQuery({
+    queryKey: ['admin-banners'],
+    queryFn: () => base44.entities.Banner.list('-created_date', 200),
+    enabled: !!user,
+  });
+
+  const { data: posts = [], isLoading: loadingPosts } = useQuery({
+    queryKey: ['admin-posts'],
+    queryFn: () => base44.entities.ArtigoBlog.list('-created_date', 200),
     enabled: !!user,
   });
 
@@ -238,6 +268,63 @@ export default function ControleAdmin() {
       setSucesso("Pedido rejeitado!");
       setTimeout(() => setSucesso(null), 3000);
     },
+  });
+
+  // NOVAS Mutations para Banners e Posts
+  const deletarBannerMutation = useMutation({
+    mutationFn: (id) => base44.entities.Banner.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-banners'] });
+      setSucesso("Banner excluído com sucesso!");
+      setTimeout(() => setSucesso(null), 3000);
+    },
+    onError: (error) => {
+      setErro("Erro ao excluir banner: " + error.message);
+      setTimeout(() => setErro(null), 3000);
+    }
+  });
+
+  const atualizarStatusBannerMutation = useMutation({
+    mutationFn: async ({ id, status }) => {
+      await base44.entities.Banner.update(id, { status });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-banners'] });
+      setSucesso("Status do banner atualizado!");
+      setTimeout(() => setSucesso(null), 3000);
+    },
+    onError: (error) => {
+      setErro("Erro ao atualizar status do banner: " + error.message);
+      setTimeout(() => setErro(null), 3000);
+    }
+  });
+
+  const deletarPostMutation = useMutation({
+    mutationFn: (id) => base44.entities.ArtigoBlog.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-posts'] });
+      setSucesso("Post excluído com sucesso!");
+      setTimeout(() => setSucesso(null), 3000);
+    },
+    onError: (error) => {
+      setErro("Erro ao excluir post: " + error.message);
+      setTimeout(() => setErro(null), 3000);
+    }
+  });
+
+  const atualizarStatusPostMutation = useMutation({
+    mutationFn: async ({ id, status }) => {
+      await base44.entities.ArtigoBlog.update(id, { status });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-posts'] });
+      setSucesso("Status do post atualizado!");
+      setTimeout(() => setSucesso(null), 3000);
+    },
+    onError: (error) => {
+      setErro("Erro ao atualizar status do post: " + error.message);
+      setTimeout(() => setErro(null), 3000);
+    }
   });
 
   // Handlers para Planos
@@ -409,6 +496,47 @@ export default function ControleAdmin() {
     }
   };
 
+  // NOVOS Handlers para Banners
+  const handleVerDetalhesBanner = (banner) => {
+    setBannerSelecionado(banner);
+    setMostrarDetalhesBanner(true);
+  };
+
+  const handleAlterarStatusBanner = async (banner, novoStatus) => {
+    if (confirm(`Alterar status do banner "${banner.titulo}" para ${novoStatus}?`)) {
+      atualizarStatusBannerMutation.mutate({ id: banner.id, status: novoStatus });
+    }
+  };
+
+  const handleExcluirBanner = async (banner) => {
+    if (confirm(`Tem certeza que deseja excluir o banner "${banner.titulo}"?`)) {
+      deletarBannerMutation.mutate(banner.id);
+    }
+  };
+
+  // NOVOS Handlers para Posts
+  const handleVerDetalhesPost = (post) => {
+    setPostSelecionado(post);
+    setMostrarDetalhesPost(true);
+  };
+
+  const handleVerPostagemBlog = (post) => {
+    // Navegar para o Blog com o artigo específico
+    navigate(`${createPageUrl("Blog")}?artigo=${post.id}`);
+  };
+
+  const handleAlterarStatusPost = async (post, novoStatus) => {
+    if (confirm(`Alterar status do post "${post.titulo}" para ${novoStatus}?`)) {
+      atualizarStatusPostMutation.mutate({ id: post.id, status: novoStatus });
+    }
+  };
+
+  const handleExcluirPost = async (post) => {
+    if (confirm(`Tem certeza que deseja excluir o post "${post.titulo}"?`)) {
+      deletarPostMutation.mutate(post.id);
+    }
+  };
+
   const usuariosFiltrados = usuarios.filter(u => 
     !buscaProfissional || 
     u.full_name?.toLowerCase().includes(buscaProfissional.toLowerCase()) ||
@@ -422,6 +550,25 @@ export default function ControleAdmin() {
     const matchStatus = !filtroStatus || pedido.status_pedido === filtroStatus;
     const matchUsuario = !filtroUsuario || pedido.usuario_email === filtroUsuario;
     return matchBusca && matchStatus && matchUsuario;
+  });
+
+  // Filtros para Banners
+  const bannersFiltrados = banners.filter(b => {
+    const matchBusca = !buscaBanner || 
+      b.titulo?.toLowerCase().includes(buscaBanner.toLowerCase()) ||
+      b.nome_empresa?.toLowerCase().includes(buscaBanner.toLowerCase()) ||
+      b.created_by?.toLowerCase().includes(buscaBanner.toLowerCase());
+    const matchStatus = !filtroStatusBanner || b.status === filtroStatusBanner;
+    return matchBusca && matchStatus;
+  });
+
+  // Filtros para Posts
+  const postsFiltrados = posts.filter(p => {
+    const matchBusca = !buscaPost || 
+      p.titulo?.toLowerCase().includes(buscaPost.toLowerCase()) ||
+      p.created_by?.toLowerCase().includes(buscaPost.toLowerCase());
+    const matchStatus = !filtroStatusPost || p.status === filtroStatusPost;
+    return matchBusca && matchStatus;
   });
 
   const usuariosUnicos = [...new Set(pedidos.map(p => p.usuario_email))].sort();
@@ -459,16 +606,24 @@ export default function ControleAdmin() {
           </Alert>
         )}
 
-        {/* Tabs Principais */}
+        {/* Tabs Principais - ATUALIZADAS COM BANNERS E POSTS */}
         <Tabs value={abaSelecionada} onValueChange={setAbaSelecionada} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 mb-6 gap-1">
             <TabsTrigger value="planos">
               <CreditCard className="w-4 h-4 mr-2" />
-              Controle de Planos
+              Planos
             </TabsTrigger>
             <TabsTrigger value="produtos">
               <ShoppingCart className="w-4 h-4 mr-2" />
-              Controle de Produtos
+              Produtos
+            </TabsTrigger>
+            <TabsTrigger value="banners">
+              <ImageIcon className="w-4 h-4 mr-2" />
+              Banners ({banners.length})
+            </TabsTrigger>
+            <TabsTrigger value="posts">
+              <Newspaper className="w-4 h-4 mr-2" />
+              Posts ({posts.length})
             </TabsTrigger>
           </TabsList>
 
@@ -966,7 +1121,7 @@ export default function ControleAdmin() {
                   <CardTitle>Lista de Pedidos ({pedidosFiltrados.length})</CardTitle>
                   <Button
                     onClick={() => {
-                      const mensagem = `📊 *RELATÓRIO DE PEDIDOS*\n\nTotal: ${pedidosFiltrados.length}\nPendentes: ${pedidosPendentes.length}\nValor: R$ ${pedidosFiltrados.reduce((s, p) => s + (p.valor_total || 0), 0).toFixed(2)}\n\nGerado em ${format(new Date(), "dd/MM/yyyy HH:mm")}`;
+                      const mensagem = `📊 *RELATÓRIO DE PEDIDOS*\n\nTotal: ${pedidosFiltrados.length}\nPendentes: ${pedidosPendentes.length}\nValor: R$ ${pedidosFiltrados.reduce((s, p) => s + (p.valor_total || 0), 0).toFixed(2)}\n\nGerado em ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR })}`;
                       window.open(`https://wa.me/5531972595643?text=${encodeURIComponent(mensagem)}`, '_blank');
                     }}
                     size="sm"
@@ -1052,6 +1207,465 @@ export default function ControleAdmin() {
                             </TableCell>
                           </TableRow>
                         ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ============================================ */}
+          {/* TAB CONTROLE DE BANNERS */}
+          {/* ============================================ */}
+          <TabsContent value="banners">
+            {/* Stats Banners */}
+            <div className="grid md:grid-cols-4 gap-4 mb-6">
+              <Card className="border-none shadow-lg">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600">Total Banners</p>
+                      <p className="text-3xl font-bold text-gray-900">{bannersFiltrados.length}</p>
+                    </div>
+                    <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                      <ImageIcon className="w-6 h-6 text-purple-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-none shadow-lg">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600">Ativos</p>
+                      <p className="text-3xl font-bold text-green-600">{bannersFiltrados.filter(b => b.status === 'ativo').length}</p>
+                    </div>
+                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                      <CheckCircle className="w-6 h-6 text-green-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-none shadow-lg">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600">Pausados</p>
+                      <p className="text-3xl font-bold text-yellow-600">{bannersFiltrados.filter(b => b.status === 'pausado').length}</p>
+                    </div>
+                    <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
+                      <Clock className="w-6 h-6 text-yellow-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-none shadow-lg">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600">Visualizações</p>
+                      <p className="text-3xl font-bold text-blue-600">
+                        {bannersFiltrados.reduce((acc, b) => acc + (b.metricas?.visualizacoes || 0), 0)}
+                      </p>
+                    </div>
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                      <Eye className="w-6 h-6 text-blue-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Filtros Banners */}
+            <Card className="mb-6 border-none shadow-lg">
+              <CardHeader>
+                <CardTitle>Filtros de Busca</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Buscar</Label>
+                    <div className="relative mt-1">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                      <Input
+                        placeholder="Título, empresa ou email..."
+                        value={buscaBanner}
+                        onChange={(e) => setBuscaBanner(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label>Status</Label>
+                    <Select value={filtroStatusBanner} onValueChange={setFiltroStatusBanner}>
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="Todos" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={null}>Todos</SelectItem>
+                        <SelectItem value="ativo">Ativo</SelectItem>
+                        <SelectItem value="pausado">Pausado</SelectItem>
+                        <SelectItem value="expirado">Expirado</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Tabela Banners */}
+            <Card className="border-none shadow-lg">
+              <CardHeader>
+                <CardTitle>Lista de Banners ({bannersFiltrados.length})</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {loadingBanners ? (
+                  <div className="flex justify-center py-12">
+                    <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+                  </div>
+                ) : bannersFiltrados.length === 0 ? (
+                  <div className="text-center py-12">
+                    <ImageIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600">Nenhum banner encontrado</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Banner</TableHead>
+                          <TableHead>Patrocinador</TableHead>
+                          <TableHead>Plano</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Data/Hora</TableHead>
+                          <TableHead className="text-right">Ações</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {bannersFiltrados.map((banner) => (
+                          <TableRow key={banner.id}>
+                            <TableCell>
+                              <div className="flex items-center gap-3">
+                                <div className="w-16 h-10 bg-gray-100 rounded overflow-hidden flex-shrink-0">
+                                  {banner.imagem_banner && 
+                                    <img src={banner.imagem_banner} alt={banner.titulo} className="w-full h-full object-cover" />
+                                  }
+                                </div>
+                                <div>
+                                  <p className="font-medium">{banner.titulo}</p>
+                                  <p className="text-xs text-gray-500">{banner.nome_empresa}</p>
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <p className="text-sm">{banner.created_by}</p>
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={PLANOS_INFO[banner.plano_patrocinador]?.cor || "bg-gray-100 text-gray-800"}>
+                                {PLANOS_INFO[banner.plano_patrocinador]?.nome || banner.plano_patrocinador}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={
+                                banner.status === 'ativo' ? 'bg-green-100 text-green-800' :
+                                banner.status === 'pausado' ? 'bg-yellow-100 text-yellow-800' :
+                                'bg-gray-100 text-gray-800'
+                              }>
+                                {banner.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-sm">
+                              <div>
+                                <p>{banner.data_inicio ? format(new Date(banner.data_inicio), "dd/MM/yyyy", { locale: ptBR }) : "-"}</p>
+                                {banner.data_fim && (
+                                  <p className="text-xs text-gray-500">até {format(new Date(banner.data_fim), "dd/MM/yyyy", { locale: ptBR })}</p>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex items-center justify-end gap-2">
+                                <Button
+                                  onClick={() => handleVerDetalhesBanner(banner)}
+                                  size="sm"
+                                  variant="outline"
+                                  className="border-blue-300 text-blue-700"
+                                >
+                                  <Eye className="w-4 h-4 mr-1" />
+                                  Ver Detalhes
+                                </Button>
+                                {banner.status === 'ativo' ? (
+                                  <Button
+                                    onClick={() => handleAlterarStatusBanner(banner, 'pausado')}
+                                    size="sm"
+                                    variant="outline"
+                                    className="border-yellow-300 text-yellow-700"
+                                    disabled={atualizarStatusBannerMutation.isPending}
+                                  >
+                                    Pausar
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    onClick={() => handleAlterarStatusBanner(banner, 'ativo')}
+                                    size="sm"
+                                    className="bg-green-600 hover:bg-green-700"
+                                    disabled={atualizarStatusBannerMutation.isPending}
+                                  >
+                                    Ativar
+                                  </Button>
+                                )}
+                                <Button
+                                  onClick={() => handleExcluirBanner(banner)}
+                                  size="sm"
+                                  variant="outline"
+                                  className="border-red-300 text-red-700"
+                                  disabled={deletarBannerMutation.isPending}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ============================================ */}
+          {/* TAB CONTROLE DE POSTS */}
+          {/* ============================================ */}
+          <TabsContent value="posts">
+            {/* Stats Posts */}
+            <div className="grid md:grid-cols-4 gap-4 mb-6">
+              <Card className="border-none shadow-lg">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600">Total Posts</p>
+                      <p className="text-3xl font-bold text-gray-900">{postsFiltrados.length}</p>
+                    </div>
+                    <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                      <Newspaper className="w-6 h-6 text-orange-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-none shadow-lg">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600">Publicados</p>
+                      <p className="text-3xl font-bold text-green-600">{postsFiltrados.filter(p => p.status === 'publicado').length}</p>
+                    </div>
+                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                      <CheckCircle className="w-6 h-6 text-green-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-none shadow-lg">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600">Programados</p>
+                      <p className="text-3xl font-bold text-yellow-600">{postsFiltrados.filter(p => p.status === 'programado').length}</p>
+                    </div>
+                    <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
+                      <Clock className="w-6 h-6 text-yellow-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-none shadow-lg">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600">Visualizações</p>
+                      <p className="text-3xl font-bold text-blue-600">
+                        {postsFiltrados.reduce((acc, p) => acc + (p.visualizacoes || 0), 0)}
+                      </p>
+                    </div>
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                      <Eye className="w-6 h-6 text-blue-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Filtros Posts */}
+            <Card className="mb-6 border-none shadow-lg">
+              <CardHeader>
+                <CardTitle>Filtros de Busca</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Buscar</Label>
+                    <div className="relative mt-1">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                      <Input
+                        placeholder="Título ou email..."
+                        value={buscaPost}
+                        onChange={(e) => setBuscaPost(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label>Status</Label>
+                    <Select value={filtroStatusPost} onValueChange={setFiltroStatusPost}>
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="Todos" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={null}>Todos</SelectItem>
+                        <SelectItem value="publicado">Publicado</SelectItem>
+                        <SelectItem value="programado">Programado</SelectItem>
+                        <SelectItem value="rascunho">Rascunho</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Tabela Posts */}
+            <Card className="border-none shadow-lg">
+              <CardHeader>
+                <CardTitle>Lista de Posts ({postsFiltrados.length})</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {loadingPosts ? (
+                  <div className="flex justify-center py-12">
+                    <Loader2 className="w-8 h-8 animate-spin text-orange-600" />
+                  </div>
+                ) : postsFiltrados.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Newspaper className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600">Nenhum post encontrado</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Post</TableHead>
+                          <TableHead>Autor</TableHead>
+                          <TableHead>Plano</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Data/Hora</TableHead>
+                          <TableHead className="text-right">Ações</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {postsFiltrados.map((post) => {
+                          // Buscar dados do usuário autor
+                          const autorData = usuarios.find(u => u.email === post.created_by);
+                          const planoPatrocinador = autorData?.plano_patrocinador || 'nenhum';
+                          
+                          return (
+                            <TableRow key={post.id}>
+                              <TableCell>
+                                <div className="flex items-center gap-3">
+                                  <div className="w-16 h-10 bg-gray-100 rounded overflow-hidden flex-shrink-0">
+                                    {post.imagem_capa ? (
+                                      <img src={post.imagem_capa} alt={post.titulo} className="w-full h-full object-cover" />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center text-2xl">📰</div>
+                                    )}
+                                  </div>
+                                  <div>
+                                    <p className="font-medium line-clamp-1">{post.titulo}</p>
+                                    <Badge variant="outline" className="text-xs mt-1">
+                                      {post.categoria}
+                                    </Badge>
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <p className="text-sm">{post.created_by}</p>
+                              </TableCell>
+                              <TableCell>
+                                <Badge className={
+                                  planoPatrocinador === 'nenhum' ? "bg-gray-100 text-gray-800" :
+                                  PLANOS_INFO[planoPatrocinador]?.cor || "bg-gray-100 text-gray-800"
+                                }>
+                                  {planoPatrocinador === 'nenhum' ? 'Nenhum' : (PLANOS_INFO[planoPatrocinador]?.nome || planoPatrocinador)}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <Badge className={
+                                  post.status === 'publicado' ? 'bg-green-100 text-green-800' :
+                                  post.status === 'programado' ? 'bg-yellow-100 text-yellow-800' :
+                                  'bg-gray-100 text-gray-800'
+                                }>
+                                  {post.status}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-sm">
+                                <div>
+                                  <p>{post.data_publicacao ? format(new Date(post.data_publicacao), "dd/MM/yyyy", { locale: ptBR }) : "-"}</p>
+                                  <p className="text-xs text-gray-500">
+                                    {post.data_publicacao ? format(new Date(post.data_publicacao), "HH:mm", { locale: ptBR }) : "-"}
+                                  </p>
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex items-center justify-end gap-2">
+                                  <Button
+                                    onClick={() => handleVerDetalhesPost(post)}
+                                    size="sm"
+                                    variant="outline"
+                                    className="border-blue-300 text-blue-700"
+                                  >
+                                    <Eye className="w-4 h-4 mr-1" />
+                                    Detalhes
+                                  </Button>
+                                  <Button
+                                    onClick={() => handleVerPostagemBlog(post)}
+                                    size="sm"
+                                    className="bg-purple-600 hover:bg-purple-700"
+                                  >
+                                    <Newspaper className="w-4 h-4 mr-1" />
+                                    Ver Post
+                                  </Button>
+                                  {post.status !== 'publicado' && (
+                                    <Button
+                                      onClick={() => handleAlterarStatusPost(post, 'publicado')}
+                                      size="sm"
+                                      className="bg-green-600 hover:bg-green-700"
+                                      disabled={atualizarStatusPostMutation.isPending}
+                                    >
+                                      Publicar
+                                    </Button>
+                                  )}
+                                  <Button
+                                    onClick={() => handleExcluirPost(post)}
+                                    size="sm"
+                                    variant="outline"
+                                    className="border-red-300 text-red-700"
+                                    disabled={deletarPostMutation.isPending}
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
                       </TableBody>
                     </Table>
                   </div>
@@ -1194,6 +1808,386 @@ export default function ControleAdmin() {
                 )}
               </Button>
             </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* NOVO: Modal Detalhes Banner */}
+        <Dialog open={mostrarDetalhesBanner} onOpenChange={setMostrarDetalhesBanner}>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-2xl">Detalhes do Banner</DialogTitle>
+            </DialogHeader>
+            {bannerSelecionado && (
+              <div className="space-y-6 py-4">
+                {/* Imagem do Banner */}
+                <div>
+                  <Label className="text-lg font-bold mb-3 block">Imagem do Banner</Label>
+                  <div className="border-2 border-gray-200 rounded-lg overflow-hidden">
+                    {bannerSelecionado.imagem_banner && 
+                      <img 
+                        src={bannerSelecionado.imagem_banner} 
+                        alt={bannerSelecionado.titulo} 
+                        className="w-full h-auto"
+                      />
+                    }
+                  </div>
+                  <div className="mt-3 flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => window.open(bannerSelecionado.imagem_banner, '_blank')}
+                      className="flex-1"
+                      disabled={!bannerSelecionado.imagem_banner}
+                    >
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      Abrir Imagem Original
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        const a = document.createElement('a');
+                        a.href = bannerSelecionado.imagem_banner;
+                        a.download = `banner-${bannerSelecionado.id}.jpg`;
+                        a.click();
+                      }}
+                      className="flex-1"
+                      disabled={!bannerSelecionado.imagem_banner}
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Baixar Arquivo
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Informações Básicas */}
+                <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+                  <h4 className="font-bold text-lg mb-3">Informações do Banner</h4>
+                  <div className="grid md:grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <p className="text-gray-600">Título:</p>
+                      <p className="font-medium">{bannerSelecionado.titulo}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-600">Empresa:</p>
+                      <p className="font-medium">{bannerSelecionado.nome_empresa}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-600">Plano:</p>
+                      <Badge className={PLANOS_INFO[bannerSelecionado.plano_patrocinador]?.cor || "bg-gray-100 text-gray-800"}>
+                        {PLANOS_INFO[bannerSelecionado.plano_patrocinador]?.nome || bannerSelecionado.plano_patrocinador}
+                      </Badge>
+                    </div>
+                    <div>
+                      <p className="text-gray-600">Status:</p>
+                      <Badge className={
+                        bannerSelecionado.status === 'ativo' ? 'bg-green-100 text-green-800' :
+                        bannerSelecionado.status === 'pausado' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-gray-100 text-gray-800'
+                      }>
+                        {bannerSelecionado.status}
+                      </Badge>
+                    </div>
+                    <div>
+                      <p className="text-gray-600">Posição:</p>
+                      <p className="font-medium">{bannerSelecionado.posicao}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-600">Dimensões:</p>
+                      <p className="font-medium">
+                        {bannerSelecionado.dimensoes_banner?.largura}x{bannerSelecionado.dimensoes_banner?.altura}px
+                      </p>
+                    </div>
+                  </div>
+                  {bannerSelecionado.descricao && (
+                    <div>
+                      <p className="text-gray-600">Descrição:</p>
+                      <p className="font-medium">{bannerSelecionado.descricao}</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Contato do Patrocinador */}
+                <div className="bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
+                  <h4 className="font-bold text-lg mb-3 flex items-center gap-2">
+                    <User className="w-5 h-5 text-blue-600" />
+                    Contato do Patrocinador
+                  </h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center gap-2">
+                      <User className="w-4 h-4 text-gray-400" />
+                      <span className="text-gray-600">Nome/Empresa:</span>
+                      <span className="font-medium">{bannerSelecionado.nome_empresa}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Mail className="w-4 h-4 text-gray-400" />
+                      <span className="text-gray-600">Email:</span>
+                      <a href={`mailto:${bannerSelecionado.created_by}`} className="font-medium text-blue-600 hover:underline">
+                        {bannerSelecionado.created_by}
+                      </a>
+                    </div>
+                    {/* Tentar buscar telefone do usuário */}
+                    {usuarios.find(u => u.email === bannerSelecionado.created_by)?.telefone && (
+                      <div className="flex items-center gap-2">
+                        <Phone className="w-4 h-4 text-gray-400" />
+                        <span className="text-gray-600">Telefone:</span>
+                        <a 
+                          href={`tel:${usuarios.find(u => u.email === bannerSelecionado.created_by).telefone}`}
+                          className="font-medium text-blue-600 hover:underline"
+                        >
+                          {usuarios.find(u => u.email === bannerSelecionado.created_by).telefone}
+                        </a>
+                      </div>
+                    )}
+                    {usuarios.find(u => u.email === bannerSelecionado.created_by)?.whatsapp && (
+                      <div className="flex items-center gap-2">
+                        <MessageCircle className="w-4 h-4 text-gray-400" />
+                        <span className="text-gray-600">WhatsApp:</span>
+                        <a 
+                          href={`https://wa.me/${usuarios.find(u => u.email === bannerSelecionado.created_by).whatsapp.replace(/\D/g, '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-medium text-green-600 hover:underline"
+                        >
+                          {usuarios.find(u => u.email === bannerSelecionado.created_by).whatsapp}
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Links */}
+                {bannerSelecionado.links && bannerSelecionado.links.length > 0 && (
+                  <div className="bg-purple-50 p-4 rounded-lg border-2 border-purple-200">
+                    <h4 className="font-bold text-lg mb-3">Links da Empresa</h4>
+                    <div className="space-y-2">
+                      {bannerSelecionado.links.map((link, index) => (
+                        <a
+                          key={index}
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 text-sm text-blue-600 hover:underline"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                          {link.titulo} ({link.tipo})
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Métricas */}
+                <div className="bg-green-50 p-4 rounded-lg border-2 border-green-200">
+                  <h4 className="font-bold text-lg mb-3">Métricas de Performance</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center text-sm">
+                    <div>
+                      <p className="text-gray-600">Visualizações</p>
+                      <p className="text-2xl font-bold text-blue-600">{bannerSelecionado.metricas?.visualizacoes || 0}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-600">Cliques</p>
+                      <p className="text-2xl font-bold text-green-600">{bannerSelecionado.metricas?.cliques || 0}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-600">Compartilhamentos</p>
+                      <p className="text-2xl font-bold text-purple-600">{bannerSelecionado.metricas?.compartilhamentos || 0}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-600">Conversões</p>
+                      <p className="text-2xl font-bold text-orange-600">{bannerSelecionado.metricas?.conversoes_produtos || 0}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* NOVO: Modal Detalhes Post */}
+        <Dialog open={mostrarDetalhesPost} onOpenChange={setMostrarDetalhesPost}>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-2xl">Detalhes do Post</DialogTitle>
+            </DialogHeader>
+            {postSelecionado && (
+              <div className="space-y-6 py-4">
+                {/* Imagem de Capa */}
+                {postSelecionado.imagem_capa && (
+                  <div>
+                    <Label className="text-lg font-bold mb-3 block">Imagem de Capa</Label>
+                    <div className="border-2 border-gray-200 rounded-lg overflow-hidden">
+                      <img 
+                        src={postSelecionado.imagem_capa} 
+                        alt={postSelecionado.titulo} 
+                        className="w-full h-auto object-cover max-h-48"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Informações Básicas */}
+                <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+                  <h4 className="font-bold text-lg mb-3">Informações do Post</h4>
+                  <div className="space-y-3 text-sm">
+                    <div>
+                      <p className="text-gray-600">Título:</p>
+                      <p className="font-medium text-lg">{postSelecionado.titulo}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-600">Resumo:</p>
+                      <p className="font-medium">{postSelecionado.resumo}</p>
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-3">
+                      <div>
+                        <p className="text-gray-600">Categoria:</p>
+                        <Badge>{postSelecionado.categoria}</Badge>
+                      </div>
+                      <div>
+                        <p className="text-gray-600">Tipo:</p>
+                        <Badge variant="outline">{postSelecionado.tipo}</Badge>
+                      </div>
+                      <div>
+                        <p className="text-gray-600">Tempo de Leitura:</p>
+                        <p className="font-medium">{postSelecionado.tempo_leitura} min</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-600">Status:</p>
+                        <Badge className={
+                          postSelecionado.status === 'publicado' ? 'bg-green-100 text-green-800' :
+                          postSelecionado.status === 'programado' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-gray-100 text-gray-800'
+                        }>
+                          {postSelecionado.status}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Autor/Patrocinador */}
+                <div className="bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
+                  <h4 className="font-bold text-lg mb-3 flex items-center gap-2">
+                    <User className="w-5 h-5 text-blue-600" />
+                    Informações do Autor
+                  </h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center gap-2">
+                      <Mail className="w-4 h-4 text-gray-400" />
+                      <span className="text-gray-600">Email:</span>
+                      <a href={`mailto:${postSelecionado.created_by}`} className="font-medium text-blue-600 hover:underline">
+                        {postSelecionado.created_by}
+                      </a>
+                    </div>
+                    {usuarios.find(u => u.email === postSelecionado.created_by)?.full_name && (
+                      <div className="flex items-center gap-2">
+                        <User className="w-4 h-4 text-gray-400" />
+                        <span className="text-gray-600">Nome:</span>
+                        <span className="font-medium">
+                          {usuarios.find(u => u.email === postSelecionado.created_by).full_name}
+                        </span>
+                      </div>
+                    )}
+                    {usuarios.find(u => u.email === postSelecionado.created_by)?.telefone && (
+                      <div className="flex items-center gap-2">
+                        <Phone className="w-4 h-4 text-gray-400" />
+                        <span className="text-gray-600">Telefone:</span>
+                        <a 
+                          href={`tel:${usuarios.find(u => u.email === postSelecionado.created_by).telefone}`}
+                          className="font-medium text-blue-600 hover:underline"
+                        >
+                          {usuarios.find(u => u.email === postSelecionado.created_by).telefone}
+                        </a>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2">
+                      <Crown className="w-4 h-4 text-gray-400" />
+                      <span className="text-gray-600">Plano Patrocinador:</span>
+                      <Badge className={
+                        PLANOS_INFO[usuarios.find(u => u.email === postSelecionado.created_by)?.plano_patrocinador]?.cor || "bg-gray-100 text-gray-800"
+                      }>
+                        {PLANOS_INFO[usuarios.find(u => u.email === postSelecionado.created_by)?.plano_patrocinador]?.nome || 'Nenhum'}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Links do Patrocinador */}
+                {postSelecionado.links_patrocinador && postSelecionado.links_patrocinador.length > 0 && (
+                  <div className="bg-purple-50 p-4 rounded-lg border-2 border-purple-200">
+                    <h4 className="font-bold text-lg mb-3">Links do Patrocinador</h4>
+                    <div className="space-y-2">
+                      {postSelecionado.links_patrocinador.map((link, index) => (
+                        <a
+                          key={index}
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 text-sm text-blue-600 hover:underline"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                          {link.titulo} ({link.tipo})
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Link Externo */}
+                {postSelecionado.link_externo && (
+                  <div className="bg-yellow-50 p-4 rounded-lg border-2 border-yellow-200">
+                    <h4 className="font-bold text-lg mb-2 flex items-center gap-2">
+                      <ExternalLink className="w-5 h-5 text-yellow-600" />
+                      Link Externo
+                    </h4>
+                    <a 
+                      href={postSelecionado.link_externo}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-blue-600 hover:underline break-all"
+                    >
+                      {postSelecionado.link_externo}
+                    </a>
+                  </div>
+                )}
+
+                {/* Métricas do Post */}
+                <div className="bg-green-50 p-4 rounded-lg border-2 border-green-200">
+                  <h4 className="font-bold text-lg mb-3">Métricas de Performance</h4>
+                  <div className="grid grid-cols-2 gap-4 text-center text-sm">
+                    <div>
+                      <p className="text-gray-600">Visualizações</p>
+                      <p className="text-2xl font-bold text-blue-600">{postSelecionado.visualizacoes || 0}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-600">Curtidas</p>
+                      <p className="text-2xl font-bold text-pink-600">{postSelecionado.total_curtidas || 0}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Ações */}
+                <div className="flex gap-3 pt-4 border-t">
+                  <Button
+                    onClick={() => handleVerPostagemBlog(postSelecionado)}
+                    className="flex-1 bg-purple-600 hover:bg-purple-700"
+                  >
+                    <Newspaper className="w-4 h-4 mr-2" />
+                    Ver no Blog
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setMostrarDetalhesPost(false);
+                      setPostSelecionado(null);
+                    }}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    Fechar
+                  </Button>
+                </div>
+              </div>
+            )}
           </DialogContent>
         </Dialog>
       </div>
