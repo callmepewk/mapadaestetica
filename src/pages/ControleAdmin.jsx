@@ -2864,7 +2864,7 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
                                       {post.categoria}
                                     </Badge>
                                   </div>
-                                </td>
+                                </TableCell>
                               <TableCell>
                                 <p className="text-sm">{post.created_by}</p>
                               </TableCell>
