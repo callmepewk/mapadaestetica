@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -30,11 +31,29 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input as InputUI } from "@/components/ui/input";
+import { Label } from "@/components/ui/label"; // Added Label for InputUI
+
 export default function DashboardPatrocinador() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [periodoRelatorio, setPeriodoRelatorio] = useState("tempo_real");
+  
+  // Paginação
+  const [paginaBanners, setPaginaBanners] = useState(1);
+  const [paginaProdutos, setPaginaProdutos] = useState(1);
+  const [paginaArtigos, setPaginaArtigos] = useState(1);
+  const ITEMS_POR_PAGINA = 10;
+
+  // Edição (keeping as per outline, even if not fully implemented in this specific change)
+  const [editandoItem, setEditandoItem] = useState(null);
+  const [tipoEdicao, setTipoEdicao] = useState(null);
+
+  // WhatsApp export
+  const [mostrarExportWhatsApp, setMostrarExportWhatsApp] = useState(false);
+  const [numeroWhatsApp, setNumeroWhatsApp] = useState("");
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -61,32 +80,202 @@ export default function DashboardPatrocinador() {
     fetchUser();
   }, [navigate]);
 
-  const { data: banners = [] } = useQuery({
+  const { data: banners = [], refetch: refetchBanners } = useQuery({
     queryKey: ['meus-banners', user?.email],
     queryFn: async () => {
       if (!user) return [];
-      return await base44.entities.Banner.filter({ created_by: user.email });
+      return await base44.entities.Banner.filter({ created_by: user.email }, '-created_date', 100);
     },
     enabled: !!user,
   });
 
-  const { data: meusProdutos = [] } = useQuery({
+  const { data: meusProdutos = [], refetch: refetchProdutos } = useQuery({
     queryKey: ['meus-produtos-patrocinador', user?.email],
     queryFn: async () => {
       if (!user) return [];
-      return await base44.entities.Produto.filter({ created_by: user.email });
+      return await base44.entities.Produto.filter({ created_by: user.email }, '-created_date', 100);
     },
     enabled: !!user,
   });
 
-  const { data: meusArtigos = [] } = useQuery({
+  const { data: meusArtigos = [], refetch: refetchArtigos } = useQuery({
     queryKey: ['meus-artigos-patrocinador', user?.email],
     queryFn: async () => {
       if (!user) return [];
-      return await base44.entities.ArtigoBlog.filter({ created_by: user.email });
+      return await base44.entities.ArtigoBlog.filter({ created_by: user.email }, '-created_date', 100);
     },
     enabled: !!user,
   });
+
+  const handleExcluirBanner = async (id) => {
+    if (!confirm("Tem certeza que deseja excluir este banner?")) return;
+    
+    try {
+      await base44.entities.Banner.delete(id);
+      alert("Banner excluído com sucesso!");
+      refetchBanners();
+    } catch (error) {
+      console.error("Erro ao excluir banner:", error);
+      alert("Erro ao excluir banner");
+    }
+  };
+
+  const handleExcluirProduto = async (id) => {
+    if (!confirm("Tem certeza que deseja excluir este produto?")) return;
+    
+    try {
+      await base44.entities.Produto.delete(id);
+      alert("Produto excluído com sucesso!");
+      refetchProdutos();
+    } catch (error) {
+      console.error("Erro ao excluir produto:", error);
+      alert("Erro ao excluir produto");
+    }
+  };
+
+  const handleExcluirArtigo = async (id) => {
+    if (!confirm("Tem certeza que deseja excluir este artigo?")) return;
+    
+    try {
+      await base44.entities.ArtigoBlog.delete(id);
+      alert("Artigo excluído com sucesso!");
+      refetchArtigos();
+    } catch (error) {
+      console.error("Erro ao excluir artigo:", error);
+      alert("Erro ao excluir artigo");
+    }
+  };
+
+  const gerarRelatorioHTML = () => {
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Relatório de Performance - ${user?.full_name}</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; }
+          h1 { color: #7C3AED; }
+          .metric { background: #F3F4F6; padding: 15px; margin: 10px 0; border-radius: 8px; }
+          .metric h3 { margin: 0 0 10px 0; color: #374151; }
+          .metric p { margin: 5px 0; font-size: 14px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th, td { border: 1px solid #E5E7EB; padding: 8px; text-align: left; }
+          th { background: #7C3AED; color: white; }
+        </style>
+      </head>
+      <body>
+        <h1>Relatório de Performance - ${periodoRelatorio.toUpperCase().replace('_', ' ')}</h1>
+        <p><strong>Patrocinador:</strong> ${user?.full_name || user?.nome_empresa}</p>
+        <p><strong>Plano:</strong> ${user?.plano_patrocinador?.toUpperCase()}</p>
+        <p><strong>Período:</strong> ${new Date().toLocaleDateString('pt-BR')}</p>
+        
+        <div class="metric">
+          <h3>📊 Métricas Gerais</h3>
+          <p><strong>Total de Visualizações:</strong> ${totalVisualizacoesBanners}</p>
+          <p><strong>Total de Cliques:</strong> ${totalCliquesBanners}</p>
+          <p><strong>Taxa de Cliques (CTR):</strong> ${totalVisualizacoesBanners > 0 ? ((totalCliquesBanners / totalVisualizacoesBanners) * 100).toFixed(2) : 0}%</p>
+          <p><strong>Compartilhamentos:</strong> ${totalCompartilhamentos}</p>
+          <p><strong>Conversões:</strong> ${totalConversoes}</p>
+        </div>
+
+        <div class="metric">
+          <h3>🎨 Banners</h3>
+          <p><strong>Total de Banners:</strong> ${banners.length}</p>
+          <p><strong>Banners Ativos:</strong> ${banners.filter(b => b.status === 'ativo').length}</p>
+        </div>
+
+        <div class="metric">
+          <h3>🛍️ Produtos na Loja</h3>
+          <p><strong>Total de Produtos:</strong> ${meusProdutos.length}</p>
+          <p><strong>Produtos Ativos:</strong> ${meusProdutos.filter(p => p.status === 'ativo').length}</p>
+        </div>
+
+        <div class="metric">
+          <h3>📰 Posts no Blog</h3>
+          <p><strong>Total de Posts:</strong> ${meusArtigos.length}</p>
+          <p><strong>Total de Visualizações:</strong> ${meusArtigos.reduce((acc, a) => acc + (a.visualizacoes || 0), 0)}</p>
+          <p><strong>Total de Curtidas:</strong> ${meusArtigos.reduce((acc, a) => acc + (a.total_curtidas || 0), 0)}</p>
+        </div>
+
+        <p style="margin-top: 30px; text-align: center; color: #6B7280; font-size: 12px;">
+          Relatório gerado em ${new Date().toLocaleString('pt-BR')} - Mapa da Estética
+        </p>
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `relatorio-${periodoRelatorio}-${new Date().toISOString().split('T')[0]}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    alert("📄 Relatório HTML baixado!\n\n1. Abra o arquivo no navegador\n2. Clique com botão direito\n3. Selecione 'Imprimir' ou 'Salvar como PDF'");
+  };
+
+  const gerarMensagemWhatsApp = () => {
+    const mensagem = `
+📊 *RELATÓRIO DE PERFORMANCE - ${periodoRelatorio.toUpperCase().replace('_', ' ')}*
+
+*Patrocinador:* ${user?.full_name || user?.nome_empresa}
+*Plano:* ${user?.plano_patrocinador?.toUpperCase()}
+*Data:* ${new Date().toLocaleDateString('pt-BR')}
+
+━━━━━━━━━━━━━━━━━
+📈 *MÉTRICAS GERAIS*
+━━━━━━━━━━━━━━━━━
+
+👁️ Visualizações: *${totalVisualizacoesBanners}*
+🖱️ Cliques: *${totalCliquesBanners}*
+📊 CTR: *${totalVisualizacoesBanners > 0 ? ((totalCliquesBanners / totalVisualizacoesBanners) * 100).toFixed(2) : 0}%*
+📤 Compartilhamentos: *${totalCompartilhamentos}*
+🎯 Conversões: *${totalConversoes}*
+
+━━━━━━━━━━━━━━━━━
+🎨 *BANNERS*
+━━━━━━━━━━━━━━━━━
+
+📋 Total: ${banners.length}
+✅ Ativos: ${banners.filter(b => b.status === 'ativo').length}
+
+━━━━━━━━━━━━━━━━━
+🛍️ *PRODUTOS NA LOJA*
+━━━━━━━━━━━━━━━━━
+
+📦 Total: ${meusProdutos.length}
+✅ Ativos: ${meusProdutos.filter(p => p.status === 'ativo').length}
+
+━━━━━━━━━━━━━━━━━
+📰 *POSTS NO BLOG*
+━━━━━━━━━━━━━━━━━
+
+📝 Total Posts: ${meusArtigos.length}
+👁️ Visualizações: ${meusArtigos.reduce((acc, a) => acc + (a.visualizacoes || 0), 0)}
+❤️ Curtidas: ${meusArtigos.reduce((acc, a) => acc + (a.total_curtidas || 0), 0)}
+
+━━━━━━━━━━━━━━━━━
+📱 *Mapa da Estética*
+www.mapadaestetica.com.br
+    `.trim();
+
+    return mensagem;
+  };
+
+  const handleEnviarWhatsApp = () => {
+    if (!numeroWhatsApp) {
+      alert("Digite o número do WhatsApp");
+      return;
+    }
+
+    const mensagem = gerarMensagemWhatsApp();
+    const numeroLimpo = numeroWhatsApp.replace(/\D/g, '');
+    const url = `https://wa.me/${numeroLimpo}?text=${encodeURIComponent(mensagem)}`;
+    window.open(url, '_blank');
+    setMostrarExportWhatsApp(false);
+  };
 
   if (loading) {
     return (
@@ -107,6 +296,15 @@ export default function DashboardPatrocinador() {
   const totalCliquesBanners = banners.reduce((acc, b) => acc + (b.metricas?.cliques || 0), 0);
   const totalCompartilhamentos = banners.reduce((acc, b) => acc + (b.metricas?.compartilhamentos || 0), 0);
   const totalConversoes = banners.reduce((acc, b) => acc + (b.metricas?.conversoes_produtos || 0), 0);
+
+  // Paginação
+  const bannersPaginados = banners.slice((paginaBanners - 1) * ITEMS_POR_PAGINA, paginaBanners * ITEMS_POR_PAGINA);
+  const produtosPaginados = meusProdutos.slice((paginaProdutos - 1) * ITEMS_POR_PAGINA, paginaProdutos * ITEMS_POR_PAGINA);
+  const artigosPaginados = meusArtigos.slice((paginaArtigos - 1) * ITEMS_POR_PAGINA, paginaArtigos * ITEMS_POR_PAGINA);
+
+  const totalPaginasBanners = Math.ceil(banners.length / ITEMS_POR_PAGINA);
+  const totalPaginasProdutos = Math.ceil(meusProdutos.length / ITEMS_POR_PAGINA);
+  const totalPaginasArtigos = Math.ceil(meusArtigos.length / ITEMS_POR_PAGINA);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-4 sm:py-6 md:py-8 px-2 sm:px-4">
@@ -201,7 +399,7 @@ export default function DashboardPatrocinador() {
           <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 mb-6 h-auto gap-1">
             <TabsTrigger value="banners" className="text-xs sm:text-sm py-2 sm:py-2.5">
               <ImageIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-              Banners
+              Banners ({banners.length})
             </TabsTrigger>
             <TabsTrigger value="producao" className="text-xs sm:text-sm py-2 sm:py-2.5">
               <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
@@ -217,11 +415,38 @@ export default function DashboardPatrocinador() {
             </TabsTrigger>
           </TabsList>
 
-          {/* Tab Banners */}
+          {/* Tab Banners - COM PAGINAÇÃO */}
           <TabsContent value="banners">
             <Card className="border-none shadow-lg">
               <CardHeader className="p-4 sm:p-6">
-                <CardTitle className="text-lg sm:text-xl">Meus Banners</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg sm:text-xl">Meus Banners</CardTitle>
+                  {totalPaginasBanners > 1 && (
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setPaginaBanners(Math.max(1, paginaBanners - 1))}
+                        disabled={paginaBanners === 1}
+                        className="h-8 text-xs"
+                      >
+                        Anterior
+                      </Button>
+                      <span className="flex items-center px-3 text-xs sm:text-sm">
+                        {paginaBanners} / {totalPaginasBanners}
+                      </span>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setPaginaBanners(Math.min(totalPaginasBanners, paginaBanners + 1))}
+                        disabled={paginaBanners === totalPaginasBanners}
+                        className="h-8 text-xs"
+                      >
+                        Próxima
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </CardHeader>
               <CardContent className="p-4 sm:p-6">
                 {banners.length === 0 ? (
@@ -240,7 +465,7 @@ export default function DashboardPatrocinador() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {banners.map((banner) => (
+                    {bannersPaginados.map((banner) => (
                       <div key={banner.id} className="p-3 sm:p-4 border-2 border-gray-200 rounded-lg hover:border-purple-300 transition-colors">
                         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                           <div className="w-full sm:w-32 md:w-40 h-20 sm:h-24 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
@@ -252,7 +477,7 @@ export default function DashboardPatrocinador() {
                                 <h3 className="font-bold text-sm sm:text-base truncate">{banner.titulo}</h3>
                                 <p className="text-xs sm:text-sm text-gray-600 line-clamp-2">{banner.descricao}</p>
                               </div>
-                              <Badge className={banner.status === 'ativo' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
+                              <Badge className={banner.status === 'ativo' ? 'bg-green-100 text-green-800 text-xs' : 'bg-gray-100 text-gray-800 text-xs'}>
                                 {banner.status}
                               </Badge>
                             </div>
@@ -277,11 +502,21 @@ export default function DashboardPatrocinador() {
                             </div>
 
                             <div className="flex gap-2 mt-3">
-                              <Button size="sm" variant="outline" className="text-xs h-8">
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="text-xs h-8"
+                                onClick={() => navigate(`${createPageUrl("CriacaoBanner")}?id=${banner.id}`)}
+                              >
                                 <Edit className="w-3 h-3 mr-1" />
                                 Editar
                               </Button>
-                              <Button size="sm" variant="outline" className="text-xs h-8 text-red-600">
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="text-xs h-8 text-red-600"
+                                onClick={() => handleExcluirBanner(banner.id)}
+                              >
                                 <Trash2 className="w-3 h-3 mr-1" />
                                 Excluir
                               </Button>
@@ -298,7 +533,7 @@ export default function DashboardPatrocinador() {
 
           {/* Tab Produção */}
           <TabsContent value="producao">
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
               <Card className="border-2 border-blue-200 hover:border-blue-400 transition-colors cursor-pointer" onClick={() => navigate(createPageUrl("AdicionarProduto"))}>
                 <CardContent className="p-4 sm:p-6 text-center">
                   <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
@@ -306,10 +541,10 @@ export default function DashboardPatrocinador() {
                   </div>
                   <h3 className="font-bold text-base sm:text-lg mb-2">Adicionar Produto</h3>
                   <p className="text-xs sm:text-sm text-gray-600 mb-4">
-                    Cadastre produtos na loja do Mapa da Estética
+                    Cadastre produtos na loja
                   </p>
                   <Badge className="bg-blue-100 text-blue-800 text-xs">
-                    {meusProdutos.length} produtos cadastrados
+                    {meusProdutos.length} cadastrados
                   </Badge>
                 </CardContent>
               </Card>
@@ -321,61 +556,85 @@ export default function DashboardPatrocinador() {
                   </div>
                   <h3 className="font-bold text-base sm:text-lg mb-2">Post no Blog</h3>
                   <p className="text-xs sm:text-sm text-gray-600 mb-4">
-                    Crie artigos para o blog da plataforma
+                    Crie artigos para o blog
                   </p>
                   <Badge className="bg-purple-100 text-purple-800 text-xs">
-                    {meusArtigos.length} artigos publicados
+                    {meusArtigos.length} publicados
                   </Badge>
                 </CardContent>
               </Card>
 
-              <Card className="border-2 border-green-200 hover:border-green-400 transition-colors cursor-pointer">
-                <CardContent className="p-4 sm:p-6 text-center">
-                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                    <TrendingUp className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
-                  </div>
-                  <h3 className="font-bold text-base sm:text-lg mb-2">Novidades</h3>
-                  <p className="text-xs sm:text-sm text-gray-600 mb-4">
-                    {isAdmin ? "Publicar atualizações da plataforma" : "Em breve"}
-                  </p>
-                  <Badge className="bg-green-100 text-green-800 text-xs">
-                    {isAdmin ? "Admin only" : "Aguarde"}
-                  </Badge>
-                </CardContent>
-              </Card>
+              {isAdmin && (
+                <Card className="border-2 border-green-200 hover:border-green-400 transition-colors cursor-pointer" onClick={() => navigate(createPageUrl("Novidades"))}>
+                  <CardContent className="p-4 sm:p-6 text-center">
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                      <TrendingUp className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                    </div>
+                    <h3 className="font-bold text-base sm:text-lg mb-2">Novidades</h3>
+                    <p className="text-xs sm:text-sm text-gray-600 mb-4">
+                      Publicar atualizações
+                    </p>
+                    <Badge className="bg-green-100 text-green-800 text-xs">
+                      Admin only
+                    </Badge>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </TabsContent>
 
-          {/* Tab Relatórios - MOBILE OPTIMIZED */}
+          {/* Tab Relatórios - COM EXPORTAÇÃO */}
           <TabsContent value="relatorios">
             <Card className="border-none shadow-lg">
               <CardHeader className="p-4 sm:p-6">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                  <CardTitle className="text-lg sm:text-xl">Relatórios de Performance</CardTitle>
-                  <div className="flex gap-2 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0">
+                <div className="flex flex-col gap-3">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <CardTitle className="text-lg sm:text-xl">Relatórios de Performance</CardTitle>
+                    <div className="flex gap-2 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0">
+                      <Button
+                        size="sm"
+                        variant={periodoRelatorio === "tempo_real" ? "default" : "outline"}
+                        onClick={() => setPeriodoRelatorio("tempo_real")}
+                        className="flex-shrink-0 h-8 sm:h-9 text-xs"
+                      >
+                        Tempo Real
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={periodoRelatorio === "semanal" ? "default" : "outline"}
+                        onClick={() => setPeriodoRelatorio("semanal")}
+                        className="flex-shrink-0 h-8 sm:h-9 text-xs"
+                      >
+                        Semanal
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={periodoRelatorio === "mensal" ? "default" : "outline"}
+                        onClick={() => setPeriodoRelatorio("mensal")}
+                        className="flex-shrink-0 h-8 sm:h-9 text-xs"
+                      >
+                        Mensal
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Botões de Exportação */}
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <Button
+                      onClick={gerarRelatorioHTML}
+                      variant="outline"
                       size="sm"
-                      variant={periodoRelatorio === "tempo_real" ? "default" : "outline"}
-                      onClick={() => setPeriodoRelatorio("tempo_real")}
-                      className="flex-shrink-0 h-8 sm:h-9 text-xs"
+                      className="w-full sm:w-auto h-9 text-xs sm:text-sm"
                     >
-                      Tempo Real
+                      📄 Exportar PDF
                     </Button>
                     <Button
+                      onClick={() => setMostrarExportWhatsApp(true)}
+                      variant="outline"
                       size="sm"
-                      variant={periodoRelatorio === "semanal" ? "default" : "outline"}
-                      onClick={() => setPeriodoRelatorio("semanal")}
-                      className="flex-shrink-0 h-8 sm:h-9 text-xs"
+                      className="w-full sm:w-auto h-9 text-xs sm:text-sm"
                     >
-                      Semanal
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant={periodoRelatorio === "mensal" ? "default" : "outline"}
-                      onClick={() => setPeriodoRelatorio("mensal")}
-                      className="flex-shrink-0 h-8 sm:h-9 text-xs"
-                    >
-                      Mensal
+                      💬 Enviar WhatsApp
                     </Button>
                   </div>
                 </div>
@@ -489,71 +748,294 @@ export default function DashboardPatrocinador() {
             </Card>
           </TabsContent>
 
-          {/* Tab Conteúdo */}
+          {/* Tab Conteúdo - COM SELETOR E PAGINAÇÃO */}
           <TabsContent value="conteudo">
-            <div className="space-y-4 sm:space-y-6">
-              {/* Produtos */}
-              <Card className="border-none shadow-lg">
-                <CardHeader className="p-4 sm:p-6">
-                  <CardTitle className="text-lg sm:text-xl">Meus Produtos na Loja</CardTitle>
-                </CardHeader>
-                <CardContent className="p-4 sm:p-6">
-                  {meusProdutos.length === 0 ? (
-                    <div className="text-center py-6 sm:py-8 bg-gray-50 rounded-lg">
-                      <p className="text-sm sm:text-base text-gray-600">Nenhum produto cadastrado</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {meusProdutos.map((produto) => (
-                        <div key={produto.id} className="p-3 border rounded-lg flex flex-col sm:flex-row items-start gap-3">
-                          <div className="w-full sm:w-20 h-20 bg-gray-100 rounded flex-shrink-0 overflow-hidden">
-                            {produto.imagens?.[0] && (
-                              <img src={produto.imagens[0]} alt={produto.nome} className="w-full h-full object-cover" />
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-bold text-sm sm:text-base truncate">{produto.nome}</h4>
-                            <p className="text-xs sm:text-sm text-gray-600">
-                              {produto.preco ? `R$ ${produto.preco.toFixed(2)}` : produto.preco_texto || "Consultar"}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+            <Card className="border-none shadow-lg">
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-lg sm:text-xl">Meu Conteúdo</CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 sm:p-6">
+                <Tabs defaultValue="produtos" className="w-full">
+                  <TabsList className="grid w-full grid-cols-3 mb-4 sm:mb-6">
+                    <TabsTrigger value="produtos" className="text-xs sm:text-sm">
+                      🛍️ Produtos ({meusProdutos.length})
+                    </TabsTrigger>
+                    <TabsTrigger value="artigos" className="text-xs sm:text-sm">
+                      📰 Artigos ({meusArtigos.length})
+                    </TabsTrigger>
+                    <TabsTrigger value="banners-lista" className="text-xs sm:text-sm">
+                      🎨 Banners ({banners.length})
+                    </TabsTrigger>
+                  </TabsList>
 
-              {/* Artigos */}
-              <Card className="border-none shadow-lg">
-                <CardHeader className="p-4 sm:p-6">
-                  <CardTitle className="text-lg sm:text-xl">Meus Posts no Blog</CardTitle>
-                </CardHeader>
-                <CardContent className="p-4 sm:p-6">
-                  {meusArtigos.length === 0 ? (
-                    <div className="text-center py-6 sm:py-8 bg-gray-50 rounded-lg">
-                      <p className="text-sm sm:text-base text-gray-600">Nenhum artigo publicado</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {meusArtigos.map((artigo) => (
-                        <div key={artigo.id} className="p-3 border rounded-lg">
-                          <h4 className="font-bold text-sm sm:text-base mb-1">{artigo.titulo}</h4>
-                          <div className="flex flex-wrap gap-2 text-xs sm:text-sm text-gray-600">
-                            <span>{artigo.visualizacoes || 0} visualizações</span>
-                            <span>•</span>
-                            <span>{artigo.total_curtidas || 0} curtidas</span>
-                          </div>
+                  {/* Produtos */}
+                  <TabsContent value="produtos">
+                    {meusProdutos.length === 0 ? (
+                      <div className="text-center py-8 bg-gray-50 rounded-lg">
+                        <p className="text-sm sm:text-base text-gray-600">Nenhum produto cadastrado</p>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="space-y-3 mb-4">
+                          {produtosPaginados.map((produto) => (
+                            <div key={produto.id} className="p-3 border rounded-lg flex flex-col sm:flex-row items-start gap-3">
+                              <div className="w-full sm:w-20 h-20 bg-gray-100 rounded flex-shrink-0 overflow-hidden">
+                                {produto.imagens?.[0] && (
+                                  <img src={produto.imagens[0]} alt={produto.nome} className="w-full h-full object-cover" />
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h4 className="font-bold text-sm sm:text-base truncate">{produto.nome}</h4>
+                                <p className="text-xs sm:text-sm text-gray-600">
+                                  {produto.preco ? `R$ ${produto.preco.toFixed(2)}` : produto.preco_texto || "Consultar"}
+                                </p>
+                                <div className="flex gap-2 mt-2">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="text-xs h-7"
+                                    onClick={() => navigate(`${createPageUrl("AdicionarProduto")}?id=${produto.id}`)}
+                                  >
+                                    <Edit className="w-3 h-3 mr-1" />
+                                    Editar
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="text-xs h-7 text-red-600"
+                                    onClick={() => handleExcluirProduto(produto.id)}
+                                  >
+                                    <Trash2 className="w-3 h-3 mr-1" />
+                                    Excluir
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
+
+                        {totalPaginasProdutos > 1 && (
+                          <div className="flex justify-center gap-2 pt-4 border-t">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setPaginaProdutos(Math.max(1, paginaProdutos - 1))}
+                              disabled={paginaProdutos === 1}
+                              className="h-8 text-xs"
+                            >
+                              Anterior
+                            </Button>
+                            <span className="flex items-center px-3 text-xs sm:text-sm">
+                              {paginaProdutos} / {totalPaginasProdutos}
+                            </span>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setPaginaProdutos(Math.min(totalPaginasProdutos, paginaProdutos + 1))}
+                              disabled={paginaProdutos === totalPaginasProdutos}
+                              className="h-8 text-xs"
+                            >
+                              Próxima
+                            </Button>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </TabsContent>
+
+                  {/* Artigos */}
+                  <TabsContent value="artigos">
+                    {meusArtigos.length === 0 ? (
+                      <div className="text-center py-8 bg-gray-50 rounded-lg">
+                        <p className="text-sm sm:text-base text-gray-600">Nenhum artigo publicado</p>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="space-y-3 mb-4">
+                          {artigosPaginados.map((artigo) => (
+                            <div key={artigo.id} className="p-3 border rounded-lg">
+                              <div className="flex items-start justify-between gap-2 mb-2">
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="font-bold text-sm sm:text-base truncate">{artigo.titulo}</h4>
+                                  <div className="flex flex-wrap gap-2 text-xs sm:text-sm text-gray-600 mt-1">
+                                    <span>{artigo.visualizacoes || 0} views</span>
+                                    <span>•</span>
+                                    <span>{artigo.total_curtidas || 0} curtidas</span>
+                                    {artigo.status === 'programado' && (
+                                      <>
+                                        <span>•</span>
+                                        <Badge className="bg-yellow-100 text-yellow-800 text-xs">
+                                          📅 Agendado
+                                        </Badge>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex gap-2 mt-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-xs h-7"
+                                  onClick={() => navigate(`${createPageUrl("ArtigoBlog")}?id=${artigo.id}`)}
+                                >
+                                  <Edit className="w-3 h-3 mr-1" />
+                                  Editar
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-xs h-7 text-red-600"
+                                  onClick={() => handleExcluirArtigo(artigo.id)}
+                                >
+                                  <Trash2 className="w-3 h-3 mr-1" />
+                                  Excluir
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {totalPaginasArtigos > 1 && (
+                          <div className="flex justify-center gap-2 pt-4 border-t">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setPaginaArtigos(Math.max(1, paginaArtigos - 1))}
+                              disabled={paginaArtigos === 1}
+                              className="h-8 text-xs"
+                            >
+                              Anterior
+                            </Button>
+                            <span className="flex items-center px-3 text-xs sm:text-sm">
+                              {paginaArtigos} / {totalPaginasArtigos}
+                            </span>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setPaginaArtigos(Math.min(totalPaginasArtigos, paginaArtigos + 1))}
+                              disabled={paginaArtigos === totalPaginasArtigos}
+                              className="h-8 text-xs"
+                            >
+                              Próxima
+                            </Button>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </TabsContent>
+
+                  {/* Banners Lista */}
+                  <TabsContent value="banners-lista">
+                    {banners.length === 0 ? (
+                      <div className="text-center py-8 bg-gray-50 rounded-lg">
+                        <p className="text-sm sm:text-base text-gray-600">Nenhum banner cadastrado</p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {bannersPaginados.map((banner) => (
+                          <div key={banner.id} className="border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+                            <div className="h-24 sm:h-32 bg-gray-100 overflow-hidden">
+                              <img src={banner.imagem_banner} alt={banner.titulo} className="w-full h-full object-cover" />
+                            </div>
+                            <div className="p-3">
+                              <h4 className="font-bold text-sm truncate mb-1">{banner.titulo}</h4>
+                              <Badge className={banner.status === 'ativo' ? 'bg-green-100 text-green-800 text-xs' : 'bg-gray-100 text-gray-800 text-xs'}>{banner.status}</Badge>
+                              <div className="flex gap-2 mt-2">
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  className="flex-1 text-xs h-7"
+                                  onClick={() => navigate(`${createPageUrl("CriacaoBanner")}?id=${banner.id}`)}
+                                >
+                                  Editar
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  className="text-xs h-7 text-red-600" 
+                                  onClick={() => handleExcluirBanner(banner.id)}
+                                >
+                                  Excluir
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {totalPaginasBanners > 1 && (
+                          <div className="flex justify-center gap-2 pt-4 border-t mt-4">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setPaginaBanners(Math.max(1, paginaBanners - 1))}
+                              disabled={paginaBanners === 1}
+                              className="h-8 text-xs"
+                            >
+                              Anterior
+                            </Button>
+                            <span className="flex items-center px-3 text-xs sm:text-sm">
+                              {paginaBanners} / {totalPaginasBanners}
+                            </span>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setPaginaBanners(Math.min(totalPaginasBanners, paginaBanners + 1))}
+                              disabled={paginaBanners === totalPaginasBanners}
+                              className="h-8 text-xs"
+                            >
+                              Próxima
+                            </Button>
+                          </div>
+                        )}
+                  </TabsContent>
+                </Tabs>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Modal WhatsApp Export */}
+      <Dialog open={mostrarExportWhatsApp} onOpenChange={setMostrarExportWhatsApp}>
+        <DialogContent className="max-w-[95vw] sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-lg sm:text-xl">Enviar Relatório via WhatsApp</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="whatsapp-number" className="text-sm sm:text-base">Número do WhatsApp</Label>
+              <InputUI
+                id="whatsapp-number"
+                value={numeroWhatsApp}
+                onChange={(e) => setNumeroWhatsApp(e.target.value)}
+                placeholder="Ex: 5531999999999"
+                className="mt-1.5 h-10 sm:h-11 text-sm sm:text-base"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Formato: Código do país + DDD + número (sem espaços)
+              </p>
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                onClick={() => setMostrarExportWhatsApp(false)}
+                variant="outline"
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleEnviarWhatsApp}
+                className="flex-1 bg-green-600 hover:bg-green-700"
+              >
+                Enviar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
