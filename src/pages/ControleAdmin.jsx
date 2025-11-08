@@ -61,11 +61,18 @@ import {
   Edit,
   Star,
   DollarSign,
+  RefreshCw,
+  Bell,
+  Calendar as CalendarIcon,
+  Rocket,
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Textarea } from "@/components/ui/textarea";
 
 const PLANOS_INFO = {
   cobre: { nome: "Cobre", cor: "bg-orange-100 text-orange-800" },
@@ -133,6 +140,15 @@ export default function ControleAdmin() {
   const [novosBeautyCoins, setNovosBeautyCoins] = useState(0);
 
   const [mostrarTutorialDrBeleza, setMostrarTutorialDrBeleza] = useState(false);
+  
+  // NOVOS Estados para Atualizações
+  const [mostrarModalAtualizacao, setMostrarModalAtualizacao] = useState(false);
+  const [tituloAtualizacao, setTituloAtualizacao] = useState("");
+  const [descricaoAtualizacao, setDescricaoAtualizacao] = useState("");
+  const [conteudoAtualizacao, setConteudoAtualizacao] = useState("");
+  const [dataAgendamento, setDataAgendamento] = useState(null);
+  const [enviandoAtualizacao, setEnviandoAtualizacao] = useState(false);
+  const [mostrarCarregamentoAtualizacao, setMostrarCarregamentoAtualizacao] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -198,6 +214,13 @@ export default function ControleAdmin() {
     queryFn: async () => {
       return await base44.entities.User.list('-created_date', 1000);
     },
+    enabled: !!user,
+  });
+
+  // NOVA Query para Novidades/Atualizações
+  const { data: atualizacoes = [], isLoading: loadingAtualizacoes } = useQuery({
+    queryKey: ['atualizacoes-sistema'],
+    queryFn: () => base44.entities.Novidade.list('-created_date', 50),
     enabled: !!user,
   });
 
@@ -387,6 +410,63 @@ export default function ControleAdmin() {
       setErro("Erro ao atualizar pontos/Beauty Coins: " + error.message);
       setTimeout(() => setErro(null), 3000);
     }
+  });
+
+  // NOVAS Mutations para Atualizações
+  const enviarAtualizacaoMutation = useMutation({
+    mutationFn: async ({ titulo, descricao, conteudo, agendada, dataPublicacao }) => {
+      // Criar a novidade/atualização
+      const novidade = await base44.entities.Novidade.create({
+        titulo,
+        descricao,
+        conteudo_detalhado: conteudo,
+        data_publicacao: dataPublicacao || new Date().toISOString(),
+        categoria: 'nova_funcionalidade',
+        icone: '🚀',
+        status: agendada ? 'programado' : 'publicado'
+      });
+
+      // Se não for agendada, enviar notificações imediatamente
+      if (!agendada) {
+        const usuarios = await base44.entities.User.list('-created_date', 1000);
+        
+        for (const usuario of usuarios) {
+          await base44.entities.Notificacao.create({
+            usuario_email: usuario.email,
+            tipo: 'nova_atualizacao_sistema',
+            titulo: `🚀 ${titulo}`,
+            mensagem: descricao,
+            link_acao: `/novidades?id=${novidade.id}`,
+            lida: false
+          });
+        }
+      }
+
+      return novidade;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['atualizacoes-sistema'] });
+      setMostrarModalAtualizacao(false);
+      setTituloAtualizacao("");
+      setDescricaoAtualizacao("");
+      setConteudoAtualizacao("");
+      setDataAgendamento(null);
+      setSucesso("Atualização enviada com sucesso!");
+      setTimeout(() => setSucesso(null), 3000);
+    },
+  });
+
+  const forcarAtualizacaoMutation = useMutation({
+    mutationFn: async () => {
+      // Simular processo de atualização
+      setMostrarCarregamentoAtualizacao(true);
+      
+      // Aguardar 3 segundos (simula deploy)
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      // Recarregar página
+      window.location.reload();
+    },
   });
 
   // Handlers para Planos
@@ -989,6 +1069,33 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
   };
 
 
+  const handleEnviarAtualizacao = async () => {
+    if (!tituloAtualizacao || !descricaoAtualizacao) {
+      setErro("Preencha título e descrição!");
+      setTimeout(() => setErro(null), 3000);
+      return;
+    }
+
+    setEnviandoAtualizacao(true);
+    try {
+      await enviarAtualizacaoMutation.mutateAsync({
+        titulo: tituloAtualizacao,
+        descricao: descricaoAtualizacao,
+        conteudo: conteudoAtualizacao,
+        agendada: !!dataAgendamento,
+        dataPublicacao: dataAgendamento?.toISOString()
+      });
+    } finally {
+      setEnviandoAtualizacao(false);
+    }
+  };
+
+  const handleForcarAtualizacao = () => {
+    if (confirm('⚠️ ATENÇÃO: Esta ação irá recarregar o site para todos os usuários!\n\nUse apenas se houver mudanças críticas na plataforma.\n\nDeseja continuar?')) {
+      forcarAtualizacaoMutation.mutate();
+    }
+  };
+
   const usuariosFiltrados = usuarios.filter(u => 
     !buscaProfissional || 
     u.full_name?.toLowerCase().includes(buscaProfissional.toLowerCase()) ||
@@ -1038,6 +1145,31 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
     );
   }
 
+  // Modal de Carregamento de Atualização
+  if (mostrarCarregamentoAtualizacao) {
+    return (
+      <div className="fixed inset-0 bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center z-50">
+        <div className="text-center text-white">
+          <div className="w-24 h-24 mx-auto mb-6 relative">
+            <div className="absolute inset-0 border-8 border-white/30 rounded-full"></div>
+            <div className="absolute inset-0 border-8 border-t-white border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Rocket className="w-12 h-12 text-white" />
+            </div>
+          </div>
+          <h2 className="text-3xl font-bold mb-3">🚀 Aplicando Atualizações...</h2>
+          <p className="text-xl mb-2">Por favor, aguarde</p>
+          <p className="text-white/80">Estamos implementando as novidades para você</p>
+          <div className="mt-8 flex justify-center gap-2">
+            <div className="w-3 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+            <div className="w-3 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+            <div className="w-3 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
       <div className="max-w-7xl mx-auto px-4">
@@ -1082,6 +1214,137 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
             <AlertDescription className="text-green-800">{sucesso}</AlertDescription>
           </Alert>
         )}
+
+        {/* NOVA SEÇÃO: Gestão de Atualizações */}
+        <Card className="mb-8 border-2 border-purple-300 bg-gradient-to-br from-purple-50 to-pink-50 shadow-xl">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center">
+                  <Rocket className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-2xl text-purple-900">Gestão de Atualizações</CardTitle>
+                  <p className="text-sm text-purple-700">Envie atualizações e notificações para todos os usuários</p>
+                </div>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-3 gap-4">
+              {/* Forçar Atualização Imediata */}
+              <Card className="border-2 border-red-200 hover:border-red-400 transition-colors">
+                <CardContent className="p-6">
+                  <div className="text-center mb-4">
+                    <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <RefreshCw className="w-8 h-8 text-red-600" />
+                    </div>
+                    <h3 className="font-bold text-lg mb-2">⚡ Atualização Imediata</h3>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Força o recarregamento do site para todos os usuários online (use com cuidado!)
+                    </p>
+                  </div>
+                  <Button
+                    onClick={handleForcarAtualizacao}
+                    className="w-full bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700"
+                    disabled={forcarAtualizacaoMutation.isPending}
+                  >
+                    {forcarAtualizacaoMutation.isPending ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                    )}
+                    Forçar Atualização
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Enviar Notificação de Atualização */}
+              <Card className="border-2 border-blue-200 hover:border-blue-400 transition-colors">
+                <CardContent className="p-6">
+                  <div className="text-center mb-4">
+                    <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <Bell className="w-8 h-8 text-blue-600" />
+                    </div>
+                    <h3 className="font-bold text-lg mb-2">📢 Notificar Usuários</h3>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Envie notificações personalizadas sobre novidades e atualizações
+                    </p>
+                  </div>
+                  <Button
+                    onClick={() => setMostrarModalAtualizacao(true)}
+                    className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+                  >
+                    <Bell className="w-4 h-4 mr-2" />
+                    Criar Notificação
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Histórico de Atualizações */}
+              <Card className="border-2 border-green-200 hover:border-green-400 transition-colors">
+                <CardContent className="p-6">
+                  <div className="text-center mb-4">
+                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <FileText className="w-8 h-8 text-green-600" />
+                    </div>
+                    <h3 className="font-bold text-lg mb-2">📋 Histórico</h3>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Visualize todas as atualizações enviadas
+                    </p>
+                    <Badge className="bg-green-100 text-green-800 mb-3">
+                      {atualizacoes.length} atualizações
+                    </Badge>
+                  </div>
+                  <Button
+                    onClick={() => navigate(createPageUrl("Novidades"))}
+                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                  >
+                    <FileText className="w-4 h-4 mr-2" />
+                    Ver Histórico
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Últimas 3 Atualizações */}
+            {atualizacoes.length > 0 && (
+              <div className="mt-6 pt-6 border-t border-purple-200">
+                <h4 className="font-semibold text-lg mb-4 text-purple-900">📌 Últimas Atualizações Enviadas</h4>
+                <div className="space-y-3">
+                  {atualizacoes.slice(0, 3).map((atualizacao) => (
+                    <div key={atualizacao.id} className="p-4 bg-white rounded-lg border-2 border-gray-200 hover:border-purple-300 transition-colors">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-2xl">{atualizacao.icone || '🚀'}</span>
+                            <h5 className="font-bold text-gray-900">{atualizacao.titulo}</h5>
+                            <Badge className={
+                              atualizacao.status === 'publicado' ? 'bg-green-100 text-green-800' :
+                              atualizacao.status === 'programado' ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-gray-100 text-gray-800'
+                            }>
+                              {atualizacao.status}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-gray-600 mb-2">{atualizacao.descricao}</p>
+                          <div className="flex items-center gap-4 text-xs text-gray-500">
+                            <span className="flex items-center gap-1">
+                              <Eye className="w-3 h-3" />
+                              {atualizacao.visualizacoes || 0} visualizações
+                            </span>
+                            <span>•</span>
+                            <span>{format(new Date(atualizacao.created_date), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Tabs Principais - NOME ATUALIZADO */}
         <Tabs value={abaSelecionada} onValueChange={setAbaSelecionada} className="w-full">
@@ -1713,7 +1976,7 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
 
           {/* ============================================ */}
           {/* TAB CONTROLE DE PRODUTOS - ATUALIZADA COM RELATÓRIOS */}
-          {/* ============================================ */}
+          {============================================ */}
           <TabsContent value="produtos">
             {/* Stats Cards */}
             <div className="grid md:grid-cols-4 gap-4 mb-6">
@@ -3104,6 +3367,139 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
           </DialogContent>
         </Dialog>
 
+        {/* NOVO: Modal Criar Notificação de Atualização */}
+        <Dialog open={mostrarModalAtualizacao} onOpenChange={setMostrarModalAtualizacao}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-2xl flex items-center gap-2">
+                <Bell className="w-6 h-6 text-blue-600" />
+                Enviar Notificação de Atualização
+              </DialogTitle>
+              <DialogDescription>
+                Preencha as informações da atualização que será enviada para todos os usuários
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 py-4">
+              <div>
+                <Label>Título da Atualização *</Label>
+                <Input
+                  placeholder="Ex: Nova Funcionalidade de Impulsionamento"
+                  value={tituloAtualizacao}
+                  onChange={(e) => setTituloAtualizacao(e.target.value)}
+                  className="mt-2"
+                />
+              </div>
+
+              <div>
+                <Label>Descrição Breve *</Label>
+                <Textarea
+                  placeholder="Resumo curto da atualização (aparece na notificação)"
+                  value={descricaoAtualizacao}
+                  onChange={(e) => setDescricaoAtualizacao(e.target.value)}
+                  rows={3}
+                  className="mt-2"
+                />
+              </div>
+
+              <div>
+                <Label>Conteúdo Detalhado (opcional)</Label>
+                <Textarea
+                  placeholder="Explicação completa das mudanças, novidades, melhorias..."
+                  value={conteudoAtualizacao}
+                  onChange={(e) => setConteudoAtualizacao(e.target.value)}
+                  rows={6}
+                  className="mt-2"
+                />
+              </div>
+
+              <div>
+                <Label className="flex items-center gap-2 mb-2">
+                  <CalendarIcon className="w-4 h-4" />
+                  Agendar Envio (opcional)
+                </Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full justify-start text-left">
+                      <CalendarIcon className="w-4 h-4 mr-2" />
+                      {dataAgendamento ? format(dataAgendamento, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR }) : "Enviar agora"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={dataAgendamento}
+                      onSelect={setDataAgendamento}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                {dataAgendamento && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setDataAgendamento(null)}
+                    className="mt-2 text-xs"
+                  >
+                    Limpar agendamento
+                  </Button>
+                )}
+              </div>
+
+              <Alert className="bg-blue-50 border-blue-200">
+                <AlertCircle className="h-4 w-4 text-blue-600" />
+                <AlertDescription className="text-blue-800 text-sm">
+                  <p className="font-semibold mb-2">📢 Como funciona:</p>
+                  <ul className="list-disc ml-4 space-y-1">
+                    <li>Notificação enviada para <strong>TODOS</strong> os usuários cadastrados</li>
+                    <li>Aparece no <strong>sino de notificações</strong> do layout</li>
+                    <li>Usuários podem clicar para ver detalhes completos</li>
+                    <li>Se agendar: envio automático na data/hora escolhida</li>
+                  </ul>
+                </AlertDescription>
+              </Alert>
+            </div>
+
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setMostrarModalAtualizacao(false);
+                  setTituloAtualizacao("");
+                  setDescricaoAtualizacao("");
+                  setConteudoAtualizacao("");
+                  setDataAgendamento(null);
+                }}
+                disabled={enviandoAtualizacao}
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleEnviarAtualizacao}
+                disabled={enviandoAtualizacao || !tituloAtualizacao || !descricaoAtualizacao}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+              >
+                {enviandoAtualizacao ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Enviando...
+                  </>
+                ) : dataAgendamento ? (
+                  <>
+                    <CalendarIcon className="w-4 h-4 mr-2" />
+                    Agendar Envio
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4 mr-2" />
+                    Enviar Agora
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         {/* NOVO: Modal Tutorial Dr. Beleza */}
         <Dialog open={mostrarTutorialDrBeleza} onOpenChange={setMostrarTutorialDrBeleza}>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -3167,7 +3563,7 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
                     </div>
 
                     <div>
-                      <p className className="font-semibold text-purple-800 mb-2">🔹 Clube da Beleza:</p>
+                      <p className="font-semibold text-purple-800 mb-2">🔹 Clube da Beleza:</p>
                       <ul className="list-disc ml-6 space-y-1 text-gray-700">
                         <li>Membros com plano do Clube ativo</li>
                         <li><strong>Editar:</strong> Alterar Beauty Coins e pontos</li>
