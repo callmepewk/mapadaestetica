@@ -132,6 +132,8 @@ export default function ControleAdmin() {
   const [novosPontos, setNovosPontos] = useState(0);
   const [novosBeautyCoins, setNovosBeautyCoins] = useState(0);
 
+  const [mostrarTutorialDrBeleza, setMostrarTutorialDrBeleza] = useState(false);
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -639,6 +641,354 @@ export default function ControleAdmin() {
     window.open(`https://clube-da-beleza.base44.app?${params.toString()}`, '_blank');
   };
 
+  // NOVOS Handlers para Relatórios em PDF
+  const exportarRelatorioGeral = () => {
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Relatório Geral - Painel Admin</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; max-width: 1200px; margin: 0 auto; }
+          h1 { color: #EC4899; border-bottom: 3px solid #EC4899; padding-bottom: 10px; }
+          .header { background: linear-gradient(135deg, #EC4899 0%, #F43F5E 100%); color: white; padding: 20px; border-radius: 10px; margin-bottom: 30px; }
+          .section { background: #F3F4F6; padding: 15px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #EC4899; }
+          .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }
+          .card { background: white; border: 2px solid #E5E7EB; padding: 15px; border-radius: 8px; text-align: center; }
+          .card h4 { color: #EC4899; font-size: 14px; margin-bottom: 10px; }
+          .card p { font-size: 32px; font-weight: bold; margin: 10px 0; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1 style="margin: 0; color: white; border: none;">📊 Relatório Geral - Painel Administrativo</h1>
+          <p style="margin: 10px 0 0 0;">Gerado em ${format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}</p>
+        </div>
+        
+        <div class="grid">
+          <div class="card"><h4>📋 Solicitações de Plano</h4><p>${solicitacoesPlanos.length}</p></div>
+          <div class="card"><h4>🚀 Impulsionamentos</h4><p>${solicitacoesImpulsionamento.length}</p></div>
+          <div class="card"><h4>👥 Profissionais</h4><p>${usuarios.length}</p></div>
+          <div class="card"><h4>👑 Clube da Beleza</h4><p>${todosUsuarios.filter(u => u.plano_clube_beleza && u.plano_clube_beleza !== 'nenhum').length}</p></div>
+          <div class="card"><h4>🏢 Patrocinadores</h4><p>${todosUsuarios.filter(u => u.plano_patrocinador && u.plano_patrocinador !== 'nenhum').length}</p></div>
+          <div class="card"><h4>🎨 Banners</h4><p>${banners.length}</p></div>
+          <div class="card"><h4>📰 Posts</h4><p>${posts.length}</p></div>
+          <div class="card"><h4>🛍️ Pedidos</h4><p>${pedidos.length}</p></div>
+        </div>
+
+        <div class="section">
+          <h3>📊 Resumo de Solicitações</h3>
+          <p>Pendentes: ${solicitacoesPlanos.filter(s => s.status === 'aguardando_confirmacao' || s.status === 'confirmado_usuario').length}</p>
+          <p>Aprovadas: ${solicitacoesPlanos.filter(s => s.status === 'ativado_admin').length}</p>
+        </div>
+
+        <div class="section">
+          <h3>🎨 Banners</h3>
+          <p>Ativos: ${banners.filter(b => b.status === 'ativo').length}</p>
+          <p>Pausados: ${banners.filter(b => b.status === 'pausado').length}</p>
+          <p>Total de Visualizações: ${banners.reduce((acc, b) => acc + (b.metricas?.visualizacoes || 0), 0)}</p>
+        </div>
+
+        <div class="section">
+          <h3>📰 Posts no Blog</h3>
+          <p>Publicados: ${posts.filter(p => p.status === 'publicado').length}</p>
+          <p>Programados: ${posts.filter(p => p.status === 'programado').length}</p>
+          <p>Total de Visualizações: ${posts.reduce((acc, p) => acc + (p.visualizacoes || 0), 0)}</p>
+        </div>
+
+        <div class="section">
+          <h3>🛍️ Pedidos de Produtos</h3>
+          <p>Pendentes: ${pedidos.filter(p => p.status_pedido === 'aguardando_pagamento').length}</p>
+          <p>Entregues: ${pedidos.filter(p => p.status_pedido === 'entregue').length}</p>
+          <p>Valor Total: R$ ${pedidos.reduce((sum, p) => sum + (p.valor_total || 0), 0).toFixed(2)}</p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `relatorio-geral-${format(new Date(), "yyyy-MM-dd")}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+    alert('📄 Relatório HTML baixado! Abra no navegador e use Ctrl+P para salvar como PDF.');
+  };
+
+  const exportarRelatorioSolicitacoes = () => {
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Relatório de Solicitações</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; }
+          h1 { color: #EC4899; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+          th { background: #EC4899; color: white; }
+        </style>
+      </head>
+      <body>
+        <h1>📋 Relatório de Solicitações de Plano</h1>
+        <p>Gerado em ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR })}</p>
+        <p><strong>Total:</strong> ${solicitacoesPlanos.length}</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Email</th>
+              <th>Plano</th>
+              <th>Tipo</th>
+              <th>Status</th>
+              <th>Data</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${solicitacoesPlanos.map(s => `
+              <tr>
+                <td>${s.usuario_nome}</td>
+                <td>${s.usuario_email}</td>
+                <td>${PLANOS_INFO[s.plano_solicitado]?.nome}</td>
+                <td>${s.tipo_plano || 'profissional'}</td>
+                <td>${STATUS_INFO[s.status]?.label}</td>
+                <td>${s.data_solicitacao ? format(new Date(s.data_solicitacao), "dd/MM/yyyy HH:mm", { locale: ptBR }) : "-"}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </body>
+      </html>
+    `;
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `solicitacoes-${format(new Date(), "yyyy-MM-dd")}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+    alert('📄 Relatório baixado!');
+  };
+
+  const exportarRelatorioImpulsionamento = () => {
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Relatório de Impulsionamentos</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; }
+          h1 { color: #F97316; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+          th { background: #F97316; color: white; }
+        </style>
+      </head>
+      <body>
+        <h1>🚀 Relatório de Impulsionamentos</h1>
+        <p>Gerado em ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR })}</p>
+        <p><strong>Total:</strong> ${solicitacoesImpulsionamento.length}</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Profissional</th>
+              <th>Anúncio</th>
+              <th>Plano</th>
+              <th>Duração</th>
+              <th>Valor</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${solicitacoesImpulsionamento.map(s => `
+              <tr>
+                <td>${s.usuario_nome}</td>
+                <td>${s.anuncio_titulo}</td>
+                <td>${PLANOS_IMPULSIONAMENTO_INFO[s.plano_impulsionamento]?.nome}</td>
+                <td>${s.duracao_dias} dias</td>
+                <td>R$ ${s.valor?.toFixed(2)}</td>
+                <td>${STATUS_INFO[s.status]?.label}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </body>
+      </html>
+    `;
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `impulsionamentos-${format(new Date(), "yyyy-MM-dd")}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const exportarRelatorioBanners = () => {
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Relatório de Banners</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; }
+          h1 { color: #7C3AED; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+          th { background: #7C3AED; color: white; }
+        </style>
+      </head>
+      <body>
+        <h1>🎨 Relatório de Banners</h1>
+        <p>Gerado em ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR })}</p>
+        <p><strong>Total:</strong> ${bannersFiltrados.length}</p>
+        <p><strong>Ativos:</strong> ${bannersFiltrados.filter(b => b.status === 'ativo').length}</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Título</th>
+              <th>Empresa</th>
+              <th>Plano</th>
+              <th>Status</th>
+              <th>Visualizações</th>
+              <th>Cliques</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${bannersFiltrados.map(b => `
+              <tr>
+                <td>${b.titulo}</td>
+                <td>${b.nome_empresa}</td>
+                <td>${PLANOS_INFO[b.plano_patrocinador]?.nome}</td>
+                <td>${b.status}</td>
+                <td>${b.metricas?.visualizacoes || 0}</td>
+                <td>${b.metricas?.cliques || 0}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </body>
+      </html>
+    `;
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `banners-${format(new Date(), "yyyy-MM-dd")}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const exportarRelatorioPosts = () => {
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Relatório de Posts</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; }
+          h1 { color: #F97316; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+          th { background: #F97316; color: white; }
+        </style>
+      </head>
+      <body>
+        <h1>📰 Relatório de Posts do Blog</h1>
+        <p>Gerado em ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR })}</p>
+        <p><strong>Total:</strong> ${postsFiltrados.length}</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Título</th>
+              <th>Autor</th>
+              <th>Categoria</th>
+              <th>Status</th>
+              <th>Visualizações</th>
+              <th>Curtidas</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${postsFiltrados.map(p => `
+              <tr>
+                <td>${p.titulo}</td>
+                <td>${p.created_by}</td>
+                <td>${p.categoria}</td>
+                <td>${p.status}</td>
+                <td>${p.visualizacoes || 0}</td>
+                <td>${p.total_curtidas || 0}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </body>
+      </html>
+    `;
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `posts-${format(new Date(), "yyyy-MM-dd")}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const enviarRelatorioBannersWhatsApp = () => {
+    const mensagem = `
+📊 *RELATÓRIO DE BANNERS*
+Data: ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+
+📈 *RESUMO:*
+Total: ${bannersFiltrados.length}
+Ativos: ${bannersFiltrados.filter(b => b.status === 'ativo').length}
+Pausados: ${bannersFiltrados.filter(b => b.status === 'pausado').length}
+
+👁️ Visualizações: ${bannersFiltrados.reduce((acc, b) => acc + (b.metricas?.visualizacoes || 0), 0)}
+🖱️ Cliques: ${bannersFiltrados.reduce((acc, b) => acc + (b.metricas?.cliques || 0), 0)}
+    `.trim();
+    
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(mensagem)}`, '_blank');
+  };
+
+  const enviarRelatorioPostsWhatsApp = () => {
+    const mensagem = `
+📊 *RELATÓRIO DE POSTS*
+Data: ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+
+📈 *RESUMO:*
+Total: ${postsFiltrados.length}
+Publicados: ${postsFiltrados.filter(p => p.status === 'publicado').length}
+Programados: ${postsFiltrados.filter(p => p.status === 'programado').length}
+
+👁️ Visualizações: ${postsFiltrados.reduce((acc, p) => acc + (p.visualizacoes || 0), 0)}
+❤️ Curtidas: ${postsFiltrados.reduce((acc, p) => acc + (p.total_curtidas || 0), 0)}
+    `.trim();
+    
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(mensagem)}`, '_blank');
+  };
+
+  const enviarRelatorioImpulsionamentoWhatsApp = () => {
+    const mensagem = `
+📊 *RELATÓRIO DE IMPULSIONAMENTOS*
+Data: ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+
+Total: ${solicitacoesImpulsionamento.length}
+Ativos: ${solicitacoesImpulsionamento.filter(s => s.status === 'ativado_admin').length}
+Pendentes: ${solicitacoesImpulsionamento.filter(s => s.status !== 'ativado_admin' && s.status !== 'cancelado').length}
+
+Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor || 0), 0).toFixed(2)}
+    `.trim();
+    
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(mensagem)}`, '_blank');
+  };
+
+
   const usuariosFiltrados = usuarios.filter(u => 
     !buscaProfissional || 
     u.full_name?.toLowerCase().includes(buscaProfissional.toLowerCase()) ||
@@ -691,11 +1041,32 @@ export default function ControleAdmin() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
       <div className="max-w-7xl mx-auto px-4">
+        {/* Header ATUALIZADO */}
         <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-            Painel Administrativo
-          </h1>
-          <p className="text-gray-600">Gerencie planos, produtos e pedidos da plataforma</p>
+          <div className="flex flex-wrap items-center justify-between mb-4 gap-4">
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+                Painel Administrativo
+              </h1>
+              <p className="text-gray-600">Gerencie perfis, produtos e conteúdo da plataforma</p>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => setMostrarTutorialDrBeleza(true)}
+                className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+              >
+                <MessageCircle className="w-4 h-4 mr-2" />
+                Dr. Beleza - Tutorial
+              </Button>
+              <Button
+                onClick={exportarRelatorioGeral}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Relatório Geral PDF
+              </Button>
+            </div>
+          </div>
         </div>
 
         {erro && (
@@ -712,12 +1083,12 @@ export default function ControleAdmin() {
           </Alert>
         )}
 
-        {/* Tabs Principais */}
+        {/* Tabs Principais - NOME ATUALIZADO */}
         <Tabs value={abaSelecionada} onValueChange={setAbaSelecionada} className="w-full">
           <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 mb-6 gap-1">
             <TabsTrigger value="planos">
-              <CreditCard className="w-4 h-4 mr-2" />
-              Planos
+              <User className="w-4 h-4 mr-2" />
+              Perfis
             </TabsTrigger>
             <TabsTrigger value="produtos">
               <ShoppingCart className="w-4 h-4 mr-2" />
@@ -734,7 +1105,7 @@ export default function ControleAdmin() {
           </TabsList>
 
           {/* ============================================ */}
-          {/* TAB CONTROLE DE PLANOS */}
+          {/* TAB CONTROLE DE PERFIS (antes PLANOS) */}
           {/* ============================================ */}
           <TabsContent value="planos">
             <Tabs defaultValue="solicitacoes" className="w-full">
@@ -761,7 +1132,7 @@ export default function ControleAdmin() {
                 </TabsTrigger>
               </TabsList>
 
-              {/* Sub-aba: Solicitações */}
+              {/* Sub-aba: Solicitações - ATUALIZADA COM RELATÓRIOS */}
               <TabsContent value="solicitacoes">
                 <Card>
                   <CardHeader>
@@ -769,13 +1140,13 @@ export default function ControleAdmin() {
                       <CardTitle>Solicitações de Planos</CardTitle>
                       <div className="flex gap-2">
                         <Button
-                          onClick={exportarSolicitacoesPDF}
+                          onClick={exportarRelatorioSolicitacoes}
                           variant="outline"
                           size="sm"
                           disabled={solicitacoesPlanos.length === 0}
                         >
                           <Download className="w-4 h-4 mr-2" />
-                          Exportar
+                          PDF
                         </Button>
                         <Button
                           onClick={enviarRelatorioWhatsApp}
@@ -881,11 +1252,33 @@ export default function ControleAdmin() {
                 </Card>
               </TabsContent>
 
-              {/* Sub-aba: Impulsionamento */}
+              {/* Sub-aba: Impulsionamento - ATUALIZADA COM RELATÓRIOS */}
               <TabsContent value="impulsionamento">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Solicitações de Impulsionamento</CardTitle>
+                    <div className="flex items-center justify-between">
+                      <CardTitle>Solicitações de Impulsionamento</CardTitle>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={exportarRelatorioImpulsionamento}
+                          variant="outline"
+                          size="sm"
+                          disabled={solicitacoesImpulsionamento.length === 0}
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          PDF
+                        </Button>
+                        <Button
+                          onClick={enviarRelatorioImpulsionamentoWhatsApp}
+                          variant="outline"
+                          size="sm"
+                          className="border-green-300 text-green-700"
+                        >
+                          <Send className="w-4 h-4 mr-2" />
+                          WhatsApp
+                        </Button>
+                      </div>
+                    </div>
                   </CardHeader>
                   <CardContent>
                     {loadingSolicitacoesImpulsionamento ? (
@@ -1319,7 +1712,7 @@ export default function ControleAdmin() {
           </TabsContent>
 
           {/* ============================================ */}
-          {/* TAB CONTROLE DE PRODUTOS */}
+          {/* TAB CONTROLE DE PRODUTOS - ATUALIZADA COM RELATÓRIOS */}
           {/* ============================================ */}
           <TabsContent value="produtos">
             {/* Stats Cards */}
@@ -1437,22 +1830,84 @@ export default function ControleAdmin() {
               </CardContent>
             </Card>
 
-            {/* Tabela de Pedidos */}
+            {/* Tabela de Pedidos - ATUALIZADA */}
             <Card className="border-none shadow-lg">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle>Lista de Pedidos ({pedidosFiltrados.length})</CardTitle>
-                  <Button
-                    onClick={() => {
-                      const mensagem = `📊 *RELATÓRIO DE PEDIDOS*\n\nTotal: ${pedidosFiltrados.length}\nPendentes: ${pedidosPendentes.length}\nValor: R$ ${pedidosFiltrados.reduce((s, p) => s + (p.valor_total || 0), 0).toFixed(2)}\n\nGerado em ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR })}`;
-                      window.open(`https://wa.me/5531972595643?text=${encodeURIComponent(mensagem)}`, '_blank');
-                    }}
-                    size="sm"
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    <MessageCircle className="w-4 h-4 mr-2" />
-                    WhatsApp
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => {
+                        const html = `
+                          <!DOCTYPE html>
+                          <html>
+                          <head>
+                            <meta charset="UTF-8">
+                            <title>Relatório de Pedidos</title>
+                            <style>
+                              body { font-family: Arial, sans-serif; padding: 20px; }
+                              h1 { color: #10B981; }
+                              table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                              th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+                              th { background: #10B981; color: white; }
+                            </style>
+                          </head>
+                          <body>
+                            <h1>🛍️ Relatório de Pedidos</h1>
+                            <p>Gerado em ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR })}</p>
+                            <p><strong>Total:</strong> ${pedidosFiltrados.length}</p>
+                            <p><strong>Valor Total:</strong> R$ ${pedidosFiltrados.reduce((s, p) => s + (p.valor_total || 0), 0).toFixed(2)}</p>
+                            <table>
+                              <thead>
+                                <tr>
+                                  <th>Data</th>
+                                  <th>Cliente</th>
+                                  <th>Produto</th>
+                                  <th>Valor</th>
+                                  <th>Status</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                ${pedidosFiltrados.map(p => `
+                                  <tr>
+                                    <td>${format(new Date(p.created_date), "dd/MM/yyyy HH:mm", { locale: ptBR })}</td>
+                                    <td>${p.usuario_email}</td>
+                                    <td>${p.produto_nome}</td>
+                                    <td>R$ ${p.valor_total?.toFixed(2)}</td>
+                                    <td>${p.status_pedido}</td>
+                                  </tr>
+                                `).join('')}
+                              </tbody>
+                            </table>
+                          </body>
+                          </html>
+                        `;
+                        const blob = new Blob([html], { type: 'text/html' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `pedidos-${format(new Date(), "yyyy-MM-dd")}.html`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                      }}
+                      variant="outline"
+                      size="sm"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      PDF
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        const mensagem = `📊 *RELATÓRIO DE PEDIDOS*\n\nTotal: ${pedidosFiltrados.length}\nPendentes: ${pedidosPendentes.length}\nValor: R$ ${pedidosFiltrados.reduce((s, p) => s + (p.valor_total || 0), 0).toFixed(2)}\n\nGerado em ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR })}`;
+                        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(mensagem)}`, '_blank');
+                      }}
+                      size="sm"
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      <Send className="w-4 h-4 mr-2" />
+                      WhatsApp
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
@@ -1539,7 +1994,7 @@ export default function ControleAdmin() {
           </TabsContent>
 
           {/* ============================================ */}
-          {/* TAB CONTROLE DE BANNERS */}
+          {/* TAB CONTROLE DE BANNERS - ATUALIZADA COM RELATÓRIOS */}
           {/* ============================================ */}
           <TabsContent value="banners">
             {/* Stats Banners */}
@@ -1641,10 +2096,32 @@ export default function ControleAdmin() {
               </CardContent>
             </Card>
 
-            {/* Tabela Banners */}
+            {/* Tabela Banners - ATUALIZADA */}
             <Card className="border-none shadow-lg">
               <CardHeader>
-                <CardTitle>Lista de Banners ({bannersFiltrados.length})</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Lista de Banners ({bannersFiltrados.length})</CardTitle>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={exportarRelatorioBanners}
+                      variant="outline"
+                      size="sm"
+                      disabled={bannersFiltrados.length === 0}
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      PDF
+                    </Button>
+                    <Button
+                      onClick={enviarRelatorioBannersWhatsApp}
+                      variant="outline"
+                      size="sm"
+                      className="border-green-300 text-green-700"
+                    >
+                      <Send className="w-4 h-4 mr-2" />
+                      WhatsApp
+                    </Button>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
                 {loadingBanners ? (
@@ -1763,7 +2240,7 @@ export default function ControleAdmin() {
           </TabsContent>
 
           {/* ============================================ */}
-          {/* TAB CONTROLE DE POSTS */}
+          {/* TAB CONTROLE DE POSTS - ATUALIZADA COM RELATÓRIOS */}
           {/* ============================================ */}
           <TabsContent value="posts">
             {/* Stats Posts */}
@@ -1865,10 +2342,32 @@ export default function ControleAdmin() {
               </CardContent>
             </Card>
 
-            {/* Tabela Posts */}
+            {/* Tabela Posts - ATUALIZADA */}
             <Card className="border-none shadow-lg">
               <CardHeader>
-                <CardTitle>Lista de Posts ({postsFiltrados.length})</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Lista de Posts ({postsFiltrados.length})</CardTitle>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={exportarRelatorioPosts}
+                      variant="outline"
+                      size="sm"
+                      disabled={postsFiltrados.length === 0}
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      PDF
+                    </Button>
+                    <Button
+                      onClick={enviarRelatorioPostsWhatsApp}
+                      variant="outline"
+                      size="sm"
+                      className="border-green-300 text-green-700"
+                    >
+                      <Send className="w-4 h-4 mr-2" />
+                      WhatsApp
+                    </Button>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
                 {loadingPosts ? (
@@ -2602,6 +3101,177 @@ export default function ControleAdmin() {
                 </div>
               </div>
             )}
+          </DialogContent>
+        </Dialog>
+
+        {/* NOVO: Modal Tutorial Dr. Beleza */}
+        <Dialog open={mostrarTutorialDrBeleza} onOpenChange={setMostrarTutorialDrBeleza}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-3 text-2xl">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center overflow-hidden">
+                  <img
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe4/ec64a4c52_drbeleza.png"
+                    alt="Dr. Beleza"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                Dr. Beleza Explica: Painel Administrativo
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-6 py-4">
+              <Alert className="bg-gradient-to-r from-blue-50 to-cyan-50 border-blue-200">
+                <MessageCircle className="h-5 w-5 text-blue-600" />
+                <AlertDescription className="text-blue-900">
+                  <p className="font-bold text-lg mb-2">👋 Olá Admin!</p>
+                  <p>Sou o Dr. Beleza e vou te explicar todas as funcionalidades deste painel.</p>
+                </AlertDescription>
+              </Alert>
+
+              <div className="space-y-6">
+                {/* Aba Perfis */}
+                <div className="bg-white p-6 rounded-lg border-2 border-purple-200">
+                  <h3 className="text-xl font-bold text-purple-900 mb-4 flex items-center gap-2">
+                    <User className="w-6 h-6" />
+                    📋 Aba Perfis
+                  </h3>
+                  <div className="space-y-4 text-sm">
+                    <div>
+                      <p className="font-semibold text-purple-800 mb-2">🔹 Solicitações de Planos:</p>
+                      <ul className="list-disc ml-6 space-y-1 text-gray-700">
+                        <li>Ver todas as solicitações de upgrade de plano</li>
+                        <li><strong>Ativar:</strong> Aprovar e ativar o plano do profissional</li>
+                        <li><strong>Excluir:</strong> Remover solicitação (caso seja spam)</li>
+                        <li><strong>Exportar PDF/WhatsApp:</strong> Gerar relatório das solicitações</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <p className="font-semibold text-purple-800 mb-2">🔹 Impulsionamentos:</p>
+                      <ul className="list-disc ml-6 space-y-1 text-gray-700">
+                        <li>Gerenciar solicitações de impulsionamento de anúncios</li>
+                        <li><strong>Ativar:</strong> Ativar o impulsionamento e notificar o usuário</li>
+                        <li><strong>Relatórios PDF/WhatsApp:</strong> Exportar dados filtrados</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <p className="font-semibold text-purple-800 mb-2">🔹 Profissionais:</p>
+                      <ul className="list-disc ml-6 space-y-1 text-gray-700">
+                        <li>Lista completa de todos profissionais cadastrados</li>
+                        <li><strong>Trocar Plano:</strong> Alterar manualmente o plano ativo</li>
+                        <li><strong>Editar Pontos:</strong> Ajustar pontos e Beauty Coins</li>
+                        <li><strong>Excluir:</strong> Converte para paciente e reseta dados</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <p className className="font-semibold text-purple-800 mb-2">🔹 Clube da Beleza:</p>
+                      <ul className="list-disc ml-6 space-y-1 text-gray-700">
+                        <li>Membros com plano do Clube ativo</li>
+                        <li><strong>Editar:</strong> Alterar Beauty Coins e pontos</li>
+                        <li><strong>Sincronizar:</strong> Enviar dados para o site do Clube da Beleza</li>
+                        <li>Integração automática de cadastros entre plataformas</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <p className="font-semibold text-purple-800 mb-2">🔹 Patrocinadores:</p>
+                      <ul className="list-disc ml-6 space-y-1 text-gray-700">
+                        <li>Ver todos patrocinadores ativos</li>
+                        <li>Quantidade de banners e posts de cada um</li>
+                        <li><strong>Editar Pontos:</strong> Gerenciar benefícios</li>
+                        <li><strong>WhatsApp:</strong> Contato direto com patrocinador</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Aba Produtos */}
+                <div className="bg-white p-6 rounded-lg border-2 border-green-200">
+                  <h3 className="text-xl font-bold text-green-900 mb-4 flex items-center gap-2">
+                    <ShoppingCart className="w-6 h-6" />
+                    🛍️ Aba Produtos
+                  </h3>
+                  <div className="space-y-4 text-sm">
+                    <div>
+                      <p className="font-semibold text-green-800 mb-2">Funcionalidades:</p>
+                      <ul className="list-disc ml-6 space-y-1 text-gray-700">
+                        <li><strong>Estatísticas:</strong> Total de pedidos, pendentes, clientes, valor total</li>
+                        <li><strong>Filtros:</strong> Buscar por email/produto, filtrar por status e cliente</li>
+                        <li><strong>Aprovar/Rejeitar:</strong> Gerenciar pedidos pendentes</li>
+                        <li><strong>Relatórios:</strong> Exportar PDF ou enviar resumo via WhatsApp</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Aba Banners */}
+                <div className="bg-white p-6 rounded-lg border-2 border-purple-200">
+                  <h3 className="text-xl font-bold text-purple-900 mb-4 flex items-center gap-2">
+                    <ImageIcon className="w-6 h-6" />
+                    🎨 Aba Banners
+                  </h3>
+                  <div className="space-y-4 text-sm">
+                    <div>
+                      <p className="font-semibold text-purple-800 mb-2">Funcionalidades:</p>
+                      <ul className="list-disc ml-6 space-y-1 text-gray-700">
+                        <li><strong>Ver Detalhes:</strong> Imagem completa, dados do patrocinador, métricas</li>
+                        <li><strong>Contato:</strong> Email, telefone e WhatsApp do patrocinador</li>
+                        <li><strong>Baixar Arquivo:</strong> Download da imagem do banner</li>
+                        <li><strong>Pausar/Ativar:</strong> Gerenciar status dos banners</li>
+                        <li><strong>Relatórios:</strong> PDF ou WhatsApp com filtros aplicados</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Aba Posts */}
+                <div className="bg-white p-6 rounded-lg border-2 border-orange-200">
+                  <h3 className="text-xl font-bold text-orange-900 mb-4 flex items-center gap-2">
+                    <Newspaper className="w-6 h-6" />
+                    📰 Aba Posts
+                  </h3>
+                  <div className="space-y-4 text-sm">
+                    <div>
+                      <p className="font-semibold text-orange-800 mb-2">Funcionalidades:</p>
+                      <ul className="list-disc ml-6 space-y-1 text-gray-700">
+                        <li><strong>Ver Detalhes:</strong> Informações completas e dados do autor</li>
+                        <li><strong>Ver Post:</strong> Abre o artigo no Blog (integração automática)</li>
+                        <li><strong>Publicar:</strong> Mudar status de rascunho para publicado</li>
+                        <li><strong>Excluir:</strong> Remover post permanentemente</li>
+                        <li><strong>Relatórios:</strong> Exportar dados filtrados em PDF ou WhatsApp</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Dicas Gerais */}
+                <div className="bg-gradient-to-r from-yellow-50 to-amber-50 p-6 rounded-lg border-2 border-yellow-300">
+                  <h3 className="text-xl font-bold text-yellow-900 mb-4">💡 Dicas Importantes</h3>
+                  <div className="space-y-3 text-sm text-yellow-900">
+                    <p><strong>✅ Relatórios PDF:</strong> Use os botões de exportação em cada aba. O arquivo HTML baixado pode ser impresso como PDF (Ctrl+P).</p>
+                    <p><strong>💬 Relatórios WhatsApp:</strong> Envie resumos rápidos diretamente pelo WhatsApp para compartilhar com a equipe.</p>
+                    <p><strong>🔍 Use os Filtros:</strong> Os relatórios respeitam os filtros aplicados - busque antes de exportar!</p>
+                    <p><strong>🔄 Sincronização Clube:</strong> Ao sincronizar um usuário com o Clube da Beleza, todos os dados (pontos, beauty coins, planos) são compartilhados automaticamente.</p>
+                    <p><strong>⭐ Pontos e Beauty Coins:</strong> Você pode aumentar ou diminuir livremente - útil para recompensas ou correções.</p>
+                  </div>
+                </div>
+
+                {/* Botão de Contato */}
+                <div className="text-center pt-6">
+                  <p className="text-gray-600 mb-4">Dúvidas sobre alguma funcionalidade?</p>
+                  <Button
+                    onClick={() => window.open('https://wa.me/5554991554136?text=Olá! Preciso de ajuda com o Painel Admin do Mapa da Estética.', '_blank')}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    Falar com Suporte Técnico
+                  </Button>
+                </div>
+              </div>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
