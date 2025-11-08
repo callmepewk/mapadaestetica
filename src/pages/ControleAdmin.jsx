@@ -2682,7 +2682,7 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
 
           {/* ============================================ */}
           {/* TAB CONTROLE DE PRODUTOS */}
-          {============================================ */}
+          {/* ============================================ */}
           <TabsContent value="produtos">
             {/* Stats Cards */}
             <div className="grid md:grid-cols-4 gap-4 mb-6">
