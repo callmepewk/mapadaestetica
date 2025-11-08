@@ -149,6 +149,12 @@ export default function ControleAdmin() {
   const [dataAgendamento, setDataAgendamento] = useState(null);
   const [enviandoAtualizacao, setEnviandoAtualizacao] = useState(false);
   const [mostrarCarregamentoAtualizacao, setMostrarCarregamentoAtualizacao] = useState(false);
+  
+  // NOVO: Estados para Agendamento de Atualização Forçada
+  const [mostrarModalAgendarForcada, setMostrarModalAgendarForcada] = useState(false);
+  const [dataAgendamentoForcada, setDataAgendamentoForcada] = useState(null);
+  const [tituloAgendamentoForcada, setTituloAgendamentoForcada] = useState("");
+  const [descricaoAgendamentoForcada, setDescricaoAgendamentoForcada] = useState("");
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -222,6 +228,20 @@ export default function ControleAdmin() {
     queryKey: ['atualizacoes-sistema'],
     queryFn: () => base44.entities.Novidade.list('-created_date', 50),
     enabled: !!user,
+  });
+
+  // NOVA Query para Agendamentos
+  const { data: agendamentos = [], isLoading: loadingAgendamentos } = useQuery({
+    queryKey: ['agendamentos-atualizacao'],
+    queryFn: async () => {
+      return await base44.entities.AgendamentoAtualizacao.filter(
+        { executado: false },
+        'data_agendada',
+        50
+      );
+    },
+    enabled: !!user,
+    refetchInterval: 60000, // Verificar a cada minuto
   });
 
   // Mutations para Planos
@@ -468,6 +488,70 @@ export default function ControleAdmin() {
       window.location.reload();
     },
   });
+
+  // NOVA Mutation para Agendar Atualização Forçada
+  const agendarAtualizacaoForcadaMutation = useMutation({
+    mutationFn: async ({ dataAgendada, titulo, descricao }) => {
+      return await base44.entities.AgendamentoAtualizacao.create({
+        data_agendada: dataAgendada,
+        titulo,
+        descricao,
+        tipo: 'forcada',
+        executado: false
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['agendamentos-atualizacao'] });
+      setMostrarModalAgendarForcada(false);
+      setDataAgendamentoForcada(null);
+      setTituloAgendamentoForcada("");
+      setDescricaoAgendamentoForcada("");
+      setSucesso("Atualização forçada agendada com sucesso!");
+      setTimeout(() => setSucesso(null), 3000);
+    },
+  });
+
+  const cancelarAgendamentoMutation = useMutation({
+    mutationFn: async (id) => {
+      return await base44.entities.AgendamentoAtualizacao.delete(id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['agendamentos-atualizacao'] });
+      setSucesso("Agendamento cancelado!");
+      setTimeout(() => setSucesso(null), 3000);
+    },
+  });
+
+  // Verificar agendamentos e executar se chegou a hora
+  useEffect(() => {
+    if (!agendamentos || agendamentos.length === 0) return;
+
+    const intervalo = setInterval(() => {
+      const agora = new Date();
+      
+      agendamentos.forEach(async (agendamento) => {
+        const dataAgendada = new Date(agendamento.data_agendada);
+        
+        // Se a data agendada já passou e não foi executado
+        if (agora >= dataAgendada && !agendamento.executado) {
+          // Marcar como executado
+          await base44.entities.AgendamentoAtualizacao.update(agendamento.id, {
+            executado: true,
+            data_execucao: new Date().toISOString()
+          });
+          
+          // Forçar atualização
+          setMostrarCarregamentoAtualizacao(true);
+          // Reload after a short delay to show the loading screen
+          setTimeout(() => {
+            window.location.reload();
+          }, 3000);
+        }
+      });
+    }, 30000); // Verificar a cada 30 segundos
+
+    return () => clearInterval(intervalo);
+  }, [agendamentos]);
 
   // Handlers para Planos
   const handleAtivarPlano = async () => {
@@ -1096,6 +1180,22 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
     }
   };
 
+  const handleAgendarAtualizacaoForcada = () => {
+    if (!dataAgendamentoForcada || !tituloAgendamentoForcada) {
+      setErro("Preencha a data e o título!");
+      setTimeout(() => setErro(null), 3000);
+      return;
+    }
+
+    if (confirm(`Confirma o agendamento de atualização forçada para ${format(dataAgendamentoForcada, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}?\n\nTodos os usuários terão o site recarregado automaticamente neste horário.`)) {
+      agendarAtualizacaoForcadaMutation.mutate({
+        dataAgendada: dataAgendamentoForcada.toISOString(),
+        titulo: tituloAgendamentoForcada,
+        descricao: descricaoAgendamentoForcada
+      });
+    }
+  };
+
   const usuariosFiltrados = usuarios.filter(u => 
     !buscaProfissional || 
     u.full_name?.toLowerCase().includes(buscaProfissional.toLowerCase()) ||
@@ -1215,7 +1315,7 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
           </Alert>
         )}
 
-        {/* NOVA SEÇÃO: Gestão de Atualizações */}
+        {/* SEÇÃO: Gestão de Atualizações - ATUALIZADA */}
         <Card className="mb-8 border-2 border-purple-300 bg-gradient-to-br from-purple-50 to-pink-50 shadow-xl">
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -1231,7 +1331,7 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid md:grid-cols-3 gap-4">
+            <div className="grid md:grid-cols-4 gap-4">
               {/* Forçar Atualização Imediata */}
               <Card className="border-2 border-red-200 hover:border-red-400 transition-colors">
                 <CardContent className="p-6">
@@ -1254,7 +1354,34 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
                     ) : (
                       <RefreshCw className="w-4 h-4 mr-2" />
                     )}
-                    Forçar Atualização
+                    Forçar Agora
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* NOVO: Agendar Atualização Forçada */}
+              <Card className="border-2 border-orange-200 hover:border-orange-400 transition-colors">
+                <CardContent className="p-6">
+                  <div className="text-center mb-4">
+                    <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <CalendarIcon className="w-8 h-8 text-orange-600" />
+                    </div>
+                    <h3 className="font-bold text-lg mb-2">📅 Agendar Atualização</h3>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Programe uma data para forçar atualização automaticamente
+                    </p>
+                    {agendamentos.length > 0 && (
+                      <Badge className="bg-orange-100 text-orange-800 mb-2">
+                        {agendamentos.length} agendado(s)
+                      </Badge>
+                    )}
+                  </div>
+                  <Button
+                    onClick={() => setMostrarModalAgendarForcada(true)}
+                    className="w-full bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700"
+                  >
+                    <CalendarIcon className="w-4 h-4 mr-2" />
+                    Agendar
                   </Button>
                 </CardContent>
               </Card>
@@ -1306,6 +1433,69 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
                 </CardContent>
               </Card>
             </div>
+
+            {/* NOVA SEÇÃO: Agendamentos Futuros */}
+            {agendamentos.length > 0 && (
+              <div className="mt-6 pt-6 border-t border-purple-200">
+                <h4 className="font-semibold text-lg mb-4 text-orange-900">📅 Atualizações Agendadas</h4>
+                <div className="space-y-3">
+                  {agendamentos.map((agendamento) => {
+                    const dataAgendada = new Date(agendamento.data_agendada);
+                    const agora = new Date();
+                    const jaPassou = dataAgendada < agora;
+                    
+                    return (
+                      <div key={agendamento.id} className="p-4 bg-white rounded-lg border-2 border-orange-200 hover:border-orange-400 transition-colors">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <CalendarIcon className="w-5 h-5 text-orange-600" />
+                              <h5 className="font-bold text-gray-900">{agendamento.titulo}</h5>
+                              <Badge className={jaPassou ? 'bg-red-100 text-red-800' : 'bg-orange-100 text-orange-800'}>
+                                {jaPassou ? 'Executando...' : 'Agendado'}
+                              </Badge>
+                            </div>
+                            {agendamento.descricao && (
+                              <p className="text-sm text-gray-600 mb-2">{agendamento.descricao}</p>
+                            )}
+                            <div className="flex items-center gap-4 text-xs text-gray-500">
+                              <span className="flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                {format(dataAgendada, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                              </span>
+                              <span>•</span>
+                              <span className={jaPassou ? 'text-red-600 font-bold' : 'text-orange-600'}>
+                                {jaPassou ? '⚠️ Executando agora!' : `Em ${Math.max(0, Math.ceil((dataAgendada - agora) / (1000 * 60 * 60)))} horas`}
+                              </span>
+                            </div>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="border-red-300 text-red-700"
+                            onClick={() => {
+                              if (confirm(`Cancelar este agendamento?\n\nTítulo: ${agendamento.titulo}\nData: ${format(dataAgendada, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}`)) {
+                                cancelarAgendamentoMutation.mutate(agendamento.id);
+                              }
+                            }}
+                            disabled={cancelarAgendamentoMutation.isPending}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                
+                <Alert className="mt-4 bg-orange-50 border-orange-200">
+                  <AlertCircle className="h-4 w-4 text-orange-600" />
+                  <AlertDescription className="text-orange-800 text-sm">
+                    ⏰ <strong>Sistema Automático:</strong> As atualizações agendadas serão executadas automaticamente na data/hora programada. O site será recarregado para todos os usuários online.
+                  </AlertDescription>
+                </Alert>
+              </div>
+            )}
 
             {/* Últimas 3 Atualizações */}
             {atualizacoes.length > 0 && (
@@ -2678,8 +2868,7 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
                                       {post.categoria}
                                     </Badge>
                                   </div>
-                                </div>
-                              </TableCell>
+                                </td>
                               <TableCell>
                                 <p className="text-sm">{post.created_by}</p>
                               </TableCell>
@@ -3367,6 +3556,134 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
           </DialogContent>
         </Dialog>
 
+        {/* NOVO: Modal Agendar Atualização Forçada */}
+        <Dialog open={mostrarModalAgendarForcada} onOpenChange={setMostrarModalAgendarForcada}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="text-2xl flex items-center gap-2">
+                <CalendarIcon className="w-6 h-6 text-orange-600" />
+                Agendar Atualização Forçada
+              </DialogTitle>
+              <DialogDescription>
+                Programe uma data e hora para forçar o recarregamento do site para todos os usuários
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 py-4">
+              <Alert className="bg-red-50 border-red-200">
+                <AlertCircle className="h-4 w-4 text-red-600" />
+                <AlertDescription className="text-red-800 text-sm">
+                  <p className="font-semibold mb-2">⚠️ ATENÇÃO:</p>
+                  <ul className="list-disc ml-4 space-y-1">
+                    <li>Todos os usuários online terão o site recarregado <strong>automaticamente</strong></li>
+                    <li>Use apenas para <strong>mudanças críticas</strong> na plataforma</li>
+                    <li>Escolha um horário de <strong>baixo tráfego</strong> (madrugada)</li>
+                    <li>O sistema verifica a cada 30 segundos e executa automaticamente</li>
+                  </ul>
+                </AlertDescription>
+              </Alert>
+
+              <div>
+                <Label>Título da Atualização *</Label>
+                <Input
+                  placeholder="Ex: Correção Crítica de Segurança"
+                  value={tituloAgendamentoForcada}
+                  onChange={(e) => setTituloAgendamentoForcada(e.target.value)}
+                  className="mt-2"
+                />
+              </div>
+
+              <div>
+                <Label>Descrição (opcional)</Label>
+                <Textarea
+                  placeholder="Descreva o motivo desta atualização forçada..."
+                  value={descricaoAgendamentoForcada}
+                  onChange={(e) => setDescricaoAgendamentoForcada(e.target.value)}
+                  rows={3}
+                  className="mt-2"
+                />
+              </div>
+
+              <div>
+                <Label className="flex items-center gap-2 mb-2">
+                  <CalendarIcon className="w-4 h-4" />
+                  Data e Hora para Execução *
+                </Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full justify-start text-left">
+                      <CalendarIcon className="w-4 h-4 mr-2" />
+                      {dataAgendamentoForcada ? format(dataAgendamentoForcada, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR }) : "Selecione a data e hora"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={dataAgendamentoForcada}
+                      onSelect={(date) => {
+                        if (date) {
+                          const now = new Date();
+                          // Set time to current hours and minutes when selecting a date
+                          date.setHours(now.getHours(), now.getMinutes(), 0, 0);
+                        }
+                        setDataAgendamentoForcada(date);
+                      }}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                <p className="text-xs text-gray-500 mt-2">
+                  💡 Recomendado: Agende para horários de madrugada (2h-5h) quando há menos usuários online
+                </p>
+              </div>
+
+              <Alert className="bg-blue-50 border-blue-200">
+                <AlertCircle className="h-4 w-4 text-blue-600" />
+                <AlertDescription className="text-blue-800 text-sm">
+                  <p className="font-semibold mb-2">🤖 Como funciona o sistema automático:</p>
+                  <ul className="list-disc ml-4 space-y-1">
+                    <li>Verificação a cada <strong>30 segundos</strong> dos agendamentos</li>
+                    <li>Quando chegar a data/hora: <strong>reload automático</strong> para todos</li>
+                    <li>Tela de loading de 3 segundos antes do reload</li>
+                    <li>Agendamento é marcado como executado após rodar</li>
+                  </ul>
+                </AlertDescription>
+              </Alert>
+            </div>
+
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setMostrarModalAgendarForcada(false);
+                  setDataAgendamentoForcada(null);
+                  setTituloAgendamentoForcada("");
+                  setDescricaoAgendamentoForcada("");
+                }}
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleAgendarAtualizacaoForcada}
+                disabled={!dataAgendamentoForcada || !tituloAgendamentoForcada || agendarAtualizacaoForcadaMutation.isPending}
+                className="bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700"
+              >
+                {agendarAtualizacaoForcadaMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Agendando...
+                  </>
+                ) : (
+                  <>
+                    <CalendarIcon className="w-4 h-4 mr-2" />
+                    Confirmar Agendamento
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         {/* NOVO: Modal Criar Notificação de Atualização */}
         <Dialog open={mostrarModalAtualizacao} onOpenChange={setMostrarModalAtualizacao}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -3429,7 +3746,14 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
                     <Calendar
                       mode="single"
                       selected={dataAgendamento}
-                      onSelect={setDataAgendamento}
+                      onSelect={(date) => {
+                        if (date) {
+                          const now = new Date();
+                          // Set time to current hours and minutes when selecting a date
+                          date.setHours(now.getHours(), now.getMinutes(), 0, 0);
+                        }
+                        setDataAgendamento(date);
+                      }}
                       initialFocus
                     />
                   </PopoverContent>
