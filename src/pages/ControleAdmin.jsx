@@ -65,6 +65,9 @@ import {
   Bell,
   Calendar as CalendarIcon,
   Rocket,
+  Sparkles, // NEW: Added Sparkles icon
+  Heart,    // NEW: Added Heart icon
+  MapPin,   // NEW: Added MapPin icon
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -156,6 +159,12 @@ export default function ControleAdmin() {
   const [tituloAgendamentoForcada, setTituloAgendamentoForcada] = useState("");
   const [descricaoAgendamentoForcada, setDescricaoAgendamentoForcada] = useState("");
 
+  // NOVOS Estados para Anúncios
+  const [anuncioSelecionado, setAnuncioSelecionado] = useState(null);
+  const [mostrarDetalhesAnuncio, setMostrarDetalhesAnuncio] = useState(false);
+  const [buscaAnuncio, setBuscaAnuncio] = useState("");
+  const [filtroStatusAnuncio, setFiltroStatusAnuncio] = useState("");
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -238,6 +247,12 @@ export default function ControleAdmin() {
     },
     enabled: !!user,
     refetchInterval: 60000,
+  });
+
+  const { data: todosAnuncios = [], isLoading: loadingAnuncios } = useQuery({
+    queryKey: ['admin-anuncios'],
+    queryFn: () => base44.entities.Anuncio.list('-created_date', 500),
+    enabled: !!user,
   });
 
   // Mutations para Planos
@@ -516,6 +531,34 @@ export default function ControleAdmin() {
       setSucesso("Agendamento cancelado!");
       setTimeout(() => setSucesso(null), 3000);
     },
+  });
+
+  const deletarAnuncioMutation = useMutation({
+    mutationFn: (id) => base44.entities.Anuncio.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-anuncios'] });
+      setSucesso("Anúncio excluído!");
+      setTimeout(() => setSucesso(null), 3000);
+    },
+    onError: (error) => {
+      setErro("Erro ao excluir anúncio: " + error.message);
+      setTimeout(() => setErro(null), 3000);
+    }
+  });
+
+  const atualizarStatusAnuncioMutation = useMutation({
+    mutationFn: async ({ id, status }) => {
+      await base44.entities.Anuncio.update(id, { status });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-anuncios'] });
+      setSucesso("Status do anúncio atualizado!");
+      setTimeout(() => setSucesso(null), 3000);
+    },
+    onError: (error) => {
+      setErro("Erro ao atualizar status do anúncio: " + error.message);
+      setTimeout(() => setErro(null), 3000);
+    }
   });
 
   // Verificar agendamentos e executar se chegou a hora
@@ -799,6 +842,43 @@ export default function ControleAdmin() {
     
     const params = new URLSearchParams(dados);
     window.open(`https://clube-da-beleza.base44.app?${params.toString()}`, '_blank');
+  };
+
+  const handleVerDetalhesAnuncio = (anuncio) => {
+    setAnuncioSelecionado(anuncio);
+    setMostrarDetalhesAnuncio(true);
+  };
+
+  const handleEditarAnuncio = (anuncio) => {
+    navigate(`${createPageUrl("EditarAnuncio")}?id=${anuncio.id}`);
+  };
+
+  const handleAlterarStatusAnuncio = async (anuncio, novoStatus) => {
+    if (confirm(`Alterar status do anúncio "${anuncio.titulo}" para ${novoStatus}?`)) {
+      atualizarStatusAnuncioMutation.mutate({ id: anuncio.id, status: novoStatus });
+    }
+  };
+
+  const handleExcluirAnuncio = async (anuncio) => {
+    if (confirm(`Tem certeza que deseja excluir o anúncio "${anuncio.titulo}"?\n\nEsta ação não pode ser desfeita.`)) {
+      deletarAnuncioMutation.mutate(anuncio.id);
+    }
+  };
+
+  const calcularTempoRestante = (anuncio) => {
+    if (!anuncio.data_expiracao) return "Sem expiração";
+    
+    const agora = new Date();
+    const expiracao = new Date(anuncio.data_expiracao);
+    const diffTime = expiracao - agora;
+    
+    if (diffTime < 0) return "Expirado";
+    
+    const diffDias = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDias === 0) return "Expira hoje";
+    if (diffDias === 1) return "1 dia restante";
+    return `${diffDias} dias restantes`;
   };
 
   // NOVOS Handlers para Relatórios em PDF
@@ -1226,6 +1306,16 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
     return matchBusca && matchStatus;
   });
 
+  // Filtros para Anúncios
+  const anunciosFiltrados = todosAnuncios.filter(a => {
+    const matchBusca = !buscaAnuncio || 
+      a.titulo?.toLowerCase().includes(buscaAnuncio.toLowerCase()) ||
+      a.profissional?.toLowerCase().includes(buscaAnuncio.toLowerCase()) ||
+      a.created_by?.toLowerCase().includes(buscaAnuncio.toLowerCase());
+    const matchStatus = !filtroStatusAnuncio || a.status === filtroStatusAnuncio;
+    return matchBusca && matchStatus;
+  });
+
   // Filtros para Clube e Patrocinadores (using todosUsuarios)
   const usuariosClube = todosUsuarios.filter(u => u.plano_clube_beleza && u.plano_clube_beleza !== 'nenhum');
   const usuariosPatrocinadores = todosUsuarios.filter(u => u.plano_patrocinador && u.plano_patrocinador !== 'nenhum');
@@ -1532,7 +1622,7 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
           </CardContent>
         </Card>
 
-        {/* Tabs Principais - NOME ATUALIZADO */}
+        {/* Tabs Principais */}
         <Tabs value={abaSelecionada} onValueChange={setAbaSelecionada} className="w-full">
           <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 mb-6 gap-1">
             <TabsTrigger value="planos">
@@ -1558,7 +1648,7 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
           {/* ============================================ */}
           <TabsContent value="planos">
             <Tabs defaultValue="solicitacoes" className="w-full">
-              <TabsList className="w-full mb-6 grid grid-cols-2 md:grid-cols-5 gap-1">
+              <TabsList className="w-full mb-6 grid grid-cols-2 md:grid-cols-6 gap-1">
                 <TabsTrigger value="solicitacoes" className="text-xs sm:text-sm">
                   <CreditCard className="w-4 h-4 mr-2" />
                   Solicitações ({solicitacoesPlanos.length})
@@ -1571,6 +1661,10 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
                   <User className="w-4 h-4 mr-2" />
                   Profissionais ({usuarios.length})
                 </TabsTrigger>
+                <TabsTrigger value="anuncios" className="text-xs sm:text-sm">
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Anúncios ({todosAnuncios.length})
+                </TabsTrigger>
                 <TabsTrigger value="clube" className="text-xs sm:text-sm">
                   <Crown className="w-4 h-4 mr-2" />
                   Clube ({usuariosClube.length})
@@ -1581,7 +1675,7 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
                 </TabsTrigger>
               </TabsList>
 
-              {/* Sub-aba: Solicitações - ATUALIZADA COM RELATÓRIOS */}
+              {/* Sub-aba: Solicitações */}
               <TabsContent value="solicitacoes">
                 <Card>
                   <CardHeader>
@@ -1701,7 +1795,7 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
                 </Card>
               </TabsContent>
 
-              {/* Sub-aba: Impulsionamento - ATUALIZADA COM RELATÓRIOS */}
+              {/* Sub-aba: Impulsionamento */}
               <TabsContent value="impulsionamento">
                 <Card>
                   <CardHeader>
@@ -1827,7 +1921,7 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
                 </Card>
               </TabsContent>
 
-              {/* Sub-aba: Profissionais - ATUALIZADA */}
+              {/* Sub-aba: Profissionais */}
               <TabsContent value="profissionais">
                 <Card>
                   <CardHeader>
@@ -1943,7 +2037,314 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
                 </Card>
               </TabsContent>
 
-              {/* Sub-aba: Clube da Beleza - IMPLEMENTADA */}
+              {/* NOVA Sub-aba: Anúncios */}
+              <TabsContent value="anuncios">
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2">
+                        <Sparkles className="w-6 h-6 text-pink-600" />
+                        Todos os Anúncios
+                      </CardTitle>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={exportarRelatorioAnuncios}
+                          variant="outline"
+                          size="sm"
+                          disabled={anunciosFiltrados.length === 0}
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          PDF
+                        </Button>
+                        <Button
+                          onClick={enviarRelatorioAnunciosWhatsApp}
+                          variant="outline"
+                          size="sm"
+                          className="border-green-300 text-green-700"
+                        >
+                          <Send className="w-4 h-4 mr-2" />
+                          WhatsApp
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {/* Stats Cards */}
+                    <div className="grid md:grid-cols-4 gap-4 mb-6">
+                      <Card className="border-none shadow-lg">
+                        <CardContent className="p-6">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm text-gray-600">Total Anúncios</p>
+                              <p className="text-3xl font-bold text-gray-900">{anunciosFiltrados.length}</p>
+                            </div>
+                            <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center">
+                              <Sparkles className="w-6 h-6 text-pink-600" />
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="border-none shadow-lg">
+                        <CardContent className="p-6">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm text-gray-600">Ativos</p>
+                              <p className="text-3xl font-bold text-green-600">{anunciosFiltrados.filter(a => a.status === 'ativo').length}</p>
+                            </div>
+                            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                              <CheckCircle className="w-6 h-6 text-green-600" />
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="border-none shadow-lg">
+                        <CardContent className="p-6">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm text-gray-600">Pendentes</p>
+                              <p className="text-3xl font-bold text-yellow-600">{anunciosFiltrados.filter(a => a.status === 'pendente').length}</p>
+                            </div>
+                            <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
+                              <Clock className="w-6 h-6 text-yellow-600" />
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="border-none shadow-lg">
+                        <CardContent className="p-6">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm text-gray-600">Visualizações</p>
+                              <p className="text-3xl font-bold text-blue-600">
+                                {anunciosFiltrados.reduce((acc, a) => acc + (a.visualizacoes || 0), 0)}
+                              </p>
+                            </div>
+                            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                              <Eye className="w-6 h-6 text-blue-600" />
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    {/* Filtros */}
+                    <Card className="mb-6 border-none shadow-lg bg-gray-50">
+                      <CardContent className="p-4">
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">Buscar</label>
+                            <div className="relative">
+                              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                              <Input
+                                placeholder="Título, profissional ou email..."
+                                value={buscaAnuncio}
+                                onChange={(e) => setBuscaAnuncio(e.target.value)}
+                                className="pl-10"
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">Status</label>
+                            <Select value={filtroStatusAnuncio} onValueChange={setFiltroStatusAnuncio}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Todos" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value={null}>Todos</SelectItem>
+                                <SelectItem value="ativo">Ativo</SelectItem>
+                                <SelectItem value="pendente">Pendente</SelectItem>
+                                <SelectItem value="em_destaque">Em Destaque</SelectItem>
+                                <SelectItem value="expirado">Expirado</SelectItem>
+                                <SelectItem value="rejeitado">Rejeitado</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Tabela de Anúncios */}
+                    {loadingAnuncios ? (
+                      <div className="flex justify-center py-12">
+                        <Loader2 className="w-8 h-8 animate-spin text-pink-600" />
+                      </div>
+                    ) : anunciosFiltrados.length === 0 ? (
+                      <div className="text-center py-12">
+                        <Sparkles className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-600">Nenhum anúncio encontrado</p>
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Anúncio</TableHead>
+                              <TableHead>Profissional</TableHead>
+                              <TableHead>Plano</TableHead>
+                              <TableHead>Status</TableHead>
+                              <TableHead>Métricas</TableHead>
+                              <TableHead>Tempo Restante</TableHead>
+                              <TableHead className="text-right">Ações</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {anunciosFiltrados.map((anuncio) => {
+                              const tempoRestante = calcularTempoRestante(anuncio);
+                              const expirado = tempoRestante === "Expirado";
+                              
+                              return (
+                                <TableRow key={anuncio.id}>
+                                  <TableCell>
+                                    <div className="flex items-center gap-3">
+                                      <div className="w-16 h-12 bg-gray-100 rounded overflow-hidden flex-shrink-0">
+                                        {anuncio.imagem_principal ? (
+                                          <img src={anuncio.imagem_principal} alt={anuncio.titulo} className="w-full h-full object-cover" />
+                                        ) : (
+                                          <div className="w-full h-full flex items-center justify-center text-2xl">✨</div>
+                                        )}
+                                      </div>
+                                      <div>
+                                        <p className="font-medium line-clamp-1">{anuncio.titulo}</p>
+                                        <Badge variant="outline" className="text-xs mt-1">
+                                          {anuncio.categoria}
+                                        </Badge>
+                                      </div>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div>
+                                      <p className="font-medium text-sm">{anuncio.profissional}</p>
+                                      <p className="text-xs text-gray-500">{anuncio.created_by}</p>
+                                      <p className="text-xs text-gray-500">{anuncio.cidade}, {anuncio.estado}</p>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Badge className={
+                                      anuncio.plano === 'platina' ? PLANOS_INFO.platina?.cor :
+                                      anuncio.plano === 'diamante' ? PLANOS_INFO.diamante?.cor :
+                                      anuncio.plano === 'ouro' ? PLANOS_INFO.ouro?.cor :
+                                      anuncio.plano === 'prata' ? PLANOS_INFO.prata?.cor :
+                                      PLANOS_INFO.cobre?.cor
+                                    }>
+                                      {anuncio.plano?.toUpperCase() || 'COBRE'}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Badge className={
+                                      anuncio.status === 'ativo' ? 'bg-green-100 text-green-800' :
+                                      anuncio.status === 'pendente' ? 'bg-yellow-100 text-yellow-800' :
+                                      anuncio.status === 'em_destaque' ? 'bg-purple-100 text-purple-800' :
+                                      anuncio.status === 'expirado' ? 'bg-red-100 text-red-800' :
+                                      'bg-gray-100 text-gray-800'
+                                    }>
+                                      {anuncio.status}
+                                    </Badge>
+                                    {anuncio.impulsionado && (
+                                      <Badge className="bg-orange-100 text-orange-800 ml-1">
+                                        <Zap className="w-3 h-3 mr-1" />
+                                        Impulsionado
+                                      </Badge>
+                                    )}
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="text-sm space-y-1">
+                                      <div className="flex items-center gap-1">
+                                        <Eye className="w-3 h-3 text-gray-400" />
+                                        <span>{anuncio.visualizacoes || 0}</span>
+                                      </div>
+                                      <div className="flex items-center gap-1">
+                                        <Heart className="w-3 h-3 text-gray-400" />
+                                        <span>{anuncio.curtidas || 0}</span>
+                                      </div>
+                                      <div className="flex items-center gap-1">
+                                        <MessageCircle className="w-3 h-3 text-gray-400" />
+                                        <span>{(anuncio.comentarios?.length || 0) + (anuncio.perguntas?.length || 0)}</span>
+                                      </div>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className={`text-sm font-semibold ${
+                                      expirado ? 'text-red-600' :
+                                      tempoRestante.includes('hoje') || tempoRestante.includes('1 dia') ? 'text-orange-600' :
+                                      'text-gray-700'
+                                    }`}>
+                                      <Clock className="w-4 h-4 inline mr-1" />
+                                      {tempoRestante}
+                                    </div>
+                                    {anuncio.data_expiracao && (
+                                      <p className="text-xs text-gray-500 mt-1">
+                                        {format(new Date(anuncio.data_expiracao), "dd/MM/yyyy", { locale: ptBR })}
+                                      </p>
+                                    )}
+                                  </TableCell>
+                                  <TableCell className="text-right">
+                                    <div className="flex items-center justify-end gap-2">
+                                      <Button
+                                        onClick={() => handleVerDetalhesAnuncio(anuncio)}
+                                        size="sm"
+                                        variant="outline"
+                                        className="border-blue-300 text-blue-700"
+                                      >
+                                        <Eye className="w-4 h-4 mr-1" />
+                                        Ver
+                                      </Button>
+                                      <Button
+                                        onClick={() => handleEditarAnuncio(anuncio)}
+                                        size="sm"
+                                        variant="outline"
+                                        className="border-purple-300 text-purple-700"
+                                      >
+                                        <Edit className="w-4 h-4 mr-1" />
+                                        Editar
+                                      </Button>
+                                      {anuncio.status === 'pendente' && (
+                                        <Button
+                                          onClick={() => handleAlterarStatusAnuncio(anuncio, 'ativo')}
+                                          size="sm"
+                                          className="bg-green-600 hover:bg-green-700"
+                                          disabled={atualizarStatusAnuncioMutation.isPending}
+                                        >
+                                          Aprovar
+                                        </Button>
+                                      )}
+                                      {anuncio.status === 'ativo' && (
+                                        <Button
+                                          onClick={() => handleAlterarStatusAnuncio(anuncio, 'pendente')}
+                                          size="sm"
+                                          variant="outline"
+                                          className="border-yellow-300 text-yellow-700"
+                                          disabled={atualizarStatusAnuncioMutation.isPending}
+                                        >
+                                          Pausar
+                                        </Button>
+                                      )}
+                                      <Button
+                                        onClick={() => handleExcluirAnuncio(anuncio)}
+                                        size="sm"
+                                        variant="outline"
+                                        className="border-red-300 text-red-700"
+                                        disabled={deletarAnuncioMutation.isPending}
+                                      >
+                                        <Trash2 className="w-4 h-4" />
+                                      </Button>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Sub-aba: Clube da Beleza */}
               <TabsContent value="clube">
                 <Card>
                   <CardHeader>
@@ -2047,7 +2448,7 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
                 </Card>
               </TabsContent>
 
-              {/* Sub-aba: Patrocinadores - IMPLEMENTADA */}
+              {/* Sub-aba: Patrocinadores */}
               <TabsContent value="patrocinadores">
                 <Card>
                   <CardHeader>
@@ -2161,7 +2562,7 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
           </TabsContent>
 
           {/* ============================================ */}
-          {/* TAB CONTROLE DE PRODUTOS - ATUALIZADA COM RELATÓRIOS */}
+          {/* TAB CONTROLE DE PRODUTOS */}
           {/* ============================================ */}
           <TabsContent value="produtos">
             {/* Stats Cards */}
@@ -2279,7 +2680,7 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
               </CardContent>
             </Card>
 
-            {/* Tabela de Pedidos - ATUALIZADA */}
+            {/* Tabela de Pedidos */}
             <Card className="border-none shadow-lg">
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -2443,8 +2844,8 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
           </TabsContent>
 
           {/* ============================================ */}
-          {/* TAB CONTROLE DE BANNERS - ATUALIZADA COM RELATÓRIOS */}
-          {/* ============================================ */}
+          {/* TAB CONTROLE DE BANNERS */}
+          {============================================ }
           <TabsContent value="banners">
             {/* Stats Banners */}
             <div className="grid md:grid-cols-4 gap-4 mb-6">
@@ -2545,7 +2946,7 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
               </CardContent>
             </Card>
 
-            {/* Tabela Banners - ATUALIZADA */}
+            {/* Tabela Banners */}
             <Card className="border-none shadow-lg">
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -2689,7 +3090,7 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
           </TabsContent>
 
           {/* ============================================ */}
-          {/* TAB CONTROLE DE POSTS - ATUALIZADA COM RELATÓRIOS */}
+          {/* TAB CONTROLE DE POSTS */}
           {/* ============================================ */}
           <TabsContent value="posts">
             {/* Stats Posts */}
@@ -2791,7 +3192,7 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
               </CardContent>
             </Card>
 
-            {/* Tabela Posts - ATUALIZADA */}
+            {/* Tabela Posts */}
             <Card className="border-none shadow-lg">
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -3821,6 +4222,209 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
           </DialogContent>
         </Dialog>
 
+        {/* NOVO: Modal Detalhes Anúncio */}
+        <Dialog open={mostrarDetalhesAnuncio} onOpenChange={setMostrarDetalhesAnuncio}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-2xl">Detalhes do Anúncio</DialogTitle>
+            </DialogHeader>
+            {anuncioSelecionado && (
+              <div className="space-y-6 py-4">
+                {/* Imagem Principal */}
+                {anuncioSelecionado.imagem_principal && (
+                  <div>
+                    <label className="text-lg font-bold mb-3 block">Imagem Principal</label>
+                    <div className="border-2 border-gray-200 rounded-lg overflow-hidden">
+                      <img 
+                        src={anuncioSelecionado.imagem_principal} 
+                        alt={anuncioSelecionado.titulo} 
+                        className="w-full h-auto object-cover max-h-96"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Informações Básicas */}
+                <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+                  <h4 className="font-bold text-lg mb-3">Informações do Anúncio</h4>
+                  <div className="space-y-3 text-sm">
+                    <div>
+                      <p className="text-gray-600">Título:</p>
+                      <p className="font-medium text-lg">{anuncioSelecionado.titulo}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-600">Descrição:</p>
+                      <p className="font-medium">{anuncioSelecionado.descricao}</p>
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-3">
+                      <div>
+                        <p className="text-gray-600">Categoria:</p>
+                        <Badge>{anuncioSelecionado.categoria}</Badge>
+                      </div>
+                      <div>
+                        <p className="text-gray-600">Tipo:</p>
+                        <Badge variant="outline">{anuncioSelecionado.tipo_anuncio}</Badge>
+                      </div>
+                      <div>
+                        <p className="text-gray-600">Faixa de Preço:</p>
+                        <p className="font-medium text-2xl">{anuncioSelecionado.faixa_preco || 'N/D'}</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-600">Status:</p>
+                        <Badge className={
+                          anuncioSelecionado.status === 'ativo' ? 'bg-green-100 text-green-800' :
+                          anuncioSelecionado.status === 'pendente' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-gray-100 text-gray-800'
+                        }>
+                          {anuncioSelecionado.status}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Profissional */}
+                <div className="bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
+                  <h4 className="font-bold text-lg mb-3 flex items-center gap-2">
+                    <User className="w-5 h-5 text-blue-600" />
+                    Informações do Profissional
+                  </h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center gap-2">
+                      <User className="w-4 h-4 text-gray-400" />
+                      <span className="text-gray-600">Nome:</span>
+                      <span className="font-medium">{anuncioSelecionado.profissional}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Mail className="w-4 h-4 text-gray-400" />
+                      <span className="text-gray-600">Email:</span>
+                      <a href={`mailto:${anuncioSelecionado.created_by}`} className="font-medium text-blue-600 hover:underline">
+                        {anuncioSelecionado.created_by}
+                      </a>
+                    </div>
+                    {anuncioSelecionado.telefone && (
+                      <div className="flex items-center gap-2">
+                        <Phone className="w-4 h-4 text-gray-400" />
+                        <span className="text-gray-600">Telefone:</span>
+                        <a href={`tel:${anuncioSelecionado.telefone}`} className="font-medium text-blue-600 hover:underline">
+                          {anuncioSelecionado.telefone}
+                        </a>
+                      </div>
+                    )}
+                    {anuncioSelecionado.whatsapp && (
+                      <div className="flex items-center gap-2">
+                        <MessageCircle className="w-4 h-4 text-gray-400" />
+                        <span className="text-gray-600">WhatsApp:</span>
+                        <a 
+                          href={`https://wa.me/${anuncioSelecionado.whatsapp.replace(/\D/g, '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-medium text-green-600 hover:underline"
+                        >
+                          {anuncioSelecionado.whatsapp}
+                        </a>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-gray-400" />
+                      <span className="text-gray-600">Localização:</span>
+                      <span className="font-medium">{anuncioSelecionado.cidade}, {anuncioSelecionado.estado}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tempo de Exposição */}
+                <div className={`p-4 rounded-lg border-2 ${
+                  calcularTempoRestante(anuncioSelecionado) === 'Expirado' ? 'bg-red-50 border-red-200' :
+                  calcularTempoRestante(anuncioSelecionado).includes('hoje') || calcularTempoRestante(anuncioSelecionado).includes('1 dia') ? 'bg-orange-50 border-orange-200' :
+                  'bg-green-50 border-green-200'
+                }`}>
+                  <h4 className="font-bold text-lg mb-3 flex items-center gap-2">
+                    <Clock className="w-5 h-5 text-gray-700" />
+                    Tempo de Exposição
+                  </h4>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="text-gray-600">Tempo Restante:</p>
+                      <p className="text-2xl font-bold">{calcularTempoRestante(anuncioSelecionado)}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-600">Data de Expiração:</p>
+                      <p className="font-medium">
+                        {anuncioSelecionado.data_expiracao ? 
+                          format(new Date(anuncioSelecionado.data_expiracao), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR }) : 
+                          "Sem data definida"
+                        }
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-600">Dias de Exposição:</p>
+                      <p className="font-medium">{anuncioSelecionado.dias_exposicao || 'N/D'} dias</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-600">Criado em:</p>
+                      <p className="font-medium">
+                        {format(new Date(anuncioSelecionado.created_date), "dd/MM/yyyy", { locale: ptBR })}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Métricas */}
+                <div className="bg-purple-50 p-4 rounded-lg border-2 border-purple-200">
+                  <h4 className="font-bold text-lg mb-3">Métricas de Performance</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center text-sm">
+                    <div>
+                      <p className="text-gray-600">Visualizações</p>
+                      <p className="text-2xl font-bold text-blue-600">{anuncioSelecionado.visualizacoes || 0}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-600">Curtidas</p>
+                      <p className="text-2xl font-bold text-pink-600">{anuncioSelecionado.curtidas || 0}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-600">Comentários</p>
+                      <p className="text-2xl font-bold text-green-600">{anuncioSelecionado.comentarios?.length || 0}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-600">Perguntas</p>
+                      <p className="text-2xl font-bold text-orange-600">{anuncioSelecionado.perguntas?.length || 0}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Ações */}
+                <div className="flex gap-3 pt-4 border-t">
+                  <Button
+                    onClick={() => window.open(`${createPageUrl("DetalhesAnuncio")}?id=${anuncioSelecionado.id}`, '_blank')}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700"
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Ver Anúncio Público
+                  </Button>
+                  <Button
+                    onClick={() => handleEditarAnuncio(anuncioSelecionado)}
+                    className="flex-1 bg-purple-600 hover:bg-purple-700"
+                  >
+                    <Edit className="w-4 h-4 mr-2" />
+                    Editar
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setMostrarDetalhesAnuncio(false);
+                      setAnuncioSelecionado(null);
+                    }}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    Fechar
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
         {/* NOVO: Modal Tutorial Dr. Beleza */}
         <Dialog open={mostrarTutorialDrBeleza} onOpenChange={setMostrarTutorialDrBeleza}>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -3880,6 +4484,17 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
                         <li><strong>Trocar Plano:</strong> Alterar manualmente o plano ativo</li>
                         <li><strong>Editar Pontos:</strong> Ajustar pontos e Beauty Coins</li>
                         <li><strong>Excluir:</strong> Converte para paciente e reseta dados</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <p className="font-semibold text-purple-800 mb-2">🔹 Anúncios:</p>
+                      <ul className="list-disc ml-6 space-y-1 text-gray-700">
+                        <li>Lista de todos os anúncios criados pelos profissionais</li>
+                        <li><strong>Ver/Editar:</strong> Acessar detalhes e editar o anúncio</li>
+                        <li><strong>Aprovar/Pausar:</strong> Mudar o status do anúncio</li>
+                        <li><strong>Excluir:</strong> Remover o anúncio permanentemente</li>
+                        <li><strong>Relatórios:</strong> Exportar dados e métricas via PDF/WhatsApp</li>
                       </ul>
                     </div>
 
