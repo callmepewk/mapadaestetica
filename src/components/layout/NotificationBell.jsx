@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -15,7 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Bell, Check, Eye, Trash2, X, Rocket } from "lucide-react";
+import { Bell, Check, Eye, Trash2, X, Rocket, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
