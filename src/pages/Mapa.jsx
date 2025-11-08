@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -37,6 +38,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CardAnuncio from "../components/anuncios/CardAnuncio";
 import { Checkbox } from "@/components/ui/checkbox";
+import SeletorProcedimentos from "../components/anuncios/SeletorProcedimentos";
 
 // Fix Leaflet default marker icons
 delete L.Icon.Default.prototype._getIconUrl;
@@ -200,6 +202,7 @@ export default function Mapa() {
   const [buscandoLocalizacao, setBuscandoLocalizacao] = useState(false);
   const [centralizarEm, setCentralizarEm] = useState(null);
   const [abaSelecionada, setAbaSelecionada] = useState("anuncios");
+  const [mostrarSeletorProcedimentos, setMostrarSeletorProcedimentos] = useState(false);
   
   // Filtros para Anúncios
   const [busca, setBusca] = useState("");
@@ -481,11 +484,23 @@ export default function Mapa() {
                   {/* Procedimento */}
                   <div>
                     <label className="text-sm font-medium mb-2 block">Procedimento</label>
-                    <Input
-                      placeholder="Ex: Botox..."
-                      value={procedimento}
-                      onChange={(e) => setProcedimento(e.target.value)}
-                    />
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Ex: Botox..."
+                        value={procedimento}
+                        onChange={(e) => setProcedimento(e.target.value)}
+                        className="flex-1"
+                      />
+                      <Button
+                        type="button"
+                        onClick={() => setMostrarSeletorProcedimentos(true)}
+                        variant="outline"
+                        className="px-3 flex-shrink-0"
+                        title="Selecionar da lista"
+                      >
+                        <Search className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
 
                   {/* Cidade */}
@@ -1011,6 +1026,17 @@ export default function Mapa() {
           </div>
         </div>
       </div>
+
+      {/* Modal Seletor de Procedimentos */}
+      <SeletorProcedimentos
+        open={mostrarSeletorProcedimentos}
+        onClose={() => setMostrarSeletorProcedimentos(false)}
+        onSelect={(procedimentoSelecionado) => {
+          setProcedimento(procedimentoSelecionado);
+          setMostrarSeletorProcedimentos(false);
+        }}
+        procedimentoAtual={procedimento}
+      />
     </div>
   );
 }
