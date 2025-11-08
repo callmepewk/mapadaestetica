@@ -865,6 +865,44 @@ export default function ControleAdmin() {
     }
   };
 
+  const handleEstenderTempoExposicao = async (anuncio, diasAdicionais) => {
+    const diasInput = prompt(`Quantos dias deseja adicionar ao anúncio "${anuncio.titulo}"?\n\nTempo atual restante: ${calcularTempoRestante(anuncio)}`, diasAdicionais || 7);
+    
+    if (!diasInput || isNaN(diasInput)) return;
+    
+    const dias = parseInt(diasInput);
+    
+    if (dias <= 0) {
+      alert("O número de dias deve ser maior que zero");
+      return;
+    }
+    
+    try {
+      let dataExpiracao = anuncio.data_expiracao ? new Date(anuncio.data_expiracao) : new Date();
+      
+      // Se já expirou, começa de hoje
+      if (dataExpiracao < new Date()) {
+        dataExpiracao = new Date(); // Reset to current date if already expired
+      }
+      
+      dataExpiracao.setDate(dataExpiracao.getDate() + dias);
+      
+      await base44.entities.Anuncio.update(anuncio.id, {
+        dias_exposicao: (anuncio.dias_exposicao || 0) + dias,
+        data_expiracao: dataExpiracao.toISOString()
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['admin-anuncios'] });
+      setSucesso(`✅ Adicionados ${dias} dias de exposição!`);
+      setTimeout(() => setSucesso(null), 3000);
+      setMostrarDetalhesAnuncio(false);
+      setAnuncioSelecionado(null);
+    } catch (error) {
+      setErro("Erro ao estender tempo de exposição: " + error.message);
+      setTimeout(() => setErro(null), 3000);
+    }
+  };
+
   const calcularTempoRestante = (anuncio) => {
     if (!anuncio.data_expiracao) return "Sem expiração";
     
@@ -2354,7 +2392,7 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
                                     )}
                                   </TableCell>
                                   <TableCell className="text-right">
-                                    <div className="flex items-center justify-end gap-2">
+                                    <div className="flex items-center justify-end gap-2 flex-wrap">
                                       <Button
                                         onClick={() => handleVerDetalhesAnuncio(anuncio)}
                                         size="sm"
@@ -2363,6 +2401,15 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
                                       >
                                         <Eye className="w-4 h-4 mr-1" />
                                         Ver
+                                      </Button>
+                                      <Button
+                                        onClick={() => handleEstenderTempoExposicao(anuncio, 7)}
+                                        size="sm"
+                                        className="bg-green-600 hover:bg-green-700"
+                                        title="Estender tempo de exposição"
+                                      >
+                                        <Clock className="w-4 h-4 mr-1" />
+                                        + Tempo
                                       </Button>
                                       <Button
                                         onClick={() => handleEditarAnuncio(anuncio)}
@@ -2635,7 +2682,7 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
 
           {/* ============================================ */}
           {/* TAB CONTROLE DE PRODUTOS */}
-          {/* ============================================ */}
+          {============================================ */}
           <TabsContent value="produtos">
             {/* Stats Cards */}
             <div className="grid md:grid-cols-4 gap-4 mb-6">
@@ -4405,16 +4452,26 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
                   </div>
                 </div>
 
-                {/* Tempo de Exposição */}
+                {/* Tempo de Exposição - COM BOTÃO DE ESTENDER */}
                 <div className={`p-4 rounded-lg border-2 ${
                   calcularTempoRestante(anuncioSelecionado) === 'Expirado' ? 'bg-red-50 border-red-200' :
                   calcularTempoRestante(anuncioSelecionado).includes('hoje') || calcularTempoRestante(anuncioSelecionado).includes('1 dia') ? 'bg-orange-50 border-orange-200' :
                   'bg-green-50 border-green-200'
                 }`}>
-                  <h4 className="font-bold text-lg mb-3 flex items-center gap-2">
-                    <Clock className="w-5 h-5 text-gray-700" />
-                    Tempo de Exposição
-                  </h4>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-bold text-lg flex items-center gap-2">
+                      <Clock className="w-5 h-5 text-gray-700" />
+                      Tempo de Exposição
+                    </h4>
+                    <Button
+                      size="sm"
+                      onClick={() => handleEstenderTempoExposicao(anuncioSelecionado, 7)}
+                      className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                    >
+                      <Clock className="w-4 h-4 mr-2" />
+                      Adicionar Dias
+                    </Button>
+                  </div>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <p className="text-gray-600">Tempo Restante:</p>
@@ -4440,6 +4497,18 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
                       </p>
                     </div>
                   </div>
+                  
+                  <Alert className="mt-4 bg-blue-50 border-blue-200">
+                    <AlertCircle className="h-4 w-4 text-blue-600" />
+                    <AlertDescription className="text-blue-800 text-sm">
+                      💡 <strong>Limites por Plano:</strong>
+                      <div className="mt-2 space-y-1">
+                        <p>• FREE: 3 dias | BÁSICO: 7 dias | PRO: 14 dias</p>
+                        <p>• PRIME: 21 dias | DELUXE: 30 dias</p>
+                        <p className="mt-2 font-semibold">Como Admin, você pode adicionar dias ilimitados!</p>
+                      </div>
+                    </AlertDescription>
+                  </Alert>
                 </div>
 
                 {/* Métricas */}
@@ -4566,6 +4635,7 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
                         <li><strong>Ver/Editar:</strong> Acessar detalhes e editar o anúncio</li>
                         <li><strong>Aprovar/Pausar:</strong> Mudar o status do anúncio</li>
                         <li><strong>Excluir:</strong> Remover o anúncio permanentemente</li>
+                        <li><strong>Adicionar Dias:</strong> Estender o tempo de exposição do anúncio</li>
                         <li><strong>Relatórios:</strong> Exportar dados e métricas via PDF/WhatsApp</li>
                       </ul>
                     </div>
