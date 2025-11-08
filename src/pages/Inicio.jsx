@@ -48,6 +48,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import BannerRotativo from "../components/banners/BannerRotativo";
 
 const categorias = [
   { nome: "Depilação", cor: "from-pink-500 to-rose-500", icon: "✨" },
@@ -268,6 +269,9 @@ export default function Inicio() {
               </div>
             </div>
           </section>
+
+          {/* NOVO: Banner Rotativo Topo */}
+          <BannerRotativo posicao="home_topo" />
         </>
       )}
 
@@ -290,6 +294,9 @@ export default function Inicio() {
           </div>
         </div>
       </section>
+
+      {/* NOVO: Banner Rotativo Meio */}
+      <BannerRotativo posicao="home_meio" />
 
       {/* Dr. Beleza */}
       <section className="py-8 bg-gradient-to-r from-[#F7D426] to-[#FFE066]">
@@ -554,6 +561,9 @@ export default function Inicio() {
           </div>
         </div>
       </section>
+
+      {/* NOVO: Banner Rotativo Rodapé */}
+      <BannerRotativo posicao="home_rodape" />
 
       {/* Blog - AMBOS */}
       <section className="py-12 sm:py-16 bg-gradient-to-br from-pink-50 to-rose-50">

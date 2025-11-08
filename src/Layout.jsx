@@ -19,7 +19,8 @@ import {
   TrendingUp,
   Star,
   DollarSign,
-  ShoppingCart
+  ShoppingCart,
+  Crown // Added Crown icon
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -380,6 +381,13 @@ export default function Layout({ children }) {
                         <DropdownMenuItem onClick={() => navigate(createPageUrl("MeuPlano"))}>
                           <CreditCard className="w-4 h-4 mr-2" />
                           Meu Plano
+                        </DropdownMenuItem>
+                      )}
+                      {/* NOVO: Dashboard Patrocinador */}
+                      {((user?.plano_patrocinador && user.plano_patrocinador !== 'nenhum') || isAdmin) && (
+                        <DropdownMenuItem onClick={() => navigate(createPageUrl("DashboardPatrocinador"))}>
+                          <Crown className="w-4 h-4 mr-2" />
+                          Dashboard Patrocinador
                         </DropdownMenuItem>
                       )}
                       {isAdmin && (

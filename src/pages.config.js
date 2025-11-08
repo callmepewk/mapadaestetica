@@ -20,6 +20,8 @@ import Relatorios from './pages/Relatorios';
 import AdicionarProduto from './pages/AdicionarProduto';
 import ControlePlanos from './pages/ControlePlanos';
 import ControleProdutos from './pages/ControleProdutos';
+import CriacaoBanner from './pages/CriacaoBanner';
+import DashboardPatrocinador from './pages/DashboardPatrocinador';
 import Layout from './Layout.jsx';
 
 
@@ -46,6 +48,8 @@ export const PAGES = {
     "AdicionarProduto": AdicionarProduto,
     "ControlePlanos": ControlePlanos,
     "ControleProdutos": ControleProdutos,
+    "CriacaoBanner": CriacaoBanner,
+    "DashboardPatrocinador": DashboardPatrocinador,
 }
 
 export const pagesConfig = {
