@@ -1228,6 +1228,78 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(mensagem)}`, '_blank');
   };
 
+  const exportarRelatorioAnuncios = () => {
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Relatório de Anúncios</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; }
+          h1 { color: #EC4899; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+          th { background: #EC4899; color: white; }
+        </style>
+      </head>
+      <body>
+        <h1>📢 Relatório de Anúncios</h1>
+        <p>Gerado em ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR })}</p>
+        <p><strong>Total:</strong> ${anunciosFiltrados.length}</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Título</th>
+              <th>Profissional</th>
+              <th>Email</th>
+              <th>Status</th>
+              <th>Visualizações</th>
+              <th>Expira em</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${anunciosFiltrados.map(a => `
+              <tr>
+                <td>${a.titulo}</td>
+                <td>${a.profissional}</td>
+                <td>${a.created_by}</td>
+                <td>${a.status}</td>
+                <td>${a.visualizacoes || 0}</td>
+                <td>${calcularTempoRestante(a)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </body>
+      </html>
+    `;
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `anuncios-${format(new Date(), "yyyy-MM-dd")}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const enviarRelatorioAnunciosWhatsApp = () => {
+    const mensagem = `
+📊 *RELATÓRIO DE ANÚNCIOS*
+Data: ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+
+📈 *RESUMO:*
+Total: ${anunciosFiltrados.length}
+Ativos: ${anunciosFiltrados.filter(a => a.status === 'ativo').length}
+Pendentes: ${anunciosFiltrados.filter(a => a.status === 'pendente').length}
+Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
+
+👁️ Visualizações: ${anunciosFiltrados.reduce((acc, a) => acc + (a.visualizacoes || 0), 0)}
+❤️ Curtidas: ${anunciosFiltrados.reduce((acc, a) => acc + (a.curtidas || 0), 0)}
+    `.trim();
+    
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(mensagem)}`, '_blank');
+  };
 
   const handleEnviarAtualizacao = async () => {
     if (!tituloAtualizacao || !descricaoAtualizacao) {
@@ -2845,7 +2917,7 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
 
           {/* ============================================ */}
           {/* TAB CONTROLE DE BANNERS */}
-          {============================================ }
+          {/* ============================================ */}
           <TabsContent value="banners">
             {/* Stats Banners */}
             <div className="grid md:grid-cols-4 gap-4 mb-6">
@@ -3330,7 +3402,7 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
                                     variant="outline"
                                     className="border-red-300 text-red-700"
                                     disabled={deletarPostMutation.isPending}
-                                  >
+                                >
                                     <Trash2 className="w-4 h-4" />
                                   </Button>
                                 </div>
