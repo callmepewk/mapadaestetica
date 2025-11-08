@@ -2864,7 +2864,8 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
                                       {post.categoria}
                                     </Badge>
                                   </div>
-                                </TableCell>
+                                </div >
+                              </TableCell>
                               <TableCell>
                                 <p className="text-sm">{post.created_by}</p>
                               </TableCell>
@@ -3896,7 +3897,7 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
                       <p className="font-semibold text-purple-800 mb-2">🔹 Patrocinadores:</p>
                       <ul className="list-disc ml-6 space-y-1 text-gray-700">
                         <li>Ver todos patrocinadores ativos</li>
-                        <li>Quantidade de banners e posts de cada um</li>
+                        <li>Quantidade de banners e posts de cada uno</li>
                         <li><strong>Editar Pontos:</strong> Gerenciar benefícios</li>
                         <li><strong>WhatsApp:</strong> Contato direto com patrocinador</li>
                       </ul>
