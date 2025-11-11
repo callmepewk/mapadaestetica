@@ -965,7 +965,7 @@ export default function ControleAdmin() {
           <h3>🎨 Banners</h3>
           <p>Ativos: ${banners.filter(b => b.status === 'ativo').length}</p>
           <p>Pausados: ${banners.filter(b => b.status === 'pausado').length}</p>
-          <p>Total de Visualizações: ${banners.reduce((acc, b) => acc + (b.metricas?.visualizacoes || 0), 0)}</p>
+          <p>Total de Visualizações: ${banners.reduce((acc, b) => acc + (b.metricas?.visualizacoes || 0), 0), 0}</p>
         </div>
 
         <div class="section">
@@ -2748,7 +2748,16 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
             {/* Filtros */}
             <Card className="mb-6 border-none shadow-lg">
               <CardHeader>
-                <CardTitle>Filtros de Busca</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Filtros de Busca</CardTitle>
+                  <Button
+                    onClick={() => navigate(createPageUrl("AdicionarProduto"))}
+                    className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                  >
+                    <Package className="w-4 h-4 mr-2" />
+                    Adicionar Produto/Serviço
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="grid md:grid-cols-3 gap-4">
@@ -3030,7 +3039,16 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
             {/* Filtros Banners */}
             <Card className="mb-6 border-none shadow-lg">
               <CardHeader>
-                <CardTitle>Filtros de Busca</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Filtros de Busca</CardTitle>
+                  <Button
+                    onClick={() => navigate(createPageUrl("CriacaoBanner"))}
+                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                  >
+                    <ImageIcon className="w-4 h-4 mr-2" />
+                    Criar Banner
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="grid md:grid-cols-2 gap-4">
@@ -3122,7 +3140,11 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
                               <div className="flex items-center gap-3">
                                 <div className="w-16 h-10 bg-gray-100 rounded overflow-hidden flex-shrink-0">
                                   {banner.imagem_banner && 
-                                    <img src={banner.imagem_banner} alt={banner.titulo} className="w-full h-full object-cover" />
+                                    <img 
+                                      src={banner.imagem_banner} 
+                                      alt={banner.titulo} 
+                                      className="w-full h-full object-cover" 
+                                    />
                                   }
                                 </div>
                                 <div>
@@ -3276,7 +3298,16 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
             {/* Filtros Posts */}
             <Card className="mb-6 border-none shadow-lg">
               <CardHeader>
-                <CardTitle>Filtros de Busca</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Filtros de Busca</CardTitle>
+                  <Button
+                    onClick={() => navigate(createPageUrl("ArtigoBlog"))}
+                    className="bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700"
+                  >
+                    <Newspaper className="w-4 h-4 mr-2" />
+                    Criar Post
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="grid md:grid-cols-2 gap-4">
@@ -4676,6 +4707,7 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
                         <li><strong>Filtros:</strong> Buscar por email/produto, filtrar por status e cliente</li>
                         <li><strong>Aprovar/Rejeitar:</strong> Gerenciar pedidos pendentes</li>
                         <li><strong>Relatórios:</strong> Exportar PDF ou enviar resumo via WhatsApp</li>
+                        <li><strong>Adicionar Produto/Serviço:</strong> Criar novos itens para venda</li>
                       </ul>
                     </div>
                   </div>
@@ -4695,6 +4727,7 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
                         <li><strong>Contato:</strong> Email, telefone e WhatsApp do patrocinador</li>
                         <li><strong>Baixar Arquivo:</strong> Download da imagem do banner</li>
                         <li><strong>Pausar/Ativar:</strong> Gerenciar status dos banners</li>
+                        <li><strong>Criar Banner:</strong> Adicionar um novo banner à plataforma</li>
                         <li><strong>Relatórios:</strong> Exportar PDF ou enviar resumo via WhatsApp com filtros aplicados</li>
                       </ul>
                     </div>
@@ -4715,6 +4748,7 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
                         <li><strong>Ver Post:</strong> Abre o artigo no Blog (integração automática)</li>
                         <li><strong>Publicar:</strong> Mudar status de rascunho para publicado</li>
                         <li><strong>Excluir:</strong> Remover post permanentemente</li>
+                        <li><strong>Criar Post:</strong> Adicionar um novo artigo ao blog</li>
                         <li><strong>Relatórios:</strong> Exportar dados filtrados em PDF ou WhatsApp</li>
                       </ul>
                     </div>
