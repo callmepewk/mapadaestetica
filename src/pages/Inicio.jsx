@@ -50,6 +50,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import BannerRotativo from "../components/banners/BannerRotativo";
+import SecaoTutoriais from "../components/home/SecaoTutoriais";
+import SeletorTipoUsuario from "../components/home/SeletorTipoUsuario";
 
 const categorias = [
   { nome: "Depilação", cor: "from-pink-500 to-rose-500", icon: "✨" },
@@ -80,6 +82,7 @@ export default function Inicio() {
   const [tipoLoginPrompt, setTipoLoginPrompt] = useState("");
   const [user, setUser] = useState(null);
   const [resumoAnuncios, setResumoAnuncios] = useState([]);
+  const [mostrarSeletorTipo, setMostrarSeletorTipo] = useState(false);
 
   const navigate = useNavigate();
 
@@ -88,6 +91,12 @@ export default function Inicio() {
       try {
         const userData = await base44.auth.me();
         setUser(userData);
+
+        // Verificar se precisa selecionar tipo
+        if (!userData.tipo_usuario) {
+          setMostrarSeletorTipo(true);
+          return;
+        }
 
         if (userData && !userData.cadastro_completo) {
           setMostrarOnboarding(true);
@@ -125,6 +134,20 @@ export default function Inicio() {
 
   const handleOnboardingClose = () => {
     setMostrarOnboarding(false);
+  };
+
+  const handleTipoUsuarioSuccess = async () => {
+    setMostrarSeletorTipo(false); // Close the selector modal
+    try {
+      const userData = await base44.auth.me(); // Re-fetch user data to get updated tipo_usuario
+      setUser(userData);
+      // Now that tipo_usuario is set, check for onboarding
+      if (!userData.cadastro_completo) {
+        setMostrarOnboarding(true);
+      }
+    } catch (error) {
+      console.error("Erro ao atualizar usuário após seleção de tipo:", error);
+    }
   };
 
   const { data: anunciosDestaque = [] } = useQuery({
@@ -187,6 +210,12 @@ export default function Inicio() {
         open={mostrarOnboarding} 
         onComplete={handleOnboardingComplete}
         onClose={handleOnboardingClose}
+      />
+      <SeletorTipoUsuario
+        open={mostrarSeletorTipo}
+        onClose={() => setMostrarSeletorTipo(false)}
+        user={user}
+        onSuccess={handleTipoUsuarioSuccess}
       />
 
       {(isPaciente || !user) && (
@@ -518,6 +547,11 @@ export default function Inicio() {
             </div>
           </section>
         </>
+      )}
+
+      {/* TUTORIAIS - EXIBIR BASEADO NO TIPO */}
+      {user && user.tipo_usuario && (
+        <SecaoTutoriais tipoUsuario={user.tipo_usuario} />
       )}
 
       {/* PATROCINADORES - AMBOS */}

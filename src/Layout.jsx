@@ -36,6 +36,7 @@ import Chatbot from "./components/home/Chatbot";
 import OnboardingModal from "./components/home/OnboardingModal";
 import NotificationBell from "./components/layout/NotificationBell";
 import CarrinhoModal from "./components/home/CarrinhoModal";
+import SeletorTipoUsuario from "./components/home/SeletorTipoUsuario";
 
 export default function Layout({ children }) {
   const location = useLocation();
@@ -47,13 +48,14 @@ export default function Layout({ children }) {
   const [testeExpirado, setTesteExpirado] = useState(false);
   const [carrinho, setCarrinho] = useState([]);
   const [mostrarCarrinho, setMostrarCarrinho] = useState(false);
+  const [mostrarSeletorTipo, setMostrarSeletorTipo] = useState(false);
 
   // Carregar carrinho do localStorage
   useEffect(() => {
     const carrinhoSalvo = localStorage.getItem('carrinho_mapa_estetica');
     if (carrinhoSalvo) {
       try {
-        setCarrinho(JSON.parse(carrinhoSalvo));
+        setCarrinho(JSON.parse(carrivoSalvo));
       } catch (e) {
         console.error("Erro ao carregar carrinho:", e);
       }
@@ -78,6 +80,11 @@ export default function Layout({ children }) {
         if (authenticated) {
           const userData = await base44.auth.me();
           setUser(userData);
+
+          // Verificar se precisa selecionar tipo
+          if (!userData.tipo_usuario) {
+            setMostrarSeletorTipo(true);
+          }
 
           // Verificar se é tester e se expirou
           if (userData.role === 'tester' && userData.data_expiracao_teste) {
@@ -129,6 +136,16 @@ export default function Layout({ children }) {
     if (confirm("Tem certeza que deseja limpar todo o carrinho?")) {
       setCarrinho([]);
       localStorage.removeItem('carrinho_mapa_estetica');
+    }
+  };
+
+  const handleTrocaTipoSuccess = async () => {
+    try {
+      const userData = await base44.auth.me();
+      setUser(userData);
+      window.location.reload(); // Recarregar para atualizar toda a interface
+    } catch (error) {
+      console.error("Erro ao atualizar usuário:", error);
     }
   };
 
@@ -366,11 +383,20 @@ export default function Layout({ children }) {
                         {isTester && (
                           <Badge className="mt-1 bg-blue-100 text-blue-800">Tester (7 dias)</Badge>
                         )}
+                        {user?.tipo_usuario && (
+                          <Badge className="mt-1 bg-pink-100 text-pink-800">
+                            {user.tipo_usuario === 'paciente' ? 'Paciente' : 'Profissional'}
+                          </Badge>
+                        )}
                       </div>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => navigate(createPageUrl("Perfil"))}>
                         <User className="w-4 h-4 mr-2" />
                         Meu Perfil
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setMostrarSeletorTipo(true)}>
+                        <User className="w-4 h-4 mr-2" />
+                        Trocar Tipo de Conta
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => navigate(createPageUrl("LojaPontos"))}>
                         <Star className="w-4 h-4 mr-2" />
@@ -655,6 +681,14 @@ export default function Layout({ children }) {
         carrinho={carrinho}
         onRemoverItem={handleRemoverItemCarrinho}
         onLimparCarrinho={handleLimparCarrinho}
+      />
+
+      {/* NOVO: Modal Seletor Tipo */}
+      <SeletorTipoUsuario
+        open={mostrarSeletorTipo}
+        onClose={() => setMostrarSeletorTipo(false)}
+        user={user}
+        onSuccess={handleTrocaTipoSuccess}
       />
     </div>
   );

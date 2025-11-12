@@ -306,7 +306,7 @@ export default function SobreNos() {
           </div>
 
           {/* Statistics - ATUALIZADO COM CORES */}
-          <Card className="border-none shadow-2xl bg-gradient-to-r from-amber-600 to-yellow-600 text-white">
+          <Card className="border-none shadow-2xl bg-gradient-to-r from-amber-600 to-yellow-600 text-white mb-16">
             <CardContent className="p-12">
               <h2 className="text-3xl font-bold text-center mb-12">
                 Clube da Beleza em Números
@@ -331,200 +331,249 @@ export default function SobreNos() {
               </div>
             </CardContent>
           </Card>
-        </div>
-      </section>
 
-      {/* NOVA SEÇÃO: Nossos Produtos */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <Badge className="mb-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white border-none">
-              Nosso Ecossistema
-            </Badge>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              💼 Nossos Produtos
-            </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Soluções completas para profissionais e clientes do mercado de estética
-            </p>
-          </div>
+          {/* NOVA SEÇÃO: Nossos Produtos */}
+          <div className="mb-16">
+            <div className="text-center mb-12">
+              <Badge className="mb-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white border-none">
+                Nosso Ecossistema
+              </Badge>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                💼 Nossos Produtos
+              </h2>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                Soluções completas para profissionais e clientes do mercado de estética
+              </p>
+            </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Clube da Beleza */}
-            <Card className="border-2 border-amber-300 shadow-xl hover:shadow-2xl transition-all overflow-hidden">
-              <div className="h-48 bg-gradient-to-br from-amber-100 to-yellow-100 flex items-center justify-center p-6">
-                <img
-                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/7a63c7e8e_clubeimg.jpeg"
-                  alt="Clube da Beleza"
-                  className="max-h-full max-w-full object-contain"
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/652cd0312_clubeimg.jpeg';
-                  }}
-                />
-              </div>
-              <CardContent className="p-6">
-                <div className="mb-4">
-                  <Badge className="bg-amber-100 text-amber-800 mb-3">Para Clientes</Badge>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-3">Clube da Beleza</h3>
-                  <p className="text-gray-600 mb-4">
-                    Clube de benefícios exclusivo com descontos em estabelecimentos parceiros, 
-                    programa de pontos e cashback para quem ama cuidar da beleza.
-                  </p>
+            <div className="grid md:grid-cols-4 gap-8">
+              {/* Clube da Beleza */}
+              <Card className="border-2 border-amber-300 shadow-xl hover:shadow-2xl transition-all overflow-hidden">
+                <div className="h-48 bg-gradient-to-br from-amber-100 to-yellow-100 flex items-center justify-center p-6">
+                  <img
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/7a63c7e8e_clubeimg.jpeg"
+                    alt="Clube da Beleza"
+                    className="max-h-full max-w-full object-contain"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/652cd0312_clubeimg.jpeg';
+                    }}
+                  />
                 </div>
+                <CardContent className="p-6">
+                  <div className="mb-4">
+                    <Badge className="bg-amber-100 text-amber-800 mb-3">Para Clientes</Badge>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-3">Clube da Beleza</h3>
+                    <p className="text-gray-600 mb-4">
+                      Clube de benefícios exclusivo com descontos em estabelecimentos parceiros, 
+                      programa de pontos e cashback para quem ama cuidar da beleza.
+                    </p>
+                  </div>
 
-                <div className="space-y-2 mb-6 text-sm">
-                  <div className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                    <span>Descontos de até 25% em rede parceira</span>
+                  <div className="space-y-2 mb-6 text-sm">
+                    <div className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                      <span>Descontos de até 25% em rede parceira</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                      <span>Programa de pontos e cashback</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                      <span>Tratamentos exclusivos para membros</span>
+                    </div>
                   </div>
-                  <div className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                    <span>Programa de pontos e cashback</span>
+
+                  <a 
+                    href="https://clube-da-beleza-c6e913bb.base44.app" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="block w-full"
+                  >
+                    <Button className="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 text-white">
+                      Acessar Clube da Beleza
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </a>
+                </CardContent>
+              </Card>
+
+              {/* Dr. Beleza */}
+              <Card className="border-2 border-cyan-300 shadow-xl hover:shadow-2xl transition-all overflow-hidden">
+                <div className="h-48 bg-gradient-to-br from-cyan-100 to-blue-100 flex items-center justify-center p-6">
+                  <img
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/04265179e_drbeleza.png"
+                    alt="Dr. Beleza"
+                    className="max-h-full max-w-full object-contain"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe4/ec64a4c52_drbeleza.png';
+                    }}
+                  />
+                </div>
+                <CardContent className="p-6">
+                  <div className="mb-4">
+                    <Badge className="bg-cyan-100 text-cyan-800 mb-3">Para Todos</Badge>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-3">Dr. Beleza</h3>
+                    <p className="text-gray-600 mb-4">
+                      Assistente inteligente com IA que responde suas dúvidas sobre tratamentos, 
+                      procedimentos e te ajuda a encontrar a melhor solução estética.
+                    </p>
                   </div>
-                  <div className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                    <span>Tratamentos exclusivos para membros</span>
+
+                  <div className="space-y-2 mb-6 text-sm">
+                    <div className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-cyan-600 flex-shrink-0 mt-0.5" />
+                      <span>Consultas com Inteligência Artificial</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-cyan-600 flex-shrink-0 mt-0.5" />
+                      <span>Informações científicas atualizadas</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-cyan-600 flex-shrink-0 mt-0.5" />
+                      <span>Recomendações personalizadas</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-cyan-600 flex-shrink-0 mt-0.5" />
+                      <span>Gratuito e disponível 24/7</span>
+                    </div>
+                  </div>
+
+                  <Link to={createPageUrl("PesquisaEspecializada")} className="block w-full">
+                    <Button className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white">
+                      Consultar Dr. Beleza
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+
+              {/* LaserCode Pro */}
+              <Card className="border-2 border-blue-300 shadow-xl hover:shadow-2xl transition-all overflow-hidden">
+                <div className="h-48 bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center p-6">
+                  <div className="text-center">
+                    <div className="text-6xl mb-2">🔬</div>
+                    <p className="font-bold text-2xl text-blue-900">LaserCode Pro</p>
                   </div>
                 </div>
+                <CardContent className="p-6">
+                  <div className="mb-4">
+                    <Badge className="bg-blue-100 text-blue-800 mb-3">Para Profissionais</Badge>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-3">LaserCode Pro</h3>
+                    <p className="text-gray-600 mb-4">
+                      Aplicativo profissional para gestão de tratamentos a laser. 
+                      Calcule parâmetros, registre sessões e acompanhe resultados com precisão científica.
+                    </p>
+                  </div>
 
-                <a 
-                  href="https://clube-da-beleza-c6e913bb.base44.app" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="block w-full"
-                >
-                  <Button className="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 text-white">
-                    Acessar Clube da Beleza
-                    <ArrowRight className="w-4 h-4 ml-2" />
+                  <div className="space-y-2 mb-6 text-sm">
+                    <div className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                      <span>Cálculo automático de parâmetros laser</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                      <span>Registro completo de sessões</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                      <span>Acompanhamento de resultados</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                      <span>Base de dados científica atualizada</span>
+                    </div>
+                  </div>
+
+                  <Button 
+                    onClick={handleSaberMaisLaserCode}
+                    className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white"
+                  >
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    Saber Mais pelo WhatsApp
                   </Button>
-                </a>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            {/* LaserCode Pro */}
-            <Card className="border-2 border-blue-300 shadow-xl hover:shadow-2xl transition-all overflow-hidden">
-              <div className="h-48 bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center p-6">
+              {/* Dr. Spok */}
+              <Card className="border-2 border-green-300 shadow-xl hover:shadow-2xl transition-all overflow-hidden">
+                <div className="h-48 bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center p-6">
+                  <div className="text-center">
+                    <div className="text-6xl mb-2">🩺</div>
+                    <p className="font-bold text-2xl text-green-900">Dr. Spok</p>
+                  </div>
+                </div>
+                <CardContent className="p-6">
+                  <div className="mb-4">
+                    <Badge className="bg-green-100 text-green-800 mb-3">Para Profissionais</Badge>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-3">Dr. Spok PD</h3>
+                    <p className="text-gray-600 mb-4">
+                      Prontuário digital inteligente e completo para podólogos. 
+                      Gerencie pacientes, históricos, fotos e tratamentos de forma profissional e segura.
+                    </p>
+                  </div>
+
+                  <div className="space-y-2 mb-6 text-sm">
+                    <div className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+                      <span>Prontuário digital completo e seguro</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+                      <span>Registro fotográfico de tratamentos</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+                      <span>Histórico completo de pacientes</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+                      <span>Gestão de agendamentos e retornos</span>
+                    </div>
+                  </div>
+
+                  <Button 
+                    onClick={handleSaberMaisDrSpok}
+                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
+                  >
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    Saber Mais pelo WhatsApp
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Info sobre os produtos */}
+            <Card className="mt-8 border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50">
+              <CardContent className="p-8">
                 <div className="text-center">
-                  <div className="text-6xl mb-2">🔬</div>
-                  <p className="font-bold text-2xl text-blue-900">LaserCode Pro</p>
-                </div>
-              </div>
-              <CardContent className="p-6">
-                <div className="mb-4">
-                  <Badge className="bg-blue-100 text-blue-800 mb-3">Para Profissionais</Badge>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-3">LaserCode Pro</h3>
-                  <p className="text-gray-600 mb-4">
-                    Aplicativo profissional para gestão de tratamentos a laser. 
-                    Calcule parâmetros, registre sessões e acompanhe resultados com precisão científica.
+                  <h3 className="text-2xl font-bold text-purple-900 mb-4">
+                    🚀 Ecossistema Completo de Soluções
+                  </h3>
+                  <p className="text-gray-700 mb-6 max-w-3xl mx-auto">
+                    Desenvolvemos produtos especializados para atender todas as necessidades do mercado de estética e beleza. 
+                    Do cliente ao profissional, temos a solução ideal!
                   </p>
-                </div>
-
-                <div className="space-y-2 mb-6 text-sm">
-                  <div className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
-                    <span>Cálculo automático de parâmetros laser</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
-                    <span>Registro completo de sessões</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
-                    <span>Acompanhamento de resultados</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
-                    <span>Base de dados científica atualizada</span>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="tel:31972595643">
+                      <Button size="lg" className="bg-purple-600 hover:bg-purple-700 text-white">
+                        <Phone className="w-5 h-5 mr-2" />
+                        Central de Vendas: (31) 97259-5643
+                      </Button>
+                    </a>
+                    <a href="https://wa.me/5531972595643" target="_blank" rel="noopener noreferrer">
+                      <Button size="lg" className="bg-green-600 hover:bg-green-700 text-white">
+                        <MessageCircle className="w-5 h-5 mr-2" />
+                        WhatsApp
+                      </Button>
+                    </a>
                   </div>
                 </div>
-
-                <Button 
-                  onClick={handleSaberMaisLaserCode}
-                  className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white"
-                >
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  Saber Mais pelo WhatsApp
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Dr. Spok */}
-            <Card className="border-2 border-green-300 shadow-xl hover:shadow-2xl transition-all overflow-hidden">
-              <div className="h-48 bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center p-6">
-                <div className="text-center">
-                  <div className="text-6xl mb-2">🩺</div>
-                  <p className="font-bold text-2xl text-green-900">Dr. Spok PD</p>
-                </div>
-              </div>
-              <CardContent className="p-6">
-                <div className="mb-4">
-                  <Badge className="bg-green-100 text-green-800 mb-3">Para Profissionais</Badge>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-3">Dr. Spok PD</h3>
-                  <p className="text-gray-600 mb-4">
-                    Prontuário digital inteligente e completo para podólogos. 
-                    Gerencie pacientes, históricos, fotos e tratamentos de forma profissional e segura.
-                  </p>
-                </div>
-
-                <div className="space-y-2 mb-6 text-sm">
-                  <div className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
-                    <span>Prontuário digital completo e seguro</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
-                    <span>Registro fotográfico de tratamentos</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
-                    <span>Histórico completo de pacientes</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
-                    <span>Gestão de agendamentos e retornos</span>
-                  </div>
-                </div>
-
-                <Button 
-                  onClick={handleSaberMaisDrSpok}
-                  className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
-                >
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  Saber Mais pelo WhatsApp
-                </Button>
               </CardContent>
             </Card>
           </div>
-
-          {/* Info sobre os produtos */}
-          <Card className="mt-8 border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50">
-            <CardContent className="p-8">
-              <div className="text-center">
-                <h3 className="text-2xl font-bold text-purple-900 mb-4">
-                  🚀 Ecossistema Completo de Soluções
-                </h3>
-                <p className="text-gray-700 mb-6 max-w-3xl mx-auto">
-                  Desenvolvemos produtos especializados para atender todas as necessidades do mercado de estética e beleza. 
-                  Do cliente ao profissional, temos a solução ideal!
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <a href="tel:31972595643">
-                    <Button size="lg" className="bg-purple-600 hover:bg-purple-700 text-white">
-                      <Phone className="w-5 h-5 mr-2" />
-                      Central de Vendas: (31) 97259-5643
-                    </Button>
-                  </a>
-                  <a href="https://wa.me/5531972595643" target="_blank" rel="noopener noreferrer">
-                    <Button size="lg" className="bg-green-600 hover:bg-green-700 text-white">
-                      <MessageCircle className="w-5 h-5 mr-2" />
-                      WhatsApp
-                    </Button>
-                  </a>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </section>
 
