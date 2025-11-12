@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -55,7 +54,7 @@ export default function Layout({ children }) {
     const carrinhoSalvo = localStorage.getItem('carrinho_mapa_estetica');
     if (carrinhoSalvo) {
       try {
-        setCarrinho(JSON.parse(carrivoSalvo));
+        setCarrinho(JSON.parse(carrinhoSalvo));
       } catch (e) {
         console.error("Erro ao carregar carrinho:", e);
       }
