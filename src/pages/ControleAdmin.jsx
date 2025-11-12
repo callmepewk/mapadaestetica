@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -275,33 +274,157 @@ export default function ControleAdmin() {
   });
 
   const ativarPlanoMutation = useMutation({
-    mutationFn: async ({ usuarioEmail, plano, solicitacaoId }) => {
+    mutationFn: async ({ usuarioEmail, plano, solicitacaoId, usuarioNome, usuarioWhatsApp }) => {
+      // Definir benefícios detalhados por plano
+      const beneficiosPlano = {
+        cobre: {
+          especialidades: "1 especialidade",
+          anuncios: "1 anúncio ativo",
+          tags: "1 tag",
+          exposicao: "3 dias de exposição",
+          extras: ["Visibilidade básica", "Suporte por email"]
+        },
+        prata: {
+          especialidades: "2 especialidades",
+          anuncios: "10 anúncios ativos",
+          tags: "5 tags por anúncio",
+          exposicao: "7 dias de exposição",
+          extras: ["Destaque moderado", "Suporte por email e WhatsApp", "Estatísticas básicas"]
+        },
+        ouro: {
+          especialidades: "3 especialidades",
+          anuncios: "15 anúncios ativos",
+          tags: "10 tags por anúncio",
+          exposicao: "14 dias de exposição",
+          extras: ["Destaque elevado", "Suporte prioritário", "Estatísticas completas", "Badge 'PRO' nos anúncios", "Impulsionamento com desconto"]
+        },
+        diamante: {
+          especialidades: "5 especialidades",
+          anuncios: "25 anúncios ativos",
+          tags: "20 tags por anúncio",
+          exposicao: "21 dias de exposição",
+          extras: ["Máximo destaque", "Suporte VIP 24/7", "Dashboard completo", "Badge 'PRIME'", "Verificação profissional prioritária", "Aparece primeiro nas buscas", "Relatórios de preço de mercado"]
+        },
+        platina: {
+          especialidades: "Ilimitadas",
+          anuncios: "Ilimitados",
+          tags: "100 tags por anúncio",
+          exposicao: "30 dias de exposição",
+          extras: ["Destaque PREMIUM máximo", "Concierge dedicado", "Consultoria de marketing incluída", "Badge 'DELUXE'", "Verificação express", "Topo absoluto em todas as buscas", "IA para criação de anúncios", "Relatórios personalizados", "Eventos exclusivos"]
+        }
+      };
+
+      const beneficios = beneficiosPlano[plano];
+      const nomePlano = PLANOS_INFO[plano].nome;
+
+      // Criar mensagem detalhada
+      const mensagemEmail = `
+Olá!
+
+Parabéns! 🎉 Seu plano ${nomePlano} foi ativado com sucesso no Mapa da Estética!
+
+📋 SEU PLANO ATIVO: ${nomePlano.toUpperCase()}
+
+✨ BENEFÍCIOS INCLUSOS:
+• ${beneficios.especialidades}
+• ${beneficios.anuncios}
+• ${beneficios.tags}
+• ${beneficios.exposicao} por anúncio
+${beneficios.extras.map(e => `• ${e}`).join('\n')}
+
+🚀 PRÓXIMOS PASSOS:
+1. Acesse sua conta em: https://mapa-da-estetica.base44.app
+2. Vá em "Cadastrar Anúncio" para criar seus anúncios
+3. Complete seu perfil profissional
+4. Aproveite todos os recursos disponíveis!
+
+💡 DICA: Quanto mais completo seu anúncio, mais visualizações você terá!
+
+Precisa de ajuda? Estamos aqui para você:
+📞 Central de Vendas: (31) 97259-5643
+🛠️ Suporte Técnico: (54) 99155-4136
+
+Bem-vindo(a) à maior plataforma de estética do Brasil!
+
+Atenciosamente,
+Equipe Mapa da Estética
+      `.trim();
+
+      const mensagemWhatsApp = `
+🎉 *PLANO ATIVADO COM SUCESSO!*
+
+Olá! Seu plano *${nomePlano}* está ativo no Mapa da Estética! ✨
+
+📋 *SEUS BENEFÍCIOS:*
+• ${beneficios.especialidades}
+• ${beneficios.anuncios}
+• ${beneficios.tags}
+• ${beneficios.exposicao}
+${beneficios.extras.map(e => `• ${e}`).join('\n')}
+
+🚀 *COMECE AGORA:*
+1️⃣ Acesse: mapa-da-estetica.base44.app
+2️⃣ Cadastre seus anúncios
+3️⃣ Complete seu perfil
+
+Dúvidas? Fale conosco:
+📞 (31) 97259-5643
+🛠️ Suporte: (54) 99155-4136
+
+Bem-vindo(a)! 💆‍♀️
+      `.trim();
+
+      // Atualizar usuário
       await base44.entities.User.update(usuarioEmail, { 
         plano_ativo: plano,
         data_adesao_plano: new Date().toISOString().split('T')[0]
       });
       
+      // Atualizar solicitação
       await base44.entities.SolicitacaoAtivacaoPlano.update(solicitacaoId, {
         status: "ativado_admin",
         data_ativacao: new Date().toISOString(),
         observacoes: observacoes
       });
 
+      // Enviar Email
       await base44.integrations.Core.SendEmail({
         to: usuarioEmail,
-        subject: "Plano Ativado - Mapa da Estética",
-        body: `Olá! Seu plano ${PLANOS_INFO[plano].nome} foi ativado com sucesso! 🎉\n\nVocê já pode aproveitar todos os benefícios.`
+        from_name: "Mapa da Estética",
+        subject: `✅ Plano ${nomePlano} Ativado - Bem-vindo(a)!`,
+        body: mensagemEmail
+      });
+
+      // Enviar WhatsApp (se tiver WhatsApp cadastrado)
+      if (usuarioWhatsApp) {
+        const whatsappLimpo = usuarioWhatsApp.replace(/\D/g, '');
+        const urlWhatsApp = `https://wa.me/${whatsappLimpo}?text=${encodeURIComponent(mensagemWhatsApp)}`;
+        window.open(urlWhatsApp, '_blank');
+      }
+
+      // Criar notificação no sistema
+      await base44.entities.Notificacao.create({
+        usuario_email: usuarioEmail,
+        tipo: 'plano_ativado',
+        titulo: `🎉 Plano ${nomePlano} Ativado!`,
+        mensagem: `Parabéns! Seu plano ${nomePlano} está ativo. Aproveite todos os benefícios!`,
+        link_acao: createPageUrl("Perfil")
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['solicitacoes-plano'] });
       queryClient.invalidateQueries({ queryKey: ['usuarios-profissionais'] });
+      queryClient.invalidateQueries({ queryKey: ['todos-usuarios'] });
       setMostrarModalAtivar(false);
       setSolicitacaoSelecionada(null);
       setObservacoes("");
-      setSucesso("Plano ativado com sucesso!");
-      setTimeout(() => setSucesso(null), 3000);
+      setSucesso("✅ Plano ativado! Email enviado e WhatsApp aberto.");
+      setTimeout(() => setSucesso(null), 5000);
     },
+    onError: (error) => {
+      setErro("Erro ao ativar plano: " + error.message);
+      setTimeout(() => setErro(null), 5000);
+    }
   });
 
   const trocarPlanoMutation = useMutation({
@@ -597,10 +720,16 @@ export default function ControleAdmin() {
     if (!solicitacaoSelecionada) return;
     setProcessando(true);
     try {
+      // Buscar dados do usuário para pegar o WhatsApp
+      const todosUsuariosList = await base44.entities.User.list('-created_date', 1000);
+      const usuarioData = todosUsuariosList.find(u => u.email === solicitacaoSelecionada.usuario_email);
+      
       await ativarPlanoMutation.mutateAsync({
         usuarioEmail: solicitacaoSelecionada.usuario_email,
         plano: solicitacaoSelecionada.plano_solicitado,
-        solicitacaoId: solicitacaoSelecionada.id
+        solicitacaoId: solicitacaoSelecionada.id,
+        usuarioNome: solicitacaoSelecionada.usuario_nome,
+        usuarioWhatsApp: usuarioData?.whatsapp || null
       });
     } catch (error) {
       setErro("Erro ao ativar plano: " + error.message);
