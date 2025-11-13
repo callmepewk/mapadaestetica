@@ -1,14 +1,14 @@
 
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query"; // useQueryClient removed as per outline
+import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { // Added for the new Table component in "Anúncios" tab
+import {
   Table,
   TableBody,
   TableCell,
@@ -24,8 +24,8 @@ import {
   TrendingUp,
   BarChart3,
   Eye,
-  MousePointer, // Replaced MousePointerClick as per outline
-  Clock, // Added as per outline
+  MousePointer,
+  Clock,
   Share2,
   Package,
   Plus,
@@ -36,10 +36,10 @@ import {
   X,
   ChevronRight,
   Sparkles,
-  Star, // Added for ads likes and blog posts
-  MessageCircle, // Added as per outline, though not used in the provided outline JSX
-  Download, // Added for report export, re-added as it was implicitly used by gerarRelatorioHTML
-  Send, // Added for WhatsApp send, re-added as it was implicitly used
+  Star,
+  MessageCircle,
+  Download,
+  Send,
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
@@ -52,23 +52,19 @@ import { Label } from "@/components/ui/label";
 
 export default function DashboardPatrocinador() {
   const navigate = useNavigate();
-  // const queryClient = useQueryClient(); // Removed queryClient as per outline
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // Added loading state as per outline
+  const [loading, setLoading] = useState(true);
   const [periodoRelatorio, setPeriodoRelatorio] = useState("tempo_real");
   
-  // Paginação
   const [paginaBanners, setPaginaBanners] = useState(1);
   const [paginaProdutos, setPaginaProdutos] = useState(1);
-  const [paginaPosts, setPaginaPosts] = useState(1); // Renamed from paginaArtigos
+  const [paginaPosts, setPaginaPosts] = useState(1);
   const [paginaAnuncios, setPaginaAnuncios] = useState(1);
-  const ITEMS_POR_PAGINA = 10; // Renamed from itensPorPagina and changed value
+  const ITEMS_POR_PAGINA = 10;
 
-  // Edit/View state (added as per outline, though not used in provided JSX yet)
   const [editandoItem, setEditandoItem] = useState(null);
   const [tipoEdicao, setTipoEdicao] = useState(null);
 
-  // WhatsApp export - Kept as per "preserve all other features"
   const [mostrarExportWhatsApp, setMostrarExportWhatsApp] = useState(false);
   const [numeroWhatsApp, setNumeroWhatsApp] = useState("");
 
@@ -90,14 +86,14 @@ export default function DashboardPatrocinador() {
       } catch (error) {
         console.error("Erro ao carregar usuário:", error);
         navigate(createPageUrl("Inicio"));
-      } finally { // Added finally block as per outline
+      } finally {
         setLoading(false);
       }
     };
     fetchUser();
   }, [navigate]);
 
-  const { data: banners = [], refetch: refetchBanners } = useQuery({ // Renamed from meusBanners to banners
+  const { data: banners = [], refetch: refetchBanners } = useQuery({
     queryKey: ['meus-banners', user?.email],
     queryFn: async () => {
       if (!user) return [];
@@ -115,8 +111,8 @@ export default function DashboardPatrocinador() {
     enabled: !!user,
   });
 
-  const { data: meusPosts = [], refetch: refetchPosts } = useQuery({ // Renamed from meusArtigos
-    queryKey: ['meus-posts-patrocinador', user?.email], // Updated key
+  const { data: meusPosts = [], refetch: refetchPosts } = useQuery({
+    queryKey: ['meus-posts-patrocinador', user?.email],
     queryFn: async () => {
       if (!user) return [];
       return await base44.entities.ArtigoBlog.filter({ created_by: user.email }, '-created_date', 100);
@@ -124,8 +120,8 @@ export default function DashboardPatrocinador() {
     enabled: !!user,
   });
 
-  const { data: meusAnuncios = [], isLoading: isLoadingAnuncios, refetch: refetchAnuncios } = useQuery({ // NEW: Anuncios query
-    queryKey: ['meus-anuncios-patrocinador', user?.email], // Updated key as per outline
+  const { data: meusAnuncios = [], isLoading: isLoadingAnuncios, refetch: refetchAnuncios } = useQuery({
+    queryKey: ['meus-anuncios-patrocinador', user?.email],
     queryFn: async () => {
       if (!user) return [];
       return await base44.entities.Anuncio.filter({ created_by: user.email }, '-created_date', 100);
@@ -138,7 +134,7 @@ export default function DashboardPatrocinador() {
     
     try {
       await base44.entities.Banner.delete(id);
-      window.location.reload(); // Changed to window.location.reload() as per outline
+      window.location.reload();
     } catch (error) {
       console.error("Erro ao excluir banner:", error);
       alert("Erro ao excluir banner");
@@ -150,30 +146,30 @@ export default function DashboardPatrocinador() {
     
     try {
       await base44.entities.Produto.delete(id);
-      window.location.reload(); // Changed to window.location.reload() as per outline
+      window.location.reload();
     } catch (error) {
       console.error("Erro ao excluir produto:", error);
       alert("Erro ao excluir produto");
     }
   };
 
-  const handleExcluirPost = async (id) => { // Renamed from handleExcluirArtigo
+  const handleExcluirPost = async (id) => {
     if (!confirm("Tem certeza que deseja excluir este artigo?")) return;
     
     try {
       await base44.entities.ArtigoBlog.delete(id);
-      window.location.reload(); // Changed to window.location.reload() as per outline
+      window.location.reload();
     } catch (error) {
       console.error("Erro ao excluir artigo:", error);
       alert("Erro ao excluir artigo");
     }
   };
 
-  const handleExcluirAnuncio = async (id) => { // NEW: Excluir Anuncio
+  const handleExcluirAnuncio = async (id) => {
     if (!confirm("Tem certeza que deseja excluir este anúncio?")) return;
     try {
       await base44.entities.Anuncio.delete(id);
-      window.location.reload(); // Changed to window.location.reload() as queryClient is removed
+      window.location.reload();
     } catch (error) {
       console.error("Erro ao excluir anúncio:", error);
       alert("Erro ao excluir anúncio");
@@ -379,10 +375,10 @@ www.mapadaestetica.com.br
     const url = `https://wa.me/${numeroLimpo}?text=${encodeURIComponent(mensagem)}`;
     window.open(url, '_blank');
     setMostrarExportWhatsApp(false);
-    setNumeroWhatsApp(""); // Clear number after sending
+    setNumeroWhatsApp("");
   };
 
-  if (loading) { // Added loading block as per outline
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="text-center">
@@ -394,34 +390,31 @@ www.mapadaestetica.com.br
   }
 
   const isAdmin = user?.role === 'admin';
-  const planoNome = user?.plano_patrocinador === 'nenhum' ? 'Nenhum' : user?.plano_patrocinador?.toUpperCase() || "Grátis"; // Updated default
+  const planoNome = user?.plano_patrocinador === 'nenhum' ? 'Nenhum' : user?.plano_patrocinador?.toUpperCase() || "Grátis";
 
-  // Métricas agregadas
-  const totalVisualizacoesBanners = banners.reduce((acc, b) => acc + (b.metricas?.visualizacoes || 0), 0); // Changed from meusBanners
-  const totalCliquesBanners = banners.reduce((acc, b) => acc + (b.metricas?.cliques || 0), 0); // Changed from meusBanners
-  const totalCompartilhamentos = banners.reduce((acc, b) => acc + (b.metricas?.compartilhamentos || 0), 0); // Changed from meusBanners
-  const totalConversoes = banners.reduce((acc, b) => acc + (b.metricas?.conversoes_produtos || 0), 0); // Changed from meusBanners
+  const totalVisualizacoesBanners = banners.reduce((acc, b) => acc + (b.metricas?.visualizacoes || 0), 0);
+  const totalCliquesBanners = banners.reduce((acc, b) => acc + (b.metricas?.cliques || 0), 0);
+  const totalCompartilhamentos = banners.reduce((acc, b) => acc + (b.metricas?.compartilhamentos || 0), 0);
+  const totalConversoes = banners.reduce((acc, b) => acc + (b.metricas?.conversoes_produtos || 0), 0);
 
-  // Paginação
-  const bannersPaginados = banners.slice((paginaBanners - 1) * ITEMS_POR_PAGINA, paginaBanners * ITEMS_POR_PAGINA); // Changed from meusBanners and itensPorPagina
-  const produtosPaginados = meusProdutos.slice((paginaProdutos - 1) * ITEMS_POR_PAGINA, paginaProdutos * ITEMS_POR_PAGINA); // Changed from itensPorPagina
-  const postsPaginados = meusPosts.slice((paginaPosts - 1) * ITEMS_POR_PAGINA, paginaPosts * ITEMS_POR_PAGINA); // Renamed from artigosPaginados and changed from itensPorPagina
-  const anunciosPaginados = meusAnuncios.slice((paginaAnuncios - 1) * ITEMS_POR_PAGINA, paginaAnuncios * ITEMS_POR_PAGINA); // Added
+  const bannersPaginados = banners.slice((paginaBanners - 1) * ITEMS_POR_PAGINA, paginaBanners * ITEMS_POR_PAGINA);
+  const produtosPaginados = meusProdutos.slice((paginaProdutos - 1) * ITEMS_POR_PAGINA, paginaProdutos * ITEMS_POR_PAGINA);
+  const postsPaginados = meusPosts.slice((paginaPosts - 1) * ITEMS_POR_PAGINA, paginaPosts * ITEMS_POR_PAGINA);
+  const anunciosPaginados = meusAnuncios.slice((paginaAnuncios - 1) * ITEMS_POR_PAGINA, paginaAnuncios * ITEMS_POR_PAGINA);
 
-  const totalPaginasBanners = Math.ceil(banners.length / ITEMS_POR_PAGINA); // Changed from meusBanners
-  const totalPaginasProdutos = Math.ceil(meusProdutos.length / ITEMS_POR_PAGINA); // Changed from itensPorPagina
-  const totalPaginasPosts = Math.ceil(meusPosts.length / ITEMS_POR_PAGINA); // Renamed from totalPaginasArtigos and changed from itensPorPagina
-  const totalPaginasAnuncios = Math.ceil(meusAnuncios.length / ITEMS_POR_PAGINA); // Added
+  const totalPaginasBanners = Math.ceil(banners.length / ITEMS_POR_PAGINA);
+  const totalPaginasProdutos = Math.ceil(meusProdutos.length / ITEMS_POR_PAGINA);
+  const totalPaginasPosts = Math.ceil(meusPosts.length / ITEMS_POR_PAGINA);
+  const totalPaginasAnuncios = Math.ceil(meusAnuncios.length / ITEMS_POR_PAGINA);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
       <div className="max-w-7xl mx-auto px-4">
-        {/* Header - Replaced */}
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-4">
             <div>
               <h1 className="text-3xl md:text-4xl font-bold text-gray-900 flex items-center gap-3">
-                <Crown className="w-7 h-7 sm:w-8 sm:h-8 text-purple-600" /> {/* Updated color */}
+                <Crown className="w-7 h-7 sm:w-8 sm:h-8 text-purple-600" />
                 Dashboard Patrocinador
               </h1>
               <p className="text-gray-600 mt-2 text-sm sm:text-base">
@@ -437,6 +430,20 @@ www.mapadaestetica.com.br
                 Novo Banner
               </Button>
               <Button
+                onClick={() => navigate(createPageUrl("AdicionarProduto"))}
+                className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 h-10 text-sm"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Novo Produto
+              </Button>
+              <Button
+                onClick={() => navigate(createPageUrl("ArtigoBlog"))}
+                className="bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 h-10 text-sm"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Novo Post
+              </Button>
+              <Button
                 onClick={() => navigate(createPageUrl("CadastrarAnuncio"))}
                 className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 h-10 text-sm"
               >
@@ -448,16 +455,16 @@ www.mapadaestetica.com.br
 
           {user && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-              <Card className="border-2 border-purple-300 bg-gradient-to-br from-purple-50 to-pink-50 shadow-md"> {/* Updated border color */}
+              <Card className="border-2 border-purple-300 bg-gradient-to-br from-purple-50 to-pink-50 shadow-md">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-gray-600 mb-1">Plano Atual</p>
-                      <p className="text-2xl font-bold text-purple-900"> {/* Updated color */}
+                      <p className="text-2xl font-bold text-purple-900">
                         {planoNome}
                       </p>
                     </div>
-                    <Crown className="w-12 h-12 text-purple-600 opacity-80" /> {/* Updated color */}
+                    <Crown className="w-12 h-12 text-purple-600 opacity-80" />
                   </div>
                   {user.plano_patrocinador === 'nenhum' && (
                     <Button
@@ -471,16 +478,16 @@ www.mapadaestetica.com.br
                 </CardContent>
               </Card>
 
-              <Card className="border-2 border-blue-300 bg-gradient-to-br from-blue-50 to-cyan-50 shadow-md"> {/* Updated border color */}
+              <Card className="border-2 border-blue-300 bg-gradient-to-br from-blue-50 to-cyan-50 shadow-md">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-gray-600 mb-1">Minha Marca</p>
                       <p className="text-2xl font-bold text-blue-900">
-                        {user.nome_empresa || user.full_name} {/* Kept nome_empresa consistent with original code */}
+                        {user.nome_empresa || user.full_name}
                       </p>
                     </div>
-                    <Sparkles className="w-12 h-12 text-blue-600 opacity-80" /> {/* Updated color */}
+                    <Sparkles className="w-12 h-12 text-blue-600 opacity-80" />
                   </div>
                 </CardContent>
               </Card>
@@ -488,7 +495,6 @@ www.mapadaestetica.com.br
           )}
         </div>
 
-        {/* Métricas Principais - CARDS RESPONSIVOS (kept as per outline) */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-6 sm:mb-8">
           <Card className="border-none shadow-lg">
             <CardContent className="p-3 sm:p-4 md:p-6">
@@ -505,7 +511,7 @@ www.mapadaestetica.com.br
           <Card className="border-none shadow-lg">
             <CardContent className="p-3 sm:p-4 md:p-6">
               <div className="flex items-center justify-between mb-2">
-                <MousePointer className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" /> {/* Changed icon */}
+                <MousePointer className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
               </div>
               <p className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-1">
                 {totalCliquesBanners.toLocaleString()}
@@ -539,32 +545,30 @@ www.mapadaestetica.com.br
           </Card>
         </div>
 
-        {/* Tabs de Conteúdo - Replaced TabsList, added new tabs */}
         <Tabs defaultValue="banners" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 mb-6 h-auto gap-1"> {/* Adjusted grid for 5 items */}
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 mb-6 h-auto gap-1">
             <TabsTrigger value="banners" className="text-xs sm:text-sm py-2 sm:py-2.5">
               <ImageIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-              Banners ({banners.length}) {/* Changed from meusBanners */}
+              Banners ({banners.length})
             </TabsTrigger>
-            <TabsTrigger value="posts" className="text-xs sm:text-sm py-2 sm:py-2.5"> {/* New Tab */}
+            <TabsTrigger value="posts" className="text-xs sm:text-sm py-2 sm:py-2.5">
               <Newspaper className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-              Posts ({meusPosts.length}) {/* Changed from meusArtigos */}
+              Posts ({meusPosts.length})
             </TabsTrigger>
-            <TabsTrigger value="produtos" className="text-xs sm:text-sm py-2 sm:py-2.5"> {/* New Tab */}
+            <TabsTrigger value="produtos" className="text-xs sm:text-sm py-2 sm:py-2.5">
               <Package className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
               Produtos ({meusProdutos.length})
             </TabsTrigger>
-            <TabsTrigger value="anuncios" className="text-xs sm:text-sm py-2 sm:py-2.5"> {/* New Tab */}
+            <TabsTrigger value="anuncios" className="text-xs sm:text-sm py-2 sm:py-2.5">
               <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
               Anúncios ({meusAnuncios.length})
             </TabsTrigger>
-            <TabsTrigger value="relatorios" className="text-xs sm:text-sm py-2 sm:py-2.5"> {/* Kept existing tab */}
+            <TabsTrigger value="relatorios" className="text-xs sm:text-sm py-2 sm:py-2.5">
               <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
               Relatórios
             </TabsTrigger>
           </TabsList>
 
-          {/* Tab Banners - COM PAGINAÇÃO E MÉTRICAS EXPANDIDAS */}
           <TabsContent value="banners">
             <Card className="border-none shadow-lg">
               <CardHeader className="p-4 sm:p-6">
@@ -598,7 +602,7 @@ www.mapadaestetica.com.br
                 </div>
               </CardHeader>
               <CardContent className="p-4 sm:p-6">
-                {banners.length === 0 ? ( // Changed from meusBanners
+                {banners.length === 0 ? (
                   <div className="text-center py-8 sm:py-12 bg-gray-50 rounded-lg">
                     <ImageIcon className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-3 sm:mb-4" />
                     <p className="text-sm sm:text-base text-gray-600 mb-4">
@@ -636,7 +640,6 @@ www.mapadaestetica.com.br
                               </div>
                             </div>
                             
-                            {/* Métricas Detalhadas */}
                             <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mt-3 text-xs">
                               <div className="text-center">
                                 <Eye className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 mx-auto mb-0.5" />
@@ -644,7 +647,7 @@ www.mapadaestetica.com.br
                                 <p className="text-gray-500 text-xs">Views</p>
                               </div>
                               <div className="text-center">
-                                <MousePointer className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 mx-auto mb-0.5" /> {/* Changed icon */}
+                                <MousePointer className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 mx-auto mb-0.5" />
                                 <p className="font-bold">{banner.metricas?.cliques || 0}</p>
                                 <p className="text-gray-500 text-xs">Cliques</p>
                               </div>
@@ -695,13 +698,12 @@ www.mapadaestetica.com.br
                       </div>
                     ))}
 
-                    {/* Alerta de Limite */}
-                    {banners.length > 0 && ( // Changed from meusBanners
+                    {banners.length > 0 && (
                       <Alert className="mt-4 bg-purple-50 border-purple-200">
                         <AlertCircle className="h-4 w-4 text-purple-600" />
                         <AlertDescription className="text-purple-800 text-xs sm:text-sm">
-                          📊 Você tem <strong>{banners.length}</strong> banners cadastrados. {/* Changed from meusBanners */}
-                          {banners.filter(b => b.status === 'ativo').length < (user?.plano_patrocinador === 'platina' ? 999 : 15) && // Changed from meusBanners
+                          📊 Você tem <strong>{banners.length}</strong> banners cadastrados.
+                          {banners.filter(b => b.status === 'ativo').length < (user?.plano_patrocinador === 'platina' ? 999 : 15) &&
                             ` Você ainda pode criar mais banners!`
                           }
                         </AlertDescription>
@@ -713,7 +715,6 @@ www.mapadaestetica.com.br
             </Card>
           </TabsContent>
 
-          {/* Tab Posts - NEW */}
           <TabsContent value="posts">
             <Card className="border-none shadow-lg">
               <CardHeader className="p-4 sm:p-6">
@@ -816,7 +817,6 @@ www.mapadaestetica.com.br
             </Card>
           </TabsContent>
 
-          {/* Tab Produtos - NEW */}
           <TabsContent value="produtos">
             <Card className="border-none shadow-lg">
               <CardHeader className="p-4 sm:p-6">
@@ -914,7 +914,6 @@ www.mapadaestetica.com.br
             </Card>
           </TabsContent>
 
-          {/* NOVA Aba: Anúncios */}
           <TabsContent value="anuncios">
             <Card className="border-none shadow-lg">
               <CardHeader className="p-4 sm:p-6">
@@ -1062,7 +1061,6 @@ www.mapadaestetica.com.br
             </Card>
           </TabsContent>
 
-          {/* Tab Relatórios - ATUALIZADO COM MÉTRICAS DE ENGAJAMENTO (kept as per outline) */}
           <TabsContent value="relatorios">
             <Card className="border-none shadow-lg">
               <CardHeader className="p-4 sm:p-6">
@@ -1097,7 +1095,6 @@ www.mapadaestetica.com.br
                     </div>
                   </div>
 
-                  {/* Botões de Exportação */}
                   <div className="flex flex-col sm:flex-row gap-2">
                     <Button
                       onClick={gerarRelatorioHTML}
@@ -1122,7 +1119,6 @@ www.mapadaestetica.com.br
               </CardHeader>
               <CardContent className="p-4 sm:p-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                  {/* Alcance dos Banners */}
                   <div className="p-3 sm:p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg border-2 border-blue-200">
                     <h4 className="font-semibold text-sm sm:text-base mb-3 flex items-center gap-2">
                       <Eye className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
@@ -1148,7 +1144,6 @@ www.mapadaestetica.com.br
                     </div>
                   </div>
 
-                  {/* Produtos na Loja */}
                   <div className="p-3 sm:p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg border-2 border-purple-200">
                     <h4 className="font-semibold text-sm sm:text-base mb-3 flex items-center gap-2">
                       <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
@@ -1172,7 +1167,6 @@ www.mapadaestetica.com.br
                     </div>
                   </div>
 
-                  {/* Posts no Blog */}
                   <div className="p-3 sm:p-4 bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg border-2 border-orange-200">
                     <h4 className="font-semibold text-sm sm:text-base mb-3 flex items-center gap-2">
                       <Newspaper className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
@@ -1198,7 +1192,6 @@ www.mapadaestetica.com.br
                     </div>
                   </div>
 
-                  {/* Compartilhamentos */}
                   <div className="p-3 sm:p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border-2 border-green-200">
                     <h4 className="font-semibold text-sm sm:text-base mb-3 flex items-center gap-2">
                       <Share2 className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
@@ -1218,7 +1211,6 @@ www.mapadaestetica.com.br
                     </div>
                   </div>
 
-                  {/* Engajamento dos Banners */}
                   <div className="p-3 sm:p-4 bg-gradient-to-br from-red-50 to-rose-50 rounded-lg border-2 border-red-200">
                     <h4 className="font-semibold text-sm sm:text-base mb-3 flex items-center gap-2">
                       <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
@@ -1261,7 +1253,6 @@ www.mapadaestetica.com.br
         </Tabs>
       </div>
 
-      {/* Modal WhatsApp Export (kept as per "preserve all other features") */}
       <Dialog open={mostrarExportWhatsApp} onOpenChange={setMostrarExportWhatsApp}>
         <DialogContent className="max-w-[95vw] sm:max-w-md">
           <DialogHeader>

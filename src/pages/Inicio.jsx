@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -18,8 +19,8 @@ import {
   CheckCircle,
   X,
   AlertCircle,
-  Eye, // Added for anuncio summary
-  Heart, // Added for anuncio summary
+  Eye,
+  Heart,
   Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -82,6 +83,7 @@ export default function Inicio() {
   const [user, setUser] = useState(null);
   const [resumoAnuncios, setResumoAnuncios] = useState([]);
   const [mostrarSeletorTipo, setMostrarSeletorTipo] = useState(false);
+  const [visaoAtual, setVisaoAtual] = useState(null); // Para controlar a visão do admin
 
   const navigate = useNavigate();
 
@@ -90,6 +92,14 @@ export default function Inicio() {
       try {
         const userData = await base44.auth.me();
         setUser(userData);
+
+        // Se for admin, carregar visão salva
+        if (userData.role === 'admin') {
+          const visaoSalva = localStorage.getItem('admin_visao_site');
+          setVisaoAtual(visaoSalva || 'profissional');
+        } else {
+          setVisaoAtual(userData.tipo_usuario);
+        }
 
         // Verificar se precisa selecionar tipo
         if (!userData.tipo_usuario) {
@@ -101,8 +111,8 @@ export default function Inicio() {
           setMostrarOnboarding(true);
         }
 
-        // Buscar resumo dos anúncios do profissional
-        if (userData?.tipo_usuario === 'profissional') {
+        // Buscar resumo dos anúncios do profissional/patrocinador
+        if (userData?.tipo_usuario === 'profissional' || userData?.tipo_usuario === 'patrocinador') {
           try {
             const anuncios = await base44.entities.Anuncio.filter(
               { created_by: userData.email, status: 'ativo' },
@@ -116,16 +126,31 @@ export default function Inicio() {
         }
       } catch {
         setUser(null);
+        setVisaoAtual('paciente'); // Usuários não logados veem como paciente
       }
     };
     fetchUser();
   }, []);
+
+  // Atualizar visão quando localStorage mudar (para sincronizar com o Layout)
+  useEffect(() => {
+    const handleStorageChange = () => {
+      if (user?.role === 'admin') {
+        const visaoSalva = localStorage.getItem('admin_visao_site');
+        setVisaoAtual(visaoSalva || 'profissional');
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [user]);
 
   const handleOnboardingComplete = async () => {
     setMostrarOnboarding(false);
     try {
       const userData = await base44.auth.me();
       setUser(userData);
+      setVisaoAtual(userData.tipo_usuario);
     } catch (error) {
       console.error("Erro ao atualizar usuário:", error);
     }
@@ -136,11 +161,11 @@ export default function Inicio() {
   };
 
   const handleTipoUsuarioSuccess = async () => {
-    setMostrarSeletorTipo(false); // Close the selector modal
+    setMostrarSeletorTipo(false);
     try {
-      const userData = await base44.auth.me(); // Re-fetch user data to get updated tipo_usuario
+      const userData = await base44.auth.me();
       setUser(userData);
-      // Now that tipo_usuario is set, check for onboarding
+      setVisaoAtual(userData.tipo_usuario);
       if (!userData.cadastro_completo) {
         setMostrarOnboarding(true);
       }
@@ -194,13 +219,12 @@ export default function Inicio() {
       setMostrarLoginPrompt(true);
       return;
     }
-    // Se logado, abre o WhatsApp
     window.open(whatsappMessage, '_blank');
   };
 
   const isAdmin = user?.role === 'admin';
-  const isPaciente = user?.tipo_usuario === 'paciente';
-  const isProfissional = user?.tipo_usuario === 'profissional';
+  const isPaciente = visaoAtual === 'paciente';
+  const isProfissional = visaoAtual === 'profissional' || visaoAtual === 'patrocinador';
 
   return (
     <div className="min-h-screen">
@@ -217,7 +241,8 @@ export default function Inicio() {
         onSuccess={handleTipoUsuarioSuccess}
       />
 
-      {(isPaciente || !user) && (
+      {/* VISÃO PACIENTE OU NÃO LOGADO */}
+      {isPaciente && (
         <>
           {/* Hero Section - MOBILE OPTIMIZED */}
           <section
@@ -299,120 +324,141 @@ export default function Inicio() {
             </div>
           </section>
 
-          {/* NOVO: Banner Rotativo Topo */}
+          {/* Banner Rotativo Topo */}
           <BannerRotativo posicao="home_topo" />
-        </>
-      )}
 
-      {/* Categorias */}
-      <section className="py-12 sm:py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-8 sm:mb-12">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 px-2">
-              Categorias Especiais
-            </h2>
-            <p className="text-gray-600 text-base sm:text-lg px-4">
-              Explore os melhores profissionais em cada área
-            </p>
-          </div>
+          {/* Categorias */}
+          <section className="py-12 sm:py-16 bg-white">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6">
+              <div className="text-center mb-8 sm:mb-12">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 px-2">
+                  Categorias Especiais
+                </h2>
+                <p className="text-gray-600 text-base sm:text-lg px-4">
+                  Explore os melhores profissionais em cada área
+                </p>
+              </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
-            {categorias.map((categoria) => (
-              <CardCategoria key={categoria.nome} categoria={categoria} />
-            ))}
-          </div>
-        </div>
-      </section>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
+                {categorias.map((categoria) => (
+                  <CardCategoria key={categoria.nome} categoria={categoria} />
+                ))}
+              </div>
+            </div>
+          </section>
 
-      {/* NOVO: Banner Rotativo Meio */}
-      <BannerRotativo posicao="home_meio" />
+          {/* Banner Rotativo Meio */}
+          <BannerRotativo posicao="home_meio" />
 
-      {/* Dr. Beleza */}
-      <section className="py-8 bg-gradient-to-r from-[#F7D426] to-[#FFE066]">
-        <div className="max-w-7xl mx-auto px-4">
-          <Card className="border-none shadow-2xl bg-white/95 backdrop-blur overflow-hidden">
-            <CardContent className="p-6 md:p-8">
-              <div className="flex flex-col md:flex-row items-center gap-6">
-                <div className="w-32 h-32 md:w-40 md:h-40 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg overflow-hidden">
-                  <img
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/8b8866b2d_drbeleza.png"
-                    alt="Dr. Beleza"
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/04265179e_drbeleza.png';
-                    }}
-                  />
-                </div>
-                <div className="flex-1 text-center md:text-left">
-                  <Badge className="mb-2 bg-[#F7D426] text-[#2C2C2C] border-none font-bold">
-                    Consulte Tratamentos Agora
+          {/* Anúncios em Destaque */}
+          {anunciosDestaque.length > 0 && (
+            <section className="py-12 sm:py-16 bg-white">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6">
+                <div className="text-center mb-8 sm:mb-12">
+                  <Badge className="mb-4 bg-purple-100 text-purple-800">
+                    ⭐ Profissionais em Destaque
                   </Badge>
-                  <h2 className="text-2xl md:text-3xl font-bold text-[#2C2C2C] mb-2">
-                    Dr. Beleza - Seu Assistente Inteligente
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <Star className="w-5 h-5 sm:w-6 sm:h-6 text-[#F7D426]" />
+                    <span className="text-xs sm:text-sm font-semibold text-[#F7D426] uppercase tracking-wide">
+                      Exemplos de Sucesso
+                    </span>
+                  </div>
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 px-2">
+                    Veja Como Profissionais Se Destacam
                   </h2>
-                  <p className="text-gray-600 mb-4">
-                    Descubra como funciona e qual o tratamento certo para você com inteligência artificial
+                  <p className="text-gray-600 text-base sm:text-lg px-4">
+                    Conheça profissionais de sucesso que usam nossa plataforma
                   </p>
                 </div>
-                <Button 
-                  onClick={handleAcessarDrBeleza}
-                  size="lg" 
-                  className="bg-[#2C2C2C] hover:bg-[#3A3A3A] text-[#F7D426] font-bold shadow-xl flex-shrink-0"
-                >
-                  Acessar Dr. Beleza
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
 
-      {/* ANÚNCIOS EM DESTAQUE - VISÍVEL PARA TODOS COMO EXEMPLOS */}
-      {anunciosDestaque.length > 0 && (
-        <section className="py-12 sm:py-16 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6">
-            <div className="text-center mb-8 sm:mb-12">
-              <Badge className="mb-4 bg-purple-100 text-purple-800">
-                ⭐ Profissionais em Destaque
-              </Badge>
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <Star className="w-5 h-5 sm:w-6 sm:h-6 text-[#F7D426]" />
-                <span className="text-xs sm:text-sm font-semibold text-[#F7D426] uppercase tracking-wide">
-                  Exemplos de Sucesso
-                </span>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                  {anunciosDestaque.slice(0, 6).map((anuncio) => (
+                    <CardAnuncio key={anuncio.id} anuncio={anuncio} destaque={true} />
+                  ))}
+                </div>
+
+                <div className="text-center mt-8">
+                  <Link to={createPageUrl("Anuncios")}>
+                    <Button size="lg" variant="outline" className="border-2 border-pink-600 text-pink-600 hover:bg-pink-50">
+                      Ver Todos os Anúncios
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </Link>
+                </div>
               </div>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 px-2">
-                Veja Como Profissionais Se Destacam
+            </section>
+          )}
+
+          {/* Dr. Beleza */}
+          <section className="py-8 bg-gradient-to-r from-[#F7D426] to-[#FFE066]">
+            <div className="max-w-7xl mx-auto px-4">
+              <Card className="border-none shadow-2xl bg-white/95 backdrop-blur overflow-hidden">
+                <CardContent className="p-6 md:p-8">
+                  <div className="flex flex-col md:flex-row items-center gap-6">
+                    <div className="w-32 h-32 md:w-40 md:h-40 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg overflow-hidden">
+                      <img
+                        src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/8b8866b2d_drbeleza.png"
+                        alt="Dr. Beleza"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/04265179e_drbeleza.png';
+                        }}
+                      />
+                    </div>
+                    <div className="flex-1 text-center md:text-left">
+                      <Badge className="mb-2 bg-[#F7D426] text-[#2C2C2C] border-none font-bold">
+                        Consulte Tratamentos Agora
+                      </Badge>
+                      <h2 className="text-2xl md:text-3xl font-bold text-[#2C2C2C] mb-2">
+                        Dr. Beleza - Seu Assistente Inteligente
+                      </h2>
+                      <p className="text-gray-600 mb-4">
+                        Descubra como funciona e qual o tratamento certo para você com inteligência artificial
+                      </p>
+                    </div>
+                    <Button 
+                      onClick={handleAcessarDrBeleza}
+                      size="lg" 
+                      className="bg-[#2C2C2C] hover:bg-[#3A3A3A] text-[#F7D426] font-bold shadow-xl flex-shrink-0"
+                    >
+                      Acessar Dr. Beleza
+                      <ArrowRight className="w-5 h-5 ml-2" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </section>
+
+          {/* Banner Rotativo Rodapé */}
+          <BannerRotativo posicao="home_rodape" />
+
+          {/* CTA Profissionais */}
+          <section className="py-12 sm:py-16 md:py-20 bg-gradient-to-r from-pink-600 to-rose-600 text-white">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 px-2">
+                Você é um profissional da estética?
               </h2>
-              <p className="text-gray-600 text-base sm:text-lg px-4">
-                Conheça profissionais de sucesso que usam nossa plataforma
+              <p className="text-lg sm:text-xl mb-6 sm:mb-8 text-white/90 px-4">
+                Cadastre-se gratuitamente e comece a receber clientes hoje mesmo!
               </p>
-            </div>
-
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {anunciosDestaque.slice(0, 6).map((anuncio) => (
-                <CardAnuncio key={anuncio.id} anuncio={anuncio} destaque={true} />
-              ))}
-            </div>
-
-            <div className="text-center mt-8">
-              <Link to={createPageUrl("Anuncios")}>
-                <Button size="lg" variant="outline" className="border-2 border-pink-600 text-pink-600 hover:bg-pink-50">
-                  Ver Todos os Anúncios
-                  <ArrowRight className="w-4 h-4 ml-2" />
+              <Link to={createPageUrl("CadastrarAnuncio")}>
+                <Button size="lg" className="w-full sm:w-auto bg-white text-pink-600 hover:bg-gray-100 font-semibold shadow-xl">
+                  Cadastrar Meu Anúncio Grátis
+                  <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>
             </div>
-          </div>
-        </section>
+          </section>
+        </>
       )}
 
-      {/* PROFISSIONAIS: Conteúdo específico */}
+      {/* VISÃO PROFISSIONAL/PATROCINADOR */}
       {isProfissional && (
         <>
-          {/* MELHORADO: Resumo dos Anúncios - Formato Card Scrollável */}
+          {/* Resumo dos Anúncios */}
           {resumoAnuncios.length > 0 && (
             <section className="py-8 bg-white">
               <div className="max-w-7xl mx-auto px-4">
@@ -434,7 +480,6 @@ export default function Inicio() {
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {resumoAnuncios.map((anuncio) => (
                     <Card key={anuncio.id} className="border-none shadow-lg hover:shadow-xl transition-all overflow-hidden">
-                      {/* Imagem */}
                       <div className="h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center overflow-hidden relative">
                         {anuncio.imagem_principal ? (
                           <img src={anuncio.imagem_principal} alt={anuncio.titulo} className="w-full h-full object-cover" />
@@ -449,13 +494,9 @@ export default function Inicio() {
                       </div>
 
                       <CardContent className="p-4">
-                        {/* Categoria */}
                         <Badge className="mb-2 bg-pink-100 text-pink-800">{anuncio.categoria}</Badge>
-                        
-                        {/* Título */}
                         <h3 className="font-bold text-lg mb-2 line-clamp-2">{anuncio.titulo}</h3>
                         
-                        {/* Localização */}
                         {anuncio.cidade && anuncio.estado && (
                           <div className="flex items-center gap-1 text-sm text-gray-600 mb-3">
                             <MapPin className="w-4 h-4" />
@@ -463,7 +504,6 @@ export default function Inicio() {
                           </div>
                         )}
 
-                        {/* Métricas */}
                         <div className="flex items-center gap-4 text-sm text-gray-600 mb-3 pb-3 border-b">
                           <span className="flex items-center gap-1">
                             <Eye className="w-4 h-4" />
@@ -479,7 +519,6 @@ export default function Inicio() {
                           </span>
                         </div>
 
-                        {/* Faixa de Preço */}
                         {anuncio.faixa_preco && (
                           <div className="mb-3">
                             <p className="text-xs text-gray-500 mb-1">Faixa de Preço:</p>
@@ -496,7 +535,6 @@ export default function Inicio() {
                           </div>
                         )}
 
-                        {/* Botão Ver Detalhes */}
                         <Button
                           onClick={() => window.location.href = `${createPageUrl("DetalhesAnuncio")}?id=${anuncio.id}`}
                           className="w-full bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold"
@@ -528,76 +566,13 @@ export default function Inicio() {
 
           <Tutorial />
           <CalculadoraLaserSection />
-
-          <section className="py-12 sm:py-16 md:py-20 bg-gradient-to-r from-pink-600 to-rose-600 text-white">
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 px-2">
-                Você é um profissional da estética?
-              </h2>
-              <p className="text-lg sm:text-xl mb-6 sm:mb-8 text-white/90 px-4">
-                Cadastre-se gratuitamente e comece a receber clientes hoje mesmo!
-              </p>
-              <Link to={createPageUrl("CadastrarAnuncio")}>
-                <Button size="lg" className="w-full sm:w-auto bg-white text-pink-600 hover:bg-gray-100 font-semibold shadow-xl">
-                  Cadastrar Meu Anúncio Grátis
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
-              </Link>
-            </div>
-          </section>
         </>
       )}
 
       {/* TUTORIAIS - EXIBIR BASEADO NO TIPO */}
-      {user && user.tipo_usuario && (
-        <SecaoTutoriais tipoUsuario={user.tipo_usuario} />
+      {user && visaoAtual && (
+        <SecaoTutoriais tipoUsuario={visaoAtual} />
       )}
-
-      {/* PATROCINADORES - AMBOS */}
-      <section className="py-12 sm:py-16 bg-gradient-to-br from-gray-50 to-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-8 sm:mb-12">
-            <Badge className="mb-4 bg-[#F7D426] text-[#2C2C2C] font-bold">
-              Parceiros Oficiais
-            </Badge>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 px-2">
-              Nossos Patrocinadores
-            </h2>
-            <p className="text-gray-600 text-base sm:text-lg px-4 max-w-2xl mx-auto">
-              Empresas que confiam e investem no Mapa da Estética
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-6">
-            {/* Placeholder para logos dos patrocinadores */}
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <Card key={i} className="aspect-square flex items-center justify-center bg-white hover:shadow-xl transition-shadow border-none">
-                <CardContent className="p-4 flex items-center justify-center w-full h-full">
-                  <div className="text-center">
-                    <div className="text-4xl mb-2">🏢</div>
-                    <p className="text-xs text-gray-500">Patrocinador {i}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          <div className="text-center mt-8">
-            <p className="text-gray-600 mb-4">
-              Quer se tornar um patrocinador?
-            </p>
-            <Link to={createPageUrl("Planos")}>
-              <Button size="lg" className="bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold border-2 border-[#2C2C2C]">
-                💼 Ver Planos de Patrocínio
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* NOVO: Banner Rotativo Rodapé */}
-      <BannerRotativo posicao="home_rodape" />
 
       {/* Blog - AMBOS */}
       <section className="py-12 sm:py-16 bg-gradient-to-br from-pink-50 to-rose-50">
@@ -618,6 +593,48 @@ export default function Inicio() {
             <Link to={createPageUrl("Blog")}>
               <Button size="lg" className="w-full sm:w-auto bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white">
                 Acessar Blog
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* PATROCINADORES - AMBOS */}
+      <section className="py-12 sm:py-16 bg-gradient-to-br from-gray-50 to-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-8 sm:mb-12">
+            <Badge className="mb-4 bg-[#F7D426] text-[#2C2C2C] font-bold">
+              Parceiros Oficiais
+            </Badge>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 px-2">
+              Nossos Patrocinadores
+            </h2>
+            <p className="text-gray-600 text-base sm:text-lg px-4 max-w-2xl mx-auto">
+              Empresas que confiam e investem no Mapa da Estética
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <Card key={i} className="aspect-square flex items-center justify-center bg-white hover:shadow-xl transition-shadow border-none">
+                <CardContent className="p-4 flex items-center justify-center w-full h-full">
+                  <div className="text-center">
+                    <div className="text-4xl mb-2">🏢</div>
+                    <p className="text-xs text-gray-500">Patrocinador {i}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <div className="text-center mt-8">
+            <p className="text-gray-600 mb-4">
+              Quer se tornar um patrocinador?
+            </p>
+            <Link to={createPageUrl("Planos")}>
+              <Button size="lg" className="bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold border-2 border-[#2C2C2C]">
+                💼 Ver Planos de Patrocínio
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </Link>
