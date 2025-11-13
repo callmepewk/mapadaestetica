@@ -160,6 +160,77 @@ const SeletorProcedimentos = ({ open, onClose, onSelect }) => {
   );
 };
 
+// NOVO: Lista de Emojis para o Mapa
+const emojisDisponiveis = [
+  "💆", "💆‍♀️", "💆‍♂️", "💅", "💇", "💇‍♀️", "💇‍♂️", "✂️", "💄", "💋",
+  "👄", "👁️", "👃", "🦷", "🧖", "🧖‍♀️", "🧖‍♂️", "🧴", "🧼", "🧽",
+  "🪒", "💉", "💊", "🩹", "🩺", "⚕️", "🏥", "🏨", "🛁", "🚿",
+  "✨", "⭐", "🌟", "💫", "🌸", "🌺", "🌻", "🌼", "🌷", "🌹",
+  "🌿", "🍃", "☘️", "🎀", "🎁", "💝", "💖", "💗", "💓", "💞",
+  "🦋", "🌈", "☀️", "🌙", "⚡", "🔥", "💧", "❄️", "🧊", "🎨",
+  "🖌️", "✏️", "📝", "📋", "📌", "🎯", "🏆", "👑", "💎", "💍",
+  "🔬", "🧬", "🧪", "⚗️", "🩻", "🔍", "📊", "📈", "🎓", "🏅"
+];
+
+// NOVO: Componente Seletor de Emoji
+const SeletorEmoji = ({ open, onClose, onSelect, emojiAtual }) => {
+  const [busca, setBusca] = useState(""); // This state is not used in the provided filteredEmojis logic, but kept as per original.
+
+  const emojisFiltrados = busca
+    ? emojisDisponiveis.filter((emoji) => emoji.includes(busca)) // Filter by emoji character if needed, or by some description
+    : emojisDisponiveis;
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            🎨 Selecionar Ícone para o Mapa
+          </DialogTitle>
+          <DialogDescription>
+            Escolha o emoji que representará seu anúncio no mapa da estética
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          {emojiAtual && (
+            <div className="p-4 bg-blue-50 rounded-lg border-2 border-blue-200 text-center">
+              <p className="text-sm text-blue-800 mb-2">Emoji atual:</p>
+              <span className="text-6xl">{emojiAtual}</span>
+            </div>
+          )}
+
+          <ScrollArea className="h-[400px]">
+            <div className="grid grid-cols-8 sm:grid-cols-10 gap-2 p-2">
+              {emojisFiltrados.map((emoji, index) => (
+                <button
+                  key={index}
+                  onClick={() => {
+                    onSelect(emoji);
+                    onClose();
+                  }}
+                  className={`text-4xl p-3 rounded-lg hover:bg-blue-100 transition-all hover:scale-110 ${
+                    emoji === emojiAtual ? 'bg-blue-200 ring-2 ring-blue-500' : 'bg-gray-50'
+                  }`}
+                  title={`Emoji ${emoji}`}
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+          </ScrollArea>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            Fechar
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 
 export default function CadastrarAnuncio() {
   const navigate = useNavigate();
@@ -201,7 +272,8 @@ export default function CadastrarAnuncio() {
       lounge_bar: false,
       musica_ambiente: false,
       seguranca: false
-    }
+    },
+    icone_mapa: "📍" // NOVO: Emoji padrão para o mapa
   });
 
   // Estados de upload de imagens
@@ -253,6 +325,10 @@ export default function CadastrarAnuncio() {
   const [buscandoLocalizacao, setBuscandoLocalizacao] = useState(false);
   // NEW STATE: Estado para o seletor de procedimentos
   const [mostrarSeletorProcedimentos, setMostrarSeletorProcedimentos] = useState(false);
+
+  // NOVOS Estados para Seletor de Emoji
+  const [mostrarSeletorEmoji, setMostrarSeletorEmoji] = useState(false);
+  const [gerandoEmojiIA, setGerandoEmojiIA] = useState(false);
 
 
   useEffect(() => {
@@ -541,7 +617,7 @@ Gere APENAS o título, sem aspas ou explicações adicionais.`;
       setSugestaoTitulo(resultado);
     } catch (error) {
       console.error("Erro ao gerar título:", error);
-      setErro("Erro ao gerar sugestão de título. Tente novamente.");
+      setErro("Erro ao gerar sugestão. Tente novamente.");
     } finally {
       setLoadingTitulo(false);
     }
@@ -713,6 +789,64 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
     }
   };
 
+  // NOVA Função: Sugerir Emoji com IA
+  const handleSugerirEmojiIA = async () => {
+    if (!formData.titulo || !formData.categoria) {
+      setErro("Preencha título e categoria primeiro para receber sugestões de emoji!");
+      setTimeout(() => setErro(null), 3000);
+      return;
+    }
+
+    setGerandoEmojiIA(true);
+
+    try {
+      const prompt = `Você é um especialista em UX/UI para plataformas de estética.
+
+ANÚNCIO:
+Título: ${formData.titulo}
+Categoria: ${formData.categoria}
+${formData.subcategoria ? `Subcategoria: ${formData.subcategoria}` : ''}
+${formData.descricao ? `Descrição: ${formData.descricao.substring(0, 200)}` : ''}
+${formData.procedimentos_servicos.length > 0 ? `Procedimentos: ${formData.procedimentos_servicos.join(', ')}` : ''}
+
+TAREFA: Escolha o emoji MAIS ADEQUADO da lista abaixo para representar este anúncio no mapa:
+
+${emojisDisponiveis.join(' ')}
+
+CRITÉRIOS:
+- O emoji deve ser CLARO e RECONHECÍVEL
+- Deve representar bem a categoria/serviço
+- Deve ser profissional mas atrativo
+- Priorize emojis relacionados a beleza, saúde e estética
+
+Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
+
+      const resultado = await base44.integrations.Core.InvokeLLM({
+        prompt: prompt,
+        add_context_from_internet: false
+      });
+
+      const emojiSugerido = resultado.trim();
+      
+      // Verificar se o emoji sugerido existe na lista
+      if (emojisDisponiveis.includes(emojiSugerido)) {
+        setFormData(prev => ({ ...prev, icone_mapa: emojiSugerido }));
+        alert(`✨ IA sugeriu: ${emojiSugerido}\n\nEmoji aplicado com sucesso!`);
+      } else {
+        // Fallback: Tentar encontrar emoji similar (ex: se a IA retornar "💅🏻" e só tiver "💅") ou usar o primeiro caractere se for um emoji composto ou não encontrado.
+        // For now, defaulting to the first emoji or a known generic one for simplicity.
+        const defaultEmoji = emojisDisponiveis.includes("✨") ? "✨" : emojisDisponiveis[0];
+        setFormData(prev => ({ ...prev, icone_mapa: defaultEmoji }));
+        alert(`⚠️ A IA sugeriu um emoji não disponível ou ambíguo.\nAplicamos: ${defaultEmoji} (genérico ou primeiro da lista).`);
+      }
+    } catch (error) {
+      console.error("Erro ao sugerir emoji:", error);
+      alert("Erro ao sugerir emoji. Tente novamente.");
+    } finally {
+      setGerandoEmojiIA(false);
+    }
+  };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -732,6 +866,7 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
         logo: formData.logo,
         imagens_galeria: formData.imagens_galeria,
         amenidades: formData.amenidades,
+        icone_mapa: formData.icone_mapa, // NOVO: Incluir emoji
         verificacao_autoridade: {
           licenca_sanitaria: {
             possui: !!documentosVerificacao.licenca_sanitaria,
@@ -1074,6 +1209,53 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
                     </p>
                   </div>
                 )}
+              </div>
+
+              {/* NOVO: Seletor de Ícone do Mapa */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <Label className="text-sm">Ícone no Mapa</Label>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleSugerirEmojiIA}
+                      disabled={gerandoEmojiIA || !formData.titulo || !formData.categoria}
+                      className="text-xs sm:text-sm h-8 px-2 sm:h-auto sm:px-4 border-purple-300 text-purple-700"
+                    >
+                      {gerandoEmojiIA ? (
+                        <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin" />
+                      ) : (
+                        <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                      )}
+                      IA Sugerir
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setMostrarSeletorEmoji(true)}
+                      className="text-xs sm:text-sm h-8 px-2 sm:h-auto sm:px-4"
+                    >
+                      🎨 Escolher Emoji
+                    </Button>
+                  </div>
+                </div>
+                <div 
+                  onClick={() => setMostrarSeletorEmoji(true)}
+                  className="p-6 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg border-2 border-blue-200 cursor-pointer hover:border-blue-400 transition-all flex flex-col items-center justify-center group"
+                >
+                  <span className="text-7xl mb-2 group-hover:scale-110 transition-transform">
+                    {formData.icone_mapa}
+                  </span>
+                  <p className="text-sm text-blue-800 font-medium">
+                    Este emoji aparecerá no mapa
+                  </p>
+                  <p className="text-xs text-gray-600 mt-1">
+                    Clique para alterar
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -2062,6 +2244,14 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
         open={mostrarSeletorProcedimentos}
         onClose={() => setMostrarSeletorProcedimentos(false)}
         onSelect={handleAdicionarProcedimento}
+      />
+
+      {/* NOVO: Modal Seletor de Emoji */}
+      <SeletorEmoji
+        open={mostrarSeletorEmoji}
+        onClose={() => setMostrarSeletorEmoji(false)}
+        onSelect={(emoji) => setFormData(prev => ({ ...prev, icone_mapa: emoji }))}
+        emojiAtual={formData.icone_mapa}
       />
     </div>
   );
