@@ -2008,7 +2008,7 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
       return;
     }
 
-    if (confirm(`Confirma o agendamento de atualização forçada para ${format(dataAgendamentoForcada, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}?\n\nTodos os usuários terão o site recarregado automaticamente neste horário.`)) {
+    if (confirm(`Confirma o agendamento de atualização forçada para ${format(dataAgendamentoForcada, "dd/MM/yyyy 'às' HH:mm', { locale: ptBR })}?\n\nTodos os usuários terão o site recarregado automaticamente neste horário.`)) {
       agendarAtualizacaoForcadaMutation.mutate({
         dataAgendada: dataAgendamentoForcada.toISOString(),
         titulo: tituloAgendamentoForcada,
@@ -2313,7 +2313,7 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
     return matchBusca && matchStatus;
   });
 
-  // CORRIGIDO: Filtrar por tipo_usuario ao invés de plano_patrocinador
+  // ATUALIZADO: Filtrar por tipo_usuario ao invés de plano_patrocinador
   const usuariosClube = todosUsuarios.filter(u => u.plano_clube_beleza && u.plano_clube_beleza !== 'nenhum');
   const usuariosPatrocinadores = todosUsuarios.filter(u => u.tipo_usuario === 'patrocinador');
 
@@ -3364,7 +3364,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                 </Card>
               </TabsContent>
 
-              {/* Sub-aba: Todos os Usuários */}
+              {/* Sub-aba: Todos os Usuários - CORES MELHORADAS */}
               <TabsContent value="todos-usuarios">
                 <Card>
                   <CardHeader>
@@ -3453,46 +3453,61 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                                   <p className="font-medium">{u.full_name}</p>
                                   <p className="text-sm text-gray-500">{u.telefone}</p>
                                 </TableCell>
-                                <TableCell>{u.email}</TableCell>
+                                <TableCell className="text-sm">{u.email}</TableCell>
                                 <TableCell>
-                                  <Badge variant="outline" className={
-                                    u.tipo_usuario === 'paciente' ? 'border-blue-300 text-blue-700' :
-                                    u.tipo_usuario === 'profissional' ? 'border-purple-300 text-purple-700' :
-                                    u.tipo_usuario === 'patrocinador' ? 'border-green-300 text-green-700' :
-                                    ''
+                                  <Badge className={
+                                    u.tipo_usuario === 'paciente' ? 'bg-blue-600 text-white' :
+                                    u.tipo_usuario === 'profissional' ? 'bg-purple-600 text-white' :
+                                    u.tipo_usuario === 'patrocinador' ? 'bg-green-600 text-white' :
+                                    'bg-gray-500 text-white'
                                   }>
                                     {u.tipo_usuario === 'paciente' ? '👤 Paciente' :
-                                     u.tipo_usuario === 'profissional' ? '💼 Profissional' :
-                                     u.tipo_usuario === 'patrocinador' ? '👑 Patrocinador' :
+                                     u.tipo_usuario === 'profissional' ? '💼 Profis.' :
+                                     u.tipo_usuario === 'patrocinador' ? '👑 Patroc.' :
                                      'N/D'}
                                   </Badge>
                                 </TableCell>
                                 <TableCell>
-                                  <Badge variant="secondary">{u.role || 'user'}</Badge>
+                                  <Badge className={
+                                    u.role === 'admin' ? 'bg-orange-600 text-white' :
+                                    u.role === 'tester' ? 'bg-blue-600 text-white' :
+                                    'bg-gray-500 text-white'
+                                  }>
+                                    {u.role === 'admin' ? 'Admin' : u.role === 'tester' ? 'Tester' : 'User'}
+                                  </Badge>
                                 </TableCell>
                                 <TableCell>
-                                  <Badge className={PLANOS_INFO[u.plano_ativo]?.cor}>
+                                  <Badge className={
+                                    u.plano_ativo === 'platina' ? 'bg-purple-600 text-white font-bold' :
+                                    u.plano_ativo === 'diamante' ? 'bg-blue-600 text-white font-bold' :
+                                    u.plano_ativo === 'ouro' ? 'bg-yellow-600 text-white font-bold' :
+                                    u.plano_ativo === 'prata' ? 'bg-gray-600 text-white font-bold' :
+                                    'bg-orange-600 text-white font-bold'
+                                  }>
                                     {PLANOS_INFO[u.plano_ativo]?.nome || 'Cobre'}
                                   </Badge>
                                 </TableCell>
                                 <TableCell>
                                   <Badge className={
-                                    u.plano_clube_beleza === 'light' ? 'bg-blue-100 text-blue-800' :
-                                    u.plano_clube_beleza === 'gold' ? 'bg-yellow-100 text-yellow-800' :
-                                    u.plano_clube_beleza === 'vip' ? 'bg-purple-100 text-purple-800' :
-                                    'bg-gray-100 text-gray-600'
+                                    u.plano_clube_beleza === 'vip' ? 'bg-purple-600 text-white font-bold' :
+                                    u.plano_clube_beleza === 'gold' ? 'bg-yellow-600 text-white font-bold' :
+                                    u.plano_clube_beleza === 'light' ? 'bg-blue-600 text-white font-bold' :
+                                    'bg-gray-400 text-white'
                                   }>
                                     {u.plano_clube_beleza === 'light' ? 'LIGHT' :
                                      u.plano_clube_beleza === 'gold' ? 'GOLD' :
-                                     u.plube_clube_beleza === 'vip' ? 'VIP' :
+                                     u.plano_clube_beleza === 'vip' ? 'VIP' :
                                      'Nenhum'}
                                   </Badge>
                                 </TableCell>
                                 <TableCell>
                                   <Badge className={
-                                    u.plano_patrocinador && u.plano_patrocinador !== 'nenhum'
-                                      ? PLANOS_INFO[u.plano_patrocinador]?.cor || 'bg-green-100 text-green-800'
-                                      : 'bg-gray-100 text-gray-600'
+                                    u.plano_patrocinador === 'platina' ? 'bg-purple-600 text-white font-bold' :
+                                    u.plano_patrocinador === 'diamante' ? 'bg-blue-600 text-white font-bold' :
+                                    u.plano_patrocinador === 'ouro' ? 'bg-yellow-600 text-white font-bold' :
+                                    u.plano_patrocinador === 'prata' ? 'bg-gray-600 text-white font-bold' :
+                                    u.plano_patrocinador === 'cobre' ? 'bg-orange-600 text-white font-bold' :
+                                    'bg-gray-400 text-white'
                                   }>
                                     {u.plano_patrocinador && u.plano_patrocinador !== 'nenhum'
                                       ? (PLANOS_INFO[u.plano_patrocinador]?.nome || u.plano_patrocinador)
@@ -3500,12 +3515,12 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                                   </Badge>
                                 </TableCell>
                                 <TableCell>
-                                  <div className="space-y-1 text-xs">
-                                    <Badge variant="outline" className="text-yellow-600">
+                                  <div className="space-y-1">
+                                    <Badge className="bg-yellow-600 text-white font-semibold">
                                       <Star className="w-3 h-3 mr-1" />
                                       {u.pontos_acumulados || 0}
                                     </Badge>
-                                    <Badge variant="outline" className="text-purple-600">
+                                    <Badge className="bg-purple-600 text-white font-semibold">
                                       <DollarSign className="w-3 h-3 mr-1" />
                                       {u.beauty_coins || 0}
                                     </Badge>
@@ -3513,11 +3528,20 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                                 </TableCell>
                                 <TableCell className="text-right">
                                   <div className="flex items-center justify-end gap-2">
-                                    <Button size="sm" onClick={() => handleEditarUsuarioCompleto(u)}>
+                                    <Button 
+                                      size="sm" 
+                                      onClick={() => handleEditarUsuarioCompleto(u)}
+                                      className="bg-pink-600 hover:bg-pink-700 text-white"
+                                    >
                                       <Edit className="w-4 h-4" />
                                     </Button>
-                                    {u.tipo_usuario === 'profissional' && (
-                                      <Button size="sm" variant="outline" className="border-red-300 text-red-700" onClick={() => handleExcluirProfissional(u)}>
+                                    {(u.tipo_usuario === 'profissional' || u.tipo_usuario === 'patrocinador') && (
+                                      <Button 
+                                        size="sm" 
+                                        variant="outline" 
+                                        className="border-red-600 text-red-700 hover:bg-red-50" 
+                                        onClick={() => handleExcluirProfissional(u)}
+                                      >
                                         <Trash2 className="w-4 h-4" />
                                       </Button>
                                     )}
