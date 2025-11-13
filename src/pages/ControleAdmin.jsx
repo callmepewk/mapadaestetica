@@ -206,6 +206,7 @@ export default function ControleAdmin() {
     hora_agendamento: "03:00"
   });
   const [mostrarGerenciadorVersoes, setMostrarGerenciadorVersoes] = useState(false);
+  const [gerandoDescricaoIA, setGerandoDescricaoIA] = useState(false); // NOVO: estado para o botão IA
 
   // NOVOS Estados para Contas Teste
   const [mostrarModalCriarTester, setMostrarModalCriarTester] = useState(false);
@@ -879,6 +880,88 @@ Equipe Mapa da Estética
       setTimeout(() => setErro(null), 5000);
     }
   });
+
+  // NOVO: Mutation para publicação imediata de versão
+  const forcarPublicacaoImediataMutation = useMutation({
+    mutationFn: async ({ titulo, descricao, conteudo }) => {
+      const todasVersoes = await base44.entities.VersaoSistema.list('-created_date', 1000);
+      let proximaVersao = "1.0";
+
+      if (todasVersoes.length > 0) {
+        const versaoAtualFromList = versoes.find(v => v.status === 'atual');
+        if (versaoAtualFromList) {
+          await base44.entities.VersaoSistema.update(versaoAtualFromList.id, {
+            status: 'anterior'
+          });
+          const partes = versaoAtualFromList.numero_versao.split('.');
+          const major = parseInt(partes[0]);
+          const minor = parseInt(partes[1]);
+          proximaVersao = `${major}.${minor + 1}`;
+        } else {
+           const highestMinor = todasVersoes.reduce((max, v) => {
+            const parts = v.numero_versao.split('.');
+            const minor = parseInt(parts[1]);
+            return minor > max ? minor : max;
+          }, -1);
+          proximaVersao = `1.${highestMinor + 1}`;
+        }
+      }
+      
+      const dataLancamento = new Date().toISOString();
+      const novaVersao = await base44.entities.VersaoSistema.create({
+        numero_versao: proximaVersao,
+        titulo,
+        descricao,
+        conteudo_detalhado: conteudo,
+        data_lancamento: dataLancamento,
+        data_agendamento: dataLancamento, // For consistency, set scheduled date to now
+        status: 'atual',
+        usuarios_nesta_versao: 0,
+        notificacoes_enviadas: false, // No prior email notifications for immediate launch
+        forcada: true
+      });
+
+      const todosUsuariosLista = await base44.entities.User.list('-created_date', 2000);
+      for (const usuario of todosUsuariosLista) {
+        await base44.entities.User.update(usuario.email, {
+          versao_sistema: novaVersao.numero_versao
+        });
+        await base44.entities.Notificacao.create({
+          usuario_email: usuario.email,
+          tipo: 'nova_versao_ativa',
+          titulo: `✨ Nova Versão Ativa: ${titulo}`,
+          mensagem: `A plataforma foi atualizada para a versão ${novaVersao.numero_versao} com novidades!`,
+          link_acao: '/novidades'
+        });
+      }
+
+      await base44.entities.VersaoSistema.update(novaVersao.id, {
+        usuarios_nesta_versao: todosUsuariosLista.length
+      });
+
+      return novaVersao;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['versoes-sistema'] });
+      queryClient.invalidateQueries({ queryKey: ['todos-usuarios'] });
+      setMostrarModalNovaVersao(false);
+      setDadosNovaVersao({
+        titulo: "",
+        descricao: "",
+        conteudo_detalhado: "",
+        data_agendamento: null,
+        hora_agendamento: "03:00"
+      });
+      setSucesso("✅ Nova versão publicada imediatamente! Todos os usuários foram atualizados.");
+      setMostrarCarregamentoAtualizacao(true); // Show reload screen
+      setTimeout(() => window.location.reload(), 3000); // Force reload
+    },
+    onError: (error) => {
+      setErro("Erro ao publicar nova versão imediatamente: " + error.message);
+      setTimeout(() => setErro(null), 5000);
+    }
+  });
+
 
   // NOVA Mutation: Ativar Versão (quando chegar a hora)
   const ativarVersaoMutation = useMutation({
@@ -1952,9 +2035,43 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
     }
   };
 
+  const handleGerarDescricaoIA = async () => {
+    if (!dadosNovaVersao.titulo) {
+      setErro("Por favor, insira um título para a versão antes de pedir ajuda à IA.");
+      setTimeout(() => setErro(null), 3000);
+      return;
+    }
+    setGerandoDescricaoIA(true);
+    setErro(null);
+    try {
+      const prompt = `Crie uma descrição resumida para a seguinte atualização do sistema, com foco nos benefícios para o usuário (até 3 frases): "${dadosNovaVersao.titulo}"`;
+      const response = await base44.integrations.Core.GenerateResponse({
+        prompt: prompt,
+        model: "gpt-3.5-turbo",
+        max_tokens: 100
+      });
+      if (response && response.response) {
+        setDadosNovaVersao(prev => ({ ...prev, descricao: response.response.trim() }));
+      } else {
+        throw new Error("Não foi possível gerar a descrição. Tente novamente.");
+      }
+    } catch (error) {
+      console.error("Erro ao gerar descrição com IA:", error);
+      setErro("Erro ao gerar descrição com IA: " + (error.message || "Serviço indisponível."));
+      setTimeout(() => setErro(null), 5000);
+    } finally {
+      setGerandoDescricaoIA(false);
+    }
+  };
+
   const handleCriarNovaVersao = () => {
-    if (!dadosNovaVersao.titulo || !dadosNovaVersao.descricao || !dadosNovaVersao.data_agendamento) {
-      setErro("Preencha título, descrição e data/hora!");
+    if (!dadosNovaVersao.titulo || !dadosNovaVersao.descricao) {
+      setErro("Preencha título e descrição da versão!");
+      setTimeout(() => setErro(null), 3000);
+      return;
+    }
+    if (!dadosNovaVersao.data_agendamento) {
+      setErro("Selecione uma data para agendar a versão, ou use o botão 'Publicar Agora'.");
       setTimeout(() => setErro(null), 3000);
       return;
     }
@@ -1964,7 +2081,7 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
     dataCompleta.setHours(parseInt(hora), parseInt(minuto), 0, 0);
 
     if (dataCompleta <= new Date()) {
-      setErro("A data/hora deve ser no futuro!");
+      setErro("A data/hora agendada deve ser no futuro!");
       setTimeout(() => setErro(null), 3000);
       return;
     }
@@ -1980,9 +2097,30 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
     }
   };
 
+  const handleForcarPublicacaoImediata = () => {
+    if (!dadosNovaVersao.titulo || !dadosNovaVersao.descricao) {
+      setErro("Preencha título e descrição da versão!");
+      setTimeout(() => setErro(null), 3000);
+      return;
+    }
+    if (confirm(`⚠️ ATENÇÃO: Confirma a PUBLICAÇÃO IMEDIATA da nova versão?\n\nTítulo: ${dadosNovaVersao.titulo}\n\nEsta ação irá:\n- Forçar a atualização para TODOS os usuários AGORA.\n- Recarregar o site automaticamente para todos.\n- A versão atual passará para "anterior".\n\nDESEJA CONTINUAR?`)) {
+      forcarPublicacaoImediataMutation.mutate({
+        titulo: dadosNovaVersao.titulo,
+        descricao: dadosNovaVersao.descricao,
+        conteudo: dadosNovaVersao.conteudo_detalhado,
+      });
+    }
+  };
+
   const handleDeletarVersao = (versao) => {
     if (confirm(`⚠️ ATENÇÃO: Deletar versão ${versao.numero_versao}?\n\nIsto irá:\n• Liberar cache desta versão\n• Transferir ${versao.usuarios_nesta_versao || 0} usuários para a versão atual\n• Remover permanentemente esta versão do histórico\n\nDeseja continuar?`)) {
       deletarVersaoMutation.mutate(versao.id);
+    }
+  };
+
+  const handleForcarAtivarVersao = (versao) => {
+    if (confirm(`⚠️ ATENÇÃO: Deseja ativar a versão ${versao.numero_versao} AGORA?\n\nEsta ação irá:\n- Mudar a versão atual para "anterior".\n- Definir ${versao.numero_versao} como a nova "versão atual".\n- Recarregar o site para todos os usuários online.\n\nRecomendado apenas para uso emergencial. DESEJA CONTINUAR?`)) {
+      ativarVersaoMutation.mutate(versao.id);
     }
   };
 
@@ -4253,7 +4391,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
           </DialogContent>
         </Dialog>
 
-        {/* NOVO: Modal Criar Nova Versão */}
+        {/* ATUALIZADO: Modal Criar Nova Versão */}
         <Dialog open={mostrarModalNovaVersao} onOpenChange={setMostrarModalNovaVersao}>
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
@@ -4262,7 +4400,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                 Agendar Nova Versão do Sistema
               </DialogTitle>
               <DialogDescription>
-                Crie e agende uma nova versão. Todos os usuários receberão notificação por email.
+                Crie e agende uma nova versão ou publique imediatamente
               </DialogDescription>
             </DialogHeader>
 
@@ -4292,7 +4430,24 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
               </div>
 
               <div>
-                <Label>Descrição Resumida *</Label>
+                <div className="flex items-center justify-between mb-2">
+                  <Label>Descrição Resumida *</Label>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={handleGerarDescricaoIA}
+                    disabled={gerandoDescricaoIA || !dadosNovaVersao.titulo}
+                    className="border-purple-300 text-purple-700"
+                  >
+                    {gerandoDescricaoIA ? (
+                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                    ) : (
+                      <Sparkles className="w-3 h-3 mr-1" />
+                    )}
+                    Pedir Ajuda IA
+                  </Button>
+                </div>
                 <Textarea
                   placeholder="Resumo das principais mudanças (aparece no email)"
                   value={dadosNovaVersao.descricao}
@@ -4317,7 +4472,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                 <div>
                   <Label className="flex items-center gap-2 mb-2">
                     <CalendarIcon className="w-4 h-4" />
-                    Data de Lançamento *
+                    Data de Lançamento (opcional)
                   </Label>
                   <Popover>
                     <PopoverTrigger asChild>
@@ -4325,7 +4480,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                         <CalendarIcon className="w-4 h-4 mr-2" />
                         {dadosNovaVersao.data_agendamento ? 
                           format(dadosNovaVersao.data_agendamento, "dd/MM/yyyy", { locale: ptBR }) : 
-                          "Selecione a data"
+                          "Publicar agora"
                         }
                       </Button>
                     </PopoverTrigger>
@@ -4339,68 +4494,78 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                       />
                     </PopoverContent>
                   </Popover>
+                  {dadosNovaVersao.data_agendamento && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setDadosNovaVersao({...dadosNovaVersao, data_agendamento: null})}
+                      className="mt-1 text-xs"
+                    >
+                      <XCircle className="w-3 h-3 mr-1" />
+                      Publicar agora
+                    </Button>
+                  )}
                 </div>
 
-                <div>
-                  <Label className="flex items-center gap-2 mb-2">
-                    <Clock className="w-4 h-4" />
-                    Horário do Lançamento *
-                  </Label>
-                  <Select 
-                    value={dadosNovaVersao.hora_agendamento} 
-                    onValueChange={(value) => setDadosNovaVersao({...dadosNovaVersao, hora_agendamento: value})}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-[200px]">
-                      <SelectItem value="00:00">00:00 (Meia-noite)</SelectItem>
-                      <SelectItem value="01:00">01:00</SelectItem>
-                      <SelectItem value="02:00">02:00</SelectItem>
-                      <SelectItem value="03:00">03:00 ⭐ (Recomendado)</SelectItem>
-                      <SelectItem value="04:00">04:00</SelectItem>
-                      <SelectItem value="05:00">05:00</SelectItem>
-                      <SelectItem value="06:00">06:00</SelectItem>
-                      <SelectItem value="07:00">07:00</SelectItem>
-                      <SelectItem value="08:00">08:00</SelectItem>
-                      <SelectItem value="09:00">09:00</SelectItem>
-                      <SelectItem value="10:00">10:00</SelectItem>
-                      <SelectItem value="11:00">11:00</SelectItem>
-                      <SelectItem value="12:00">12:00 (Meio-dia)</SelectItem>
-                      <SelectItem value="13:00">13:00</SelectItem>
-                      <SelectItem value="14:00">14:00</SelectItem>
-                      <SelectItem value="15:00">15:00</SelectItem>
-                      <SelectItem value="16:00">16:00</SelectItem>
-                      <SelectItem value="17:00">17:00</SelectItem>
-                      <SelectItem value="18:00">18:00</SelectItem>
-                      <SelectItem value="19:00">19:00</SelectItem>
-                      <SelectItem value="20:00">20:00</SelectItem>
-                      <SelectItem value="21:00">21:00</SelectItem>
-                      <SelectItem value="22:00">22:00</SelectItem>
-                      <SelectItem value="23:00">23:00</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-gray-500 mt-1">
-                    💡 Recomendado: 03:00 (madrugada)
-                  </p>
-                </div>
+                {dadosNovaVersao.data_agendamento && (
+                  <div>
+                    <Label className="flex items-center gap-2 mb-2">
+                      <Clock className="w-4 h-4" />
+                      Horário do Lançamento *
+                    </Label>
+                    <Select 
+                      value={dadosNovaVersao.hora_agendamento} 
+                      onValueChange={(value) => setDadosNovaVersao({...dadosNovaVersao, hora_agendamento: value})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[200px]">
+                        {Array.from({ length: 24 }, (_, i) => {
+                          const hora = i.toString().padStart(2, '0');
+                          return (
+                            <SelectItem key={hora} value={`${hora}:00`}>
+                              {hora}:00 {i === 3 ? '⭐ (Recomendado)' : ''}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
 
-              <Alert className="bg-yellow-50 border-yellow-200">
-                <AlertCircle className="h-4 w-4 text-yellow-600" />
-                <AlertDescription className="text-yellow-900 text-sm">
-                  <p className="font-semibold mb-2">⚠️ O que acontecerá:</p>
-                  <ul className="list-disc ml-4 space-y-1">
-                    <li>Sistema envia <strong>email para TODOS</strong> os usuários agora</li>
-                    <li>Na data/hora: <strong>ativação automática</strong> da versão</li>
-                    <li>Usuários online serão <strong>atualizados automaticamente</strong></li>
-                    <li>Próxima versão será calculada automaticamente (ex: 1.0 → 1.1)</li>
-                  </ul>
-                </AlertDescription>
-              </Alert>
+              {dadosNovaVersao.data_agendamento ? (
+                <Alert className="bg-yellow-50 border-yellow-200">
+                  <AlertCircle className="h-4 w-4 text-yellow-600" />
+                  <AlertDescription className="text-yellow-900 text-sm">
+                    <p className="font-semibold mb-2">⚠️ O que acontecerá:</p>
+                    <ul className="list-disc ml-4 space-y-1">
+                      <li>Sistema envia <strong>email para TODOS</strong> os usuários agora</li>
+                      <li>Na data/hora: <strong>ativação automática</strong> da versão</li>
+                      <li>Usuários online serão <strong>atualizados automaticamente</strong></li>
+                      <li>Próxima versão será calculada automaticamente</li>
+                    </ul>
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                <Alert className="bg-red-50 border-red-200">
+                  <AlertCircle className="h-4 w-4 text-red-600" />
+                  <AlertDescription className="text-red-900 text-sm">
+                    <p className="font-semibold mb-2">🚨 PUBLICAÇÃO IMEDIATA:</p>
+                    <ul className="list-disc ml-4 space-y-1">
+                      <li><strong>TODOS os usuários</strong> serão atualizados AGORA</li>
+                      <li><strong>Site recarregará</strong> automaticamente</li>
+                      <li>Nova versão ativa <strong>imediatamente</strong></li>
+                      <li><strong>Não haverá</strong> notificação prévia por email</li>
+                    </ul>
+                  </AlertDescription>
+                </Alert>
+              )}
             </div>
 
-            <DialogFooter>
+            <DialogFooter className="gap-2">
               <Button
                 variant="outline"
                 onClick={() => {
@@ -4413,32 +4578,52 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                     hora_agendamento: "03:00"
                   });
                 }}
-                disabled={criarNovaVersaoMutation.isPending}
+                disabled={criarNovaVersaoMutation.isPending || forcarPublicacaoImediataMutation.isPending}
               >
                 Cancelar
               </Button>
-              <Button
-                onClick={handleCriarNovaVersao}
-                disabled={criarNovaVersaoMutation.isPending}
-                className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
-              >
-                {criarNovaVersaoMutation.isPending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Criando e Enviando Emails...
-                  </>
-                ) : (
-                  <>
-                    <Rocket className="w-4 h-4 mr-2" />
-                    Criar e Agendar Versão
-                  </>
-                )}
-              </Button>
+              {dadosNovaVersao.data_agendamento ? (
+                <Button
+                  onClick={handleCriarNovaVersao}
+                  disabled={criarNovaVersaoMutation.isPending}
+                  className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+                >
+                  {criarNovaVersaoMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Criando e Enviando Emails...
+                    </>
+                  ) : (
+                    <>
+                      <Rocket className="w-4 h-4 mr-2" />
+                      Agendar Versão
+                    </>
+                  )}
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleForcarPublicacaoImediata}
+                  disabled={forcarPublicacaoImediataMutation.isPending}
+                  className="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700"
+                >
+                  {forcarPublicacaoImediataMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Publicando...
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="w-4 h-4 mr-2" />
+                      Publicar Agora (Imediato)
+                    </>
+                  )}
+                </Button>
+              )}
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
-        {/* NOVO: Modal Gerenciador de Versões */}
+        {/* ATUALIZADO: Modal Gerenciador de Versões */}
         <Dialog open={mostrarGerenciadorVersoes} onOpenChange={setMostrarGerenciadorVersoes}>
           <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
@@ -4491,7 +4676,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                 </div>
               )}
 
-              {/* Versões Agendadas */}
+              {/* ATUALIZADO: Versões Agendadas com Botão Ativar Agora */}
               {versoesAgendadas.length > 0 && (
                 <div>
                   <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
@@ -4531,18 +4716,30 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                                   </span>
                                 </div>
                               </div>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="border-red-300 text-red-700"
-                                onClick={() => {
-                                  if (confirm(`Cancelar agendamento?\n\nVersão: ${versao.numero_versao}\nObs: Os emails já foram enviados!`)) {
-                                    deletarVersaoMutation.mutate(versao.id);
-                                  }
-                                }}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleForcarAtivarVersao(versao)}
+                                  className="bg-orange-600 hover:bg-orange-700"
+                                  disabled={ativarVersaoMutation.isPending}
+                                >
+                                  <Zap className="w-4 h-4 mr-1" />
+                                  Ativar Agora
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="border-red-300 text-red-700"
+                                  onClick={() => {
+                                    if (confirm(`Cancelar agendamento?\n\nVersão: ${versao.numero_versao}\nObs: Os emails já foram enviados!`)) {
+                                      deletarVersaoMutation.mutate(versao.id);
+                                    }
+                                  }}
+                                  disabled={deletarVersaoMutation.isPending}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
                             </div>
                           </CardContent>
                         </Card>

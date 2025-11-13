@@ -7,27 +7,30 @@ import { createPageUrl } from "@/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Calendar,
-  Clock,
-  TrendingUp,
-  Sparkles,
-  Heart,
-  Eye,
-  Briefcase,
-  Users,
-  ExternalLink,
-  MessageCircle,
-  Send,
-  AlertCircle,
-  X,
-  Share2,
-  Facebook,
+import { 
+  Calendar, 
+  Clock, 
+  TrendingUp, 
+  Sparkles, 
+  Heart, 
+  Eye, 
+  Briefcase, 
+  Users, 
+  ExternalLink, 
+  MessageCircle, 
+  Send, 
+  AlertCircle, 
+  X, 
+  Share2, 
+  Facebook, 
   Copy,
   Plus,
   Loader2,
   CheckCircle,
-  Link as LinkIcon
+  Link as LinkIcon,
+  Upload, // Added
+  Wand2, // Added
+  Image as ImageIcon // Added
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
@@ -102,7 +105,7 @@ export default function Blog() {
   const [mostrarLinkCopiado, setMostrarLinkCopiado] = useState(false);
   const [mostrarLoginPrompt, setMostrarLoginPrompt] = useState(false);
 
-  // NOVOS Estados para criação de post
+  // Estados para criação de post
   const [mostrarModalCriarPost, setMostrarModalCriarPost] = useState(false);
   const [dadosPost, setDadosPost] = useState({
     titulo: "",
@@ -114,12 +117,27 @@ export default function Blog() {
     status: "publicado",
     data_publicacao: null,
     hora_publicacao: "09:00",
-    links_patrocinador: []
+    links_patrocinador: [],
+    imagem_capa: "", // Added
+    logo_empresa: "" // Added
   });
   const [novoLink, setNovoLink] = useState({
     titulo: "",
     url: "",
     tipo: "site"
+  });
+
+  // Estados para upload (Added)
+  const [uploadingImagemCapa, setUploadingImagemCapa] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+
+  // Estados para IA (Added)
+  const [mostrarModalIA, setMostrarModalIA] = useState(false);
+  const [gerandoPostIA, setGerandoPostIA] = useState(false);
+  const [dadosIA, setDadosIA] = useState({
+    tema: "",
+    categoria: "Estética Facial",
+    publico: "profissional"
   });
 
   useEffect(() => {
@@ -168,6 +186,8 @@ export default function Blog() {
         status: status,
         data_publicacao: dataPublicacao.toISOString(),
         links_patrocinador: dados.links_patrocinador,
+        imagem_capa: dados.imagem_capa, // Added
+        logo_empresa: dados.logo_empresa, // Added
         visualizacoes: 0,
         total_curtidas: 0,
         curtidas: []
@@ -186,7 +206,9 @@ export default function Blog() {
         status: "publicado",
         data_publicacao: null,
         hora_publicacao: "09:00",
-        links_patrocinador: []
+        links_patrocinador: [],
+        imagem_capa: "", // Added
+        logo_empresa: "" // Added
       });
       alert("✅ Post criado com sucesso!");
     },
@@ -199,17 +221,118 @@ export default function Blog() {
   const podePostar = () => {
     if (!user) return false;
     if (user.role === 'admin') return true;
-
+    
     // Plano Mapa da Estética: apenas DELUXE (platina)
     if (user.plano_ativo === 'platina') return true;
-
+    
     // Planos Patrocinador: PRATA em diante
     const planosPatrocinadorPermitidos = ['prata', 'ouro', 'diamante', 'platina'];
     if (user.plano_patrocinador && planosPatrocinadorPermitidos.includes(user.plano_patrocinador)) {
       return true;
     }
-
+    
     return false;
+  };
+
+  // Upload handlers (Added)
+  const handleUploadImagemCapa = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploadingImagemCapa(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setDadosPost({ ...dadosPost, imagem_capa: file_url });
+    } catch (error) {
+      console.error("Erro ao fazer upload da imagem de capa:", error);
+      alert("Erro ao fazer upload da imagem de capa");
+    } finally {
+      setUploadingImagemCapa(false);
+    }
+  };
+
+  const handleUploadLogo = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploadingLogo(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setDadosPost({ ...dadosPost, logo_empresa: file_url });
+    } catch (error) {
+      console.error("Erro ao fazer upload do logo:", error);
+      alert("Erro ao fazer upload do logo");
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  // IA Generation handler (Added)
+  const handleGerarPostIA = async () => {
+    if (!dadosIA.tema || !dadosIA.categoria) {
+      alert("Preencha tema e categoria!");
+      return;
+    }
+
+    setGerandoPostIA(true);
+
+    try {
+      const prompt = `Você é o Dr. Beleza, especialista em conteúdo para estética.
+
+TEMA: ${dadosIA.tema}
+CATEGORIA: ${dadosIA.categoria}
+PÚBLICO: ${dadosIA.publico === 'profissional' ? 'Profissionais de estética' : 'Público geral interessado em estética'}
+
+TAREFA: Crie um artigo COMPLETO para blog sobre este tema.
+
+O artigo deve ter:
+- Título atrativo e profissional (máx 80 caracteres)
+- Resumo/subtítulo chamativo (máx 200 caracteres)
+- Conteúdo completo e detalhado (600-800 palavras)
+- Tempo de leitura estimado (em minutos)
+- Tom ${dadosIA.publico === 'profissional' ? 'técnico mas acessível' : 'educativo e acessível'}
+
+Retorne no formato JSON:
+{
+  "titulo": "...",
+  "resumo": "...",
+  "conteudo": "...",
+  "tempo_leitura": número
+}`;
+
+      const resultado = await base44.integrations.Core.InvokeLLM({
+        prompt: prompt,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            titulo: { type: "string" },
+            resumo: { type: "string" },
+            conteudo: { type: "string" },
+            tempo_leitura: { type: "number" }
+          }
+        }
+      });
+
+      setDadosPost({
+        ...dadosPost,
+        titulo: resultado.titulo,
+        resumo: resultado.resumo,
+        conteudo: resultado.conteudo,
+        tempo_leitura: resultado.tempo_leitura,
+        categoria: dadosIA.categoria,
+        tipo: dadosIA.publico
+      });
+
+      setMostrarModalIA(false);
+      setMostrarModalCriarPost(true);
+      alert("✨ Post gerado com IA! Revise e publique.");
+    } catch (error) {
+      console.error("Erro ao gerar post:", error);
+      alert("Erro ao gerar post com IA. Tente novamente.");
+    } finally {
+      setGerandoPostIA(false);
+    }
   };
 
   const handleAdicionarLink = () => {
@@ -536,21 +659,30 @@ export default function Blog() {
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-8 md:mb-12">
-          <div className="flex items-center justify-center gap-4 mb-4">
+          <div className="flex items-center justify-center gap-4 mb-4 flex-wrap">
             <div className="inline-flex items-center gap-2 bg-pink-100 text-pink-700 px-4 py-2 rounded-full">
               <TrendingUp className="w-4 h-4" />
               <span className="text-sm font-medium">Atualizado semanalmente</span>
             </div>
-
-            {/* NOVO: Botão Criar Post */}
+            
+            {/* Botões de Criação */}
             {podePostar() && (
-              <Button
-                onClick={() => setMostrarModalCriarPost(true)}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Criar Post
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => setMostrarModalIA(true)}
+                  className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+                >
+                  <Wand2 className="w-4 h-4 mr-2" />
+                  Criar com IA
+                </Button>
+                <Button
+                  onClick={() => setMostrarModalCriarPost(true)}
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Criar Post
+                </Button>
+              </div>
             )}
           </div>
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-2 px-4">
@@ -782,7 +914,7 @@ export default function Blog() {
                 <div className="mt-12 pt-8 border-t">
                   <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                     <MessageCircle className="w-6 h-6" />
-                    Comentários ({comentarios.filter(c => c.status === 'ativo').length})
+                    Comentários ({comentarios.filter(c => c.status === 'ativo' && !c.comentario_pai_id).length})
                   </h3>
 
                   {erro && (
@@ -905,7 +1037,127 @@ export default function Blog() {
         </DialogContent>
       </Dialog>
 
-      {/* NOVO: Modal Criar Post */}
+      {/* NOVO: Modal Criar Post com IA */}
+      <Dialog open={mostrarModalIA} onOpenChange={setMostrarModalIA}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl flex items-center gap-2">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center overflow-hidden">
+                <img
+                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/8b8866b2d_drbeleza.png"
+                  alt="Dr. Beleza"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    // Fallback to MessageCircle if image fails to load
+                    e.target.style.display = 'none';
+                    if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
+                  }}
+                />
+                <MessageCircle className="w-6 h-6 text-white hidden" />
+              </div>
+              Criar Post com Dr. Beleza
+            </DialogTitle>
+            <DialogDescription>
+              Deixe a IA criar um artigo completo para você com base em informações básicas
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <Alert className="bg-blue-50 border-blue-200">
+              <Sparkles className="h-4 w-4 text-blue-600" />
+              <AlertDescription className="text-blue-800 text-sm">
+                <strong>Como funciona:</strong> Preencha tema e categoria. A IA gerará título, resumo, conteúdo completo e tempo de leitura automaticamente!
+              </AlertDescription>
+            </Alert>
+
+            <div>
+              <Label>Tema do Artigo *</Label>
+              <Input
+                placeholder="Ex: Benefícios do Microagulhamento para Rejuvenescimento"
+                value={dadosIA.tema}
+                onChange={(e) => setDadosIA({...dadosIA, tema: e.target.value})}
+                className="mt-1"
+              />
+            </div>
+
+            <div>
+              <Label>Categoria *</Label>
+              <Select
+                value={dadosIA.categoria}
+                onValueChange={(value) => setDadosIA({...dadosIA, categoria: value})}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Estética Facial">Estética Facial</SelectItem>
+                  <SelectItem value="Estética Corporal">Estética Corporal</SelectItem>
+                  <SelectItem value="Cuidados com a Pele">Cuidados com a Pele</SelectItem>
+                  <SelectItem value="Tratamentos">Tratamentos</SelectItem>
+                  <SelectItem value="Tendências">Tendências</SelectItem>
+                  <SelectItem value="Novidades">Novidades</SelectItem>
+                  <SelectItem value="Harmonização Facial">Harmonização Facial</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label>Público-Alvo *</Label>
+              <Select
+                value={dadosIA.publico}
+                onValueChange={(value) => setDadosIA({...dadosIA, publico: value})}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="profissional">
+                    <div className="flex items-center gap-2">
+                      <Briefcase className="w-4 h-4" />
+                      Para Profissionais
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="geral">
+                    <div className="flex items-center gap-2">
+                      <Users className="w-4 h-4" />
+                      Público Geral
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setMostrarModalIA(false)}
+              disabled={gerandoPostIA}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleGerarPostIA}
+              disabled={gerandoPostIA || !dadosIA.tema || !dadosIA.categoria}
+              className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+            >
+              {gerandoPostIA ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Gerando Post...
+                </>
+              ) : (
+                <>
+                  <Wand2 className="w-4 h-4 mr-2" />
+                  Gerar Post com IA
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </Dialog>
+      </Dialog>
+
+      {/* Modal Criar Post */}
       <Dialog open={mostrarModalCriarPost} onOpenChange={setMostrarModalCriarPost}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -919,6 +1171,97 @@ export default function Blog() {
           </DialogHeader>
 
           <div className="space-y-6 py-4">
+            {/* Upload de Imagens */}
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <Label>Imagem de Capa</Label>
+                <p className="text-xs text-gray-500 mb-2">Imagem principal do artigo</p>
+                {dadosPost.imagem_capa ? (
+                  <div className="relative">
+                    <img
+                      src={dadosPost.imagem_capa}
+                      alt="Capa"
+                      className="w-full h-40 object-cover rounded-lg"
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="destructive"
+                      className="absolute top-2 right-2"
+                      onClick={() => setDadosPost({ ...dadosPost, imagem_capa: "" })}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <Label htmlFor="imagem-capa" className="cursor-pointer">
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-purple-400 transition-colors">
+                      {uploadingImagemCapa ? (
+                        <Loader2 className="w-8 h-8 mx-auto animate-spin text-purple-600" />
+                      ) : (
+                        <>
+                          <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
+                          <span className="text-sm text-purple-600">Enviar imagem</span>
+                        </>
+                      )}
+                    </div>
+                  </Label>
+                )}
+                <Input
+                  id="imagem-capa"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleUploadImagemCapa}
+                  disabled={uploadingImagemCapa}
+                />
+              </div>
+
+              <div>
+                <Label>Logo/Marca (opcional)</Label>
+                <p className="text-xs text-gray-500 mb-2">Logo da empresa patrocinadora</p>
+                {dadosPost.logo_empresa ? (
+                  <div className="relative">
+                    <img
+                      src={dadosPost.logo_empresa}
+                      alt="Logo"
+                      className="w-full h-40 object-contain rounded-lg bg-gray-50"
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="destructive"
+                      className="absolute top-2 right-2"
+                      onClick={() => setDadosPost({ ...dadosPost, logo_empresa: "" })}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <Label htmlFor="logo-empresa" className="cursor-pointer">
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-purple-400 transition-colors">
+                      {uploadingLogo ? (
+                        <Loader2 className="w-8 h-8 mx-auto animate-spin text-purple-600" />
+                      ) : (
+                        <>
+                          <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
+                          <span className="text-sm text-purple-600">Enviar logo</span>
+                        </>
+                      )}
+                    </div>
+                  </Label>
+                )}
+                <Input
+                  id="logo-empresa"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleUploadLogo}
+                  disabled={uploadingLogo}
+                />
+              </div>
+            </div>
+
             {/* Tipo de Post */}
             <div>
               <Label>Tipo de Artigo *</Label>
@@ -1119,8 +1462,8 @@ export default function Blog() {
                         className="w-full justify-start text-left mt-1"
                       >
                         <Calendar className="w-4 h-4 mr-2" />
-                        {dadosPost.data_publicacao ?
-                          format(dadosPost.data_publicacao, "dd/MM/yyyy", { locale: ptBR }) :
+                        {dadosPost.data_publicacao ? 
+                          format(new Date(dadosPost.data_publicacao), "dd/MM/yyyy", { locale: ptBR }) : 
                           "Publicar agora"
                         }
                       </Button>
@@ -1178,7 +1521,7 @@ export default function Blog() {
                 <Alert className="mt-4 bg-blue-50 border-blue-200">
                   <Clock className="h-4 w-4 text-blue-600" />
                   <AlertDescription className="text-blue-800 text-sm">
-                    📅 Este post será publicado em: <strong>{format(dadosPost.data_publicacao, "dd/MM/yyyy", { locale: ptBR })} às {dadosPost.hora_publicacao}</strong>
+                    📅 Este post será publicado em: <strong>{format(new Date(dadosPost.data_publicacao), "dd/MM/yyyy", { locale: ptBR })} às {dadosPost.hora_publicacao}</strong>
                   </AlertDescription>
                 </Alert>
               )}
@@ -1215,7 +1558,9 @@ export default function Blog() {
                   status: "publicado",
                   data_publicacao: null,
                   hora_publicacao: "09:00",
-                  links_patrocinador: []
+                  links_patrocinador: [],
+                  imagem_capa: "",
+                  logo_empresa: ""
                 });
                 setNovoLink({ titulo: "", url: "", tipo: "site" });
               }}
