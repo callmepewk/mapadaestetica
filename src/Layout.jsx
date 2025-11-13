@@ -20,7 +20,8 @@ import {
   Star,
   DollarSign,
   ShoppingCart,
-  Crown // Added Crown icon
+  Crown, // Added Crown icon
+  Briefcase // Added Briefcase icon for admin view
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -37,6 +38,7 @@ import OnboardingModal from "./components/home/OnboardingModal";
 import NotificationBell from "./components/layout/NotificationBell";
 import CarrinhoModal from "./components/home/CarrinhoModal";
 import SeletorTipoUsuario from "./components/home/SeletorTipoUsuario";
+import SeletorVisaoAdmin from "./components/layout/SeletorVisaoAdmin";
 
 export default function Layout({ children }) {
   const location = useLocation();
@@ -49,6 +51,7 @@ export default function Layout({ children }) {
   const [carrinho, setCarrinho] = useState([]);
   const [mostrarCarrinho, setMostrarCarrinho] = useState(false);
   const [mostrarSeletorTipo, setMostrarSeletorTipo] = useState(false);
+  const [visaoAdmin, setVisaoAdmin] = useState("profissional"); // Estado para controlar visão do admin
 
   // Carregar carrinho do localStorage
   useEffect(() => {
@@ -84,6 +87,16 @@ export default function Layout({ children }) {
           // Verificar se precisa selecionar tipo
           if (!userData.tipo_usuario) {
             setMostrarSeletorTipo(true);
+          }
+
+          // Carregar visão salva do admin (se existir)
+          if (userData.role === 'admin') {
+            const visaoSalva = localStorage.getItem('admin_visao_site');
+            if (visaoSalva) {
+              setVisaoAdmin(visaoSalva);
+            } else {
+              setVisaoAdmin(userData.tipo_usuario || "profissional"); // Default for admin if no saved view
+            }
           }
 
           // Verificar se é tester e se expirou
@@ -149,11 +162,20 @@ export default function Layout({ children }) {
     }
   };
 
-  // Definir items de navegação baseado no tipo de usuário
-  const isPaciente = user?.tipo_usuario === 'paciente' || !user; // Usuário sem cadastro age como paciente
-  const isProfissional = user?.tipo_usuario === 'profissional';
-  const isAdmin = user?.role === 'admin'; // Added isAdmin check
-  const isTester = user?.role === 'tester'; // Added isTester check
+  const handleMudarVisaoAdmin = (novaVisao) => {
+    setVisaoAdmin(novaVisao);
+    localStorage.setItem('admin_visao_site', novaVisao);
+  };
+
+  // Definir items de navegação baseado no tipo de usuário OU visão do admin
+  const isAdmin = user?.role === 'admin';
+  const isTester = user?.role === 'tester';
+  
+  // Se for admin, usar a visão selecionada; caso contrário, usar tipo_usuario
+  const tipoAtual = isAdmin ? visaoAdmin : user?.tipo_usuario;
+  const isPaciente = tipoAtual === 'paciente' || (!user && !isAdmin); // Unauthenticated users also behave as patients
+  const isProfissional = tipoAtual === 'profissional';
+  const isPatrocinador = tipoAtual === 'patrocinador';
 
   // Verificar se cadastro está incompleto
   const cadastroIncompleto = isAuthenticated && user && !user.cadastro_completo;
@@ -312,6 +334,14 @@ export default function Layout({ children }) {
 
             {/* Right Actions */}
             <div className="flex items-center gap-2 sm:gap-3">
+              {/* NOVO: Seletor de Visão (apenas para admins) */}
+              {isAdmin && (
+                <SeletorVisaoAdmin
+                  visaoAtual={visaoAdmin}
+                  onMudarVisao={handleMudarVisaoAdmin}
+                />
+              )}
+
               {/* Sino de Notificações */}
               <NotificationBell user={user} />
 
@@ -353,7 +383,7 @@ export default function Layout({ children }) {
                     </Link>
                   </div>
 
-                  {isProfissional && (
+                  {(isProfissional || isPatrocinador) && (
                     <Link to={createPageUrl("CadastrarAnuncio")} className="hidden md:block">
                       <Button className="bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold shadow-lg hover:shadow-xl transition-all duration-200 text-sm border-2 border-[#2C2C2C]">
                         <PlusCircle className="w-4 h-4 mr-2" />
@@ -382,14 +412,18 @@ export default function Layout({ children }) {
                         <p className="text-sm font-medium truncate">{user?.full_name}</p>
                         <p className="text-xs text-gray-500 truncate">{user?.email}</p>
                         {isAdmin && (
-                          <Badge className="mt-1 bg-purple-100 text-purple-800">Admin</Badge>
+                          <Badge className="mt-1 bg-orange-100 text-orange-800">
+                            👑 Admin - Visão: {visaoAdmin.charAt(0).toUpperCase() + visaoAdmin.slice(1)}
+                          </Badge>
                         )}
                         {isTester && (
                           <Badge className="mt-1 bg-blue-100 text-blue-800">Tester (7 dias)</Badge>
                         )}
                         {user?.tipo_usuario && (
                           <Badge className="mt-1 bg-pink-100 text-pink-800">
-                            {user.tipo_usuario === 'paciente' ? 'Paciente' : 'Profissional'}
+                            {user.tipo_usuario === 'paciente' ? '👤 Paciente' : 
+                             user.tipo_usuario === 'profissional' ? '💼 Profissional' : 
+                             '👑 Patrocinador'}
                           </Badge>
                         )}
                       </div>
@@ -398,10 +432,12 @@ export default function Layout({ children }) {
                         <User className="w-4 h-4 mr-2" />
                         Meu Perfil
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setMostrarSeletorTipo(true)}>
-                        <User className="w-4 h-4 mr-2" />
-                        Trocar Tipo de Conta
-                      </DropdownMenuItem>
+                      {!isAdmin && ( // Only show "Trocar Tipo de Conta" if not an admin
+                        <DropdownMenuItem onClick={() => setMostrarSeletorTipo(true)}>
+                          <User className="w-4 h-4 mr-2" />
+                          Trocar Tipo de Conta
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuItem onClick={() => navigate(createPageUrl("LojaPontos"))}>
                         <Star className="w-4 h-4 mr-2" />
                         Loja de Pontos ({user?.pontos_acumulados || 0})
@@ -414,7 +450,7 @@ export default function Layout({ children }) {
                         </DropdownMenuItem>
                       )}
                       {/* NOVO: Dashboard Patrocinador */}
-                      {((user?.plano_patrocinador && user.plano_patrocinador !== 'nenhum') || isAdmin) && (
+                      {((user?.plano_patrocinador && user.plano_patrocinador !== 'nenhum') || isPatrocinador || isAdmin) && (
                         <DropdownMenuItem onClick={() => navigate(createPageUrl("DashboardPatrocinador"))}>
                           <Crown className="w-4 h-4 mr-2" />
                           Dashboard Patrocinador
@@ -489,6 +525,42 @@ export default function Layout({ children }) {
           {/* Mobile Navigation */}
           {mobileMenuOpen && (
             <nav className="lg:hidden mt-4 pb-4 space-y-2 border-t pt-4">
+              {/* NOVO: Seletor de Visão Mobile (apenas admin) */}
+              {isAdmin && (
+                <div className="mb-4 p-3 bg-orange-50 border-2 border-orange-200 rounded-lg">
+                  <p className="text-xs font-semibold text-orange-700 mb-2">👑 Modo Admin - Selecione a Visão:</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    <Button
+                      size="sm"
+                      variant={visaoAdmin === "paciente" ? "default" : "outline"}
+                      onClick={() => handleMudarVisaoAdmin("paciente")}
+                      className={visaoAdmin === "paciente" ? "bg-blue-600 text-white" : ""}
+                    >
+                      <User className="w-3 h-3 mr-1" />
+                      Paciente
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={visaoAdmin === "profissional" ? "default" : "outline"}
+                      onClick={() => handleMudarVisaoAdmin("profissional")}
+                      className={visaoAdmin === "profissional" ? "bg-purple-600 text-white" : ""}
+                    >
+                      <Briefcase className="w-3 h-3 mr-1" />
+                      Profissional
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={visaoAdmin === "patrocinador" ? "default" : "outline"}
+                      onClick={() => handleMudarVisaoAdmin("patrocinador")}
+                      className={visaoAdmin === "patrocinador" ? "bg-green-600 text-white" : ""}
+                    >
+                      <Crown className="w-3 h-3 mr-1" />
+                      Patrocinador
+                    </Button>
+                  </div>
+                </div>
+              )}
+
               {/* Carrinho no Mobile */}
               <button
                 onClick={() => {
@@ -568,7 +640,7 @@ export default function Layout({ children }) {
                   <span>{item.title}</span>
                 </Link>
               ))}
-              {isAuthenticated && isProfissional && (
+              {isAuthenticated && (isProfissional || isPatrocinador) && (
                 <Link
                   to={createPageUrl("CadastrarAnuncio")}
                   onClick={() => setMobileMenuOpen(false)}
