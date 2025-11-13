@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import {
   Dialog,
@@ -6,250 +6,265 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { User, Briefcase, AlertCircle, Check, Loader2, MessageCircle } from "lucide-react";
+import { 
+  User, 
+  Briefcase, 
+  AlertCircle, 
+  Phone, 
+  Loader2,
+  Crown,
+  CheckCircle
+} from "lucide-react";
 
 export default function SeletorTipoUsuario({ open, onClose, user, onSuccess }) {
   const [tipoSelecionado, setTipoSelecionado] = useState(null);
-  const [processando, setProcessando] = useState(false);
-  const [podeTrocar, setPodeTrocar] = useState(true);
-  const [diasRestantes, setDiasRestantes] = useState(0);
+  const [carregando, setCarregando] = useState(false);
 
-  useEffect(() => {
-    if (user && user.data_ultima_troca_tipo) {
-      const ultimaTroca = new Date(user.data_ultima_troca_tipo);
-      const hoje = new Date();
-      const diffTime = hoje - ultimaTroca;
-      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-      
-      if (diffDays < 7 && user.role !== 'admin') {
-        setPodeTrocar(false);
-        setDiasRestantes(7 - diffDays);
-      } else {
-        setPodeTrocar(true);
-      }
-    }
-  }, [user]);
+  // Verificar se pode trocar de tipo (7 dias de espera)
+  const podeTrocarTipo = () => {
+    if (!user) return true; // Novo usuário pode escolher livremente
+    if (user.role === 'admin') return true; // Admin pode trocar sempre
+    
+    if (!user.ultima_troca_tipo) return true; // Primeira vez escolhendo
+    
+    const ultimaTroca = new Date(user.ultima_troca_tipo);
+    const hoje = new Date();
+    const diasDesdeUltimaTroca = Math.floor((hoje - ultimaTroca) / (1000 * 60 * 60 * 24));
+    
+    return diasDesdeUltimaTroca >= 7;
+  };
+
+  const diasRestantes = () => {
+    if (!user || !user.ultima_troca_tipo) return 0;
+    
+    const ultimaTroca = new Date(user.ultima_troca_tipo);
+    const hoje = new Date();
+    const diasDesdeUltimaTroca = Math.floor((hoje - ultimaTroca) / (1000 * 60 * 60 * 24));
+    
+    return Math.max(0, 7 - diasDesdeUltimaTroca);
+  };
 
   const handleConfirmar = async () => {
     if (!tipoSelecionado) return;
     
-    setProcessando(true);
+    setCarregando(true);
     try {
       await base44.auth.updateMe({
         tipo_usuario: tipoSelecionado,
-        data_ultima_troca_tipo: new Date().toISOString().split('T')[0],
-        pode_trocar_tipo: false
+        ultima_troca_tipo: new Date().toISOString().split('T')[0]
       });
-
-      onSuccess();
+      
+      if (onSuccess) onSuccess();
       onClose();
     } catch (error) {
-      alert("Erro ao alterar tipo de usuário: " + error.message);
+      console.error("Erro ao atualizar tipo:", error);
+      alert("Erro ao atualizar tipo de usuário. Tente novamente.");
     } finally {
-      setProcessando(false);
+      setCarregando(false);
     }
   };
 
-  const handleSolicitarMudanca = () => {
-    const mensagem = `Olá! Gostaria de solicitar a mudança do meu tipo de conta.\n\nConta atual: ${user?.tipo_usuario}\nTipo desejado: ${tipoSelecionado}\nEmail: ${user?.email}`;
-    window.open(`https://wa.me/5554991554136?text=${encodeURIComponent(mensagem)}`, '_blank');
-    onClose();
+  const handleContatarSuporte = () => {
+    const mensagem = `Olá! Gostaria de alterar o tipo da minha conta antes do prazo de 7 dias.\n\nDados:\nNome: ${user?.full_name}\nEmail: ${user?.email}\nTipo atual: ${user?.tipo_usuario}\nNovo tipo desejado: ${tipoSelecionado}\n\nPor favor, me ajudem com essa alteração.`;
+    window.open(`https://wa.me/5531972595643?text=${encodeURIComponent(mensagem)}`, '_blank');
   };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl md:text-3xl text-center">
-            {user?.tipo_usuario ? 'Trocar Tipo de Conta' : 'Selecione o Tipo de Conta'}
+          <DialogTitle className="text-2xl">
+            {user?.tipo_usuario ? "Trocar Tipo de Conta" : "Escolha o Tipo da Sua Conta"}
           </DialogTitle>
-          <DialogDescription className="text-center">
+          <DialogDescription>
             {user?.tipo_usuario 
-              ? 'Você pode alterar seu tipo de conta a cada 7 dias' 
-              : 'Escolha como você deseja usar a plataforma'
-            }
+              ? "Selecione o novo tipo da sua conta (é possível trocar a cada 7 dias)" 
+              : "Selecione como você deseja usar o Mapa da Estética"}
           </DialogDescription>
         </DialogHeader>
 
-        {!podeTrocar && user?.role !== 'admin' ? (
-          <div className="py-8">
-            <Alert className="bg-yellow-50 border-yellow-200 mb-6">
-              <AlertCircle className="h-5 w-5 text-yellow-600" />
-              <AlertDescription className="text-yellow-800">
-                <p className="font-semibold mb-2">⏳ Período de Espera Ativo</p>
-                <p>Você poderá trocar de tipo de conta novamente em <strong>{diasRestantes} dia(s)</strong>.</p>
-                <p className="mt-2 text-sm">Última troca: {new Date(user.data_ultima_troca_tipo).toLocaleDateString('pt-BR')}</p>
+        {!podeTrocarTipo() ? (
+          <div className="py-6">
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                <p className="font-semibold mb-2">⏰ Você só pode trocar de tipo a cada 7 dias</p>
+                <p>Faltam <strong>{diasRestantes()} dias</strong> para poder trocar novamente.</p>
+                <p className="mt-3 text-sm">
+                  Última troca: {new Date(user.ultima_troca_tipo).toLocaleDateString('pt-BR')}
+                </p>
               </AlertDescription>
             </Alert>
 
-            <Card className="border-2 border-blue-200 bg-blue-50">
-              <CardContent className="p-6 text-center">
-                <MessageCircle className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-                <h3 className="font-bold text-lg mb-2">Precisa Trocar Agora?</h3>
-                <p className="text-gray-700 mb-4">
-                  Entre em contato com nosso suporte para solicitar a troca antecipada
-                </p>
-                <Button
-                  onClick={handleSolicitarMudanca}
-                  className="bg-green-600 hover:bg-green-700"
-                >
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  Falar com Suporte
-                </Button>
-              </CardContent>
-            </Card>
+            <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <p className="text-sm text-blue-900 mb-3">
+                <strong>Precisa trocar antes?</strong> Entre em contato com o suporte:
+              </p>
+              <Button
+                onClick={handleContatarSuporte}
+                className="w-full bg-green-600 hover:bg-green-700 text-white"
+              >
+                <Phone className="w-4 h-4 mr-2" />
+                Contatar Suporte via WhatsApp
+              </Button>
+            </div>
           </div>
         ) : (
-          <>
-            <div className="grid md:grid-cols-2 gap-6 py-6">
-              {/* Paciente */}
-              <Card
-                onClick={() => setTipoSelecionado('paciente')}
-                className={`cursor-pointer transition-all border-2 ${
-                  tipoSelecionado === 'paciente'
-                    ? 'border-pink-500 shadow-xl ring-4 ring-pink-200'
-                    : 'border-gray-200 hover:border-pink-300 hover:shadow-lg'
-                }`}
-              >
-                <CardContent className="p-6">
-                  <div className="text-center mb-4">
-                    <div className="w-20 h-20 bg-gradient-to-br from-pink-100 to-rose-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <User className="w-10 h-10 text-pink-600" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">Sou Paciente</h3>
-                    <p className="text-gray-600 text-sm mb-4">
-                      Procuro profissionais e serviços de estética
-                    </p>
-                  </div>
-
-                  <div className="space-y-3 mb-6">
-                    <div className="flex items-start gap-2 text-sm">
-                      <Check className="w-4 h-4 text-pink-600 flex-shrink-0 mt-0.5" />
-                      <span>Buscar profissionais verificados</span>
-                    </div>
-                    <div className="flex items-start gap-2 text-sm">
-                      <Check className="w-4 h-4 text-pink-600 flex-shrink-0 mt-0.5" />
-                      <span>Acessar clube de benefícios</span>
-                    </div>
-                    <div className="flex items-start gap-2 text-sm">
-                      <Check className="w-4 h-4 text-pink-600 flex-shrink-0 mt-0.5" />
-                      <span>Acumular pontos e ganhar prêmios</span>
-                    </div>
-                    <div className="flex items-start gap-2 text-sm">
-                      <Check className="w-4 h-4 text-pink-600 flex-shrink-0 mt-0.5" />
-                      <span>Consultar Dr. Beleza (IA)</span>
-                    </div>
-                    <div className="flex items-start gap-2 text-sm">
-                      <Check className="w-4 h-4 text-pink-600 flex-shrink-0 mt-0.5" />
-                      <span>Comprar produtos exclusivos</span>
-                    </div>
-                  </div>
-
-                  {tipoSelecionado === 'paciente' && (
-                    <Badge className="w-full justify-center bg-pink-600 text-white">
-                      Selecionado
-                    </Badge>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Profissional */}
-              <Card
-                onClick={() => setTipoSelecionado('profissional')}
-                className={`cursor-pointer transition-all border-2 ${
-                  tipoSelecionado === 'profissional'
-                    ? 'border-purple-500 shadow-xl ring-4 ring-purple-200'
-                    : 'border-gray-200 hover:border-purple-300 hover:shadow-lg'
-                }`}
-              >
-                <CardContent className="p-6">
-                  <div className="text-center mb-4">
-                    <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Briefcase className="w-10 h-10 text-purple-600" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">Sou Profissional</h3>
-                    <p className="text-gray-600 text-sm mb-4">
-                      Ofereço serviços de estética e beleza
-                    </p>
-                  </div>
-
-                  <div className="space-y-3 mb-6">
-                    <div className="flex items-start gap-2 text-sm">
-                      <Check className="w-4 h-4 text-purple-600 flex-shrink-0 mt-0.5" />
-                      <span>Criar anúncios profissionais</span>
-                    </div>
-                    <div className="flex items-start gap-2 text-sm">
-                      <Check className="w-4 h-4 text-purple-600 flex-shrink-0 mt-0.5" />
-                      <span>Receber clientes qualificados</span>
-                    </div>
-                    <div className="flex items-start gap-2 text-sm">
-                      <Check className="w-4 h-4 text-purple-600 flex-shrink-0 mt-0.5" />
-                      <span>Acessar ferramentas de gestão</span>
-                    </div>
-                    <div className="flex items-start gap-2 text-sm">
-                      <Check className="w-4 h-4 text-purple-600 flex-shrink-0 mt-0.5" />
-                      <span>Verificação profissional</span>
-                    </div>
-                    <div className="flex items-start gap-2 text-sm">
-                      <Check className="w-4 h-4 text-purple-600 flex-shrink-0 mt-0.5" />
-                      <span>Calculadoras e relatórios</span>
-                    </div>
-                  </div>
-
-                  {tipoSelecionado === 'profissional' && (
-                    <Badge className="w-full justify-center bg-purple-600 text-white">
-                      Selecionado
-                    </Badge>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-
+          <div className="py-6">
             {user?.tipo_usuario && (
-              <Alert className="bg-blue-50 border-blue-200">
-                <AlertCircle className="h-4 w-4 text-blue-600" />
-                <AlertDescription className="text-blue-800 text-sm">
-                  <p className="font-semibold mb-1">ℹ️ Atenção:</p>
-                  <p>Tipo atual: <strong>{user.tipo_usuario === 'paciente' ? 'Paciente' : 'Profissional'}</strong></p>
-                  <p className="mt-2">Após confirmar a troca, você só poderá alterar novamente em 7 dias ou solicitando ao suporte.</p>
+              <Alert className="mb-6 bg-yellow-50 border-yellow-200">
+                <AlertCircle className="h-4 w-4 text-yellow-600" />
+                <AlertDescription className="text-yellow-900">
+                  <strong>Atenção:</strong> Ao trocar o tipo da sua conta, você terá acesso a recursos diferentes. Seu tipo atual: <strong>{user.tipo_usuario}</strong>
                 </AlertDescription>
               </Alert>
             )}
 
-            <DialogFooter className="flex-col sm:flex-row gap-3">
-              <Button
-                variant="outline"
-                onClick={onClose}
-                className="w-full sm:w-auto"
-                disabled={processando}
+            <div className="grid md:grid-cols-3 gap-4">
+              {/* Card Paciente */}
+              <Card 
+                onClick={() => setTipoSelecionado("paciente")}
+                className={`cursor-pointer transition-all hover:shadow-xl ${
+                  tipoSelecionado === "paciente" 
+                    ? "border-4 border-blue-500 bg-blue-50" 
+                    : "border-2 border-gray-200 hover:border-blue-300"
+                }`}
               >
-                Cancelar
-              </Button>
-              <Button
-                onClick={handleConfirmar}
-                disabled={!tipoSelecionado || processando}
-                className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                <CardContent className="p-6 text-center">
+                  <div className={`w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center ${
+                    tipoSelecionado === "paciente" ? "bg-blue-500" : "bg-blue-100"
+                  }`}>
+                    <User className={`w-10 h-10 ${
+                      tipoSelecionado === "paciente" ? "text-white" : "text-blue-600"
+                    }`} />
+                  </div>
+                  <h3 className="text-xl font-bold mb-2">👤 Paciente</h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Buscar profissionais, agendar serviços e comprar produtos
+                  </p>
+                  {tipoSelecionado === "paciente" && (
+                    <Badge className="bg-blue-500 text-white">
+                      <CheckCircle className="w-3 h-3 mr-1" />
+                      Selecionado
+                    </Badge>
+                  )}
+                  <div className="mt-4 pt-4 border-t text-xs text-left space-y-1">
+                    <p>✅ Buscar profissionais</p>
+                    <p>✅ Salvar favoritos</p>
+                    <p>✅ Comprar produtos</p>
+                    <p>✅ Clube da Beleza</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Card Profissional */}
+              <Card 
+                onClick={() => setTipoSelecionado("profissional")}
+                className={`cursor-pointer transition-all hover:shadow-xl ${
+                  tipoSelecionado === "profissional" 
+                    ? "border-4 border-purple-500 bg-purple-50" 
+                    : "border-2 border-gray-200 hover:border-purple-300"
+                }`}
               >
-                {processando ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Processando...
-                  </>
-                ) : (
-                  <>
-                    <Check className="w-4 h-4 mr-2" />
-                    Confirmar
-                  </>
-                )}
-              </Button>
-            </DialogFooter>
-          </>
+                <CardContent className="p-6 text-center">
+                  <div className={`w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center ${
+                    tipoSelecionado === "profissional" ? "bg-purple-500" : "bg-purple-100"
+                  }`}>
+                    <Briefcase className={`w-10 h-10 ${
+                      tipoSelecionado === "profissional" ? "text-white" : "text-purple-600"
+                    }`} />
+                  </div>
+                  <h3 className="text-xl font-bold mb-2">💼 Profissional</h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Criar anúncios, gerenciar clientes e expandir seu negócio
+                  </p>
+                  {tipoSelecionado === "profissional" && (
+                    <Badge className="bg-purple-500 text-white">
+                      <CheckCircle className="w-3 h-3 mr-1" />
+                      Selecionado
+                    </Badge>
+                  )}
+                  <div className="mt-4 pt-4 border-t text-xs text-left space-y-1">
+                    <p>✅ Criar anúncios</p>
+                    <p>✅ Ferramentas IA</p>
+                    <p>✅ Relatórios de preço</p>
+                    <p>✅ Calculadoras</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Card Patrocinador/Parceiro */}
+              <Card 
+                onClick={() => setTipoSelecionado("patrocinador")}
+                className={`cursor-pointer transition-all hover:shadow-xl ${
+                  tipoSelecionado === "patrocinador" 
+                    ? "border-4 border-green-500 bg-green-50" 
+                    : "border-2 border-gray-200 hover:border-green-300"
+                }`}
+              >
+                <CardContent className="p-6 text-center">
+                  <div className={`w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center ${
+                    tipoSelecionado === "patrocinador" ? "bg-green-500" : "bg-green-100"
+                  }`}>
+                    <Crown className={`w-10 h-10 ${
+                      tipoSelecionado === "patrocinador" ? "text-white" : "text-green-600"
+                    }`} />
+                  </div>
+                  <h3 className="text-xl font-bold mb-2">👑 Patrocinador</h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Anunciar sua marca e alcançar milhares de profissionais
+                  </p>
+                  {tipoSelecionado === "patrocinador" && (
+                    <Badge className="bg-green-500 text-white">
+                      <CheckCircle className="w-3 h-3 mr-1" />
+                      Selecionado
+                    </Badge>
+                  )}
+                  <div className="mt-4 pt-4 border-t text-xs text-left space-y-1">
+                    <p>✅ Banners rotativos</p>
+                    <p>✅ Posts patrocinados</p>
+                    <p>✅ Produtos destacados</p>
+                    <p>✅ Estatísticas avançadas</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {tipoSelecionado && (
+              <div className="mt-6 flex gap-3">
+                <Button
+                  onClick={onClose}
+                  variant="outline"
+                  className="flex-1"
+                  disabled={carregando}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  onClick={handleConfirmar}
+                  className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                  disabled={carregando}
+                >
+                  {carregando ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Confirmando...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Confirmar Seleção
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
+          </div>
         )}
       </DialogContent>
     </Dialog>

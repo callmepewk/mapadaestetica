@@ -1,482 +1,704 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert"; // Added
-import { User, Briefcase, X, Sparkles, AlertCircle, LogIn } from "lucide-react"; // AlertCircle, LogIn added
-import { AnimatePresence, motion } from "framer-motion";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  CheckCircle,
+  ArrowRight,
+  ArrowLeft,
+  Sparkles,
+  MapPin,
+  Phone,
+  User,
+  Mail,
+  Briefcase,
+  Crown,
+  Loader2,
+  AlertCircle,
+  ExternalLink,
+  CreditCard
+} from "lucide-react";
 
-const estadosBrasil = ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"];
-
-const especialidades = [
-  "Estética Facial", "Estética Corporal", "Depilação", "Micropigmentação",
-  "Harmonização Facial", "Dermatologia", "Medicina Estética", "Cirurgia Plástica",
-  "Biomedicina Estética", "Enfermagem Estética", "Fisioterapia Dermato Funcional",
-  "Massoterapia", "Design de Sobrancelhas", "Manicure e Pedicure", "Podologia",
-  "Estética Capilar", "Transplante Capilar", "Nutrição Estética", "Outros"
+const ESTADOS_BRASIL = [
+  "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA",
+  "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN",
+  "RO", "RR", "RS", "SC", "SE", "SP", "TO"
 ];
 
-export default function OnboardingModal({ open, onComplete, onClose }) {
+const ESPECIALIDADES = [
+  "Estética Facial", "Estética Corporal", "Micropigmentação",
+  "Depilação", "Massoterapia", "Podologia", "Design de Sobrancelhas",
+  "Harmonização Facial", "Dermatologia", "Medicina Estética"
+];
+
+const PLANOS_PATROCINADOR = {
+  cobre: {
+    nome: "Cobre",
+    valor: 197,
+    link: "https://mpago.la/2DmMtKp",
+    beneficios: ["1 banner rotativo", "5 dias/mês de exposição", "Estatísticas básicas"]
+  },
+  prata: {
+    nome: "Prata",
+    valor: 397,
+    link: "https://mpago.la/1c5UPJe",
+    beneficios: ["3 banners rotativos", "10 dias/mês", "1 post mensal", "Métricas avançadas"]
+  },
+  ouro: {
+    nome: "Ouro",
+    valor: 697,
+    link: "https://mpago.la/2g3Nv4L",
+    beneficios: ["5 banners", "15 dias/mês", "2 posts mensais", "Produtos em destaque"]
+  },
+  diamante: {
+    nome: "Diamante",
+    valor: 997,
+    link: "https://mpago.la/1LkRbVz",
+    beneficios: ["10 banners", "20 dias/mês", "4 posts mensais", "Prioridade máxima"]
+  },
+  platina: {
+    nome: "Platina",
+    valor: 1497,
+    link: "https://mpago.la/2Pc8QrX",
+    beneficios: ["15 banners", "30 dias/mês", "Posts ilimitados", "Consultoria inclusa"]
+  }
+};
+
+export default function OnboardingModal({ open, onClose, onComplete }) {
   const [etapa, setEtapa] = useState(1);
-  const [tipoUsuario, setTipoUsuario] = useState("");
-  const [dadosBasicos, setDadosBasicos] = useState({
+  const [tipoUsuario, setTipoUsuario] = useState(null);
+  const [carregando, setCarregando] = useState(false);
+  const [user, setUser] = useState(null);
+  const [obtendoLocalizacao, setObtendoLocalizacao] = useState(false);
+  
+  const [dados, setDados] = useState({
+    full_name: "",
     telefone: "",
     whatsapp: "",
     cidade: "",
     estado: "",
-    endereco_completo: ""
-  });
-  const [dadosProfissional, setDadosProfissional] = useState({
+    pais: "Brasil",
+    latitude: null,
+    longitude: null,
+    nome_marca: "",
+    plano_patrocinador_selecionado: "",
     especialidade: "",
-    categoria: "",
-    subcategoria: "",
-    possui_clinica: false,
-    possui_ar_condicionado: false,
-    possui_estacionamento: false,
-    tem_google_negocios: false
+    cpf: "",
+    instagram: "",
+    facebook: ""
   });
-  const [loading, setLoading] = useState(false);
-  const [mostrarAlertaPerfil, setMostrarAlertaPerfil] = useState(false); // Added
 
-  const handleTipoUsuarioSubmit = () => {
-    if (!tipoUsuario) return;
-    setEtapa(2);
-  };
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const userData = await base44.auth.me();
+        setUser(userData);
+        setTipoUsuario(userData.tipo_usuario);
+        
+        // Preencher dados existentes
+        setDados({
+          full_name: userData.full_name || "",
+          telefone: userData.telefone || "",
+          whatsapp: userData.whatsapp || "",
+          cidade: userData.cidade || "",
+          estado: userData.estado || "",
+          pais: userData.pais || "Brasil",
+          latitude: userData.latitude || null,
+          longitude: userData.longitude || null,
+          nome_marca: userData.nome_marca || "",
+          plano_patrocinador_selecionado: "",
+          especialidade: userData.especialidade || "",
+          cpf: userData.cpf || "",
+          instagram: userData.instagram || "",
+          facebook: userData.facebook || ""
+        });
+      } catch (error) {
+        console.error("Erro ao buscar usuário:", error);
+      }
+    };
+    
+    if (open) {
+      fetchUser();
+    }
+  }, [open]);
 
-  const handleDadosBasicosSubmit = () => {
-    if (!dadosBasicos.telefone || !dadosBasicos.cidade || !dadosBasicos.estado) {
-      alert("Por favor, preencha todos os campos obrigatórios");
+  const handleObterLocalizacao = () => {
+    if (!navigator.geolocation) {
+      alert("Seu navegador não suporta geolocalização");
       return;
     }
 
-    if (tipoUsuario === "paciente" || tipoUsuario === "tester") {
-      salvarDados();
-    } else {
-      setEtapa(3);
-    }
+    setObtendoLocalizacao(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        setDados(prev => ({ ...prev, latitude, longitude }));
+        
+        // Tentar obter cidade/estado via reverse geocoding
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+          );
+          const data = await response.json();
+          
+          if (data.address) {
+            setDados(prev => ({
+              ...prev,
+              cidade: data.address.city || data.address.town || data.address.village || "",
+              estado: data.address.state || "",
+              pais: data.address.country || "Brasil"
+            }));
+          }
+        } catch (error) {
+          console.error("Erro ao obter localização:", error);
+        }
+        
+        setObtendoLocalizacao(false);
+      },
+      (error) => {
+        console.error("Erro ao obter geolocalização:", error);
+        alert("Não foi possível obter sua localização. Por favor, preencha manualmente.");
+        setObtendoLocalizacao(false);
+      }
+    );
   };
 
-  const salvarDados = async () => {
-    setLoading(true);
+  const handleProximaEtapa = () => {
+    if (etapa === 1 && !tipoUsuario) {
+      alert("Selecione um tipo de usuário");
+      return;
+    }
+    
+    if (etapa === 2) {
+      if (!dados.full_name || !dados.telefone || !dados.cidade || !dados.estado) {
+        alert("Preencha todos os campos obrigatórios");
+        return;
+      }
+    }
+
+    if (etapa === 3 && tipoUsuario === "patrocinador") {
+      if (!dados.nome_marca || !dados.plano_patrocinador_selecionado) {
+        alert("Preencha o nome da marca e selecione um plano");
+        return;
+      }
+    }
+
+    setEtapa(etapa + 1);
+  };
+
+  const handleFinalizarCadastro = async () => {
+    setCarregando(true);
     try {
-      const dados = {
-        ...dadosBasicos,
-        tipo_usuario: tipoUsuario === "tester" ? "profissional" : tipoUsuario,
+      const dadosAtualizacao = {
+        full_name: dados.full_name,
+        telefone: dados.telefone,
+        whatsapp: dados.whatsapp || dados.telefone,
+        cidade: dados.cidade,
+        estado: dados.estado,
+        pais: dados.pais,
+        latitude: dados.latitude,
+        longitude: dados.longitude,
+        tipo_usuario: tipoUsuario,
         cadastro_completo: true,
-        ...(tipoUsuario === "profissional" || tipoUsuario === "tester" ? dadosProfissional : {}),
-        ...(tipoUsuario === "tester" ? {
-          data_expiracao_teste: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-        } : {})
       };
 
-      await base44.auth.updateMe(dados);
+      // Dados específicos por tipo
+      if (tipoUsuario === "profissional") {
+        dadosAtualizacao.especialidade = dados.especialidade;
+        dadosAtualizacao.cpf = dados.cpf;
+        dadosAtualizacao.instagram = dados.instagram;
+        dadosAtualizacao.facebook = dados.facebook;
+      } else if (tipoUsuario === "patrocinador") {
+        dadosAtualizacao.nome_marca = dados.nome_marca;
+        dadosAtualizacao.instagram = dados.instagram;
+        dadosAtualizacao.facebook = dados.facebook;
+        // NÃO ativa o plano ainda - apenas registra a solicitação
+        
+        // Criar solicitação de ativação do plano
+        await base44.entities.SolicitacaoAtivacaoPlano.create({
+          usuario_email: user.email,
+          usuario_nome: dados.full_name,
+          plano_solicitado: dados.plano_patrocinador_selecionado,
+          tipo_plano: "patrocinador",
+          valor_mensal: PLANOS_PATROCINADOR[dados.plano_patrocinador_selecionado].valor,
+          link_mercadopago: PLANOS_PATROCINADOR[dados.plano_patrocinador_selecionado].link,
+          status: "aguardando_confirmacao",
+          data_solicitacao: new Date().toISOString()
+        });
 
-      // Mostrar alerta para completar perfil
-      setMostrarAlertaPerfil(true);
-      
-      setTimeout(() => { // Wrapped existing logic in a new setTimeout
-        if (tipoUsuario === "profissional" || tipoUsuario === "tester") {
-          const overlay = document.createElement('div');
-          overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
-
-          const notification = document.createElement('div');
-          notification.style.cssText = 'background:white;border-radius:16px;padding:32px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3);text-align:center;';
-          notification.innerHTML = `
-            <div style="font-size:48px;margin-bottom:16px;">🤔</div>
-            <h3 style="font-size:24px;font-weight:bold;margin-bottom:16px;color:#2C2C2C;">Dúvidas sobre qual plano é melhor para você?</h3>
-            <p style="color:#666;margin-bottom:24px;line-height:1.6;">
-              Escolha como podemos te ajudar:
-            </p>
-            <div style="display:flex;flex-direction:column;gap:12px;">
-              <a href="https://wa.me/5531972595643?text=${encodeURIComponent('Olá! Acabei de me cadastrar no Mapa da Estética e gostaria de saber qual plano é o melhor para mim! 💼')}"
-                 target="_blank"
-                 style="display:block;background:linear-gradient(to right, #25D366, #128C7E);color:white;padding:16px 32px;border-radius:8px;text-decoration:none;font-weight:bold;">
-                💬 Falar com Especialista
-              </a>
-              <button onclick="window.open('/pesquisa-especializada?origem=cadastro', '_blank')"
-                      style="width:100%;background:linear-gradient(to right, #F7D426, #FFE066);color:#2C2C2C;padding:16px 32px;border-radius:8px;border:none;cursor:pointer;font-weight:bold;">
-                🩺 Falar com Dr. Beleza
-              </button>
-              <button onclick="this.closest('div').parentElement.parentElement.remove();window.location.reload();"
-                      style="width:100%;background:transparent;color:#666;padding:12px;border:none;cursor:pointer;text-decoration:underline;margin-top:8px;">
-                Continuar sem consultar
-              </button>
-            </div>
-          `;
-
-          overlay.appendChild(notification);
-          document.body.appendChild(overlay);
-
-          setTimeout(() => {
-            if (document.body.contains(overlay)) {
-              overlay.remove();
-              window.location.reload();
-            }
-          }, 60000);
-        } else {
-          window.location.reload();
-        }
-      }, 2000); // Delay for 2 seconds
-
-      if (onComplete) {
-        onComplete();
+        // Criar notificação para o patrocinador
+        await base44.entities.Notificacao.create({
+          usuario_email: user.email,
+          tipo: "plano_patrocinador_pendente",
+          titulo: "🎉 Cadastro Completo - Plano em Análise",
+          mensagem: `Seu cadastro foi concluído! O plano ${PLANOS_PATROCINADOR[dados.plano_patrocinador_selecionado].nome} será ativado assim que nossa equipe verificar o pagamento. Você já pode explorar a plataforma!`,
+          lida: false
+        });
+      } else if (tipoUsuario === "paciente") {
+        dadosAtualizacao.cpf = dados.cpf;
       }
+
+      await base44.auth.updateMe(dadosAtualizacao);
+
+      // Recarregar página para atualizar interface
+      if (onComplete) onComplete();
+      window.location.reload();
     } catch (error) {
-      console.error("Erro ao salvar dados:", error);
-      alert("Erro ao salvar seus dados. Tente novamente.");
-      setLoading(false);
+      console.error("Erro ao finalizar cadastro:", error);
+      alert("Erro ao finalizar cadastro. Tente novamente.");
+    } finally {
+      setCarregando(false);
     }
   };
 
-  // Added handleLogin function
-  const handleLogin = () => {
-    const currentPath = window.location.pathname + window.location.search;
-    base44.auth.redirectToLogin(currentPath);
-  };
+  const totalEtapas = tipoUsuario === "profissional" ? 3 : tipoUsuario === "patrocinador" ? 4 : 2;
 
   return (
-    <Dialog 
-      open={open} 
-      onOpenChange={(isOpen) => {
-        if (!isOpen && onClose) {
-          onClose();
-        }
-      }}
-    >
-      <DialogContent 
-        className="sm:max-w-[95vw] md:max-w-[600px] max-h-[90vh] overflow-y-auto p-4 sm:p-6"
-        onPointerDownOutside={(e) => {
-          // Não fazer nada - permitir clique fora para fechar
-        }}
-      >
-        <button
-          onClick={() => {
-            if (onClose) onClose();
-          }}
-          className="absolute top-2 right-2 sm:top-4 sm:right-4 w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors z-50"
-          type="button"
-          aria-label="Fechar"
-        >
-          <X className="w-5 h-5" />
-        </button>
-
-        <DialogHeader className="space-y-2">
-          <DialogTitle className="text-xl sm:text-2xl pr-8">Bem-vindo ao Mapa da Estética! 🎉</DialogTitle>
-          <DialogDescription className="text-sm sm:text-base">
-            Complete seu cadastro em {tipoUsuario === "paciente" ? "2" : "3"} passos rápidos
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-2xl flex items-center gap-2">
+            <Sparkles className="w-6 h-6 text-purple-600" />
+            Complete seu Cadastro
+          </DialogTitle>
+          <DialogDescription>
+            Etapa {etapa} de {totalEtapas}
           </DialogDescription>
         </DialogHeader>
 
-        {/* Alerta para completar perfil - Added */}
-        {mostrarAlertaPerfil && (
-          <Alert className="bg-blue-50 border-blue-200 mb-4">
-            <AlertCircle className="h-4 w-4 text-blue-600" />
-            <AlertDescription className="text-blue-800 text-sm">
-              ✅ Cadastro inicial completo! Não esqueça de completar seu perfil com foto e mais informações para atrair mais clientes.
-            </AlertDescription>
-          </Alert>
-        )}
+        <div className="py-6">
+          {/* Barra de Progresso */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-2">
+              {Array.from({ length: totalEtapas }).map((_, i) => (
+                <div key={i} className="flex items-center flex-1">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                    i + 1 <= etapa ? "bg-purple-600 text-white" : "bg-gray-200 text-gray-600"
+                  }`}>
+                    {i + 1 < etapa ? <CheckCircle className="w-5 h-5" /> : i + 1}
+                  </div>
+                  {i < totalEtapas - 1 && (
+                    <div className={`h-1 flex-1 mx-2 ${
+                      i + 1 < etapa ? "bg-purple-600" : "bg-gray-200"
+                    }`} />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
 
-        <AnimatePresence mode="wait">
-          {/* Etapa 1 */}
+          {/* Etapa 1: Tipo de Usuário */}
           {etapa === 1 && (
-            <motion.div
-              key="etapa1"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="space-y-4 sm:space-y-6 py-2 sm:py-4"
-            >
-              <div className="text-center">
-                <h3 className="text-lg sm:text-xl font-bold mb-2">Você é um paciente, profissional ou quer testar?</h3>
-                <p className="text-xs sm:text-sm text-gray-600">Isso nos ajuda a personalizar sua experiência</p>
-              </div>
-
-              {/* Opção de Login - Added */}
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border-2 border-blue-200 text-center">
-                <p className="text-sm text-gray-700 mb-3">
-                  Já possui cadastro?
-                </p>
-                <Button
-                  onClick={handleLogin}
-                  variant="outline"
-                  className="w-full border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-bold"
-                >
-                  <LogIn className="w-4 h-4 mr-2" />
-                  Entrar na Minha Conta
-                </Button>
-              </div>
-
-              {/* Separator - Added */}
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-gray-300" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white px-2 text-gray-500">Ou cadastre-se agora</span>
-                </div>
-              </div>
-
-              <RadioGroup value={tipoUsuario} onValueChange={setTipoUsuario} className="space-y-3">
-                <div 
-                  className={`flex items-center space-x-3 p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                    tipoUsuario === 'paciente' ? 'border-pink-500 bg-pink-50' : 'border-gray-200 hover:border-pink-300'
+            <div className="space-y-6">
+              <h3 className="text-xl font-bold text-center mb-6">
+                Como você deseja usar o Mapa da Estética?
+              </h3>
+              
+              <div className="grid md:grid-cols-3 gap-4">
+                <Card 
+                  onClick={() => setTipoUsuario("paciente")}
+                  className={`cursor-pointer transition-all ${
+                    tipoUsuario === "paciente" 
+                      ? "border-4 border-blue-500 bg-blue-50" 
+                      : "border-2 border-gray-200 hover:border-blue-300"
                   }`}
-                  onClick={() => setTipoUsuario('paciente')}
                 >
-                  <RadioGroupItem value="paciente" id="paciente" />
-                  <Label htmlFor="paciente" className="flex items-center gap-3 cursor-pointer flex-1">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-pink-100 flex items-center justify-center flex-shrink-0">
-                      <User className="w-5 h-5 sm:w-6 sm:h-6 text-pink-600" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-sm sm:text-base">Paciente/Cliente</p>
-                      <p className="text-xs sm:text-sm text-gray-600">Busco serviços de estética</p>
-                    </div>
-                  </Label>
-                </div>
+                  <CardContent className="p-6 text-center">
+                    <User className={`w-12 h-12 mx-auto mb-3 ${
+                      tipoUsuario === "paciente" ? "text-blue-600" : "text-gray-400"
+                    }`} />
+                    <h4 className="font-bold mb-2">Paciente</h4>
+                    <p className="text-sm text-gray-600">Buscar serviços e profissionais</p>
+                  </CardContent>
+                </Card>
 
-                <div 
-                  className={`flex items-center space-x-3 p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                    tipoUsuario === 'profissional' ? 'border-purple-500 bg-purple-50' : 'border-gray-200 hover:border-purple-300'
+                <Card 
+                  onClick={() => setTipoUsuario("profissional")}
+                  className={`cursor-pointer transition-all ${
+                    tipoUsuario === "profissional" 
+                      ? "border-4 border-purple-500 bg-purple-50" 
+                      : "border-2 border-gray-200 hover:border-purple-300"
                   }`}
-                  onClick={() => setTipoUsuario('profissional')}
                 >
-                  <RadioGroupItem value="profissional" id="profissional" />
-                  <Label htmlFor="profissional" className="flex items-center gap-3 cursor-pointer flex-1">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-                      <Briefcase className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-sm sm:text-base">Profissional</p>
-                      <p className="text-xs sm:text-sm text-gray-600">Ofereço serviços de estética</p>
-                    </div>
-                  </Label>
-                </div>
+                  <CardContent className="p-6 text-center">
+                    <Briefcase className={`w-12 h-12 mx-auto mb-3 ${
+                      tipoUsuario === "profissional" ? "text-purple-600" : "text-gray-400"
+                    }`} />
+                    <h4 className="font-bold mb-2">Profissional</h4>
+                    <p className="text-sm text-gray-600">Anunciar meus serviços</p>
+                  </CardContent>
+                </Card>
 
-                <div 
-                  className={`flex items-center space-x-3 p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                    tipoUsuario === 'tester' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'
+                <Card 
+                  onClick={() => setTipoUsuario("patrocinador")}
+                  className={`cursor-pointer transition-all ${
+                    tipoUsuario === "patrocinador" 
+                      ? "border-4 border-green-500 bg-green-50" 
+                      : "border-2 border-gray-200 hover:border-green-300"
                   }`}
-                  onClick={() => setTipoUsuario('tester')}
                 >
-                  <RadioGroupItem value="tester" id="tester" />
-                  <Label htmlFor="tester" className="flex items-center gap-3 cursor-pointer flex-1">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                      <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-sm sm:text-base">Teste Grátis (7 dias)</p>
-                      <p className="text-xs sm:text-sm text-gray-600">Experimente como profissional</p>
-                    </div>
-                  </Label>
-                </div>
-              </RadioGroup>
-
-              {tipoUsuario === "tester" && (
-                <Badge className="w-full bg-blue-100 text-blue-800 text-xs sm:text-sm py-2 justify-center">
-                  ⏰ 7 dias de teste com todos os recursos!
-                </Badge>
-              )}
-
-              <Button
-                onClick={handleTipoUsuarioSubmit}
-                disabled={!tipoUsuario}
-                className="w-full bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-sm sm:text-base py-5 sm:py-6"
-              >
-                Continuar
-              </Button>
-            </motion.div>
+                  <CardContent className="p-6 text-center">
+                    <Crown className={`w-12 h-12 mx-auto mb-3 ${
+                      tipoUsuario === "patrocinador" ? "text-green-600" : "text-gray-400"
+                    }`} />
+                    <h4 className="font-bold mb-2">Patrocinador</h4>
+                    <p className="text-sm text-gray-600">Anunciar minha marca</p>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
           )}
 
-          {/* Etapa 2 */}
+          {/* Etapa 2: Informações Básicas */}
           {etapa === 2 && (
-            <motion.div
-              key="etapa2"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="space-y-3 sm:space-y-4 py-2 sm:py-4"
-            >
-              <h3 className="text-lg sm:text-xl font-bold text-center mb-2 sm:mb-4">Informações Básicas</h3>
+            <div className="space-y-4">
+              <h3 className="text-xl font-bold mb-4">Informações Básicas</h3>
+              
+              <div>
+                <Label htmlFor="nome">Nome Completo *</Label>
+                <Input
+                  id="nome"
+                  value={dados.full_name}
+                  onChange={(e) => setDados({ ...dados, full_name: e.target.value })}
+                  placeholder="Seu nome completo"
+                />
+              </div>
 
-              <div className="space-y-3">
+              <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="telefone" className="text-sm">Telefone *</Label>
+                  <Label htmlFor="telefone">Telefone *</Label>
                   <Input
                     id="telefone"
+                    value={dados.telefone}
+                    onChange={(e) => setDados({ ...dados, telefone: e.target.value })}
                     placeholder="(00) 00000-0000"
-                    value={dadosBasicos.telefone}
-                    onChange={(e) => setDadosBasicos({...dadosBasicos, telefone: e.target.value})}
-                    className="mt-1"
-                    required
                   />
                 </div>
-
                 <div>
-                  <Label htmlFor="whatsapp" className="text-sm">WhatsApp</Label>
+                  <Label htmlFor="whatsapp">WhatsApp</Label>
                   <Input
                     id="whatsapp"
-                    placeholder="(00) 00000-0000"
-                    value={dadosBasicos.whatsapp}
-                    onChange={(e) => setDadosBasicos({...dadosBasicos, whatsapp: e.target.value})}
-                    className="mt-1"
+                    value={dados.whatsapp}
+                    onChange={(e) => setDados({ ...dados, whatsapp: e.target.value })}
+                    placeholder="Deixe vazio para usar o telefone"
                   />
                 </div>
+              </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <Label>Localização *</Label>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={handleObterLocalizacao}
+                    disabled={obtendoLocalizacao}
+                  >
+                    {obtendoLocalizacao ? (
+                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                    ) : (
+                      <MapPin className="w-3 h-3 mr-1" />
+                    )}
+                    Obter Localização Automática
+                  </Button>
+                </div>
+                <div className="grid md:grid-cols-3 gap-4">
                   <div>
-                    <Label htmlFor="cidade" className="text-sm">Cidade *</Label>
+                    <Label htmlFor="cidade">Cidade *</Label>
                     <Input
                       id="cidade"
-                      placeholder="Sua cidade"
-                      value={dadosBasicos.cidade}
-                      onChange={(e) => setDadosBasicos({...dadosBasicos, cidade: e.target.value})}
-                      className="mt-1"
-                      required
+                      value={dados.cidade}
+                      onChange={(e) => setDados({ ...dados, cidade: e.target.value })}
+                      placeholder="Ex: São Paulo"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="estado" className="text-sm">Estado *</Label>
+                    <Label htmlFor="estado">Estado *</Label>
+                    <Select
+                      value={dados.estado}
+                      onValueChange={(value) => setDados({ ...dados, estado: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {ESTADOS_BRASIL.map(estado => (
+                          <SelectItem key={estado} value={estado}>{estado}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="pais">País</Label>
                     <Input
-                      id="estado"
-                      placeholder="UF"
-                      value={dadosBasicos.estado}
-                      onChange={(e) => setDadosBasicos({...dadosBasicos, estado: e.target.value.toUpperCase()})}
-                      maxLength={2}
-                      className="mt-1"
-                      required
+                      id="pais"
+                      value={dados.pais}
+                      onChange={(e) => setDados({ ...dados, pais: e.target.value })}
+                      placeholder="Brasil"
                     />
                   </div>
                 </div>
+                {dados.latitude && dados.longitude && (
+                  <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
+                    <CheckCircle className="w-3 h-3" />
+                    Geolocalização obtida com sucesso!
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
 
+          {/* Etapa 3: Específico Profissional */}
+          {etapa === 3 && tipoUsuario === "profissional" && (
+            <div className="space-y-4">
+              <h3 className="text-xl font-bold mb-4">Informações Profissionais</h3>
+              
+              <div>
+                <Label htmlFor="especialidade">Especialidade *</Label>
+                <Select
+                  value={dados.especialidade}
+                  onValueChange={(value) => setDados({ ...dados, especialidade: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione sua especialidade" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ESPECIALIDADES.map(esp => (
+                      <SelectItem key={esp} value={esp}>{esp}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="cpf">CPF</Label>
+                <Input
+                  id="cpf"
+                  value={dados.cpf}
+                  onChange={(e) => setDados({ ...dados, cpf: e.target.value })}
+                  placeholder="000.000.000-00"
+                />
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="endereco" className="text-sm">Endereço Completo</Label>
+                  <Label htmlFor="instagram">Instagram (opcional)</Label>
                   <Input
-                    id="endereco"
-                    placeholder="Rua, número, bairro"
-                    value={dadosBasicos.endereco_completo}
-                    onChange={(e) => setDadosBasicos({...dadosBasicos, endereco_completo: e.target.value})}
-                    className="mt-1"
+                    id="instagram"
+                    value={dados.instagram}
+                    onChange={(e) => setDados({ ...dados, instagram: e.target.value })}
+                    placeholder="@seuperfil"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="facebook">Facebook (opcional)</Label>
+                  <Input
+                    id="facebook"
+                    value={dados.facebook}
+                    onChange={(e) => setDados({ ...dados, facebook: e.target.value })}
+                    placeholder="facebook.com/seuperfil"
                   />
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-2 pt-2">
-                <Button
-                  onClick={() => setEtapa(1)}
-                  variant="outline"
-                  className="w-full sm:flex-1 text-sm"
-                >
-                  Voltar
-                </Button>
-                <Button
-                  onClick={handleDadosBasicosSubmit}
-                  disabled={loading}
-                  className="w-full sm:flex-1 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-sm"
-                >
-                  {loading ? "Salvando..." : (tipoUsuario === "profissional" || tipoUsuario === "tester" ? "Continuar" : "Finalizar")}
-                </Button>
-              </div>
-            </motion.div>
+              <Alert className="bg-purple-50 border-purple-200">
+                <Sparkles className="h-4 w-4 text-purple-600" />
+                <AlertDescription className="text-purple-800 text-sm">
+                  ✨ Após concluir, você poderá criar anúncios gratuitamente!
+                </AlertDescription>
+              </Alert>
+            </div>
           )}
 
-          {/* Etapa 3 */}
-          {etapa === 3 && (
-            <motion.div
-              key="etapa3"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="space-y-3 sm:space-y-4 py-2 sm:py-4"
-            >
-              <h3 className="text-lg sm:text-xl font-bold text-center mb-2 sm:mb-4">Informações Profissionais</h3>
+          {/* Etapa 3: Específico Patrocinador - Nome da Marca */}
+          {etapa === 3 && tipoUsuario === "patrocinador" && (
+            <div className="space-y-4">
+              <h3 className="text-xl font-bold mb-4">Informações da Marca</h3>
+              
+              <div>
+                <Label htmlFor="nome_marca">Nome de Exibição da Marca *</Label>
+                <Input
+                  id="nome_marca"
+                  value={dados.nome_marca}
+                  onChange={(e) => setDados({ ...dados, nome_marca: e.target.value })}
+                  placeholder="Ex: Dermacosméticos XYZ"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Este nome será exibido nos seus banners e posts patrocinados
+                </p>
+              </div>
 
-              <div className="space-y-3">
+              <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="especialidade" className="text-sm">Especialidade Principal *</Label>
-                  <select
-                    id="especialidade"
-                    value={dadosProfissional.especialidade}
-                    onChange={(e) => setDadosProfissional({...dadosProfissional, especialidade: e.target.value})}
-                    className="w-full mt-1 p-2 border rounded-md text-sm"
-                    required
-                  >
-                    <option value="">Selecione...</option>
-                    {especialidades.map(esp => (
-                      <option key={esp} value={esp}>{esp}</option>
-                    ))}
-                  </select>
+                  <Label htmlFor="instagram-marca">Instagram da Marca</Label>
+                  <Input
+                    id="instagram-marca"
+                    value={dados.instagram}
+                    onChange={(e) => setDados({ ...dados, instagram: e.target.value })}
+                    placeholder="@suamarca"
+                  />
                 </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold">Recursos do Estabelecimento</Label>
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={dadosProfissional.possui_clinica}
-                        onChange={(e) => setDadosProfissional({...dadosProfissional, possui_clinica: e.target.checked})}
-                        className="w-4 h-4 rounded"
-                      />
-                      <span className="text-sm">Possuo clínica própria</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={dadosProfissional.possui_ar_condicionado}
-                        onChange={(e) => setDadosProfissional({...dadosProfissional, possui_ar_condicionado: e.target.checked})}
-                        className="w-4 h-4 rounded"
-                      />
-                      <span className="text-sm">Ar condicionado</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={dadosProfissional.possui_estacionamento}
-                        onChange={(e) => setDadosProfissional({...dadosProfissional, possui_estacionamento: e.target.checked})}
-                        className="w-4 h-4 rounded"
-                      />
-                      <span className="text-sm">Estacionamento</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={dadosProfissional.tem_google_negocios}
-                        onChange={(e) => setDadosProfissional({...dadosProfissional, tem_google_negocios: e.target.checked})}
-                        className="w-4 h-4 rounded"
-                      />
-                      <span className="text-sm">Tenho Google Negócios</span>
-                    </label>
-                  </div>
+                <div>
+                  <Label htmlFor="facebook-marca">Facebook da Marca</Label>
+                  <Input
+                    id="facebook-marca"
+                    value={dados.facebook}
+                    onChange={(e) => setDados({ ...dados, facebook: e.target.value })}
+                    placeholder="facebook.com/suamarca"
+                  />
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-2 pt-2">
-                <Button
-                  onClick={() => setEtapa(2)}
-                  variant="outline"
-                  className="w-full sm:flex-1 text-sm"
-                  disabled={loading}
-                >
-                  Voltar
-                </Button>
-                <Button
-                  onClick={salvarDados}
-                  disabled={loading || !dadosProfissional.especialidade}
-                  className="w-full sm:flex-1 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-sm"
-                >
-                  {loading ? "Finalizando..." : "Finalizar Cadastro"}
-                </Button>
-              </div>
-            </motion.div>
+              <Alert className="bg-green-50 border-green-200">
+                <Crown className="h-4 w-4 text-green-600" />
+                <AlertDescription className="text-green-800 text-sm">
+                  👑 Na próxima etapa você escolherá seu plano de patrocínio
+                </AlertDescription>
+              </Alert>
+            </div>
           )}
-        </AnimatePresence>
+
+          {/* Etapa 4: Seleção de Plano Patrocinador */}
+          {etapa === 4 && tipoUsuario === "patrocinador" && (
+            <div className="space-y-4">
+              <h3 className="text-xl font-bold mb-4 text-center">Escolha seu Plano de Patrocínio</h3>
+              
+              <Alert className="bg-blue-50 border-blue-200">
+                <AlertCircle className="h-4 w-4 text-blue-600" />
+                <AlertDescription className="text-blue-800 text-sm">
+                  💡 Selecione um plano abaixo. Após finalizar o cadastro, você poderá efetuar o pagamento e seu plano será ativado pela nossa equipe.
+                </AlertDescription>
+              </Alert>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                {Object.entries(PLANOS_PATROCINADOR).map(([key, plano]) => (
+                  <Card
+                    key={key}
+                    onClick={() => setDados({ ...dados, plano_patrocinador_selecionado: key })}
+                    className={`cursor-pointer transition-all hover:shadow-lg ${
+                      dados.plano_patrocinador_selecionado === key
+                        ? "border-4 border-green-500 bg-green-50"
+                        : "border-2 border-gray-200 hover:border-green-300"
+                    }`}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="font-bold text-lg">{plano.nome}</h4>
+                        {dados.plano_patrocinador_selecionado === key && (
+                          <Badge className="bg-green-500 text-white">
+                            <CheckCircle className="w-3 h-3 mr-1" />
+                            Selecionado
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="text-center mb-3">
+                        <p className="text-3xl font-bold text-green-600">
+                          R$ {plano.valor}
+                        </p>
+                        <p className="text-xs text-gray-500">por mês</p>
+                      </div>
+                      <div className="space-y-1 text-xs text-gray-700 mb-3">
+                        {plano.beneficios.map((beneficio, i) => (
+                          <p key={i} className="flex items-center gap-1">
+                            <CheckCircle className="w-3 h-3 text-green-600 flex-shrink-0" />
+                            {beneficio}
+                          </p>
+                        ))}
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="w-full border-green-300 text-green-700 hover:bg-green-50"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.open(plano.link, '_blank');
+                        }}
+                      >
+                        <ExternalLink className="w-3 h-3 mr-1" />
+                        Ver Detalhes do Plano
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {dados.plano_patrocinador_selecionado && (
+                <Alert className="bg-green-50 border-green-200">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <AlertDescription className="text-green-800 text-sm">
+                    <p className="font-semibold mb-2">
+                      ✅ Plano {PLANOS_PATROCINADOR[dados.plano_patrocinador_selecionado].nome} selecionado!
+                    </p>
+                    <p>Após finalizar o cadastro, você receberá instruções para pagamento e seu plano será ativado pela nossa equipe em até 24 horas.</p>
+                  </AlertDescription>
+                </Alert>
+              )}
+            </div>
+          )}
+
+          {/* Navegação */}
+          <div className="flex gap-3 mt-8">
+            {etapa > 1 && (
+              <Button
+                onClick={() => setEtapa(etapa - 1)}
+                variant="outline"
+                className="flex-1"
+                disabled={carregando}
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Voltar
+              </Button>
+            )}
+
+            {etapa < totalEtapas ? (
+              <Button
+                onClick={handleProximaEtapa}
+                className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                disabled={!tipoUsuario && etapa === 1}
+              >
+                Próximo
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            ) : (
+              <Button
+                onClick={handleFinalizarCadastro}
+                className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                disabled={carregando}
+              >
+                {carregando ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Finalizando...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Finalizar Cadastro
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );
