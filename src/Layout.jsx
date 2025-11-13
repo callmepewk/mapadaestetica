@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -363,13 +364,17 @@ export default function Layout({ children }) {
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 transition-colors">
+                      <button className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 transition-colors relative group">
                         <Avatar className="w-9 h-9 sm:w-10 sm:h-10 border-2 border-[#F7D426]">
                           <AvatarImage src={user?.foto_perfil} />
                           <AvatarFallback className="bg-gradient-to-br from-[#F7D426] to-[#FFE066] text-[#2C2C2C] font-bold text-sm">
                             {user?.full_name?.charAt(0) || "U"}
                           </AvatarFallback>
                         </Avatar>
+                        {/* Ícone de Edição - PRETO COM FUNDO BRANCO */}
+                        <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-md border border-gray-200 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <User className="w-3 h-3 text-black" />
+                        </div>
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56">
@@ -456,7 +461,7 @@ export default function Layout({ children }) {
                     >
                       <DollarSign className="w-4 h-4" />
                       <span className="font-bold hidden sm:inline">0</span>
-                      <span className="text-xs hidden md:inline">BC</span>
+                      <span className="text-xs hidden md::inline">BC</span>
                     </Button>
                   </div>
                   
