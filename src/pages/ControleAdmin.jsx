@@ -65,9 +65,10 @@ import {
   Bell,
   Calendar as CalendarIcon,
   Rocket,
-  Sparkles, // NEW: Added Sparkles icon
-  Heart,    // NEW: Added Heart icon
-  MapPin,   // NEW: Added MapPin icon
+  Sparkles,
+  Heart,
+  MapPin,
+  Shield, // NEW: Added Shield icon for permissions
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -169,6 +170,24 @@ export default function ControleAdmin() {
   const [buscaTodosUsuarios, setBuscaTodosUsuarios] = useState("");
   const [filtroTipoUsuario, setFiltroTipoUsuario] = useState("");
   const [filtroRole, setFiltroRole] = useState("");
+
+  // NOVO: Estados para edição completa de usuário
+  const [usuarioEditando, setUsuarioEditando] = useState(null);
+  const [mostrarModalEditarUsuario, setMostrarModalEditarUsuario] = useState(false);
+  const [dadosEdicaoUsuario, setDadosEdicaoUsuario] = useState({
+    full_name: "",
+    email: "",
+    telefone: "",
+    whatsapp: "",
+    tipo_usuario: "",
+    role: "",
+    plano_ativo: "",
+    plano_clube_beleza: "",
+    plano_patrocinador: "",
+    pontos_acumulados: 0,
+    beauty_coins: 0,
+    cadastro_completo: false
+  });
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -687,6 +706,25 @@ Bem-vindo(a)! 💆‍♀️
     },
     onError: (error) => {
       setErro("Erro ao atualizar status do anúncio: " + error.message);
+      setTimeout(() => setErro(null), 3000);
+    }
+  });
+
+  // NOVA Mutation: Editar Usuário Completo
+  const editarUsuarioCompletoMutation = useMutation({
+    mutationFn: async ({ email, dados }) => {
+      await base44.entities.User.update(email, dados);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['todos-usuarios'] });
+      queryClient.invalidateQueries({ queryKey: ['usuarios-profissionais'] });
+      setMostrarModalEditarUsuario(false);
+      setUsuarioEditando(null);
+      setSucesso("Usuário atualizado com sucesso!");
+      setTimeout(() => setSucesso(null), 3000);
+    },
+    onError: (error) => {
+      setErro("Erro ao atualizar usuário: " + error.message);
       setTimeout(() => setErro(null), 3000);
     }
   });
@@ -1476,7 +1514,7 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(mensagem)}`, '_blank');
   };
 
-  const handleEnviarAtualizacao = async () => {
+  const handleEnviarAtualizacao = () => {
     if (!tituloAtualizacao || !descricaoAtualizacao) {
       setErro("Preencha título e descrição!");
       setTimeout(() => setErro(null), 3000);
@@ -1485,7 +1523,7 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
 
     setEnviandoAtualizacao(true);
     try {
-      await enviarAtualizacaoMutation.mutateAsync({
+      enviarAtualizacaoMutation.mutate({
         titulo: tituloAtualizacao,
         descricao: descricaoAtualizacao,
         conteudo: conteudoAtualizacao,
@@ -1515,6 +1553,38 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
         dataAgendada: dataAgendamentoForcada.toISOString(),
         titulo: tituloAgendamentoForcada,
         descricao: descricaoAgendamentoForcada
+      });
+    }
+  };
+
+  // NOVO: Handler para abrir modal de edição
+  const handleEditarUsuarioCompleto = (usuario) => {
+    setUsuarioEditando(usuario);
+    setDadosEdicaoUsuario({
+      full_name: usuario.full_name || "",
+      email: usuario.email || "",
+      telefone: usuario.telefone || "",
+      whatsapp: usuario.whatsapp || "",
+      tipo_usuario: usuario.tipo_usuario || "",
+      role: usuario.role || "user",
+      plano_ativo: usuario.plano_ativo || "cobre",
+      plano_clube_beleza: usuario.plano_clube_beleza || "nenhum",
+      plano_patrocinador: usuario.plano_patrocinador || "nenhum",
+      pontos_acumulados: usuario.pontos_acumulados || 0,
+      beauty_coins: usuario.beauty_coins || 0,
+      cadastro_completo: usuario.cadastro_completo || false
+    });
+    setMostrarModalEditarUsuario(true);
+  };
+
+  // NOVO: Confirmar edição de usuário
+  const confirmarEdicaoUsuario = () => {
+    if (!usuarioEditando) return;
+    
+    if (confirm(`Confirma a atualização dos dados de ${usuarioEditando.full_name}?\n\nEsta ação irá alterar informações críticas do usuário.`)) {
+      editarUsuarioCompletoMutation.mutate({
+        email: usuarioEditando.email,
+        dados: dadosEdicaoUsuario
       });
     }
   };
@@ -3156,12 +3226,11 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                                 <TableCell className="text-right">
                                   <div className="flex items-center justify-end gap-2">
                                     <Button
-                                      onClick={() => handleEditarPontos(usuario)}
+                                      onClick={() => handleEditarUsuarioCompleto(usuario)}
                                       size="sm"
-                                      variant="outline"
-                                      className="border-purple-300 text-purple-700"
+                                      className="bg-indigo-600 hover:bg-indigo-700"
                                     >
-                                      <Star className="w-4 h-4 mr-1" />
+                                      <Edit className="w-4 h-4 mr-1" />
                                       Editar
                                     </Button>
                                     {usuario.whatsapp && (
@@ -3742,7 +3811,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
 
           {/* ============================================ */}
           {/* TAB CONTROLE DE POSTS */}
-          {/* ============================================ */}
+          {============================================ */}
           <TabsContent value="posts">
             {/* Stats Posts */}
             <div className="grid md:grid-cols-4 gap-4 mb-6">
@@ -5209,6 +5278,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                         <li><strong>Editar Pontos:</strong> Ajustar pontos e Beauty Coins</li>
                         <li><strong>WhatsApp:</strong> Contato direto com o usuário</li>
                         <li><strong>Exportar PDF/WhatsApp:</strong> Gerar relatório com filtros</li>
+                        <li><strong>Editar Usuário:</strong> Edição completa de todos os dados do usuário</li>
                       </ul>
                     </div>
                   </div>
@@ -5301,6 +5371,290 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                 </div>
               </div>
             </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* NOVO: Modal Editar Usuário Completo */}
+        <Dialog open={mostrarModalEditarUsuario} onOpenChange={setMostrarModalEditarUsuario}>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-2xl flex items-center gap-2">
+                <Edit className="w-6 h-6 text-indigo-600" />
+                Editar Usuário Completo
+              </DialogTitle>
+              <DialogDescription>
+                {usuarioEditando && (
+                  <>Editando informações de <strong>{usuarioEditando.full_name}</strong></>
+                )}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-6 py-4">
+              {usuarioEditando && (
+                <Alert className="bg-blue-50 border-blue-200">
+                  <AlertCircle className="h-4 w-4 text-blue-600" />
+                  <AlertDescription className="text-blue-800 text-sm">
+                    <strong>⚠️ Atenção:</strong> Você está editando informações críticas do usuário. Tenha cuidado ao alterar email e role.
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {/* Informações Básicas */}
+              <div className="bg-gray-50 p-4 rounded-lg border-2 border-gray-200">
+                <h4 className="font-bold text-lg mb-4">Informações Básicas</h4>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Nome Completo</Label>
+                    <Input
+                      value={dadosEdicaoUsuario.full_name}
+                      onChange={(e) => setDadosEdicaoUsuario({...dadosEdicaoUsuario, full_name: e.target.value})}
+                      className="mt-2"
+                    />
+                  </div>
+
+                  <div>
+                    <Label>Email</Label>
+                    <Input
+                      value={dadosEdicaoUsuario.email}
+                      disabled
+                      className="mt-2 bg-gray-100"
+                      title="Email não pode ser alterado"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Email não pode ser alterado</p>
+                  </div>
+
+                  <div>
+                    <Label>Telefone</Label>
+                    <Input
+                      value={dadosEdicaoUsuario.telefone}
+                      onChange={(e) => setDadosEdicaoUsuario({...dadosEdicaoUsuario, telefone: e.target.value})}
+                      placeholder="(00) 00000-0000"
+                      className="mt-2"
+                    />
+                  </div>
+
+                  <div>
+                    <Label>WhatsApp</Label>
+                    <Input
+                      value={dadosEdicaoUsuario.whatsapp}
+                      onChange={(e) => setDadosEdicaoUsuario({...dadosEdicaoUsuario, whatsapp: e.target.value})}
+                      placeholder="(00) 00000-0000"
+                      className="mt-2"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Tipo e Role */}
+              <div className="bg-purple-50 p-4 rounded-lg border-2 border-purple-200">
+                <h4 className="font-bold text-lg mb-4">Tipo de Conta e Permissões</h4>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Tipo de Usuário</Label>
+                    <Select 
+                      value={dadosEdicaoUsuario.tipo_usuario} 
+                      onValueChange={(value) => setDadosEdicaoUsuario({...dadosEdicaoUsuario, tipo_usuario: value})}
+                    >
+                      <SelectTrigger className="mt-2">
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="paciente">👤 Paciente</SelectItem>
+                        <SelectItem value="profissional">💼 Profissional</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="flex items-center gap-2">
+                      <Shield className="w-4 h-4 text-red-600" />
+                      Role (Permissões)
+                    </Label>
+                    <Select 
+                      value={dadosEdicaoUsuario.role} 
+                      onValueChange={(value) => setDadosEdicaoUsuario({...dadosEdicaoUsuario, role: value})}
+                    >
+                      <SelectTrigger className="mt-2">
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="user">User (Padrão)</SelectItem>
+                        <SelectItem value="admin">Admin (Acesso Total)</SelectItem>
+                        <SelectItem value="tester">Tester (7 dias teste)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-red-600 mt-1">⚠️ Tenha cuidado ao alterar permissões</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Planos */}
+              <div className="bg-green-50 p-4 rounded-lg border-2 border-green-200">
+                <h4 className="font-bold text-lg mb-4">Planos Ativos</h4>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div>
+                    <Label>Plano Mapa da Estética</Label>
+                    <Select 
+                      value={dadosEdicaoUsuario.plano_ativo} 
+                      onValueChange={(value) => setDadosEdicaoUsuario({...dadosEdicaoUsuario, plano_ativo: value})}
+                    >
+                      <SelectTrigger className="mt-2">
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="cobre">COBRE (Grátis)</SelectItem>
+                        <SelectItem value="prata">PRATA (R$ 99/mês)</SelectItem>
+                        <SelectItem value="ouro">OURO (R$ 197/mês)</SelectItem>
+                        <SelectItem value="diamante">DIAMANTE (R$ 697/mês)</SelectItem>
+                        <SelectItem value="platina">PLATINA (R$ 997/mês)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="flex items-center gap-2">
+                      <Crown className="w-4 h-4 text-purple-600" />
+                      Plano Clube da Beleza
+                    </Label>
+                    <Select 
+                      value={dadosEdicaoUsuario.plano_clube_beleza} 
+                      onValueChange={(value) => setDadosEdicaoUsuario({...dadosEdicaoUsuario, plano_clube_beleza: value})}
+                    >
+                      <SelectTrigger className="mt-2">
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="nenhum">Nenhum</SelectItem>
+                        <SelectItem value="light">LIGHT</SelectItem>
+                        <SelectItem value="gold">GOLD</SelectItem>
+                        <SelectItem value="vip">VIP</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="flex items-center gap-2">
+                      <Users className="w-4 h-4 text-blue-600" />
+                      Plano Patrocinador
+                    </Label>
+                    <Select 
+                      value={dadosEdicaoUsuario.plano_patrocinador} 
+                      onValueChange={(value) => setDadosEdicaoUsuario({...dadosEdicaoUsuario, plano_patrocinador: value})}
+                    >
+                      <SelectTrigger className="mt-2">
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="nenhum">Nenhum</SelectItem>
+                        <SelectItem value="cobre">COBRE (R$ 97/mês)</SelectItem>
+                        <SelectItem value="prata">PRATA (R$ 297/mês)</SelectItem>
+                        <SelectItem value="ouro">OURO (R$ 497/mês)</SelectItem>
+                        <SelectItem value="diamante">DIAMANTE (R$ 997/mês)</SelectItem>
+                        <SelectItem value="platina">PLATINA (R$ 1.997/mês)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Pontos e Beauty Coins */}
+              <div className="bg-yellow-50 p-4 rounded-lg border-2 border-yellow-200">
+                <h4 className="font-bold text-lg mb-4">Pontos e Recompensas</h4>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="flex items-center gap-2">
+                      <Star className="w-4 h-4 text-yellow-500" />
+                      Pontos Acumulados
+                    </Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      value={dadosEdicaoUsuario.pontos_acumulados}
+                      onChange={(e) => setDadosEdicaoUsuario({...dadosEdicaoUsuario, pontos_acumulados: parseInt(e.target.value) || 0})}
+                      className="mt-2"
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="flex items-center gap-2">
+                      <DollarSign className="w-4 h-4 text-purple-500" />
+                      Beauty Coins
+                    </Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      value={dadosEdicaoUsuario.beauty_coins}
+                      onChange={(e) => setDadosEdicaoUsuario({...dadosEdicaoUsuario, beauty_coins: parseInt(e.target.value) || 0})}
+                      className="mt-2"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Status do Cadastro */}
+              <div className="bg-orange-50 p-4 rounded-lg border-2 border-orange-200">
+                <h4 className="font-bold text-lg mb-4">Status do Cadastro</h4>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={dadosEdicaoUsuario.cadastro_completo}
+                    onChange={(e) => setDadosEdicaoUsuario({...dadosEdicaoUsuario, cadastro_completo: e.target.checked})}
+                    className="w-5 h-5 rounded"
+                  />
+                  <div>
+                    <span className="font-semibold">Cadastro Completo</span>
+                    <p className="text-xs text-gray-600">Marque se o usuário completou todas as informações</p>
+                  </div>
+                </label>
+              </div>
+
+              {/* Resumo das Alterações */}
+              <Alert className="bg-indigo-50 border-indigo-200">
+                <AlertCircle className="h-4 w-4 text-indigo-600" />
+                <AlertDescription className="text-indigo-800 text-sm">
+                  <p className="font-semibold mb-2">📋 Resumo do que será alterado:</p>
+                  <div className="space-y-1 text-xs">
+                    <p>• Informações básicas: Nome, telefone, WhatsApp</p>
+                    <p>• Tipo de conta: {dadosEdicaoUsuario.tipo_usuario || 'N/D'}</p>
+                    <p>• Role: {dadosEdicaoUsuario.role || 'user'}</p>
+                    <p>• Plano Mapa: {PLANOS_INFO[dadosEdicaoUsuario.plano_ativo]?.nome || 'N/D'}</p>
+                    <p>• Plano Clube: {dadosEdicaoUsuario.plano_clube_beleza || 'nenhum'}</p>
+                    <p>• Plano Patrocinador: {dadosEdicaoUsuario.plano_patrocinador || 'nenhum'}</p>
+                    <p>• Pontos: {dadosEdicaoUsuario.pontos_acumulados} | Beauty Coins: {dadosEdicaoUsuario.beauty_coins}</p>
+                    <p>• Cadastro Completo: {dadosEdicaoUsuario.cadastro_completo ? 'Sim' : 'Não'}</p>
+                  </div>
+                </AlertDescription>
+              </Alert>
+            </div>
+
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setMostrarModalEditarUsuario(false);
+                  setUsuarioEditando(null);
+                }}
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={confirmarEdicaoUsuario}
+                disabled={editarUsuarioCompletoMutation.isPending}
+                className="bg-indigo-600 hover:bg-indigo-700"
+              >
+                {editarUsuarioCompletoMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Salvando...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Salvar Alterações
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
