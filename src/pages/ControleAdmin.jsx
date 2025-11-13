@@ -77,12 +77,12 @@ import {
   TrendingUp,
   Activity,
 } from "lucide-react";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { useNavigate } from "react-router-dom";
-import { createPageUrl } from "@/utils";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format } = "date-fns";
+import { ptBR } = "date-fns/locale";
+import { useNavigate } = "react-router-dom";
+import { createPageUrl } = "@/utils";
+import { Calendar } = "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } = "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 
 const PLANOS_INFO = {
@@ -753,17 +753,28 @@ Bem-vindo(a)! 💆‍♀️
     mutationFn: async ({ email, dados }) => {
       await base44.entities.User.update(email, dados);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['todos-usuarios'] });
-      queryClient.invalidateQueries({ queryKey: ['usuarios-profissionais'] });
+    onSuccess: async () => {
+      // Invalidar TODAS as queries relacionadas a usuários
+      await queryClient.invalidateQueries({ queryKey: ['todos-usuarios'] });
+      await queryClient.invalidateQueries({ queryKey: ['usuarios-profissionais'] });
+      await queryClient.invalidateQueries({ queryKey: ['testers'] });
+      
+      // Refetch imediato
+      await queryClient.refetchQueries({ queryKey: ['todos-usuarios'] });
+      await queryClient.refetchQueries({ queryKey: ['usuarios-profissionais'] });
+      
       setMostrarModalEditarUsuario(false);
       setUsuarioEditando(null);
-      setSucesso("Usuário atualizado com sucesso!");
-      setTimeout(() => setSucesso(null), 3000);
+      setSucesso("✅ Usuário atualizado! Atualizando dados...");
+      
+      // Forçar reload após 1 segundo para garantir sincronização total
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     },
     onError: (error) => {
       setErro("Erro ao atualizar usuário: " + error.message);
-      setTimeout(() => setErro(null), 3000);
+      setTimeout(() => setErro(null), 5000);
     }
   });
 
@@ -2027,7 +2038,7 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
   const confirmarEdicaoUsuario = () => {
     if (!usuarioEditando) return;
     
-    if (confirm(`Confirma a atualização dos dados de ${usuarioEditando.full_name}?\n\nEsta ação irá alterar informações críticas do usuário.`)) {
+    if (confirm(`⚠️ CONFIRMAR ALTERAÇÕES?\n\nUsuário: ${usuarioEditando.full_name}\n\nNovo Tipo: ${dadosEdicaoUsuario.tipo_usuario}\nNovo Plano Mapa: ${PLANOS_INFO[dadosEdicaoUsuario.plano_ativo]?.nome}\nNovo Plano Clube: ${dadosEdicaoUsuario.plano_clube_beleza}\nNovo Plano Patrocinador: ${dadosEdicaoUsuario.plano_patrocinador}\n\nEsta ação será aplicada IMEDIATAMENTE.`)) {
       editarUsuarioCompletoMutation.mutate({
         email: usuarioEditando.email,
         dados: dadosEdicaoUsuario
@@ -4837,7 +4848,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
           </DialogContent>
         </Dialog>
 
-        {/* Modal Editar Usuário Completo (from the outline) */}
+        {/* Modal Editar Usuário Completo - ATUALIZADO COM FEEDBACK VISUAL */}
         <Dialog open={mostrarModalEditarUsuario} onOpenChange={setMostrarModalEditarUsuario}>
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
@@ -4846,9 +4857,18 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                 Editar Usuário: {usuarioEditando?.full_name}
               </DialogTitle>
               <DialogDescription>
-                Ajuste os dados completos do usuário, planos, pontos e permissões.
+                ⚡ Alterações serão aplicadas INSTANTANEAMENTE após salvar
               </DialogDescription>
             </DialogHeader>
+
+            {editarUsuarioCompletoMutation.isPending && (
+              <Alert className="bg-blue-50 border-blue-200">
+                <Loader2 className="h-4 w-4 text-blue-600 animate-spin" />
+                <AlertDescription className="text-blue-800 text-sm">
+                  Salvando alterações... A página será recarregada automaticamente.
+                </AlertDescription>
+              </Alert>
+            )}
 
             <div className="space-y-4 py-4">
               <div>
@@ -4857,6 +4877,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                   id="editFullName"
                   value={dadosEdicaoUsuario.full_name}
                   onChange={(e) => setDadosEdicaoUsuario({ ...dadosEdicaoUsuario, full_name: e.target.value })}
+                  disabled={editarUsuarioCompletoMutation.isPending}
                 />
               </div>
               <div>
@@ -4874,6 +4895,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                     id="editTelefone"
                     value={dadosEdicaoUsuario.telefone}
                     onChange={(e) => setDadosEdicaoUsuario({ ...dadosEdicaoUsuario, telefone: e.target.value })}
+                    disabled={editarUsuarioCompletoMutation.isPending}
                   />
                 </div>
                 <div>
@@ -4882,23 +4904,34 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                     id="editWhatsapp"
                     value={dadosEdicaoUsuario.whatsapp}
                     onChange={(e) => setDadosEdicaoUsuario({ ...dadosEdicaoUsuario, whatsapp: e.target.value })}
+                    disabled={editarUsuarioCompletoMutation.isPending}
                   />
                 </div>
               </div>
+
+              {/* DESTAQUE: Tipo de Usuário */}
+              <Alert className="bg-yellow-50 border-yellow-200">
+                <AlertCircle className="h-4 w-4 text-yellow-600" />
+                <AlertDescription className="text-yellow-900 text-sm">
+                  <strong>⚡ ATENÇÃO:</strong> Ao mudar o tipo de usuário, a interface dele será alterada imediatamente!
+                </AlertDescription>
+              </Alert>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="editTipoUsuario">Tipo de Usuário</Label>
+                  <Label htmlFor="editTipoUsuario">Tipo de Usuário *</Label>
                   <Select
                     value={dadosEdicaoUsuario.tipo_usuario}
                     onValueChange={(value) => setDadosEdicaoUsuario({ ...dadosEdicaoUsuario, tipo_usuario: value })}
+                    disabled={editarUsuarioCompletoMutation.isPending}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione o tipo" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="paciente">Paciente</SelectItem>
-                      <SelectItem value="profissional">Profissional</SelectItem>
-                      <SelectItem value="parceiro">Parceiro</SelectItem>
+                      <SelectItem value="paciente">👤 Paciente</SelectItem>
+                      <SelectItem value="profissional">💼 Profissional</SelectItem>
+                      <SelectItem value="patrocinador">👑 Patrocinador</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -4907,6 +4940,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                   <Select
                     value={dadosEdicaoUsuario.role}
                     onValueChange={(value) => setDadosEdicaoUsuario({ ...dadosEdicaoUsuario, role: value })}
+                    disabled={editarUsuarioCompletoMutation.isPending}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione a role" />
@@ -4925,6 +4959,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                   <Select
                     value={dadosEdicaoUsuario.plano_ativo}
                     onValueChange={(value) => setDadosEdicaoUsuario({ ...dadosEdicaoUsuario, plano_ativo: value })}
+                    disabled={editarUsuarioCompletoMutation.isPending}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione o plano" />
@@ -4941,6 +4976,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                   <Select
                     value={dadosEdicaoUsuario.plano_clube_beleza}
                     onValueChange={(value) => setDadosEdicaoUsuario({ ...dadosEdicaoUsuario, plano_clube_beleza: value })}
+                    disabled={editarUsuarioCompletoMutation.isPending}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Status do Clube" />
@@ -4957,6 +4993,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                   <Select
                     value={dadosEdicaoUsuario.plano_patrocinador}
                     onValueChange={(value) => setDadosEdicaoUsuario({ ...dadosEdicaoUsuario, plano_patrocinador: value })}
+                    disabled={editarUsuarioCompletoMutation.isPending}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Status do Patrocinador" />
@@ -4966,6 +5003,8 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                       <SelectItem value="bronze">Bronze</SelectItem>
                       <SelectItem value="prata">Prata</SelectItem>
                       <SelectItem value="ouro">Ouro</SelectItem>
+                      <SelectItem value="diamante">Diamante</SelectItem>
+                      <SelectItem value="platina">Platina</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -4978,6 +5017,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                     type="number"
                     value={dadosEdicaoUsuario.pontos_acumulados}
                     onChange={(e) => setDadosEdicaoUsuario({ ...dadosEdicaoUsuario, pontos_acumulados: parseInt(e.target.value) || 0 })}
+                    disabled={editarUsuarioCompletoMutation.isPending}
                   />
                 </div>
                 <div>
@@ -4987,6 +5027,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                     type="number"
                     value={dadosEdicaoUsuario.beauty_coins}
                     onChange={(e) => setDadosEdicaoUsuario({ ...dadosEdicaoUsuario, beauty_coins: parseInt(e.target.value) || 0 })}
+                    disabled={editarUsuarioCompletoMutation.isPending}
                   />
                 </div>
               </div>
@@ -4997,6 +5038,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                   checked={dadosEdicaoUsuario.cadastro_completo}
                   onChange={(e) => setDadosEdicaoUsuario({ ...dadosEdicaoUsuario, cadastro_completo: e.target.checked })}
                   className="w-4 h-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded"
+                  disabled={editarUsuarioCompletoMutation.isPending}
                 />
                 <Label htmlFor="cadastroCompleto" className="text-sm font-medium">
                   Cadastro Completo
@@ -5005,11 +5047,29 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
             </div>
 
             <DialogFooter>
-              <Button variant="outline" onClick={() => setMostrarModalEditarUsuario(false)}>
+              <Button 
+                variant="outline" 
+                onClick={() => setMostrarModalEditarUsuario(false)}
+                disabled={editarUsuarioCompletoMutation.isPending}
+              >
                 Cancelar
               </Button>
-              <Button onClick={confirmarEdicaoUsuario} className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700">
-                Salvar Alterações
+              <Button 
+                onClick={confirmarEdicaoUsuario} 
+                className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
+                disabled={editarUsuarioCompletoMutation.isPending}
+              >
+                {editarUsuarioCompletoMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Salvando...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Salvar Alterações
+                  </>
+                )}
               </Button>
             </DialogFooter>
           </DialogContent>
