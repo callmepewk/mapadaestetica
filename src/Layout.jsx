@@ -51,7 +51,7 @@ export default function Layout({ children }) {
   const [carrinho, setCarrinho] = useState([]);
   const [mostrarCarrinho, setMostrarCarrinho] = useState(false);
   const [mostrarSeletorTipo, setMostrarSeletorTipo] = useState(false);
-  const [visaoAdmin, setVisaoAdmin] = useState("profissional"); // Estado para controlar visão do admin
+  const [visaoAdmin, setVisaoAdmin] = useState("profissional");
 
   // Carregar carrinho do localStorage
   useEffect(() => {
@@ -94,8 +94,6 @@ export default function Layout({ children }) {
             const visaoSalva = localStorage.getItem('admin_visao_site');
             if (visaoSalva) {
               setVisaoAdmin(visaoSalva);
-            } else {
-              setVisaoAdmin(userData.tipo_usuario || "profissional"); // Default for admin if no saved view
             }
           }
 
@@ -165,6 +163,8 @@ export default function Layout({ children }) {
   const handleMudarVisaoAdmin = (novaVisao) => {
     setVisaoAdmin(novaVisao);
     localStorage.setItem('admin_visao_site', novaVisao);
+    // Forçar atualização imediata do storage event
+    window.dispatchEvent(new Event('storage'));
   };
 
   // Definir items de navegação baseado no tipo de usuário OU visão do admin
@@ -297,16 +297,16 @@ export default function Layout({ children }) {
         </div>
       </div>
 
-      {/* Main Header */}
+      {/* Main Header - OTIMIZADO PARA CABER EM TODAS AS TELAS */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-md">
-        <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4">
-          <div className="flex items-center justify-between gap-4">
-            {/* Logo - SEMPRE VISÍVEL */}
-            <Link to={createPageUrl("Inicio")} className="flex items-center gap-2 sm:gap-3 group flex-shrink-0">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 py-2 sm:py-3">
+          <div className="flex items-center justify-between gap-1 sm:gap-2 md:gap-4">
+            {/* Logo - REDUZIDO */}
+            <Link to={createPageUrl("Inicio")} className="flex items-center gap-1 sm:gap-2 group flex-shrink-0">
               <img
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/fd230be55_mapaimg.jpg"
                 alt="Mapa da Estética"
-                className="h-12 sm:h-14 md:h-16 w-auto object-contain transform group-hover:scale-105 transition-transform"
+                className="h-10 sm:h-12 md:h-14 lg:h-16 w-auto object-contain transform group-hover:scale-105 transition-transform"
                 onError={(e) => {
                   e.target.onerror = null;
                   e.target.src = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe2/2274d89a4_logo_v1.png';
@@ -314,26 +314,26 @@ export default function Layout({ children }) {
               />
             </Link>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-1">
+            {/* Desktop Navigation - COMPACTADO */}
+            <nav className="hidden xl:flex items-center gap-0.5">
               {navigationItems.map((item) => (
                 <Link
                   key={item.title}
                   to={item.url}
-                  className={`flex items-center gap-2 px-3 xl:px-4 py-2 rounded-lg transition-all duration-200 font-medium ${
+                  className={`flex items-center gap-1 px-2 py-2 rounded-lg transition-all duration-200 font-medium text-xs ${
                     location.pathname === item.url
                       ? "bg-[#FFF9E6] text-[#2C2C2C] border-b-2 border-[#F7D426]"
                       : "text-gray-700 hover:bg-gray-50 hover:text-[#2C2C2C]"
                   }`}
                 >
-                  <item.icon className="w-4 h-4" />
-                  <span className="text-sm">{item.title}</span>
+                  <item.icon className="w-3 h-3" />
+                  <span>{item.title}</span>
                 </Link>
               ))}
             </nav>
 
-            {/* Right Actions */}
-            <div className="flex items-center gap-2 sm:gap-3">
+            {/* Right Actions - COMPACTADO */}
+            <div className="flex items-center gap-1 sm:gap-2">
               {/* NOVO: Seletor de Visão (apenas para admins) */}
               {isAdmin && (
                 <SeletorVisaoAdmin
@@ -349,12 +349,12 @@ export default function Layout({ children }) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="relative"
+                className="relative h-8 w-8 sm:h-9 sm:w-9"
                 onClick={() => setMostrarCarrinho(true)}
               >
-                <ShoppingCart className="w-5 h-5" />
+                <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
                 {carrinho.length > 0 && (
-                  <Badge className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center p-0 bg-pink-600 text-white text-xs">
+                  <Badge className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center p-0 bg-pink-600 text-white text-[10px] sm:text-xs">
                     {carrinho.length > 9 ? '9+' : carrinho.length}
                   </Badge>
                 )}
@@ -363,47 +363,45 @@ export default function Layout({ children }) {
               {isAuthenticated ? (
                 <>
                   {/* Contadores de Pontos e Beauty Coins */}
-                  <div className="flex items-center gap-2">
+                  <div className="hidden md:flex items-center gap-1">
                     {/* Contador de Pontos */}
                     <Link to={createPageUrl("LojaPontos")}>
-                      <Button variant="outline" className="flex items-center gap-2 border-[#F7D426] text-[#F7D426] hover:bg-[#FFF9E6]">
-                        <Star className="w-4 h-4" />
-                        <span className="font-bold hidden sm:inline">{user?.pontos_acumulados || 0}</span>
-                        <span className="text-xs hidden md:inline">pts</span>
+                      <Button variant="outline" size="sm" className="flex items-center gap-1 border-[#F7D426] text-[#F7D426] hover:bg-[#FFF9E6] h-8 px-2 text-xs">
+                        <Star className="w-3 h-3" />
+                        <span className="font-bold">{user?.pontos_acumulados || 0}</span>
                       </Button>
                     </Link>
 
                     {/* Contador de Beauty Coins */}
                     <Link to={createPageUrl("LojaPontos")}>
-                      <Button variant="outline" className="flex items-center gap-2 border-purple-500 text-purple-600 hover:bg-purple-50">
-                        <DollarSign className="w-4 h-4" />
-                        <span className="font-bold hidden sm:inline">{user?.beauty_coins || 0}</span>
-                        <span className="text-xs hidden md:inline">BC</span>
+                      <Button variant="outline" size="sm" className="flex items-center gap-1 border-purple-500 text-purple-600 hover:bg-purple-50 h-8 px-2 text-xs">
+                        <DollarSign className="w-3 h-3" />
+                        <span className="font-bold">{user?.beauty_coins || 0}</span>
                       </Button>
                     </Link>
                   </div>
 
                   {(isProfissional || isPatrocinador) && (
-                    <Link to={createPageUrl("CadastrarAnuncio")} className="hidden md:block">
-                      <Button className="bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold shadow-lg hover:shadow-xl transition-all duration-200 text-sm border-2 border-[#2C2C2C]">
-                        <PlusCircle className="w-4 h-4 mr-2" />
-                        Cadastrar Anúncio
+                    <Link to={createPageUrl("CadastrarAnuncio")} className="hidden lg:block">
+                      <Button className="bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold shadow-lg hover:shadow-xl transition-all duration-200 h-8 px-3 text-xs border-2 border-[#2C2C2C]">
+                        <PlusCircle className="w-3 h-3 mr-1" />
+                        Anúncio
                       </Button>
                     </Link>
                   )}
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 transition-colors relative group">
-                        <Avatar className="w-9 h-9 sm:w-10 sm:h-10 border-2 border-[#F7D426]">
+                      <button className="flex items-center gap-1 p-0.5 sm:p-1 rounded-full hover:bg-gray-100 transition-colors relative group">
+                        <Avatar className="w-8 h-8 sm:w-9 sm:h-9 border-2 border-[#F7D426]">
                           <AvatarImage src={user?.foto_perfil} />
-                          <AvatarFallback className="bg-gradient-to-br from-[#F7D426] to-[#FFE066] text-[#2C2C2C] font-bold text-sm">
+                          <AvatarFallback className="bg-gradient-to-br from-[#F7D426] to-[#FFE066] text-[#2C2C2C] font-bold text-xs">
                             {user?.full_name?.charAt(0) || "U"}
                           </AvatarFallback>
                         </Avatar>
                         {/* Ícone de Edição - PRETO COM FUNDO BRANCO */}
-                        <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-md border border-gray-200 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <User className="w-3 h-3 text-black" />
+                        <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-white rounded-full flex items-center justify-center shadow-md border border-gray-200 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <User className="w-2.5 h-2.5 text-black" />
                         </div>
                       </button>
                     </DropdownMenuTrigger>
@@ -412,15 +410,15 @@ export default function Layout({ children }) {
                         <p className="text-sm font-medium truncate">{user?.full_name}</p>
                         <p className="text-xs text-gray-500 truncate">{user?.email}</p>
                         {isAdmin && (
-                          <Badge className="mt-1 bg-orange-100 text-orange-800">
+                          <Badge className="mt-1 bg-orange-100 text-orange-800 text-xs">
                             👑 Admin - Visão: {visaoAdmin.charAt(0).toUpperCase() + visaoAdmin.slice(1)}
                           </Badge>
                         )}
                         {isTester && (
-                          <Badge className="mt-1 bg-blue-100 text-blue-800">Tester (7 dias)</Badge>
+                          <Badge className="mt-1 bg-blue-100 text-blue-800 text-xs">Tester (7 dias)</Badge>
                         )}
                         {user?.tipo_usuario && (
-                          <Badge className="mt-1 bg-pink-100 text-pink-800">
+                          <Badge className="mt-1 bg-pink-100 text-pink-800 text-xs">
                             {user.tipo_usuario === 'paciente' ? '👤 Paciente' : 
                              user.tipo_usuario === 'profissional' ? '💼 Profissional' : 
                              '👑 Patrocinador'}
@@ -479,34 +477,34 @@ export default function Layout({ children }) {
               ) : (
                 <>
                   {/* Mostrar contadores de pontos e Beauty Coins como incentivo para não autenticados */}
-                  <div className="flex items-center gap-2">
+                  <div className="hidden sm:flex items-center gap-1">
                     <Button 
                       variant="outline" 
-                      className="flex items-center gap-2 border-[#F7D426] text-[#F7D426] hover:bg-[#FFF9E6]"
+                      size="sm"
+                      className="flex items-center gap-1 border-[#F7D426] text-[#F7D426] hover:bg-[#FFF9E6] h-8 px-2 text-xs"
                       onClick={handleLogin}
                     >
-                      <Star className="w-4 h-4" />
-                      <span className="font-bold hidden sm:inline">0</span>
-                      <span className="text-xs hidden md:inline">pts</span>
+                      <Star className="w-3 h-3" />
+                      <span className="font-bold">0</span>
                     </Button>
                     
                     <Button 
                       variant="outline" 
-                      className="flex items-center gap-2 border-purple-500 text-purple-600 hover:bg-purple-50"
+                      size="sm"
+                      className="flex items-center gap-1 border-purple-500 text-purple-600 hover:bg-purple-50 h-8 px-2 text-xs"
                       onClick={handleLogin}
                     >
-                      <DollarSign className="w-4 h-4" />
-                      <span className="font-bold hidden sm:inline">0</span>
-                      <span className="text-xs hidden md::inline">BC</span>
+                      <DollarSign className="w-3 h-3" />
+                      <span className="font-bold">0</span>
                     </Button>
                   </div>
                   
                   <Button
                     onClick={handleLogin}
-                    className="bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold text-sm border-2 border-[#2C2C2C]"
+                    className="bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold h-8 px-2 sm:px-3 text-xs border-2 border-[#2C2C2C]"
                     size="sm"
                   >
-                    <User className="w-4 h-4 sm:mr-2" />
+                    <User className="w-3 h-3 sm:mr-1" />
                     <span className="hidden sm:inline">Entrar</span>
                   </Button>
                 </>
@@ -515,16 +513,16 @@ export default function Layout({ children }) {
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
+                className="xl:hidden p-1.5 sm:p-2 rounded-lg hover:bg-gray-100"
               >
-                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
             </div>
           </div>
 
           {/* Mobile Navigation */}
           {mobileMenuOpen && (
-            <nav className="lg:hidden mt-4 pb-4 space-y-2 border-t pt-4">
+            <nav className="xl:hidden mt-4 pb-4 space-y-2 border-t pt-4">
               {/* NOVO: Seletor de Visão Mobile (apenas admin) */}
               {isAdmin && (
                 <div className="mb-4 p-3 bg-orange-50 border-2 border-orange-200 rounded-lg">
@@ -534,7 +532,7 @@ export default function Layout({ children }) {
                       size="sm"
                       variant={visaoAdmin === "paciente" ? "default" : "outline"}
                       onClick={() => handleMudarVisaoAdmin("paciente")}
-                      className={visaoAdmin === "paciente" ? "bg-blue-600 text-white" : ""}
+                      className={`h-9 text-xs ${visaoAdmin === "paciente" ? "bg-blue-600 text-white" : ""}`}
                     >
                       <User className="w-3 h-3 mr-1" />
                       Paciente
@@ -543,19 +541,19 @@ export default function Layout({ children }) {
                       size="sm"
                       variant={visaoAdmin === "profissional" ? "default" : "outline"}
                       onClick={() => handleMudarVisaoAdmin("profissional")}
-                      className={visaoAdmin === "profissional" ? "bg-purple-600 text-white" : ""}
+                      className={`h-9 text-xs ${visaoAdmin === "profissional" ? "bg-purple-600 text-white" : ""}`}
                     >
                       <Briefcase className="w-3 h-3 mr-1" />
-                      Profissional
+                      Profis.
                     </Button>
                     <Button
                       size="sm"
                       variant={visaoAdmin === "patrocinador" ? "default" : "outline"}
                       onClick={() => handleMudarVisaoAdmin("patrocinador")}
-                      className={visaoAdmin === "patrocinador" ? "bg-green-600 text-white" : ""}
+                      className={`h-9 text-xs ${visaoAdmin === "patrocinador" ? "bg-green-600 text-white" : ""}`}
                     >
                       <Crown className="w-3 h-3 mr-1" />
-                      Patrocinador
+                      Patroc.
                     </Button>
                   </div>
                 </div>

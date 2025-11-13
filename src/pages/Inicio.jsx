@@ -132,18 +132,30 @@ export default function Inicio() {
     fetchUser();
   }, []);
 
-  // Atualizar visão quando localStorage mudar (para sincronizar com o Layout)
+  // ATUALIZADO: Listener para mudanças no localStorage (sincronização com Layout)
   useEffect(() => {
-    const handleStorageChange = () => {
-      if (user?.role === 'admin') {
-        const visaoSalva = localStorage.getItem('admin_visao_site');
-        setVisaoAtual(visaoSalva || 'profissional');
+    const handleStorageChange = (e) => {
+      if (user?.role === 'admin' && e.key === 'admin_visao_site') {
+        setVisaoAtual(e.newValue || 'profissional');
       }
     };
     
+    // Também verificar a cada 500ms (para mudanças no mesmo tab)
+    const intervalo = setInterval(() => {
+      if (user?.role === 'admin') {
+        const visaoSalva = localStorage.getItem('admin_visao_site');
+        if (visaoSalva && visaoSalva !== visaoAtual) {
+          setVisaoAtual(visaoSalva);
+        }
+      }
+    }, 500);
+    
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, [user]);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(intervalo);
+    };
+  }, [user, visaoAtual]);
 
   const handleOnboardingComplete = async () => {
     setMostrarOnboarding(false);
@@ -226,6 +238,15 @@ export default function Inicio() {
   const isPaciente = visaoAtual === 'paciente';
   const isProfissional = visaoAtual === 'profissional' || visaoAtual === 'patrocinador';
 
+  // LOADING STATE
+  if (!visaoAtual) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-pink-600" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen">
       <TermosCondicoes />
@@ -240,6 +261,13 @@ export default function Inicio() {
         user={user}
         onSuccess={handleTipoUsuarioSuccess}
       />
+
+      {/* ADMIN DEBUG (opcional - remover depois) */}
+      {isAdmin && (
+        <div className="bg-orange-100 text-orange-900 p-2 text-center text-xs font-mono">
+          👑 ADMIN MODE - Visão Atual: {visaoAtual?.toUpperCase()}
+        </div>
+      )}
 
       {/* VISÃO PACIENTE OU NÃO LOGADO */}
       {isPaciente && (
