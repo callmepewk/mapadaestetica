@@ -1105,7 +1105,7 @@ CONFIGURAÇÕES NECESSÁRIAS:
     }, 30000);
 
     return () => clearInterval(intervalo);
-  }, [versoes, activarVersaoMutation]); // Added activarVersaoMutation to deps
+  }, [versoes, ativarVersaoMutation]);
 
   useEffect(() => {
     if (!agendamentos || agendamentos.length === 0) return;
@@ -1969,7 +1969,8 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
       return;
     }
 
-    if (confirm(`Confirma o agendamento da nova versão?\n\nTítulo: ${dadosNovaVersao.titulo}\nData/Hora: ${format(dataCompleta, "dd/MM/yyyy 'às' HH:mm', { locale: ptBR })}'\n\nTODOS os usuários receberão email de notificação.`)) {
+    const dataFormatada = format(dataCompleta, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
+    if (confirm(`Confirma o agendamento da nova versão?\n\nTítulo: ${dadosNovaVersao.titulo}\nData/Hora: ${dataFormatada}\n\nTODOS os usuários receberão email de notificação.`)) {
       criarNovaVersaoMutation.mutate({
         titulo: dadosNovaVersao.titulo,
         descricao: dadosNovaVersao.descricao,
@@ -3684,7 +3685,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                           const dataExpiracao = tester.data_expiracao_teste ? new Date(tester.data_expiracao_teste) : null;
                           const hoje = new Date();
                           const expirado = dataExpiracao && dataExpiracao < hoje;
-                          const diasRestantes = dataExpiracao ? Math.max(0, Math.ceil((dataExpiracao - hoje) / (1000 * 60 * 60 * 24))) : 0;
+                          const diasRestantes = dataExpiracao ? Math.max(0, Math.ceil((new Date(tester.data_expiracao_teste) - new Date()) / (1000 * 60 * 60 * 24))) : 0;
 
                           return (
                             <TableRow key={tester.id}>
