@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -284,11 +285,13 @@ const planosPatrocinadores = [
       "Seção exclusiva premium",
       "2 artigos mensais no blog",
       "Espaço Golden Doctors",
+      "Até 200 pacientes (Cloud.IA) - R$ 697",
       "Campanhas de email marketing",
       "Prioridade absoluta com assistente de vendas virtual 24h",
       "Relatório semanal",
       "Dashboards personalizados"
-    ]
+    ],
+    observacao: "💎 Condições especiais ao assinar o Cloud IA no plano DIAMANTE - Créditos a mais sob consulta"
   },
   {
     nome: "PLATINA",
@@ -305,6 +308,8 @@ const planosPatrocinadores = [
       "Parceria estratégica completa",
       "Banners ilimitados",
       "Produtos na loja",
+      "Smart Clinic R$ 298 + R$ 399 (e Cloud IA) - Incluídos",
+      "Cloud.IA sem integração de sistemas internos (sob consulta)",
       "Programa de Afiliado",
       "Clube Golden Doctors",
       "Conteúdo ilimitado no blog",
@@ -314,7 +319,8 @@ const planosPatrocinadores = [
       "Relatórios em tempo real",
       "Dashboards personalizados",
       "Primeiro a saber novidades"
-    ]
+    ],
+    observacao: "💎 Condições especiais ao assinar o Cloud IA no plano PLATINA - Créditos a mais sob consulta"
   }
 ];
 
@@ -658,6 +664,11 @@ export default function Planos() {
 
   const handleConsultarCreditos = () => {
     const mensagem = "Olá! Gostaria de saber sobre créditos adicionais para o Cloud IA no plano PRIME/DELUXE.";
+    window.open(`https://wa.me/5531972595643?text=${encodeURIComponent(mensagem)}`, '_blank');
+  };
+
+  const handleConsultarCreditosPatrocinador = () => {
+    const mensagem = "Olá! Gostaria de saber sobre créditos adicionais para o Cloud IA no plano DIAMANTE/PLATINA de Patrocinador.";
     window.open(`https://wa.me/5531972595643?text=${encodeURIComponent(mensagem)}`, '_blank');
   };
 
@@ -1074,6 +1085,21 @@ export default function Planos() {
                             <p className="text-xs font-semibold text-gray-700">{plano.pacotes}</p>
                           </div>
                         </div>
+
+                        {plano.observacao && (
+                          <Alert className="mb-4 bg-blue-50 border-blue-200">
+                            <AlertCircle className="h-3 w-3 text-blue-600" />
+                            <AlertDescription className="text-blue-800 text-xs">
+                              {plano.observacao}
+                              <button
+                                onClick={handleConsultarCreditosPatrocinador}
+                                className="block mt-2 text-blue-700 hover:underline font-semibold"
+                              >
+                                📞 Falar com Central de Vendas
+                              </button>
+                            </AlertDescription>
+                          </Alert>
+                        )}
 
                         <div className="space-y-2 mt-auto">
                           <Button
