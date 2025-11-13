@@ -71,6 +71,11 @@ import {
   Shield,
   Code,
   GitBranch,
+  Plus,
+  Minus,
+  UserPlus,
+  TrendingUp,
+  Activity,
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -202,6 +207,25 @@ export default function ControleAdmin() {
   });
   const [mostrarGerenciadorVersoes, setMostrarGerenciadorVersoes] = useState(false);
 
+  // NOVOS Estados para Contas Teste
+  const [mostrarModalCriarTester, setMostrarModalCriarTester] = useState(false);
+  const [dadosTester, setDadosTester] = useState({
+    full_name: "",
+    email: "",
+    telefone: "",
+    senha: "",
+    plano_ativo: "cobre",
+    plano_clube_beleza: "nenhum",
+    plano_patrocinador: "nenhum",
+    tipo_usuario: "profissional",
+    dias_teste: 7
+  });
+  const [criandoTester, setCriandoTester] = useState(false);
+  const [testerSelecionado, setTesterSelecionado] = useState(null);
+  const [mostrarDetalhesTester, setMostrarDetalhesTester] = useState(false);
+  const [estatisticasTester, setEstatisticasTester] = useState(null);
+  const [diasAdicionais, setDiasAdicionais] = useState(0);
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -300,6 +324,16 @@ export default function ControleAdmin() {
     },
     enabled: !!user,
     refetchInterval: 30000,
+  });
+
+  // NOVA Query: Testers
+  const { data: testers = [], isLoading: loadingTesters } = useQuery({
+    queryKey: ['testers'],
+    queryFn: async () => {
+      const allUsers = await base44.entities.User.list('-created_date', 1000);
+      return allUsers.filter(u => u.role === 'tester');
+    },
+    enabled: !!user,
   });
 
   const deletarSolicitacaoMutation = useMutation({
@@ -593,6 +627,7 @@ Bem-vindo(a)! 💆‍♀️
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['todos-usuarios'] });
       queryClient.invalidateQueries({ queryKey: ['usuarios-profissionais'] });
+      queryClient.invalidateQueries({ queryKey: ['testers'] }); // Invalidate testers query
       setMostrarModalPontos(false);
       setUsuarioEditandoPontos(null);
       setSucesso("Pontos e Beauty Coins atualizados!");
@@ -929,6 +964,128 @@ Equipe Mapa da Estética
     }
   });
 
+  // NOVA Mutation: Criar Tester
+  const criarTesterMutation = useMutation({
+    mutationFn: async (dados) => {
+      // Calcular data de expiração
+      const dataExpiracao = new Date();
+      dataExpiracao.setDate(dataExpiracao.getDate() + dados.dias_teste);
+
+      // IMPORTANTE: Não podemos criar usuários diretamente via API
+      // Precisamos enviar email de convite
+      await base44.integrations.Core.SendEmail({
+        to: "pedro_hbfreitas@hotmail.com", // This should probably be an admin email configurable or to the current admin. For now, hardcoded from the outline.
+        from_name: "Mapa da Estética - Admin",
+        subject: `SOLICITAÇÃO DE CRIAÇÃO DE CONTA TESTE - ${dados.full_name}`,
+        body: `
+SOLICITAÇÃO DE CRIAÇÃO DE CONTA TESTE
+
+Nome: ${dados.full_name}
+Email: ${dados.email}
+Telefone: ${dados.telefone}
+Senha: ${dados.senha}
+Tipo: ${dados.tipo_usuario}
+
+PLANOS:
+- Mapa da Estética: ${dados.plano_ativo}
+- Clube da Beleza: ${dados.plano_clube_beleza}
+- Patrocinador: ${dados.plano_patrocinador}
+
+Período: ${dados.dias_teste} dias
+Data Expiração: ${format(dataExpiracao, "dd/MM/yyyy", { locale: ptBR })}
+
+CONFIGURAÇÕES NECESSÁRIAS:
+1. Convidar usuário para email: ${dados.email}
+2. Após aceite, atualizar:
+   - role: tester
+   - data_expiracao_teste: ${dataExpiracao.toISOString()}
+   - plano_ativo: ${dados.plano_ativo}
+   - plano_clube_beleza: ${dados.plano_clube_beleza}
+   - plano_patrocinador: ${dados.plano_patrocinador}
+   - tipo_usuario: ${dados.tipo_usuario}
+        `.trim()
+      });
+
+      return { email: dados.email };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['testers'] });
+      setMostrarModalCriarTester(false);
+      setDadosTester({
+        full_name: "",
+        email: "",
+        telefone: "",
+        senha: "",
+        plano_ativo: "cobre",
+        plano_clube_beleza: "nenhum",
+        plano_patrocinador: "nenhum",
+        tipo_usuario: "profissional",
+        dias_teste: 7
+      });
+      setSucesso("✅ Solicitação de criação de conta teste enviada! Convide o usuário pelo dashboard.");
+      setTimeout(() => setSucesso(null), 5000);
+    },
+    onError: (error) => {
+      setErro("Erro ao criar tester: " + error.message);
+      setTimeout(() => setErro(null), 5000);
+    }
+  });
+
+  // NOVA Mutation: Estender Período Tester
+  const estenderPeriodoTesterMutation = useMutation({
+    mutationFn: async ({ email, diasAdicionais }) => {
+      const tester = testers.find(t => t.email === email);
+      if (!tester) throw new Error("Tester não encontrado");
+
+      let dataAtual = tester.data_expiracao_teste ? new Date(tester.data_expiracao_teste) : new Date();
+      // If current expiration is in the past, start from now
+      if (dataAtual < new Date()) {
+        dataAtual = new Date();
+      }
+      dataAtual.setDate(dataAtual.getDate() + diasAdicionais);
+
+      await base44.entities.User.update(email, {
+        data_expiracao_teste: dataAtual.toISOString()
+      });
+
+      return { novaData: dataAtual };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['testers'] });
+      setSucesso(`✅ Período estendido até ${format(data.novaData, "dd/MM/yyyy", { locale: ptBR })}`);
+      setTimeout(() => setSucesso(null), 3000);
+    },
+    onError: (error) => {
+      setErro("Erro ao estender período: " + error.message);
+      setTimeout(() => setErro(null), 3000);
+    }
+  });
+
+  // NOVA Mutation: Deletar Tester
+  const deletarTesterMutation = useMutation({
+    mutationFn: async (email) => {
+      await base44.entities.User.update(email, {
+        role: 'user',
+        data_expiracao_teste: null,
+        plano_ativo: 'cobre',
+        plano_clube_beleza: 'nenhum',
+        plano_patrocinador: 'nenhum'
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['testers'] });
+      queryClient.invalidateQueries({ queryKey: ['todos-usuarios'] });
+      setMostrarDetalhesTester(false);
+      setTesterSelecionado(null);
+      setSucesso("✅ Conta teste removida! Convertida para usuário comum.");
+      setTimeout(() => setSucesso(null), 3000);
+    },
+    onError: (error) => {
+      setErro("Erro ao deletar tester: " + error.message);
+      setTimeout(() => setErro(null), 3000);
+    }
+  });
+
   // Verificar versões agendadas e ativar automaticamente
   useEffect(() => {
     if (!versoes || versoes.length === 0) return;
@@ -948,7 +1105,7 @@ Equipe Mapa da Estética
     }, 30000);
 
     return () => clearInterval(intervalo);
-  }, [versoes, ativarVersaoMutation]); // Added activarVersaoMutation to deps
+  }, [versoes, activarVersaoMutation]); // Added activarVersaoMutation to deps
 
   useEffect(() => {
     if (!agendamentos || agendamentos.length === 0) return;
@@ -1525,7 +1682,7 @@ Equipe Mapa da Estética
               <tr>
                 <td>${b.titulo}</td>
                 <td>${b.nome_empresa}</td>
-                <td>${PLANOS_INFO[b.plano_patrocinador]?.nome}</td>
+                <td>${PLANOS_INFO[b.plano_patrocinador]?.nome || b.plano_patrocinador || 'Nenhum'}</td>
                 <td>${b.status}</td>
                 <td>${b.metricas?.visualizacoes || 0}</td>
                 <td>${b.metricas?.cliques || 0}</td>
@@ -1812,7 +1969,7 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
       return;
     }
 
-    if (confirm(`Confirma o agendamento da nova versão?\n\nTítulo: ${dadosNovaVersao.titulo}\nData/Hora: ${format(dataCompleta, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}\n\nTODOS os usuários receberão email de notificação.`)) {
+    if (confirm(`Confirma o agendamento da nova versão?\n\nTítulo: ${dadosNovaVersao.titulo}\nData/Hora: ${format(dataCompleta, "dd/MM/yyyy 'às' HH:mm', { locale: ptBR })}'\n\nTODOS os usuários receberão email de notificação.`)) {
       criarNovaVersaoMutation.mutate({
         titulo: dadosNovaVersao.titulo,
         descricao: dadosNovaVersao.descricao,
@@ -1826,6 +1983,142 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
     if (confirm(`⚠️ ATENÇÃO: Deletar versão ${versao.numero_versao}?\n\nIsto irá:\n• Liberar cache desta versão\n• Transferir ${versao.usuarios_nesta_versao || 0} usuários para a versão atual\n• Remover permanentemente esta versão do histórico\n\nDeseja continuar?`)) {
       deletarVersaoMutation.mutate(versao.id);
     }
+  };
+
+  const handleCriarTester = () => {
+    if (!dadosTester.full_name || !dadosTester.email) {
+      setErro("Preencha nome e email!");
+      setTimeout(() => setErro(null), 3000);
+      return;
+    }
+
+    if (confirm(`Criar solicitação de conta teste?\n\nNome: ${dadosTester.full_name}\nEmail: ${dadosTester.email}\nPeríodo: ${dadosTester.dias_teste} dias\n\nUm email será enviado ao admin para convidar o usuário.`)) {
+      criarTesterMutation.mutate(dadosTester);
+    }
+  };
+
+  const handleVerDetalhesTester = async (tester) => {
+    setTesterSelecionado(tester);
+    
+    // Buscar estatísticas
+    try {
+      const [anuncios, banners, posts, produtos, impulsionamentos] = await Promise.all([
+        base44.entities.Anuncio.filter({ created_by: tester.email }),
+        base44.entities.Banner.filter({ created_by: tester.email }),
+        base44.entities.ArtigoBlog.filter({ created_by: tester.email }),
+        base44.entities.Produto.filter({ created_by: tester.email }),
+        base44.entities.SolicitacaoImpulsionamento.filter({ usuario_email: tester.email })
+      ]);
+
+      const dataInicio = new Date(tester.created_date);
+      const agora = new Date();
+      const diasUsando = Math.ceil((agora - dataInicio) / (1000 * 60 * 60 * 24));
+
+      setEstatisticasTester({
+        anuncios: anuncios.length,
+        banners: banners.length,
+        posts: posts.length,
+        produtos: produtos.length,
+        impulsionamentos: impulsionamentos.length,
+        dias_usando: diasUsando,
+        total_visualizacoes: anuncios.reduce((acc, a) => acc + (a.visualizacoes || 0), 0),
+        total_curtidas: anuncios.reduce((acc, a) => acc + (a.curtidas || 0), 0)
+      });
+    } catch (error) {
+      console.error("Erro ao buscar estatísticas:", error);
+      setEstatisticasTester(null);
+    }
+
+    setMostrarDetalhesTester(true);
+  };
+
+  const handleEstenderPeriodo = (dias) => {
+    if (!testerSelecionado) return;
+    
+    estenderPeriodoTesterMutation.mutate({
+      email: testerSelecionado.email,
+      diasAdicionais: dias
+    });
+  };
+
+  const handleDeletarTester = () => {
+    if (!testerSelecionado) return;
+    
+    if (confirm(`⚠️ REMOVER CONTA TESTE?\n\nUsuário: ${testerSelecionado.full_name}\nEmail: ${testerSelecionado.email}\n\nEsta ação irá:\n• Converter para usuário comum\n• Resetar todos os planos para gratuito\n• Remover data de expiração`)) {
+      deletarTesterMutation.mutate(testerSelecionado.email);
+    }
+  };
+
+  const exportarRelatorioTesters = () => {
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Relatório de Contas Teste</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; }
+          h1 { color: #3B82F6; border-bottom: 3px solid #3B82F6; padding-bottom: 10px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+          th { background: #3B82F6; color: white; }
+          .section { background: #F3F4F6; padding: 15px; margin: 20px 0; border-radius: 8px; }
+        </style>
+      </head>
+      <body>
+        <h1>🧪 Relatório de Contas Teste</h1>
+        <p>Gerado em ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR })}</p>
+        <div class="section">
+          <p><strong>Total de Testers:</strong> ${testers.length}</p>
+          <p><strong>Ativos:</strong> ${testers.filter(t => {
+            const exp = t.data_expiracao_teste ? new Date(t.data_expiracao_teste) : null;
+            return exp && exp > new Date();
+          }).length}</p>
+          <p><strong>Expirados:</strong> ${testers.filter(t => {
+            const exp = t.data_expiracao_teste ? new Date(t.data_expiracao_teste) : null;
+            return exp && exp <= new Date();
+          }).length}</p>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Email</th>
+              <th>Plano Mapa</th>
+              <th>Clube</th>
+              <th>Patrocinador</th>
+              <th>Expira em</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${testers.map(t => {
+              const exp = t.data_expiracao_teste ? new Date(t.data_expiracao_teste) : null;
+              const status = exp && exp > new Date() ? 'Ativo' : 'Expirado';
+              return `
+                <tr>
+                  <td>${t.full_name}</td>
+                  <td>${t.email}</td>
+                  <td>${PLANOS_INFO[t.plano_ativo]?.nome || 'Cobre'}</td>
+                  <td>${t.plano_clube_beleza === 'ativo' ? 'Ativo' : 'Nenhum'}</td>
+                  <td>${t.plano_patrocinador !== 'nenhum' ? (PLANOS_INFO[t.plano_patrocinador]?.nome || t.plano_patrocinador) : 'Nenhum'}</td>
+                  <td>${exp ? format(exp, "dd/MM/yyyy", { locale: ptBR }) : 'N/D'}</td>
+                  <td>${status}</td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </body>
+      </html>
+    `;
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `testers-${format(new Date(), "yyyy-MM-dd")}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const usuariosFiltrados = usuarios.filter(u => 
@@ -2210,7 +2503,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
         </Card>
 
         <Tabs value={abaSelecionada} onValueChange={setAbaSelecionada} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 mb-6 gap-1">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 mb-6 gap-1">
             <TabsTrigger value="planos">
               <User className="w-4 h-4 mr-2" />
               Perfis
@@ -2226,6 +2519,10 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
             <TabsTrigger value="posts">
               <Newspaper className="w-4 h-4 mr-2" />
               Posts ({posts.length})
+            </TabsTrigger>
+            <TabsTrigger value="testers">
+              <Shield className="w-4 h-4 mr-2" />
+              Contas Teste ({testers.length})
             </TabsTrigger>
           </TabsList>
 
@@ -3157,7 +3454,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                               <TableCell>{banner.nome_empresa}</TableCell>
                               <TableCell>
                                 <Badge className={PLANOS_INFO[banner.plano_patrocinador]?.cor || 'bg-gray-100 text-gray-800'}>
-                                  {PLANOS_INFO[banner.plano_patrocinador]?.nome || 'Nenhum'}
+                                  {PLANOS_INFO[banner.plano_patrocinador]?.nome || banner.plano_patrocinador || 'Nenhum'}
                                 </Badge>
                               </TableCell>
                               <TableCell>
@@ -3303,6 +3600,169 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                                     </Button>
                                   )}
                                   <Button size="sm" variant="outline" className="border-red-300 text-red-700" onClick={() => handleExcluirPost(post)}>
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* NOVA Aba: Contas Teste */}
+          <TabsContent value="testers">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Shield className="w-6 h-6 text-blue-600" />
+                      Contas Teste ({testers.length})
+                    </CardTitle>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Gerencie contas de teste com período limitado
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => setMostrarModalCriarTester(true)}
+                      className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+                    >
+                      <UserPlus className="w-4 h-4 mr-2" />
+                      Criar Conta Teste
+                    </Button>
+                    <Button
+                      onClick={exportarRelatorioTesters}
+                      variant="outline"
+                      size="sm"
+                      disabled={testers.length === 0}
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      PDF
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {loadingTesters ? (
+                  <div className="flex justify-center py-12">
+                    <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                  </div>
+                ) : testers.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Shield className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600 mb-4">Nenhuma conta teste encontrada</p>
+                    <Button
+                      onClick={() => setMostrarModalCriarTester(true)}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      <UserPlus className="w-4 h-4 mr-2" />
+                      Criar Primeira Conta Teste
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Usuário</TableHead>
+                          <TableHead>Planos Ativos</TableHead>
+                          <TableHead>Pontos/Coins</TableHead>
+                          <TableHead>Período</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead className="text-right">Ações</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {testers.map((tester) => {
+                          const dataExpiracao = tester.data_expiracao_teste ? new Date(tester.data_expiracao_teste) : null;
+                          const hoje = new Date();
+                          const expirado = dataExpiracao && dataExpiracao < hoje;
+                          const diasRestantes = dataExpiracao ? Math.max(0, Math.ceil((dataExpiracao - hoje) / (1000 * 60 * 60 * 24))) : 0;
+
+                          return (
+                            <TableRow key={tester.id}>
+                              <TableCell>
+                                <div>
+                                  <p className="font-medium">{tester.full_name}</p>
+                                  <p className="text-sm text-gray-500">{tester.email}</p>
+                                  <p className="text-xs text-gray-400">{tester.telefone}</p>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="space-y-1">
+                                  <Badge className={PLANOS_INFO[tester.plano_ativo]?.cor || "bg-gray-100"}>
+                                    Mapa: {PLANOS_INFO[tester.plano_ativo]?.nome || 'Cobre'}
+                                  </Badge>
+                                  {tester.plano_clube_beleza !== 'nenhum' && (
+                                    <Badge className="bg-purple-100 text-purple-800">
+                                      Clube: {tester.plano_clube_beleza}
+                                    </Badge>
+                                  )}
+                                  {tester.plano_patrocinador !== 'nenhum' && (
+                                    <Badge className="bg-green-100 text-green-800">
+                                      Patrocinador: {PLANOS_INFO[tester.plano_patrocinador]?.nome || tester.plano_patrocinador}
+                                    </Badge>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="space-y-1 text-sm">
+                                  <div className="flex items-center gap-1">
+                                    <Star className="w-3 h-3 text-yellow-600" />
+                                    {tester.pontos_acumulados || 0} pts
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <DollarSign className="w-3 h-3 text-purple-600" />
+                                    {tester.beauty_coins || 0} BC
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="text-sm">
+                                  {dataExpiracao ? (
+                                    <>
+                                      <p className="font-medium">
+                                        {format(dataExpiracao, "dd/MM/yyyy", { locale: ptBR })}
+                                      </p>
+                                      <p className="text-xs text-gray-500">
+                                        {expirado ? 'Expirado' : `${diasRestantes} dias restantes`}
+                                      </p>
+                                    </>
+                                  ) : (
+                                    <p className="text-gray-400">Sem data</p>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge className={expirado ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"}>
+                                  {expirado ? '⏰ Expirado' : '✅ Ativo'}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex items-center justify-end gap-2">
+                                  <Button
+                                    size="sm"
+                                    onClick={() => handleVerDetalhesTester(tester)}
+                                  >
+                                    <Eye className="w-4 h-4 mr-1" />
+                                    Ver
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="border-red-300 text-red-700"
+                                    onClick={() => {
+                                      setTesterSelecionado(tester);
+                                      handleDeletarTester();
+                                    }}
+                                  >
                                     <Trash2 className="w-4 h-4" />
                                   </Button>
                                 </div>
@@ -4352,6 +4812,577 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
               </Button>
               <Button onClick={confirmarEdicaoUsuario} className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700">
                 Salvar Alterações
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* NOVO: Modal Criar Conta Teste */}
+        <Dialog open={mostrarModalCriarTester} onOpenChange={setMostrarModalCriarTester}>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-2xl flex items-center gap-2">
+                <UserPlus className="w-6 h-6 text-blue-600" />
+                Criar Conta Teste (7 dias)
+              </DialogTitle>
+              <DialogDescription>
+                Crie uma conta de teste com período limitado e planos personalizados
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 py-4">
+              <Alert className="bg-blue-50 border-blue-200">
+                <AlertCircle className="h-4 w-4 text-blue-600" />
+                <AlertDescription className="text-blue-800 text-sm">
+                  <p className="font-semibold mb-2">📝 Como funciona:</p>
+                  <ul className="list-disc ml-4 space-y-1">
+                    <li>Preencha os dados e configure os planos desejados</li>
+                    <li>Um email será enviado ao admin com as instruções</li>
+                    <li>Convide o usuário pelo Dashboard → Users → Invite User</li>
+                    <li>Após aceite, configure manualmente: role=tester e data_expiracao_teste</li>
+                  </ul>
+                </AlertDescription>
+              </Alert>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Nome Completo *</Label>
+                  <Input
+                    placeholder="Ex: João Silva"
+                    value={dadosTester.full_name}
+                    onChange={(e) => setDadosTester({...dadosTester, full_name: e.target.value})}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label>Email *</Label>
+                  <Input
+                    type="email"
+                    placeholder="joao@exemplo.com"
+                    value={dadosTester.email}
+                    onChange={(e) => setDadosTester({...dadosTester, email: e.target.value})}
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Telefone</Label>
+                  <Input
+                    placeholder="(00) 00000-0000"
+                    value={dadosTester.telefone}
+                    onChange={(e) => setDadosTester({...dadosTester, telefone: e.target.value})}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label>Senha Temporária</Label>
+                  <Input
+                    type="text"
+                    placeholder="Senha inicial"
+                    value={dadosTester.senha}
+                    onChange={(e) => setDadosTester({...dadosTester, senha: e.target.value})}
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label>Tipo de Usuário</Label>
+                <Select
+                  value={dadosTester.tipo_usuario}
+                  onValueChange={(value) => setDadosTester({...dadosTester, tipo_usuario: value})}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="profissional">Profissional</SelectItem>
+                    <SelectItem value="paciente">Paciente</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-4">
+                <div>
+                  <Label>Plano Mapa da Estética</Label>
+                  <Select
+                    value={dadosTester.plano_ativo}
+                    onValueChange={(value) => setDadosTester({...dadosTester, plano_ativo: value})}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.keys(PLANOS_INFO).map(key => (
+                        <SelectItem key={key} value={key}>{PLANOS_INFO[key].nome}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Clube da Beleza</Label>
+                  <Select
+                    value={dadosTester.plano_clube_beleza}
+                    onValueChange={(value) => setDadosTester({...dadosTester, plano_clube_beleza: value})}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="nenhum">Nenhum</SelectItem>
+                      <SelectItem value="ativo">Ativo</SelectItem>
+                      <SelectItem value="inativo">Inativo</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Plano Patrocinador</Label>
+                  <Select
+                    value={dadosTester.plano_patrocinador}
+                    onValueChange={(value) => setDadosTester({...dadosTester, plano_patrocinador: value})}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="nenhum">Nenhum</SelectItem>
+                      <SelectItem value="bronze">Bronze</SelectItem>
+                      <SelectItem value="prata">Prata</SelectItem>
+                      <SelectItem value="ouro">Ouro</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div>
+                <Label>Período de Teste (dias)</Label>
+                <div className="flex items-center gap-2 mt-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setDadosTester({...dadosTester, dias_teste: Math.max(1, dadosTester.dias_teste - 1)})}
+                  >
+                    <Minus className="w-4 h-4" />
+                  </Button>
+                  <Input
+                    type="number"
+                    min="1"
+                    max="365"
+                    value={dadosTester.dias_teste}
+                    onChange={(e) => setDadosTester({...dadosTester, dias_teste: parseInt(e.target.value) || 7})}
+                    className="text-center"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setDadosTester({...dadosTester, dias_teste: Math.min(365, dadosTester.dias_teste + 1)})}
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setDadosTester({...dadosTester, dias_teste: 7})}
+                  >
+                    Padrão (7)
+                  </Button>
+                </div>
+              </div>
+
+              <Alert className="bg-yellow-50 border-yellow-200">
+                <AlertCircle className="h-4 w-4 text-yellow-600" />
+                <AlertDescription className="text-yellow-900 text-sm">
+                  <strong>⚠️ Importante:</strong> Você precisará convidar o usuário manualmente através do Dashboard → Users → Invite User. 
+                  Após o aceite, configure manualmente: role=tester e data_expiracao_teste.
+                </AlertDescription>
+              </Alert>
+            </div>
+
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setMostrarModalCriarTester(false);
+                  setDadosTester({
+                    full_name: "",
+                    email: "",
+                    telefone: "",
+                    senha: "",
+                    plano_ativo: "cobre",
+                    plano_clube_beleza: "nenhum",
+                    plano_patrocinador: "nenhum",
+                    tipo_usuario: "profissional",
+                    dias_teste: 7
+                  });
+                }}
+                disabled={criandoTester}
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleCriarTester}
+                disabled={criandoTester || criarTesterMutation.isPending}
+                className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+              >
+                {criarTesterMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Enviando...
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="w-4 h-4 mr-2" />
+                    Criar Conta Teste
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* NOVO: Modal Detalhes Tester */}
+        <Dialog open={mostrarDetalhesTester} onOpenChange={setMostrarDetalhesTester}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-2xl flex items-center gap-2">
+                <Activity className="w-6 h-6 text-blue-600" />
+                Estatísticas: {testerSelecionado?.full_name}
+              </DialogTitle>
+              <DialogDescription>
+                Análise completa de uso da conta teste
+              </DialogDescription>
+            </DialogHeader>
+
+            {testerSelecionado && (
+              <div className="space-y-6 py-4">
+                {/* Informações Básicas */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <h4 className="font-semibold">📋 Informações</h4>
+                    <p className="text-sm"><strong>Email:</strong> {testerSelecionado.email}</p>
+                    <p className="text-sm"><strong>Telefone:</strong> {testerSelecionado.telefone || 'N/D'}</p>
+                    <p className="text-sm"><strong>Tipo:</strong> {testerSelecionado.tipo_usuario || 'N/D'}</p>
+                    <p className="text-sm">
+                      <strong>Cadastrado em:</strong> {format(new Date(testerSelecionado.created_date), "dd/MM/yyyy", { locale: ptBR })}
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-semibold">🎯 Planos Ativos</h4>
+                    <div className="flex flex-wrap gap-2">
+                      <Badge className={PLANOS_INFO[testerSelecionado.plano_ativo]?.cor}>
+                        Mapa: {PLANOS_INFO[testerSelecionado.plano_ativo]?.nome}
+                      </Badge>
+                      <Badge className="bg-purple-100 text-purple-800">
+                        Clube: {testerSelecionado.plano_clube_beleza}
+                      </Badge>
+                      <Badge className="bg-green-100 text-green-800">
+                        Patrocinador: {PLANOS_INFO[testerSelecionado.plano_patrocinador]?.nome || testerSelecionado.plano_patrocinador}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Período de Teste */}
+                <div className="p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border-2 border-blue-200">
+                  <h4 className="font-semibold mb-3 flex items-center gap-2">
+                    <Clock className="w-5 h-5 text-blue-600" />
+                    Período de Teste
+                  </h4>
+                  {testerSelecionado.data_expiracao_teste ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-gray-700">
+                            <strong>Expira em:</strong> {format(new Date(testerSelecionado.data_expiracao_teste), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                          </p>
+                          <p className="text-xs text-gray-600 mt-1">
+                            {Math.max(0, Math.ceil((new Date(testerSelecionado.data_expiracao_teste) - new Date()) / (1000 * 60 * 60 * 24)))} dias restantes
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <Label className="text-sm mb-2 block">Estender Período (dias):</Label>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => setDiasAdicionais(Math.max(0, diasAdicionais - 1))}
+                          >
+                            <Minus className="w-4 h-4" />
+                          </Button>
+                          <Input
+                            type="number"
+                            min="0"
+                            max="365"
+                            value={diasAdicionais}
+                            onChange={(e) => setDiasAdicionais(parseInt(e.target.value) || 0)}
+                            className="text-center"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => setDiasAdicionais(Math.min(365, diasAdicionais + 1))}
+                          >
+                            <Plus className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            onClick={() => handleEstenderPeriodo(diasAdicionais)}
+                            disabled={diasAdicionais === 0}
+                            className="bg-blue-600 hover:bg-blue-700"
+                          >
+                            <Check className="w-4 h-4 mr-1" />
+                            Aplicar
+                          </Button>
+                        </div>
+                        <div className="flex gap-2 mt-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEstenderPeriodo(7)}
+                          >
+                            +7 dias
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEstenderPeriodo(30)}
+                          >
+                            +30 dias
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEstenderPeriodo(-7)}
+                          >
+                            -7 dias
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-600">Data de expiração não configurada</p>
+                  )}
+                </div>
+
+                {/* Pontos e Beauty Coins */}
+                <div className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border-2 border-purple-200">
+                  <h4 className="font-semibold mb-3 flex items-center gap-2">
+                    <Star className="w-5 h-5 text-purple-600" />
+                    Pontos e Recompensas
+                  </h4>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm mb-2 block">Pontos Acumulados:</Label>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => {
+                            atualizarPontosMutation.mutate({
+                              email: testerSelecionado.email,
+                              pontos: Math.max(0, (testerSelecionado.pontos_acumulados || 0) - 100),
+                              beautyCoins: testerSelecionado.beauty_coins || 0
+                            });
+                          }}
+                        >
+                          <Minus className="w-4 h-4" />
+                        </Button>
+                        <Input
+                          type="number"
+                          min="0"
+                          value={testerSelecionado.pontos_acumulados || 0}
+                          onChange={(e) => {
+                            atualizarPontosMutation.mutate({
+                              email: testerSelecionado.email,
+                              pontos: parseInt(e.target.value) || 0,
+                              beautyCoins: testerSelecionado.beauty_coins || 0
+                            });
+                          }}
+                          className="text-center"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => {
+                            atualizarPontosMutation.mutate({
+                              email: testerSelecionado.email,
+                              pontos: (testerSelecionado.pontos_acumulados || 0) + 100,
+                              beautyCoins: testerSelecionado.beauty_coins || 0
+                            });
+                          }}
+                        >
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-sm mb-2 block">Beauty Coins:</Label>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => {
+                            atualizarPontosMutation.mutate({
+                              email: testerSelecionado.email,
+                              pontos: testerSelecionado.pontos_acumulados || 0,
+                              beautyCoins: Math.max(0, (testerSelecionado.beauty_coins || 0) - 50)
+                            });
+                          }}
+                        >
+                          <Minus className="w-4 h-4" />
+                        </Button>
+                        <Input
+                          type="number"
+                          min="0"
+                          value={testerSelecionado.beauty_coins || 0}
+                          onChange={(e) => {
+                            atualizarPontosMutation.mutate({
+                              email: testerSelecionado.email,
+                              pontos: testerSelecionado.pontos_acumulados || 0,
+                              beautyCoins: parseInt(e.target.value) || 0
+                            });
+                          }}
+                          className="text-center"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => {
+                            atualizarPontosMutation.mutate({
+                              email: testerSelecionado.email,
+                              pontos: testerSelecionado.pontos_acumulados || 0,
+                              beautyCoins: (testerSelecionado.beauty_coins || 0) + 50
+                            });
+                          }}
+                        >
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Estatísticas de Uso */}
+                {estatisticasTester && (
+                  <div>
+                    <h4 className="font-semibold mb-3 flex items-center gap-2">
+                      <TrendingUp className="w-5 h-5 text-pink-600" />
+                      Estatísticas de Uso
+                    </h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <Card className="border-none bg-gradient-to-br from-pink-50 to-rose-50">
+                        <CardContent className="p-4 text-center">
+                          <Sparkles className="w-6 h-6 text-pink-600 mx-auto mb-2" />
+                          <p className="text-2xl font-bold">{estatisticasTester.anuncios}</p>
+                          <p className="text-xs text-gray-600">Anúncios</p>
+                        </CardContent>
+                      </Card>
+                      <Card className="border-none bg-gradient-to-br from-purple-50 to-pink-50">
+                        <CardContent className="p-4 text-center">
+                          <ImageIcon className="w-6 h-6 text-purple-600 mx-auto mb-2" />
+                          <p className="text-2xl font-bold">{estatisticasTester.banners}</p>
+                          <p className="text-xs text-gray-600">Banners</p>
+                        </CardContent>
+                      </Card>
+                      <Card className="border-none bg-gradient-to-br from-blue-50 to-cyan-50">
+                        <CardContent className="p-4 text-center">
+                          <Newspaper className="w-6 h-6 text-blue-600 mx-auto mb-2" />
+                          <p className="text-2xl font-bold">{estatisticasTester.posts}</p>
+                          <p className="text-xs text-gray-600">Posts</p>
+                        </CardContent>
+                      </Card>
+                      <Card className="border-none bg-gradient-to-br from-green-50 to-emerald-50">
+                        <CardContent className="p-4 text-center">
+                          <Zap className="w-6 h-6 text-orange-600 mx-auto mb-2" />
+                          <p className="text-2xl font-bold">{estatisticasTester.impulsionamentos}</p>
+                          <p className="text-xs text-gray-600">Impulsionamentos</p>
+                        </CardContent>
+                      </Card>
+                      <Card className="border-none bg-gradient-to-br from-yellow-50 to-amber-50">
+                        <CardContent className="p-4 text-center">
+                          <Eye className="w-6 h-6 text-yellow-600 mx-auto mb-2" />
+                          <p className="text-2xl font-bold">{estatisticasTester.total_visualizacoes}</p>
+                          <p className="text-xs text-gray-600">Visualizações</p>
+                        </CardContent>
+                      </Card>
+                      <Card className="border-none bg-gradient-to-br from-red-50 to-pink-50">
+                        <CardContent className="p-4 text-center">
+                          <Heart className="w-6 h-6 text-red-600 mx-auto mb-2" />
+                          <p className="text-2xl font-bold">{estatisticasTester.total_curtidas}</p>
+                          <p className="text-xs text-gray-600">Curtidas</p>
+                        </CardContent>
+                      </Card>
+                      <Card className="border-none bg-gradient-to-br from-indigo-50 to-blue-50">
+                        <CardContent className="p-4 text-center">
+                          <ShoppingCart className="w-6 h-6 text-indigo-600 mx-auto mb-2" />
+                          <p className="text-2xl font-bold">{estatisticasTester.produtos}</p>
+                          <p className="text-xs text-gray-600">Produtos</p>
+                        </CardContent>
+                      </Card>
+                      <Card className="border-none bg-gradient-to-br from-gray-50 to-slate-50">
+                        <CardContent className="p-4 text-center">
+                          <Clock className="w-6 h-6 text-gray-600 mx-auto mb-2" />
+                          <p className="text-2xl font-bold">{estatisticasTester.dias_usando}</p>
+                          <p className="text-xs text-gray-600">Dias de Uso</p>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+                )}
+
+                <Alert className="bg-red-50 border-red-200">
+                  <AlertCircle className="h-4 w-4 text-red-600" />
+                  <AlertDescription className="text-red-800 text-sm">
+                    <strong>⚠️ Zona de Perigo:</strong> Remover esta conta teste irá converter o usuário para comum e resetar todos os planos.
+                  </AlertDescription>
+                </Alert>
+              </div>
+            )}
+
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setMostrarDetalhesTester(false);
+                  setTesterSelecionado(null);
+                  setEstatisticasTester(null);
+                  setDiasAdicionais(0);
+                }}
+              >
+                Fechar
+              </Button>
+              <Button
+                onClick={() => navigate(`${createPageUrl("Perfil")}?user=${testerSelecionado?.email}`)}
+                variant="outline"
+              >
+                <User className="w-4 h-4 mr-2" />
+                Ver Perfil
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleDeletarTester}
+                disabled={deletarTesterMutation.isPending}
+              >
+                {deletarTesterMutation.isPending ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Trash2 className="w-4 h-4 mr-2" />
+                )}
+                Remover Conta Teste
               </Button>
             </DialogFooter>
           </DialogContent>
