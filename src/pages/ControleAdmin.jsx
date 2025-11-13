@@ -3811,7 +3811,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
 
           {/* ============================================ */}
           {/* TAB CONTROLE DE POSTS */}
-          {============================================ */}
+          {/* ============================================ */}
           <TabsContent value="posts">
             {/* Stats Posts */}
             <div className="grid md:grid-cols-4 gap-4 mb-6">
