@@ -1154,7 +1154,7 @@ Retorne no formato JSON:
               )}
             </Button>
           </DialogFooter>
-        </Dialog>
+        </DialogContent>
       </Dialog>
 
       {/* Modal Criar Post */}
