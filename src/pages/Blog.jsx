@@ -7,22 +7,22 @@ import { createPageUrl } from "@/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Calendar, 
-  Clock, 
-  TrendingUp, 
-  Sparkles, 
-  Heart, 
-  Eye, 
-  Briefcase, 
-  Users, 
-  ExternalLink, 
-  MessageCircle, 
-  Send, 
-  AlertCircle, 
-  X, 
-  Share2, 
-  Facebook, 
+import {
+  Calendar,
+  Clock,
+  TrendingUp,
+  Sparkles,
+  Heart,
+  Eye,
+  Briefcase,
+  Users,
+  ExternalLink,
+  MessageCircle,
+  Send,
+  AlertCircle,
+  X,
+  Share2,
+  Facebook,
   Copy,
   Plus,
   Loader2,
@@ -118,8 +118,8 @@ export default function Blog() {
     data_publicacao: null,
     hora_publicacao: "09:00",
     links_patrocinador: [],
-    imagem_capa: "", // Added
-    logo_empresa: "" // Added
+    imagem_capa: "",
+    logo_empresa: ""
   });
   const [novoLink, setNovoLink] = useState({
     titulo: "",
@@ -134,6 +134,7 @@ export default function Blog() {
   // Estados para IA (Added)
   const [mostrarModalIA, setMostrarModalIA] = useState(false);
   const [gerandoPostIA, setGerandoPostIA] = useState(false);
+  const [gerandoImagemIA, setGerandoImagemIA] = useState(false); // Added
   const [dadosIA, setDadosIA] = useState({
     tema: "",
     categoria: "Estética Facial",
@@ -186,8 +187,8 @@ export default function Blog() {
         status: status,
         data_publicacao: dataPublicacao.toISOString(),
         links_patrocinador: dados.links_patrocinador,
-        imagem_capa: dados.imagem_capa, // Added
-        logo_empresa: dados.logo_empresa, // Added
+        imagem_capa: dados.imagem_capa,
+        logo_empresa: dados.logo_empresa,
         visualizacoes: 0,
         total_curtidas: 0,
         curtidas: []
@@ -207,8 +208,8 @@ export default function Blog() {
         data_publicacao: null,
         hora_publicacao: "09:00",
         links_patrocinador: [],
-        imagem_capa: "", // Added
-        logo_empresa: "" // Added
+        imagem_capa: "",
+        logo_empresa: ""
       });
       alert("✅ Post criado com sucesso!");
     },
@@ -221,16 +222,16 @@ export default function Blog() {
   const podePostar = () => {
     if (!user) return false;
     if (user.role === 'admin') return true;
-    
+
     // Plano Mapa da Estética: apenas DELUXE (platina)
     if (user.plano_ativo === 'platina') return true;
-    
+
     // Planos Patrocinador: PRATA em diante
     const planosPatrocinadorPermitidos = ['prata', 'ouro', 'diamante', 'platina'];
     if (user.plano_patrocinador && planosPatrocinadorPermitidos.includes(user.plano_patrocinador)) {
       return true;
     }
-    
+
     return false;
   };
 
@@ -267,7 +268,7 @@ export default function Blog() {
     }
   };
 
-  // IA Generation handler (Added)
+  // IA Generation handler - ATUALIZADO COM GERAÇÃO DE IMAGEM
   const handleGerarPostIA = async () => {
     if (!dadosIA.tema || !dadosIA.categoria) {
       alert("Preencha tema e categoria!");
@@ -275,6 +276,7 @@ export default function Blog() {
     }
 
     setGerandoPostIA(true);
+    setGerandoImagemIA(false); // Reset image generation state for combined operation
 
     try {
       const prompt = `Você é o Dr. Beleza, especialista em conteúdo para estética.
@@ -314,6 +316,18 @@ Retorne no formato JSON:
         }
       });
 
+      // Gerar imagem de capa automaticamente
+      setGerandoImagemIA(true);
+      const promptImagem = `Professional elegant cover image for a beauty blog article about "${dadosIA.tema}".
+Category: ${dadosIA.categoria}.
+High quality, aesthetic, modern, luxurious beauty and wellness theme.
+Soft pastel colors, elegant composition, professional photography style.
+No text or watermarks.`;
+
+      const { url: imagemUrl } = await base44.integrations.Core.GenerateImage({
+        prompt: promptImagem
+      });
+
       setDadosPost({
         ...dadosPost,
         titulo: resultado.titulo,
@@ -321,17 +335,52 @@ Retorne no formato JSON:
         conteudo: resultado.conteudo,
         tempo_leitura: resultado.tempo_leitura,
         categoria: dadosIA.categoria,
-        tipo: dadosIA.publico
+        tipo: dadosIA.publico,
+        imagem_capa: imagemUrl
       });
 
       setMostrarModalIA(false);
       setMostrarModalCriarPost(true);
-      alert("✨ Post gerado com IA! Revise e publique.");
+      alert("✨ Post e imagem gerados com IA! Revise e publique.");
     } catch (error) {
       console.error("Erro ao gerar post:", error);
       alert("Erro ao gerar post com IA. Tente novamente.");
     } finally {
       setGerandoPostIA(false);
+      setGerandoImagemIA(false);
+    }
+  };
+
+  // NOVA Função: Gerar Imagem com IA
+  const handleGerarImagemIA = async () => {
+    if (!dadosPost.titulo && !dadosPost.categoria) {
+      alert("Preencha pelo menos o título ou categoria para gerar uma imagem!");
+      return;
+    }
+
+    setGerandoImagemIA(true);
+
+    try {
+      const contexto = dadosPost.titulo || `Artigo sobre ${dadosPost.categoria}`;
+      const promptImagem = `Professional elegant cover image for a beauty blog article: "${contexto}".
+Category: ${dadosPost.categoria}.
+${dadosPost.resumo ? `Description: ${dadosPost.resumo.substring(0, 100)}` : ''}
+High quality, aesthetic, modern, luxurious beauty and wellness theme.
+Soft pastel colors, elegant composition, professional photography style.
+No text or watermarks.
+Perfect for blog header.`;
+
+      const { url: imagemUrl } = await base44.integrations.Core.GenerateImage({
+        prompt: promptImagem
+      });
+
+      setDadosPost({ ...dadosPost, imagem_capa: imagemUrl });
+      alert("✨ Imagem gerada com sucesso!");
+    } catch (error) {
+      console.error("Erro ao gerar imagem:", error);
+      alert("Erro ao gerar imagem com IA. Tente novamente.");
+    } finally {
+      setGerandoImagemIA(false);
     }
   };
 
@@ -664,7 +713,7 @@ Retorne no formato JSON:
               <TrendingUp className="w-4 h-4" />
               <span className="text-sm font-medium">Atualizado semanalmente</span>
             </div>
-            
+
             {/* Botões de Criação */}
             {podePostar() && (
               <div className="flex gap-2">
@@ -1037,7 +1086,7 @@ Retorne no formato JSON:
         </DialogContent>
       </Dialog>
 
-      {/* NOVO: Modal Criar Post com IA */}
+      {/* ATUALIZADO: Modal Criar Post com IA */}
       <Dialog open={mostrarModalIA} onOpenChange={setMostrarModalIA}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
@@ -1048,7 +1097,6 @@ Retorne no formato JSON:
                   alt="Dr. Beleza"
                   className="w-full h-full object-cover"
                   onError={(e) => {
-                    // Fallback to MessageCircle if image fails to load
                     e.target.style.display = 'none';
                     if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
                   }}
@@ -1058,7 +1106,7 @@ Retorne no formato JSON:
               Criar Post com Dr. Beleza
             </DialogTitle>
             <DialogDescription>
-              Deixe a IA criar um artigo completo para você com base em informações básicas
+              Deixe a IA criar um artigo completo COM IMAGEM para você
             </DialogDescription>
           </DialogHeader>
 
@@ -1066,7 +1114,7 @@ Retorne no formato JSON:
             <Alert className="bg-blue-50 border-blue-200">
               <Sparkles className="h-4 w-4 text-blue-600" />
               <AlertDescription className="text-blue-800 text-sm">
-                <strong>Como funciona:</strong> Preencha tema e categoria. A IA gerará título, resumo, conteúdo completo e tempo de leitura automaticamente!
+                <strong>Como funciona:</strong> Preencha tema e categoria. A IA gerará título, resumo, conteúdo completo, tempo de leitura E imagem de capa automaticamente!
               </AlertDescription>
             </Alert>
 
@@ -1078,6 +1126,9 @@ Retorne no formato JSON:
                 onChange={(e) => setDadosIA({...dadosIA, tema: e.target.value})}
                 className="mt-1"
               />
+              <p className="text-xs text-gray-500 mt-1">
+                💡 Seja específico para melhores resultados
+              </p>
             </div>
 
             <div>
@@ -1126,30 +1177,39 @@ Retorne no formato JSON:
                 </SelectContent>
               </Select>
             </div>
+
+            {gerandoImagemIA && (
+              <Alert className="bg-purple-50 border-purple-200">
+                <Loader2 className="h-4 w-4 text-purple-600 animate-spin" />
+                <AlertDescription className="text-purple-800 text-sm">
+                  🎨 Gerando imagem de capa profissional... Aguarde 5-10 segundos.
+                </AlertDescription>
+              </Alert>
+            )}
           </div>
 
           <DialogFooter>
             <Button
               variant="outline"
               onClick={() => setMostrarModalIA(false)}
-              disabled={gerandoPostIA}
+              disabled={gerandoPostIA || gerandoImagemIA}
             >
               Cancelar
             </Button>
             <Button
               onClick={handleGerarPostIA}
-              disabled={gerandoPostIA || !dadosIA.tema || !dadosIA.categoria}
+              disabled={gerandoPostIA || gerandoImagemIA || !dadosIA.tema || !dadosIA.categoria}
               className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
             >
-              {gerandoPostIA ? (
+              {gerandoPostIA || gerandoImagemIA ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Gerando Post...
+                  {gerandoImagemIA ? 'Gerando Imagem...' : 'Gerando Post...'}
                 </>
               ) : (
                 <>
                   <Wand2 className="w-4 h-4 mr-2" />
-                  Gerar Post com IA
+                  Gerar Post Completo
                 </>
               )}
             </Button>
@@ -1174,7 +1234,24 @@ Retorne no formato JSON:
             {/* Upload de Imagens */}
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <Label>Imagem de Capa</Label>
+                <div className="flex items-center justify-between mb-2">
+                  <Label>Imagem de Capa</Label>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={handleGerarImagemIA}
+                    disabled={gerandoImagemIA}
+                    className="border-blue-300 text-blue-700 text-xs"
+                  >
+                    {gerandoImagemIA ? (
+                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                    ) : (
+                      <Wand2 className="w-3 h-3 mr-1" />
+                    )}
+                    Gerar com IA
+                  </Button>
+                </div>
                 <p className="text-xs text-gray-500 mb-2">Imagem principal do artigo</p>
                 {dadosPost.imagem_capa ? (
                   <div className="relative">
@@ -1202,6 +1279,7 @@ Retorne no formato JSON:
                         <>
                           <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
                           <span className="text-sm text-purple-600">Enviar imagem</span>
+                          <p className="text-xs text-gray-500 mt-1">ou use o botão "Gerar com IA"</p>
                         </>
                       )}
                     </div>
@@ -1215,6 +1293,18 @@ Retorne no formato JSON:
                   onChange={handleUploadImagemCapa}
                   disabled={uploadingImagemCapa}
                 />
+
+                {/* Sugestões de Prompt para IA */}
+                {!dadosPost.imagem_capa && (
+                  <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <p className="text-xs font-semibold text-blue-900 mb-2">💡 Dicas para gerar imagem:</p>
+                    <ul className="text-xs text-blue-800 space-y-1">
+                      <li>• Preencha título e categoria primeiro</li>
+                      <li>• A IA usará o contexto do seu post</li>
+                      <li>• Imagem gerada em 5-10 segundos</li>
+                    </ul>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -1261,6 +1351,15 @@ Retorne no formato JSON:
                 />
               </div>
             </div>
+
+            {gerandoImagemIA && (
+              <Alert className="bg-purple-50 border-purple-200">
+                <Loader2 className="h-4 w-4 text-purple-600 animate-spin" />
+                <AlertDescription className="text-purple-800 text-sm">
+                  🎨 Gerando imagem profissional... Isso pode levar até 10 segundos.
+                </AlertDescription>
+              </Alert>
+            )}
 
             {/* Tipo de Post */}
             <div>
@@ -1462,8 +1561,8 @@ Retorne no formato JSON:
                         className="w-full justify-start text-left mt-1"
                       >
                         <Calendar className="w-4 h-4 mr-2" />
-                        {dadosPost.data_publicacao ? 
-                          format(new Date(dadosPost.data_publicacao), "dd/MM/yyyy", { locale: ptBR }) : 
+                        {dadosPost.data_publicacao ?
+                          format(new Date(dadosPost.data_publicacao), "dd/MM/yyyy", { locale: ptBR }) :
                           "Publicar agora"
                         }
                       </Button>
