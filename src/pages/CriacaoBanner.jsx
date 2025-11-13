@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
@@ -29,7 +28,9 @@ import {
   Link as LinkIcon,
   CheckCircle,
   Sparkles,
-  Clock, // Added Clock icon
+  Clock,
+  Wand2,
+  MessageCircle,
 } from "lucide-react";
 
 const dimensoesPorPlano = {
@@ -103,6 +104,8 @@ export default function CriacaoBanner() {
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [sucesso, setSucesso] = useState(false);
   const [erro, setErro] = useState(null);
+  const [gerandoIA, setGerandoIA] = useState(false);
+  const [gerandoImagem, setGerandoImagem] = useState(false);
 
   const [formData, setFormData] = useState({
     titulo: "",
@@ -114,7 +117,7 @@ export default function CriacaoBanner() {
     nome_empresa: "",
     links: [],
     posicao: "home_topo",
-    status: "ativo", // Added status field
+    status: "ativo",
     data_inicio: new Date().toISOString().split('T')[0],
     data_fim: "",
     tempo_exibicao_segundos: 5,
@@ -155,9 +158,9 @@ export default function CriacaoBanner() {
           nome_empresa: userData.full_name || userData.nome_empresa || "",
           dimensoes_banner: { largura: dimensoes.largura, altura: dimensoes.altura },
           limite_banners: dimensoes.limite,
-          dias_exibicao_mes: dimensoes.diasExibicao, // Inicializa dias_exibicao_mes
-          tempo_exibicao_segundos: 5, // Default para 5 segundos
-          frequencia_exibicao: "sempre", // Default
+          dias_exibicao_mes: dimensoes.diasExibicao,
+          tempo_exibicao_segundos: 5,
+          frequencia_exibicao: "sempre",
           prioridade: plano === 'platina' ? 5 : plano === 'diamante' ? 4 : plano === 'ouro' ? 3 : plano === 'prata' ? 2 : 1
         }));
       } catch (error) {
@@ -169,6 +172,179 @@ export default function CriacaoBanner() {
     };
     fetchUser();
   }, [navigate]);
+
+  const handleAjudaTitulo = async () => {
+    if (!formData.descricao) {
+      setErro("Escreva uma descrição primeiro para gerar o título!");
+      setTimeout(() => setErro(null), 3000);
+      return;
+    }
+
+    setGerandoIA(true);
+    try {
+      const resposta = await base44.integrations.Core.InvokeLLM({
+        prompt: `Você é o Dr. Beleza, um assistente especializado em marketing de estética.
+
+DESCRIÇÃO DO BANNER:
+"${formData.descricao}"
+
+TAREFA: Crie um título ATRAENTE e PROFISSIONAL para este banner publicitário.
+
+DIRETRIZES:
+- Máximo de 60 caracteres
+- Use emojis adequados (1-2 no máximo)
+- Seja persuasivo e claro
+- Destaque o principal benefício ou oferta
+
+Retorne APENAS o título, sem aspas ou explicações.`
+      });
+
+      setFormData({ ...formData, titulo: resposta.trim() });
+    } catch (error) {
+      setErro("Erro ao gerar título com IA");
+      setTimeout(() => setErro(null), 3000);
+    } finally {
+      setGerandoIA(false);
+    }
+  };
+
+  const handleAjudaDescricao = async () => {
+    if (!formData.titulo) {
+      setErro("Escreva um título primeiro para gerar a descrição!");
+      setTimeout(() => setErro(null), 3000);
+      return;
+    }
+
+    setGerandoIA(true);
+    try {
+      const resposta = await base44.integrations.Core.InvokeLLM({
+        prompt: `Você é o Dr. Beleza, um assistente especializado em marketing de estética.
+
+TÍTULO DO BANNER:
+"${formData.titulo}"
+
+TAREFA: Crie uma descrição PERSUASIVA e PROFISSIONAL para este banner publicitário.
+
+DIRETRIZES:
+- Máximo de 150 caracteres
+- Destaque benefícios e diferenciais
+- Use gatilhos mentais (urgência, exclusividade, benefício)
+- Linguagem persuasiva mas profissional
+- NÃO use emojis
+
+Retorne APENAS a descrição, sem aspas ou explicações.`
+      });
+
+      setFormData({ ...formData, descricao: resposta.trim() });
+    } catch (error) {
+      setErro("Erro ao gerar descrição com IA");
+      setTimeout(() => setErro(null), 3000);
+    } finally {
+      setGerandoIA(false);
+    }
+  };
+
+  const handleGerarBannerCompleto = async () => {
+    if (!formData.nome_empresa) {
+      setErro("Preencha o nome da empresa primeiro!");
+      setTimeout(() => setErro(null), 3000);
+      return;
+    }
+
+    setGerandoIA(true);
+    setGerandoImagem(true);
+
+    try {
+      // Gerar título e descrição
+      const respostaConteudo = await base44.integrations.Core.InvokeLLM({
+        prompt: `Você é o Dr. Beleza, especialista em marketing de estética.
+
+EMPRESA: ${formData.nome_empresa}
+
+TAREFA: Crie um banner publicitário completo com TÍTULO e DESCRIÇÃO.
+
+DIRETRIZES:
+- Título: Máximo 60 caracteres, use 1-2 emojis, seja persuasivo
+- Descrição: Máximo 150 caracteres, destaque benefícios, use gatilhos mentais
+
+Retorne no formato JSON:
+{
+  "titulo": "...",
+  "descricao": "..."
+}`,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            titulo: { type: "string" },
+            descricao: { type: "string" }
+          }
+        }
+      });
+
+      // Atualizar título e descrição
+      setFormData(prev => ({
+        ...prev,
+        titulo: respostaConteudo.titulo,
+        descricao: respostaConteudo.descricao
+      }));
+
+      // Gerar imagem do banner
+      const promptImagem = `Professional elegant banner for an aesthetic clinic called "${formData.nome_empresa}". 
+Theme: ${respostaConteudo.titulo} - ${respostaConteudo.descricao}. 
+High quality, modern, luxurious aesthetic, beauty and wellness theme. 
+Professional photography style. Soft colors, elegant typography space. 
+Dimensions: ${dimensoesPorPlano[formData.plano_patrocinador].largura}x${dimensoesPorPlano[formData.plano_patrocinador].altura}px`;
+
+      const { url } = await base44.integrations.Core.GenerateImage({
+        prompt: promptImagem
+      });
+
+      setFormData(prev => ({
+        ...prev,
+        imagem_banner: url
+      }));
+
+      setErro(null);
+    } catch (error) {
+      console.error("Erro ao gerar banner:", error);
+      setErro("Erro ao gerar banner com IA. Tente novamente.");
+      setTimeout(() => setErro(null), 5000);
+    } finally {
+      setGerandoIA(false);
+      setGerandoImagem(false);
+    }
+  };
+
+  const handleGerarImagem = async () => {
+    if (!formData.titulo && !formData.descricao) {
+      setErro("Preencha o título ou descrição primeiro!");
+      setTimeout(() => setErro(null), 3000);
+      return;
+    }
+
+    setGerandoImagem(true);
+    try {
+      const conteudo = `${formData.titulo || ''} ${formData.descricao || ''}`.trim();
+      const promptImagem = `Professional elegant banner for an aesthetic clinic. 
+Theme: ${conteudo}. 
+Company: ${formData.nome_empresa}.
+High quality, modern, luxurious aesthetic, beauty and wellness theme. 
+Professional photography style. Soft pastel colors, elegant layout. 
+Dimensions: ${dimensoesPorPlano[formData.plano_patrocinador].largura}x${dimensoesPorPlano[formData.plano_patrocinador].altura}px`;
+
+      const { url } = await base44.integrations.Core.GenerateImage({
+        prompt: promptImagem
+      });
+
+      setFormData({ ...formData, imagem_banner: url });
+    } catch (error) {
+      console.error("Erro ao gerar imagem:", error);
+      setErro("Erro ao gerar imagem. Tente novamente.");
+      setTimeout(() => setErro(null), 3000);
+    } finally {
+      setGerandoImagem(false);
+    }
+  };
 
   const handleUploadBanner = async (e) => {
     const file = e.target.files[0];
@@ -232,7 +408,6 @@ export default function CriacaoBanner() {
       return;
     }
 
-    // Verificar se a posição é permitida para o plano
     const currentDimensoes = dimensoesPorPlano[formData.plano_patrocinador];
     if (!currentDimensoes.posicoes.includes(formData.posicao)) {
       setErro(`Seu plano ${formData.plano_patrocinador.toUpperCase()} não permite exibição na posição "${posicoesDisponiveis.find(p => p.valor === formData.posicao)?.label || formData.posicao}". Posições disponíveis: ${currentDimensoes.posicoes.map(p => posicoesDisponiveis.find(pos => pos.valor === p)?.label || p).join(', ')}`);
@@ -243,20 +418,20 @@ export default function CriacaoBanner() {
     setErro(null);
 
     try {
-      const mesAtual = new Date().toISOString().substring(0, 7); // YYYY-MM
+      const mesAtual = new Date().toISOString().substring(0, 7);
 
       await base44.entities.Banner.create({
         ...formData,
-        mes_referencia: mesAtual, // Novo campo
-        dias_exibidos_mes_atual: 0, // Novo campo
+        mes_referencia: mesAtual,
+        dias_exibidos_mes_atual: 0,
         metricas: {
           visualizacoes: 0,
           cliques: 0,
           tempo_medio_visualizacao: 0,
           compartilhamentos: 0,
           conversoes_produtos: 0,
-          banners_fechados: 0, // Novo campo
-          banners_pulados: 0 // Novo campo
+          banners_fechados: 0,
+          banners_pulados: 0
         },
         historico_metricas: []
       });
@@ -311,11 +486,93 @@ export default function CriacaoBanner() {
           </p>
         </div>
 
-        {/* Plano e Restrições - EXPANDIDO */}
+        {/* Dr. Beleza - Banner Completo com IA */}
+        <Card className="mb-6 border-2 border-cyan-300 bg-gradient-to-br from-cyan-50 to-blue-50">
+          <CardContent className="p-6">
+            <div className="flex items-start gap-4 mb-4">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
+                <img
+                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/8b8866b2d_drbeleza.png"
+                  alt="Dr. Beleza"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'flex';
+                  }}
+                />
+                <MessageCircle className="w-8 h-8 text-white hidden" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-gray-900 mb-2">
+                  🤖 Dr. Beleza - Assistente de Criação
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Deixe a IA criar seu banner completo ou ajudar em seções específicas!
+                </p>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-3">
+              <Button
+                type="button"
+                onClick={handleGerarBannerCompleto}
+                disabled={gerandoIA || !formData.nome_empresa}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+              >
+                {gerandoIA ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Wand2 className="w-4 h-4 mr-2" />
+                )}
+                Gerar Banner Completo
+              </Button>
+              
+              <Button
+                type="button"
+                onClick={handleAjudaTitulo}
+                disabled={gerandoIA || !formData.descricao}
+                variant="outline"
+                className="border-2 border-blue-300 text-blue-700"
+              >
+                {gerandoIA ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Sparkles className="w-4 h-4 mr-2" />
+                )}
+                Ajuda: Título
+              </Button>
+              
+              <Button
+                type="button"
+                onClick={handleAjudaDescricao}
+                disabled={gerandoIA || !formData.titulo}
+                variant="outline"
+                className="border-2 border-green-300 text-green-700"
+              >
+                {gerandoIA ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Sparkles className="w-4 h-4 mr-2" />
+                )}
+                Ajuda: Descrição
+              </Button>
+            </div>
+
+            {gerandoImagem && (
+              <Alert className="mt-4 bg-blue-50 border-blue-200">
+                <Loader2 className="h-4 w-4 text-blue-600 animate-spin" />
+                <AlertDescription className="text-blue-800 text-sm">
+                  ⏳ Gerando imagem profissional... Isso pode levar até 10 segundos.
+                </AlertDescription>
+              </Alert>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Plano e Restrições */}
         <Card className="mb-4 sm:mb-6 border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50">
           <CardContent className="p-4 sm:p-6">
             <div className="space-y-4">
-              {/* Informações do Plano */}
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
                   <h3 className="font-bold text-base sm:text-lg mb-2 flex items-center gap-2">
@@ -347,7 +604,6 @@ export default function CriacaoBanner() {
                 </div>
               </div>
 
-              {/* Posições Disponíveis */}
               <div className="pt-4 border-t border-purple-200">
                 <h4 className="font-semibold text-sm sm:text-base mb-3">📍 Posições Disponíveis no Seu Plano:</h4>
                 <div className="flex flex-wrap gap-2">
@@ -362,7 +618,6 @@ export default function CriacaoBanner() {
                 </div>
               </div>
 
-              {/* Restrições */}
               <Alert className="bg-yellow-50 border-yellow-300">
                 <AlertCircle className="h-4 w-4 text-yellow-600" />
                 <AlertDescription className="text-yellow-900 text-xs sm:text-sm">
@@ -415,7 +670,20 @@ export default function CriacaoBanner() {
               </div>
 
               <div>
-                <Label className="text-sm sm:text-base">Título do Banner *</Label>
+                <div className="flex items-center justify-between mb-2">
+                  <Label className="text-sm sm:text-base">Título do Banner *</Label>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={handleAjudaTitulo}
+                    disabled={gerandoIA || !formData.descricao}
+                    className="text-xs border-blue-300 text-blue-700"
+                  >
+                    <Sparkles className="w-3 h-3 mr-1" />
+                    IA
+                  </Button>
+                </div>
                 <Input
                   value={formData.titulo}
                   onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
@@ -426,7 +694,20 @@ export default function CriacaoBanner() {
               </div>
 
               <div>
-                <Label className="text-sm sm:text-base">Descrição</Label>
+                <div className="flex items-center justify-between mb-2">
+                  <Label className="text-sm sm:text-base">Descrição</Label>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={handleAjudaDescricao}
+                    disabled={gerandoIA || !formData.titulo}
+                    className="text-xs border-green-300 text-green-700"
+                  >
+                    <Sparkles className="w-3 h-3 mr-1" />
+                    IA
+                  </Button>
+                </div>
                 <Textarea
                   value={formData.descricao}
                   onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
@@ -459,7 +740,7 @@ export default function CriacaoBanner() {
             </CardContent>
           </Card>
 
-          {/* Configurações de Exibição - NOVO */}
+          {/* Configurações de Exibição */}
           <Card className="border-none shadow-lg">
             <CardHeader className="p-4 sm:p-6">
               <CardTitle className="text-lg sm:text-xl flex items-center gap-2">
@@ -546,9 +827,26 @@ export default function CriacaoBanner() {
             <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
               {/* Upload Banner */}
               <div>
-                <Label className="text-sm sm:text-base mb-2 block">
-                  Imagem do Banner * ({dimensoes?.largura}x{dimensoes?.altura}px)
-                </Label>
+                <div className="flex items-center justify-between mb-2">
+                  <Label className="text-sm sm:text-base">
+                    Imagem do Banner * ({dimensoes?.largura}x{dimensoes?.altura}px)
+                  </Label>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleGerarImagem}
+                    disabled={gerandoImagem || (!formData.titulo && !formData.descricao)}
+                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-xs"
+                  >
+                    {gerandoImagem ? (
+                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                    ) : (
+                      <ImageIcon className="w-3 h-3 mr-1" />
+                    )}
+                    Gerar com IA
+                  </Button>
+                </div>
+                
                 {formData.imagem_banner ? (
                   <div className="relative">
                     <img
@@ -665,7 +963,6 @@ export default function CriacaoBanner() {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 sm:p-6 space-y-4">
-              {/* Links existentes */}
               {formData.links.length > 0 && (
                 <div className="space-y-2 mb-4">
                   {formData.links.map((link, index) => (
@@ -789,7 +1086,7 @@ export default function CriacaoBanner() {
             </Button>
             <Button
               type="submit"
-              disabled={enviando || uploadingBanner || uploadingLogo}
+              disabled={enviando || uploadingBanner || uploadingLogo || gerandoIA || gerandoImagem}
               className="w-full sm:flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 h-11 order-1 sm:order-2"
             >
               {enviando ? (

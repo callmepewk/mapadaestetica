@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -124,7 +123,7 @@ const planos = [
   {
     nome: "PRIME",
     tipo: "diamante",
-    preco: "R$ 297/mês",
+    preco: "R$ 697/mês",
     cor: "from-blue-400 to-cyan-500",
     icone: Gem,
     destaque: false,
@@ -141,6 +140,7 @@ const planos = [
       "25 Anúncios ativos",
       "20 Tags/palavras-chave premium",
       "21 dias de exposição por anúncio",
+      "Até 200 pacientes (Cloud.IA) - R$ 697",
       "Prioridade máxima nas buscas",
       "Perfil PRIME com destaque exclusivo",
       "Suporte VIP 24/7",
@@ -150,6 +150,7 @@ const planos = [
       "Galeria de fotos e vídeos ilimitada",
       "Integração básica WhatsApp Business"
     ],
+    observacao: "💎 Condições especiais ao assinar o Cloud IA no plano PRIME - Créditos a mais sob consulta",
     naoInclui: [
       "Anúncios ilimitados",
       "Gerente de conta exclusivo",
@@ -178,6 +179,8 @@ const planos = [
       "Anúncios ILIMITADOS",
       "100 Tags/palavras-chave premium",
       "30 dias de exposição por anúncio",
+      "Smart Clinic R$ 298 + R$ 399 (e Cloud IA) - Incluídos",
+      "Cloud.IA sem integração de sistemas internos (sob consulta)",
       "Integração completa WhatsApp Business API",
       "Assistente com IA personalizado",
       "Prioridade ABSOLUTA em todas as buscas",
@@ -190,6 +193,7 @@ const planos = [
       "Conteúdo patrocinado mensal",
       "Campanhas personalizadas"
     ],
+    observacao: "💎 Condições especiais ao assinar o Cloud IA no plano DELUXE - Créditos a mais sob consulta",
     naoInclui: []
   }
 ];
@@ -322,14 +326,13 @@ export default function Planos() {
   const [planoAtualizado, setPlanoAtualizado] = useState("");
   const [verificandoPagamento, setVerificandoPagamento] = useState(false);
 
-  const [mostrarModalConfirmacao, setMostrarModalConfirmacao] = useState(false); // For professional plans
-  const [planoSelecionado, setPlanoSelecionado] = useState(null); // For professional plans
-  const [aguardandoConfirmacao, setAguardandoConfirmacao] = useState(false); // For professional plans
+  const [mostrarModalConfirmacao, setMostrarModalConfirmacao] = useState(false);
+  const [planoSelecionado, setPlanoSelecionado] = useState(null);
+  const [aguardandoConfirmacao, setAguardandoConfirmacao] = useState(false);
 
   const [mostrarDrBeleza, setMostrarDrBeleza] = useState(false);
-  const [abaPlanos, setAbaPlanos] = useState("mapa_estetica"); // NOVO
+  const [abaPlanos, setAbaPlanos] = useState("mapa_estetica");
 
-  // NEW states for Sponsor plans
   const [mostrarModalConfirmacaoPatrocinador, setMostrarModalConfirmacaoPatrocinador] = useState(false);
   const [planoSelecionadoPatrocinador, setPlanoSelecionadoPatrocinador] = useState(null);
   const [enviandoSolicitacao, setEnviandoSolicitacao] = useState(false);
@@ -348,7 +351,6 @@ export default function Planos() {
     fetchUser();
   }, []);
   
-  // NOVO: Verificar parâmetro 'aba' na URL ao carregar
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const abaParam = params.get('aba');
@@ -357,26 +359,23 @@ export default function Planos() {
     }
   }, [location.search]);
 
-  // Verificar parâmetros de retorno do Mercado Pago
   useEffect(() => {
     const verificarPagamento = async () => {
       const params = new URLSearchParams(location.search);
       
-      const collectionStatus = params.get('collection_status'); // approved, pending, rejected
+      const collectionStatus = params.get('collection_status');
       const planoParam = params.get('plano');
-      const tipoPlanoParam = params.get('tipo_plano'); // New: 'patrocinador' or default
+      const tipoPlanoParam = params.get('tipo_plano');
 
-      // Se tem collection_status, veio do Mercado Pago
       if (collectionStatus && user && planoParam) {
         setVerificandoPagamento(true);
 
         try {
-          // Buscar a solicitação mais recente deste usuário para este plano
           const solicitacoes = await base44.entities.SolicitacaoAtivacaoPlano.filter(
             { 
               usuario_email: user.email, 
               plano_solicitado: planoParam,
-              tipo_plano: tipoPlanoParam || 'profissional' // Filter by type
+              tipo_plano: tipoPlanoParam || 'profissional'
             },
             '-created_date',
             1
@@ -438,13 +437,12 @@ export default function Planos() {
               alert(alertMessage);
             }
           } else {
-            // Sem solicitação prévia - criar uma nova
             if (collectionStatus === 'approved') {
               await base44.entities.SolicitacaoAtivacaoPlano.create({
                 usuario_email: user.email,
                 usuario_nome: user.full_name,
                 plano_solicitado: planoParam,
-                tipo_plano: tipoPlanoParam || 'profissional', // Set type
+                tipo_plano: tipoPlanoParam || 'profissional',
                 link_mercadopago: "Retorno direto do MP",
                 status: "pagamento_aprovado_mp",
                 data_solicitacao: new Date().toISOString(),
@@ -473,7 +471,6 @@ export default function Planos() {
           alert("❌ Ocorreu um erro ao processar seu pagamento.\n\nPor favor, entre em contato com o suporte:\n(31) 97259-5643");
         } finally {
           setVerificandoPagamento(false);
-          // Clean URL parameters, ensuring 'tipo_plano' is also removed if present
           const cleanUrl = createPageUrl("Planos");
           window.history.replaceState({}, '', cleanUrl);
         }
@@ -493,7 +490,6 @@ export default function Planos() {
     }
 
     if (!plano.linkPagamento) {
-      // Plano gratuito (COBRE)
       if (user.plano_ativo !== plano.tipo) {
         try {
           await base44.auth.updateMe({
@@ -513,16 +509,14 @@ export default function Planos() {
       return;
     }
 
-    // Planos pagos
     setPlanoSelecionado(plano);
     
-    // Criar solicitação de ativação
     try {
       await base44.entities.SolicitacaoAtivacaoPlano.create({
         usuario_email: user.email,
         usuario_nome: user.full_name,
         plano_solicitado: plano.tipo,
-        tipo_plano: "profissional", // Explicitly set type for professionals
+        tipo_plano: "profissional",
         link_mercadopago: plano.linkPagamento,
         status: "aguardando_confirmacao",
         data_solicitacao: new Date().toISOString()
@@ -533,13 +527,10 @@ export default function Planos() {
       return;
     }
 
-    // Abrir link do Mercado Pago em nova aba (SEM back_urls - já configurado no painel do MP)
-    // Add plano and tipo_plano to back_urls, if MP supports it. Otherwise, rely on original logic.
     const redirectUrl = encodeURIComponent(`${window.location.origin}${createPageUrl("Planos")}?plano=${plano.tipo}&tipo_plano=profissional`);
     const linkWithRedirect = `${plano.linkPagamento}&external_reference=${user.email}-${plano.tipo}&back_url_success=${redirectUrl}&back_url_pending=${redirectUrl}&back_url_failure=${redirectUrl}`;
     window.open(linkWithRedirect, '_blank');
     
-    // Mostrar modal de confirmação
     setMostrarModalConfirmacao(true);
   };
 
@@ -553,7 +544,7 @@ export default function Planos() {
         { 
           usuario_email: user.email, 
           plano_solicitado: planoSelecionado.tipo,
-          tipo_plano: "profissional", // Ensure it's for professional plans
+          tipo_plano: "profissional",
         },
         '-created_date',
         1
@@ -562,7 +553,6 @@ export default function Planos() {
       if (solicitacoes.length > 0) {
         const solicitacao = solicitacoes[0];
         
-        // Não atualizar se já foi aprovado pelo MP
         if (solicitacao.status === 'pagamento_aprovado_mp' || solicitacao.status === 'ativado_admin') {
           alert("✅ Seu pagamento já foi confirmado! Aguarde a ativação.");
           setMostrarModalConfirmacao(false);
@@ -621,12 +611,11 @@ export default function Planos() {
     setEnviandoSolicitacao(true);
 
     try {
-      // Criar solicitação de ativação do plano patrocinador
       await base44.entities.SolicitacaoAtivacaoPlano.create({
         usuario_email: user.email,
         usuario_nome: user.full_name,
         plano_solicitado: planoSelecionadoPatrocinador.tipo,
-        tipo_plano: "patrocinador", // Explicitly set type for sponsors
+        tipo_plano: "patrocinador",
         link_mercadopago: planoSelecionadoPatrocinador.linkPagamento,
         status: "aguardando_confirmacao",
         data_solicitacao: new Date().toISOString(),
@@ -634,9 +623,8 @@ export default function Planos() {
         observacoes: `Plano de Patrocinador ${planoSelecionadoPatrocinador.nome} - Contratação mínima: ${planoSelecionadoPatrocinador.minContratacao}`
       });
 
-      // Enviar notificação por email (via integração)
       await base44.integrations.Core.SendEmail({
-        to: "suporte@mapadaestetica.com.br", // Or a dedicated commercial email
+        to: "suporte@mapadaestetica.com.br",
         subject: `Nova Solicitação de Plano Patrocinador - ${planoSelecionadoPatrocinador.nome}`,
         body: `
           Nova solicitação de plano patrocinador recebida:
@@ -652,8 +640,6 @@ export default function Planos() {
         `
       });
 
-      // Redirecionar para o Mercado Pago
-      // Add plano and tipo_plano to back_urls
       const redirectUrl = encodeURIComponent(`${window.location.origin}${createPageUrl("Planos")}?plano=${planoSelecionadoPatrocinador.tipo}&tipo_plano=patrocinador`);
       const linkWithRedirect = `${planoSelecionadoPatrocinador.linkPagamento}&external_reference=${user.email}-${planoSelecionadoPatrocinador.tipo}-patrocinador&back_url_success=${redirectUrl}&back_url_pending=${redirectUrl}&back_url_failure=${redirectUrl}`;
       window.open(linkWithRedirect, '_blank');
@@ -670,11 +656,15 @@ export default function Planos() {
     }
   };
 
+  const handleConsultarCreditos = () => {
+    const mensagem = "Olá! Gostaria de saber sobre créditos adicionais para o Cloud IA no plano PRIME/DELUXE.";
+    window.open(`https://wa.me/5531972595643?text=${encodeURIComponent(mensagem)}`, '_blank');
+  };
+
   const isAdmin = user?.role === 'admin';
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
-      {/* Alert de Verificação de Pagamento */}
       {verificandoPagamento && (
         <Alert className="max-w-4xl mx-auto mb-6 bg-blue-50 border-blue-200">
           <div className="flex items-center gap-3">
@@ -686,7 +676,6 @@ export default function Planos() {
         </Alert>
       )}
 
-      {/* Alert de Sucesso */}
       {mostrarSucesso && (
         <Alert className="max-w-4xl mx-auto mb-6 bg-green-50 border-green-200">
           <Check className="h-4 w-4 text-green-600" />
@@ -697,7 +686,6 @@ export default function Planos() {
         </Alert>
       )}
 
-      {/* Generic Sucesso/Erro Messages */}
       {mensagemSucesso && (
         <Alert className="max-w-4xl mx-auto mb-6 bg-green-50 border-green-200">
           <Check className="h-4 w-4 text-green-600" />
@@ -725,7 +713,7 @@ export default function Planos() {
           </p>
         </div>
 
-        {/* NAVEGAÇÃO POR ABAS - ATUALIZADA */}
+        {/* NAVEGAÇÃO POR ABAS */}
         <div className="flex justify-center gap-4 mb-8">
           <Button
             onClick={() => setAbaPlanos("mapa_estetica")}
@@ -753,7 +741,7 @@ export default function Planos() {
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
                   <img
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe4/ec64a4c52_drbeleza.png"
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/8b8866b2d_drbeleza.png"
                     alt="Dr. Beleza"
                     className="w-full h-full object-cover"
                     onError={(e) => {
@@ -813,7 +801,6 @@ export default function Planos() {
       {/* ABA: PLANOS MAPA DA ESTÉTICA */}
       {abaPlanos === "mapa_estetica" && (
         <>
-          {/* Plans Grid */}
           <div className="max-w-7xl mx-auto px-4 mb-16">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
               {planos.map((plano, index) => {
@@ -885,6 +872,21 @@ export default function Planos() {
                             ))}
                           </div>
                         </div>
+
+                        {plano.observacao && (
+                          <Alert className="mb-4 bg-blue-50 border-blue-200">
+                            <AlertCircle className="h-3 w-3 text-blue-600" />
+                            <AlertDescription className="text-blue-800 text-xs">
+                              {plano.observacao}
+                              <button
+                                onClick={handleConsultarCreditos}
+                                className="block mt-2 text-blue-700 hover:underline font-semibold"
+                              >
+                                📞 Falar com Central de Vendas
+                              </button>
+                            </AlertDescription>
+                          </Alert>
+                        )}
 
                         {plano.naoInclui && plano.naoInclui.length > 0 && (
                           <div className="mb-6 p-3 bg-red-50 rounded-lg">
@@ -1257,7 +1259,7 @@ export default function Planos() {
         onClose={() => setMostrarDrBeleza(false)}
       />
 
-      {/* NOVO: Modal de Confirmação de Patrocínio */}
+      {/* Modal de Confirmação de Patrocínio */}
       <Dialog open={mostrarModalConfirmacaoPatrocinador} onOpenChange={setMostrarModalConfirmacaoPatrocinador}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
