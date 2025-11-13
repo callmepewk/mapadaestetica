@@ -84,6 +84,7 @@ import { createPageUrl } from "@/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
+import ModalEditarUsuario from "../components/admin/ModalEditarUsuario";
 
 const PLANOS_INFO = {
   cobre: { nome: "Cobre", cor: "bg-orange-100 text-orange-800" },
@@ -3184,6 +3185,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                               <TableHead>Email</TableHead>
                               <TableHead>Plano Clube</TableHead>
                               <TableHead>Beauty Coins</TableHead>
+                              <TableHead>Desde</TableHead>
                               <TableHead className="text-right">Ações</TableHead>
                             </TableRow>
                           </TableHeader>
@@ -3195,8 +3197,17 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                                 </TableCell>
                                 <TableCell>{u.email}</TableCell>
                                 <TableCell>
-                                  <Badge className="bg-yellow-100 text-yellow-800">
-                                    {u.plano_clube_beleza === 'ativo' ? 'Ativo' : 'Inativo'}
+                                  <Badge className={
+                                    u.plano_clube_beleza === 'light' ? 'bg-blue-100 text-blue-800' :
+                                    u.plano_clube_beleza === 'gold' ? 'bg-yellow-100 text-yellow-800' :
+                                    u.plano_clube_beleza === 'vip' ? 'bg-purple-100 text-purple-800' :
+                                    'bg-gray-100 text-gray-800'
+                                  }>
+                                    <Crown className="w-3 h-3 mr-1" />
+                                    {u.plano_clube_beleza === 'light' ? 'LIGHT' :
+                                     u.plano_clube_beleza === 'gold' ? 'GOLD' :
+                                     u.plano_clube_beleza === 'vip' ? 'VIP' :
+                                     u.plano_clube_beleza}
                                   </Badge>
                                 </TableCell>
                                 <TableCell>
@@ -3205,11 +3216,20 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                                     {u.beauty_coins || 0}
                                   </Badge>
                                 </TableCell>
+                                <TableCell className="text-sm text-gray-600">
+                                  {u.data_adesao_plano_clube ? format(new Date(u.data_adesao_plano_clube), "dd/MM/yyyy", { locale: ptBR }) : 'N/D'}
+                                </TableCell>
                                 <TableCell className="text-right">
-                                  <Button size="sm" onClick={() => handleSincronizarClubeBeleza(u)}>
-                                    <ExternalLink className="w-4 h-4 mr-1" />
-                                    Sincronizar
-                                  </Button>
+                                  <div className="flex items-center justify-end gap-2">
+                                    <Button size="sm" onClick={() => handleEditarUsuarioCompleto(u)}>
+                                      <Edit className="w-4 h-4 mr-1" />
+                                      Editar
+                                    </Button>
+                                    <Button size="sm" variant="outline" onClick={() => handleSincronizarClubeBeleza(u)}>
+                                      <ExternalLink className="w-4 h-4 mr-1" />
+                                      Sincronizar
+                                    </Button>
+                                  </div>
                                 </TableCell>
                               </TableRow>
                             ))}
@@ -3221,7 +3241,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                 </Card>
               </TabsContent>
 
-              {/* Sub-aba: Patrocinadores - ATUALIZADO */}
+              {/* Sub-aba: Patrocinadores */}
               <TabsContent value="patrocinadores">
                 <Card>
                   <CardHeader>
@@ -3305,11 +3325,15 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                                 </TableCell>
                                 <TableCell>
                                   <Badge className={
-                                    u.plano_clube_beleza && u.plano_clube_beleza !== 'nenhum'
-                                      ? "bg-purple-100 text-purple-800"
-                                      : "bg-gray-100 text-gray-600"
+                                    u.plano_clube_beleza === 'light' ? 'bg-blue-100 text-blue-800' :
+                                    u.plano_clube_beleza === 'gold' ? 'bg-yellow-100 text-yellow-800' :
+                                    u.plano_clube_beleza === 'vip' ? 'bg-purple-100 text-purple-800' :
+                                    'bg-gray-100 text-gray-600'
                                   }>
-                                    {u.plano_clube_beleza && u.plano_clube_beleza !== 'nenhum' ? u.plano_clube_beleza : 'Nenhum'}
+                                    {u.plano_clube_beleza === 'light' ? 'LIGHT' :
+                                     u.plano_clube_beleza === 'gold' ? 'GOLD' :
+                                     u.plano_clube_beleza === 'vip' ? 'VIP' :
+                                     'Nenhum'}
                                   </Badge>
                                 </TableCell>
                                 <TableCell className="text-right">
@@ -3322,7 +3346,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                                       <Button 
                                         size="sm" 
                                         variant="outline"
-                                        onClick={() => navigate(createPageUrl("DashboardPatrocinador"))}
+                                        onClick={() => window.open(createPageUrl("DashboardPatrocinador"), '_blank')}
                                         className="border-green-300 text-green-700"
                                       >
                                         <Crown className="w-4 h-4" />
@@ -3361,7 +3385,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                             <SelectItem value={null}>Todos os Tipos</SelectItem>
                             <SelectItem value="paciente">Paciente</SelectItem>
                             <SelectItem value="profissional">Profissional</SelectItem>
-                            <SelectItem value="parceiro">Parceiro</SelectItem>
+                            <SelectItem value="patrocinador">Patrocinador</SelectItem>
                           </SelectContent>
                         </Select>
                         <Select value={filtroRole} onValueChange={setFiltroRole}>
@@ -3415,8 +3439,10 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                               <TableHead>Email</TableHead>
                               <TableHead>Tipo</TableHead>
                               <TableHead>Role</TableHead>
-                              <TableHead>Plano</TableHead>
-                              <TableHead>BeautyCoins</TableHead>
+                              <TableHead>Plano Mapa</TableHead>
+                              <TableHead>Plano Clube</TableHead>
+                              <TableHead>Plano Patrocinador</TableHead>
+                              <TableHead>Pontos/BC</TableHead>
                               <TableHead className="text-right">Ações</TableHead>
                             </TableRow>
                           </TableHeader>
@@ -3429,21 +3455,61 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                                 </TableCell>
                                 <TableCell>{u.email}</TableCell>
                                 <TableCell>
-                                  <Badge variant="outline">{u.tipo_usuario || 'N/D'}</Badge>
+                                  <Badge variant="outline" className={
+                                    u.tipo_usuario === 'paciente' ? 'border-blue-300 text-blue-700' :
+                                    u.tipo_usuario === 'profissional' ? 'border-purple-300 text-purple-700' :
+                                    u.tipo_usuario === 'patrocinador' ? 'border-green-300 text-green-700' :
+                                    ''
+                                  }>
+                                    {u.tipo_usuario === 'paciente' ? '👤 Paciente' :
+                                     u.tipo_usuario === 'profissional' ? '💼 Profissional' :
+                                     u.tipo_usuario === 'patrocinador' ? '👑 Patrocinador' :
+                                     'N/D'}
+                                  </Badge>
                                 </TableCell>
                                 <TableCell>
                                   <Badge variant="secondary">{u.role || 'user'}</Badge>
                                 </TableCell>
                                 <TableCell>
                                   <Badge className={PLANOS_INFO[u.plano_ativo]?.cor}>
-                                    {PLANOS_INFO[u.plano_ativo]?.nome}
+                                    {PLANOS_INFO[u.plano_ativo]?.nome || 'Cobre'}
                                   </Badge>
                                 </TableCell>
                                 <TableCell>
-                                  <Badge variant="outline" className="text-sm text-purple-600 border-purple-200">
-                                    <DollarSign className="w-3 h-3 mr-1" />
-                                    {u.beauty_coins || 0}
+                                  <Badge className={
+                                    u.plano_clube_beleza === 'light' ? 'bg-blue-100 text-blue-800' :
+                                    u.plano_clube_beleza === 'gold' ? 'bg-yellow-100 text-yellow-800' :
+                                    u.plano_clube_beleza === 'vip' ? 'bg-purple-100 text-purple-800' :
+                                    'bg-gray-100 text-gray-600'
+                                  }>
+                                    {u.plano_clube_beleza === 'light' ? 'LIGHT' :
+                                     u.plano_clube_beleza === 'gold' ? 'GOLD' :
+                                     u.plube_clube_beleza === 'vip' ? 'VIP' :
+                                     'Nenhum'}
                                   </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <Badge className={
+                                    u.plano_patrocinador && u.plano_patrocinador !== 'nenhum'
+                                      ? PLANOS_INFO[u.plano_patrocinador]?.cor || 'bg-green-100 text-green-800'
+                                      : 'bg-gray-100 text-gray-600'
+                                  }>
+                                    {u.plano_patrocinador && u.plano_patrocinador !== 'nenhum'
+                                      ? (PLANOS_INFO[u.plano_patrocinador]?.nome || u.plano_patrocinador)
+                                      : 'Nenhum'}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="space-y-1 text-xs">
+                                    <Badge variant="outline" className="text-yellow-600">
+                                      <Star className="w-3 h-3 mr-1" />
+                                      {u.pontos_acumulados || 0}
+                                    </Badge>
+                                    <Badge variant="outline" className="text-purple-600">
+                                      <DollarSign className="w-3 h-3 mr-1" />
+                                      {u.beauty_coins || 0}
+                                    </Badge>
+                                  </div>
                                 </TableCell>
                                 <TableCell className="text-right">
                                   <div className="flex items-center justify-end gap-2">
@@ -4910,232 +4976,17 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
           </DialogContent>
         </Dialog>
 
-        {/* Modal Editar Usuário Completo - ATUALIZADO COM FEEDBACK VISUAL */}
-        <Dialog open={mostrarModalEditarUsuario} onOpenChange={setMostrarModalEditarUsuario}>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="text-2xl flex items-center gap-2">
-                <Edit className="w-6 h-6 text-pink-600" />
-                Editar Usuário: {usuarioEditando?.full_name}
-              </DialogTitle>
-              <DialogDescription>
-                ⚡ Alterações serão aplicadas INSTANTANEAMENTE após salvar
-              </DialogDescription>
-            </DialogHeader>
-
-            {editarUsuarioCompletoMutation.isPending && (
-              <Alert className="bg-blue-50 border-blue-200">
-                <Loader2 className="h-4 w-4 text-blue-600 animate-spin" />
-                <AlertDescription className="text-blue-800 text-sm">
-                  Salvando alterações... A página será recarregada automaticamente.
-                </AlertDescription>
-              </Alert>
-            )}
-
-            <div className="space-y-4 py-4">
-              <div>
-                <Label htmlFor="editFullName">Nome Completo</Label>
-                <Input
-                  id="editFullName"
-                  value={dadosEdicaoUsuario.full_name}
-                  onChange={(e) => setDadosEdicaoUsuario({ ...dadosEdicaoUsuario, full_name: e.target.value })}
-                  disabled={editarUsuarioCompletoMutation.isPending}
-                />
-              </div>
-              <div>
-                <Label htmlFor="editEmail">Email (não editável)</Label>
-                <Input
-                  id="editEmail"
-                  value={dadosEdicaoUsuario.email}
-                  disabled
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="editTelefone">Telefone</Label>
-                  <Input
-                    id="editTelefone"
-                    value={dadosEdicaoUsuario.telefone}
-                    onChange={(e) => setDadosEdicaoUsuario({ ...dadosEdicaoUsuario, telefone: e.target.value })}
-                    disabled={editarUsuarioCompletoMutation.isPending}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="editWhatsapp">WhatsApp</Label>
-                  <Input
-                    id="editWhatsapp"
-                    value={dadosEdicaoUsuario.whatsapp}
-                    onChange={(e) => setDadosEdicaoUsuario({ ...dadosEdicaoUsuario, whatsapp: e.target.value })}
-                    disabled={editarUsuarioCompletoMutation.isPending}
-                  />
-                </div>
-              </div>
-
-              {/* DESTAQUE: Tipo de Usuário */}
-              <Alert className="bg-yellow-50 border-yellow-200">
-                <AlertCircle className="h-4 w-4 text-yellow-600" />
-                <AlertDescription className="text-yellow-900 text-sm">
-                  <strong>⚡ ATENÇÃO:</strong> Ao mudar o tipo de usuário, a interface dele será alterada imediatamente!
-                </AlertDescription>
-              </Alert>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="editTipoUsuario">Tipo de Usuário *</Label>
-                  <Select
-                    value={dadosEdicaoUsuario.tipo_usuario}
-                    onValueChange={(value) => setDadosEdicaoUsuario({ ...dadosEdicaoUsuario, tipo_usuario: value })}
-                    disabled={editarUsuarioCompletoMutation.isPending}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o tipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="paciente">👤 Paciente</SelectItem>
-                      <SelectItem value="profissional">💼 Profissional</SelectItem>
-                      <SelectItem value="patrocinador">👑 Patrocinador</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="editRole">Permissão (Role)</Label>
-                  <Select
-                    value={dadosEdicaoUsuario.role}
-                    onValueChange={(value) => setDadosEdicaoUsuario({ ...dadosEdicaoUsuario, role: value })}
-                    disabled={editarUsuarioCompletoMutation.isPending}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione a role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="user">Usuário Comum</SelectItem>
-                      <SelectItem value="admin">Administrador</SelectItem>
-                      <SelectItem value="tester">Tester</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <Label htmlFor="editPlanoAtivo">Plano Ativo</Label>
-                  <Select
-                    value={dadosEdicaoUsuario.plano_ativo}
-                    onValueChange={(value) => setDadosEdicaoUsuario({ ...dadosEdicaoUsuario, plano_ativo: value })}
-                    disabled={editarUsuarioCompletoMutation.isPending}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o plano" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.keys(PLANOS_INFO).map(key => (
-                        <SelectItem key={key} value={key}>{PLANOS_INFO[key].nome}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="editPlanoClubeBeleza">Clube da Beleza</Label>
-                  <Select
-                    value={dadosEdicaoUsuario.plano_clube_beleza}
-                    onValueChange={(value) => setDadosEdicaoUsuario({ ...dadosEdicaoUsuario, plano_clube_beleza: value })}
-                    disabled={editarUsuarioCompletoMutation.isPending}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Status do Clube" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="nenhum">Nenhum</SelectItem>
-                      <SelectItem value="ativo">Ativo</SelectItem>
-                      <SelectItem value="inativo">Inativo</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="editPlanoPatrocinador">Plano Patrocinador</Label>
-                  <Select
-                    value={dadosEdicaoUsuario.plano_patrocinador}
-                    onValueChange={(value) => setDadosEdicaoUsuario({ ...dadosEdicaoUsuario, plano_patrocinador: value })}
-                    disabled={editarUsuarioCompletoMutation.isPending}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Status do Patrocinador" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="nenhum">Nenhum</SelectItem>
-                      <SelectItem value="bronze">Bronze</SelectItem>
-                      <SelectItem value="prata">Prata</SelectItem>
-                      <SelectItem value="ouro">Ouro</SelectItem>
-                      <SelectItem value="diamante">Diamante</SelectItem>
-                      <SelectItem value="platina">Platina</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="editPontos">Pontos Acumulados</Label>
-                  <Input
-                    id="editPontos"
-                    type="number"
-                    value={dadosEdicaoUsuario.pontos_acumulados}
-                    onChange={(e) => setDadosEdicaoUsuario({ ...dadosEdicaoUsuario, pontos_acumulados: parseInt(e.target.value) || 0 })}
-                    disabled={editarUsuarioCompletoMutation.isPending}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="editBeautyCoins">Beauty Coins</Label>
-                  <Input
-                    id="editBeautyCoins"
-                    type="number"
-                    value={dadosEdicaoUsuario.beauty_coins}
-                    onChange={(e) => setDadosEdicaoUsuario({ ...dadosEdicaoUsuario, beauty_coins: parseInt(e.target.value) || 0 })}
-                    disabled={editarUsuarioCompletoMutation.isPending}
-                  />
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="cadastroCompleto"
-                  checked={dadosEdicaoUsuario.cadastro_completo}
-                  onChange={(e) => setDadosEdicaoUsuario({ ...dadosEdicaoUsuario, cadastro_completo: e.target.checked })}
-                  className="w-4 h-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded"
-                  disabled={editarUsuarioCompletoMutation.isPending}
-                />
-                <Label htmlFor="cadastroCompleto" className="text-sm font-medium">
-                  Cadastro Completo
-                </Label>
-              </div>
-            </div>
-
-            <DialogFooter>
-              <Button 
-                variant="outline" 
-                onClick={() => setMostrarModalEditarUsuario(false)}
-                disabled={editarUsuarioCompletoMutation.isPending}
-              >
-                Cancelar
-              </Button>
-              <Button 
-                onClick={confirmarEdicaoUsuario} 
-                className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
-                disabled={editarUsuarioCompletoMutation.isPending}
-              >
-                {editarUsuarioCompletoMutation.isPending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Salvando...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Salvar Alterações
-                  </>
-                )}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        {/* Modal Editar Usuário - SUBSTITUÍDO POR COMPONENTE */}
+        <ModalEditarUsuario
+          open={mostrarModalEditarUsuario}
+          onClose={() => setMostrarModalEditarUsuario(false)}
+          usuarioEditando={usuarioEditando}
+          dadosEdicaoUsuario={dadosEdicaoUsuario}
+          setDadosEdicaoUsuario={setDadosEdicaoUsuario}
+          onSalvar={confirmarEdicaoUsuario}
+          isPending={editarUsuarioCompletoMutation.isPending}
+          PLANOS_INFO={PLANOS_INFO}
+        />
 
         {/* NOVO: Modal Criar Conta Teste */}
         <Dialog open={mostrarModalCriarTester} onOpenChange={setMostrarModalCriarTester}>
@@ -5252,8 +5103,9 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="nenhum">Nenhum</SelectItem>
-                      <SelectItem value="ativo">Ativo</SelectItem>
-                      <SelectItem value="inativo">Inativo</SelectItem>
+                      <SelectItem value="light">LIGHT</SelectItem>
+                      <SelectItem value="gold">GOLD</SelectItem>
+                      <SelectItem value="vip">VIP</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
