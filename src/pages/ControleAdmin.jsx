@@ -1583,7 +1583,7 @@ CONFIGURAÇÕES NECESSÁRIAS:
           <div class="card"><h4>🚀 Impulsionamentos</h4><p>${solicitacoesImpulsionamento.length}</p></div>
           <div class="card"><h4>👥 Profissionais</h4><p>${usuarios.length}</p></div>
           <div class="card"><h4>👑 Clube da Beleza</h4><p>${todosUsuarios.filter(u => u.plano_clube_beleza && u.plano_clube_beleza !== 'nenhum').length}</p></div>
-          <div class="card"><h4>🏢 Patrocinadores</h4><p>${todosUsuarios.filter(u => u.plano_patrocinador && u.plano_patrocinador !== 'nenhum').length}</p></div>
+          <div class="card"><h4>🏢 Patrocinadores</h4><p>${todosUsuarios.filter(u => u.tipo_usuario === 'patrocinador').length}</p></div>
           <div class="card"><h4>🎨 Banners</h4><p>${banners.length}</p></div>
           <div class="card"><h4>📰 Posts</h4><p>${posts.length}</p></div>
           <div class="card"><h4>🛍️ Pedidos</h4><p>${pedidos.length}</p></div>
@@ -2312,8 +2312,9 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
     return matchBusca && matchStatus;
   });
 
+  // CORRIGIDO: Filtrar por tipo_usuario ao invés de plano_patrocinador
   const usuariosClube = todosUsuarios.filter(u => u.plano_clube_beleza && u.plano_clube_beleza !== 'nenhum');
-  const usuariosPatrocinadores = todosUsuarios.filter(u => u.plano_patrocinador && u.plano_patrocinador !== 'nenhum');
+  const usuariosPatrocinadores = todosUsuarios.filter(u => u.tipo_usuario === 'patrocinador');
 
   const todosUsuariosFiltrados = todosUsuarios.filter(u => {
     const matchBusca = !buscaTodosUsuarios || 
@@ -3220,7 +3221,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                 </Card>
               </TabsContent>
 
-              {/* Sub-aba: Patrocinadores */}
+              {/* Sub-aba: Patrocinadores - ATUALIZADO */}
               <TabsContent value="patrocinadores">
                 <Card>
                   <CardHeader>
@@ -3228,6 +3229,9 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                       <Shield className="w-6 h-6 text-green-600" />
                       Patrocinadores ({usuariosPatrocinadores.length})
                     </CardTitle>
+                    <p className="text-sm text-gray-600">
+                      Usuários com tipo de conta "Patrocinador"
+                    </p>
                   </CardHeader>
                   <CardContent>
                     {loadingTodosUsuarios ? (
@@ -3238,6 +3242,9 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                       <div className="text-center py-12">
                         <Shield className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                         <p className="text-gray-600">Nenhum patrocinador encontrado</p>
+                        <p className="text-sm text-gray-500 mt-2">
+                          Usuários com tipo "patrocinador" aparecerão aqui
+                        </p>
                       </div>
                     ) : (
                       <div className="overflow-x-auto">
@@ -3245,8 +3252,10 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                           <TableHeader>
                             <TableRow>
                               <TableHead>Nome</TableHead>
-                              <TableHead>Email</TableHead>
+                              <TableHead>Email/Contato</TableHead>
+                              <TableHead>Plano Mapa</TableHead>
                               <TableHead>Plano Patrocinador</TableHead>
+                              <TableHead>Clube Beleza</TableHead>
                               <TableHead className="text-right">Ações</TableHead>
                             </TableRow>
                           </TableHeader>
@@ -3254,19 +3263,72 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                             {usuariosPatrocinadores.map((u) => (
                               <TableRow key={u.id}>
                                 <TableCell>
-                                  <p className="font-medium">{u.full_name}</p>
+                                  <div>
+                                    <p className="font-medium">{u.full_name}</p>
+                                    <Badge className="bg-green-100 text-green-800 mt-1">
+                                      👑 Patrocinador
+                                    </Badge>
+                                  </div>
                                 </TableCell>
-                                <TableCell>{u.email}</TableCell>
                                 <TableCell>
-                                  <Badge className="bg-green-100 text-green-800">
-                                    {u.plano_patrocinador}
+                                  <div className="space-y-1 text-sm">
+                                    <p className="text-gray-900">{u.email}</p>
+                                    {u.telefone && (
+                                      <p className="text-gray-600 flex items-center gap-1">
+                                        <Phone className="w-3 h-3" />
+                                        {u.telefone}
+                                      </p>
+                                    )}
+                                    {u.whatsapp && (
+                                      <p className="text-gray-600 flex items-center gap-1">
+                                        <MessageCircle className="w-3 h-3" />
+                                        {u.whatsapp}
+                                      </p>
+                                    )}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <Badge className={PLANOS_INFO[u.plano_ativo]?.cor}>
+                                    {PLANOS_INFO[u.plano_ativo]?.nome || 'Cobre'}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <Badge className={
+                                    u.plano_patrocinador && u.plano_patrocinador !== 'nenhum' 
+                                      ? "bg-gradient-to-r from-green-600 to-emerald-600 text-white" 
+                                      : "bg-gray-100 text-gray-600"
+                                  }>
+                                    {u.plano_patrocinador && u.plano_patrocinador !== 'nenhum' 
+                                      ? (PLANOS_INFO[u.plano_patrocinador]?.nome || u.plano_patrocinador) 
+                                      : 'Nenhum'}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <Badge className={
+                                    u.plano_clube_beleza && u.plano_clube_beleza !== 'nenhum'
+                                      ? "bg-purple-100 text-purple-800"
+                                      : "bg-gray-100 text-gray-600"
+                                  }>
+                                    {u.plano_clube_beleza && u.plano_clube_beleza !== 'nenhum' ? u.plano_clube_beleza : 'Nenhum'}
                                   </Badge>
                                 </TableCell>
                                 <TableCell className="text-right">
-                                  <Button size="sm" onClick={() => handleEditarUsuarioCompleto(u)}>
-                                    <Edit className="w-4 h-4 mr-1" />
-                                    Editar
-                                  </Button>
+                                  <div className="flex items-center justify-end gap-2">
+                                    <Button size="sm" onClick={() => handleEditarUsuarioCompleto(u)}>
+                                      <Edit className="w-4 h-4 mr-1" />
+                                      Editar
+                                    </Button>
+                                    {u.plano_patrocinador && u.plano_patrocinador !== 'nenhum' && (
+                                      <Button 
+                                        size="sm" 
+                                        variant="outline"
+                                        onClick={() => navigate(createPageUrl("DashboardPatrocinador"))}
+                                        className="border-green-300 text-green-700"
+                                      >
+                                        <Crown className="w-4 h-4" />
+                                      </Button>
+                                    )}
+                                  </div>
                                 </TableCell>
                               </TableRow>
                             ))}
