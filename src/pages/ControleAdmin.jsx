@@ -1288,7 +1288,7 @@ Equipe Mapa da Estética
   };
 
   const calcularTempoRestante = (anuncio) => {
-    if (!anuncio.data_expiracao) return "Sem expiração";
+    if (!anuncio || !anuncio.data_expiracao) return "Sem expiração";
     
     const agora = new Date();
     const expiracao = new Date(anuncio.data_expiracao);
