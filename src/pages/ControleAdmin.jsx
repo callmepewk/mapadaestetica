@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -274,7 +275,7 @@ export default function ControleAdmin() {
   });
 
   const ativarPlanoMutation = useMutation({
-    mutationFn: async ({ usuarioEmail, plano, solicitacaoId, usuarioNome, usuarioWhatsApp }) => {
+    mutationFn: async ({ usuarioEmail, plano, solicitacaoId, usuarioNome, usuarioWhatsApp, observacoesTexto }) => {
       // Definir benefícios detalhados por plano
       const beneficiosPlano = {
         cobre: {
@@ -303,14 +304,14 @@ export default function ControleAdmin() {
           anuncios: "25 anúncios ativos",
           tags: "20 tags por anúncio",
           exposicao: "21 dias de exposição",
-          extras: ["Máximo destaque", "Suporte VIP 24/7", "Dashboard completo", "Badge 'PRIME'", "Verificação profissional prioritária", "Aparece primeiro nas buscas", "Relatórios de preço de mercado"]
+          extras: ["Máximo destaque", "Suporte VIP 24/7", "Dashboard completo", "Badge 'PRIME'", "Verificação profissional prioritária", "Aparece primeiro nas buscas", "Relatórios de preço de mercado", "Até 200 pacientes (Cloud.IA)"]
         },
         platina: {
           especialidades: "Ilimitadas",
           anuncios: "Ilimitados",
           tags: "100 tags por anúncio",
           exposicao: "30 dias de exposição",
-          extras: ["Destaque PREMIUM máximo", "Concierge dedicado", "Consultoria de marketing incluída", "Badge 'DELUXE'", "Verificação express", "Topo absoluto em todas as buscas", "IA para criação de anúncios", "Relatórios personalizados", "Eventos exclusivos"]
+          extras: ["Destaque PREMIUM máximo", "Concierge dedicado", "Consultoria de marketing incluída", "Badge 'DELUXE'", "Verificação express", "Topo absoluto em todas as buscas", "IA para criação de anúncios", "Relatórios personalizados", "Eventos exclusivos", "Smart Clinic + Cloud IA incluídos"]
         }
       };
 
@@ -374,7 +375,7 @@ Dúvidas? Fale conosco:
 Bem-vindo(a)! 💆‍♀️
       `.trim();
 
-      // Atualizar usuário
+      // CORREÇÃO: Atualizar usuário COM TODOS OS CAMPOS NECESSÁRIOS
       await base44.entities.User.update(usuarioEmail, { 
         plano_ativo: plano,
         data_adesao_plano: new Date().toISOString().split('T')[0]
@@ -384,7 +385,7 @@ Bem-vindo(a)! 💆‍♀️
       await base44.entities.SolicitacaoAtivacaoPlano.update(solicitacaoId, {
         status: "ativado_admin",
         data_ativacao: new Date().toISOString(),
-        observacoes: observacoes
+        observacoes: observacoesTexto || ""
       });
 
       // Enviar Email
@@ -729,7 +730,8 @@ Bem-vindo(a)! 💆‍♀️
         plano: solicitacaoSelecionada.plano_solicitado,
         solicitacaoId: solicitacaoSelecionada.id,
         usuarioNome: solicitacaoSelecionada.usuario_nome,
-        usuarioWhatsApp: usuarioData?.whatsapp || null
+        usuarioWhatsApp: usuarioData?.whatsapp || null,
+        observacoesTexto: observacoes
       });
     } catch (error) {
       setErro("Erro ao ativar plano: " + error.message);
