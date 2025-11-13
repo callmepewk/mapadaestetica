@@ -1,21 +1,53 @@
 
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, TrendingUp, Sparkles, Heart, Eye, Briefcase, Users, ExternalLink, MessageCircle, Send, AlertCircle, X, Share2, Facebook, Copy } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  TrendingUp,
+  Sparkles,
+  Heart,
+  Eye,
+  Briefcase,
+  Users,
+  ExternalLink,
+  MessageCircle,
+  Send,
+  AlertCircle,
+  X,
+  Share2,
+  Facebook,
+  Copy,
+  Plus,
+  Loader2,
+  CheckCircle,
+  Link as LinkIcon
+} from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Input } from "@/components/ui/input"; // Import Input component
-import LoginPromptModal from "../components/home/LoginPromptModal"; // New import
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import LoginPromptModal from "../components/home/LoginPromptModal";
 
 const fontesExternas = [
   {
@@ -58,6 +90,7 @@ const fontesExternas = [
 
 export default function Blog() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [artigoSelecionado, setArtigoSelecionado] = useState(null);
   const [dialogAberto, setDialogAberto] = useState(false);
   const [user, setUser] = useState(null);
@@ -67,7 +100,27 @@ export default function Blog() {
   const [respondendoComentario, setRespondendoComentario] = useState(null);
   const [linkCompartilhamento, setLinkCompartilhamento] = useState("");
   const [mostrarLinkCopiado, setMostrarLinkCopiado] = useState(false);
-  const [mostrarLoginPrompt, setMostrarLoginPrompt] = useState(false); // New state variable
+  const [mostrarLoginPrompt, setMostrarLoginPrompt] = useState(false);
+
+  // NOVOS Estados para criação de post
+  const [mostrarModalCriarPost, setMostrarModalCriarPost] = useState(false);
+  const [dadosPost, setDadosPost] = useState({
+    titulo: "",
+    resumo: "",
+    conteudo: "",
+    categoria: "Estética Facial",
+    tipo: "profissional",
+    tempo_leitura: 5,
+    status: "publicado",
+    data_publicacao: null,
+    hora_publicacao: "09:00",
+    links_patrocinador: []
+  });
+  const [novoLink, setNovoLink] = useState({
+    titulo: "",
+    url: "",
+    tipo: "site"
+  });
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -76,7 +129,6 @@ export default function Blog() {
         setUser(userData);
       } catch {
         setUser(null);
-        // REMOVIDO O TIMEOUT - Agora não abre automaticamente
       }
     };
     fetchUser();
@@ -92,6 +144,112 @@ export default function Blog() {
     refetchOnWindowFocus: true,
     initialData: [],
   });
+
+  // Mutation para criar post
+  const criarPostMutation = useMutation({
+    mutationFn: async (dados) => {
+      let dataPublicacao = new Date();
+      let status = 'publicado';
+
+      if (dados.data_publicacao) {
+        const [hora, minuto] = dados.hora_publicacao.split(':');
+        dataPublicacao = new Date(dados.data_publicacao);
+        dataPublicacao.setHours(parseInt(hora), parseInt(minuto), 0, 0);
+        status = dataPublicacao > new Date() ? 'programado' : 'publicado';
+      }
+
+      return await base44.entities.ArtigoBlog.create({
+        titulo: dados.titulo,
+        resumo: dados.resumo,
+        conteudo: dados.conteudo,
+        categoria: dados.categoria,
+        tipo: dados.tipo,
+        tempo_leitura: dados.tempo_leitura,
+        status: status,
+        data_publicacao: dataPublicacao.toISOString(),
+        links_patrocinador: dados.links_patrocinador,
+        visualizacoes: 0,
+        total_curtidas: 0,
+        curtidas: []
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['artigos-blog'] });
+      setMostrarModalCriarPost(false);
+      setDadosPost({
+        titulo: "",
+        resumo: "",
+        conteudo: "",
+        categoria: "Estética Facial",
+        tipo: "profissional",
+        tempo_leitura: 5,
+        status: "publicado",
+        data_publicacao: null,
+        hora_publicacao: "09:00",
+        links_patrocinador: []
+      });
+      alert("✅ Post criado com sucesso!");
+    },
+    onError: (error) => {
+      alert("❌ Erro ao criar post: " + error.message);
+    }
+  });
+
+  // Verificar permissão para criar posts
+  const podePostar = () => {
+    if (!user) return false;
+    if (user.role === 'admin') return true;
+
+    // Plano Mapa da Estética: apenas DELUXE (platina)
+    if (user.plano_ativo === 'platina') return true;
+
+    // Planos Patrocinador: PRATA em diante
+    const planosPatrocinadorPermitidos = ['prata', 'ouro', 'diamante', 'platina'];
+    if (user.plano_patrocinador && planosPatrocinadorPermitidos.includes(user.plano_patrocinador)) {
+      return true;
+    }
+
+    return false;
+  };
+
+  const handleAdicionarLink = () => {
+    if (!novoLink.titulo || !novoLink.url) {
+      alert("Preencha título e URL do link");
+      return;
+    }
+
+    setDadosPost({
+      ...dadosPost,
+      links_patrocinador: [...dadosPost.links_patrocinador, { ...novoLink }]
+    });
+
+    setNovoLink({ titulo: "", url: "", tipo: "site" });
+  };
+
+  const handleRemoverLink = (index) => {
+    setDadosPost({
+      ...dadosPost,
+      links_patrocinador: dadosPost.links_patrocinador.filter((_, i) => i !== index)
+    });
+  };
+
+  const handleCriarPost = () => {
+    if (!dadosPost.titulo || !dadosPost.resumo || !dadosPost.conteudo) {
+      alert("Preencha título, resumo e conteúdo!");
+      return;
+    }
+
+    if (dadosPost.data_publicacao) {
+      const dataFormatada = format(new Date(dadosPost.data_publicacao), "dd/MM/yyyy", { locale: ptBR });
+      if (confirm(`Agendar post para ${dataFormatada} às ${dadosPost.hora_publicacao}?`)) {
+        criarPostMutation.mutate(dadosPost);
+      }
+    } else {
+      if (confirm("Publicar post agora?")) {
+        criarPostMutation.mutate(dadosPost);
+      }
+    }
+  };
 
   const artigosProfissionais = artigos.filter(a => a.tipo === 'profissional');
   const artigosGerais = artigos.filter(a => a.tipo === 'geral');
@@ -111,24 +269,24 @@ export default function Blog() {
 
   const handleArtigoClick = async (e, artigo) => {
     e.preventDefault();
-    
+
     // VERIFICAR LOGIN PRIMEIRO
     if (!user) {
       setMostrarLoginPrompt(true);
       return;
     }
-    
+
     if (!artigo || !artigo.id) {
       console.error("Artigo sem ID:", artigo);
       return;
     }
-    
+
     // Artigos gerais com link externo abrem em nova aba
     if (artigo.tipo === 'geral' && artigo.link_externo) {
       window.open(artigo.link_externo, '_blank');
       return;
     }
-    
+
     // Artigos profissionais ou sem link externo abrem no dialog
     try {
       await base44.entities.ArtigoBlog.update(artigo.id, {
@@ -165,11 +323,11 @@ export default function Blog() {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const artigoId = urlParams.get('artigo');
-    
+
     if (artigoId && artigos.length > 0) {
       const artigo = artigos.find(a => a.id === artigoId);
       if (artigo) {
-        handleArtigoClick({ preventDefault: () => {} }, artigo);
+        handleArtigoClick({ preventDefault: () => { } }, artigo);
       }
     }
   }, [artigos]); // Dependência em 'artigos' para garantir que a busca seja feita após os dados estarem disponíveis
@@ -180,24 +338,24 @@ export default function Blog() {
       return;
     }
     if (!artigoSelecionado) return;
-    
+
     try {
       const curtidas = artigoSelecionado.curtidas || [];
       const jaCurtiu = curtidas.includes(user.email);
-      
+
       const novasCurtidas = jaCurtiu
         ? curtidas.filter(email => email !== user.email)
         : [...curtidas, user.email];
-      
+
       await base44.entities.ArtigoBlog.update(artigoSelecionado.id, {
         curtidas: novasCurtidas,
         total_curtidas: novasCurtidas.length
       });
 
-      setArtigoSelecionado({ 
-        ...artigoSelecionado, 
-        curtidas: novasCurtidas, 
-        total_curtidas: novasCurtidas.length 
+      setArtigoSelecionado({
+        ...artigoSelecionado,
+        curtidas: novasCurtidas,
+        total_curtidas: novasCurtidas.length
       });
     } catch (error) {
       console.error("Erro ao curtir:", error);
@@ -209,12 +367,12 @@ export default function Blog() {
       base44.auth.redirectToLogin(window.location.pathname);
       return;
     }
-    
+
     if (!novoComentario.trim()) {
       setErro("Por favor, escreva um comentário");
       return;
     }
-    
+
     try {
       const novoComentarioData = await base44.entities.ComentarioBlog.create({
         artigo_id: artigoSelecionado.id,
@@ -248,19 +406,19 @@ export default function Blog() {
     try {
       const curtidas = comentario.curtidas_usuarios || [];
       const jaCurtiu = curtidas.includes(user.email);
-      
+
       const novasCurtidas = jaCurtiu
         ? curtidas.filter(email => email !== user.email)
         : [...curtidas, user.email];
-      
+
       await base44.entities.ComentarioBlog.update(comentario.id, {
         curtidas_usuarios: novasCurtidas,
         total_curtidas: novasCurtidas.length
       });
 
       // Atualizar localmente
-      const comentariosAtualizados = comentarios.map(c => 
-        c.id === comentario.id 
+      const comentariosAtualizados = comentarios.map(c =>
+        c.id === comentario.id
           ? { ...c, curtidas_usuarios: novasCurtidas, total_curtidas: novasCurtidas.length }
           : c
       );
@@ -279,7 +437,7 @@ export default function Blog() {
   const compartilharRedesSociais = (rede) => {
     const texto = encodeURIComponent(`Confira este artigo: ${artigoSelecionado.titulo}`);
     const url = encodeURIComponent(linkCompartilhamento);
-    
+
     const links = {
       whatsapp: `https://wa.me/?text=${texto}%20${url}`,
       facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
@@ -292,14 +450,14 @@ export default function Blog() {
 
   const ArtigoCard = ({ artigo }) => {
     if (!artigo) return null;
-    
+
     const handleCardClick = (e) => {
       // For external links, no login is required to open in new tab
       if (artigo.tipo === 'geral' && artigo.link_externo) {
         handleArtigoClick(e, artigo);
         return;
       }
-      
+
       if (!user) {
         e.preventDefault();
         setMostrarLoginPrompt(true);
@@ -307,7 +465,7 @@ export default function Blog() {
       }
       handleArtigoClick(e, artigo);
     };
-    
+
     return (
       <Card
         onClick={handleCardClick}
@@ -345,7 +503,7 @@ export default function Blog() {
           <p className="text-gray-600 text-sm mb-4 line-clamp-3">
             {artigo.resumo}
           </p>
-          
+
           <div className="flex items-center gap-3 text-xs text-gray-500 pt-3 border-t flex-wrap">
             <span className="flex items-center gap-1">
               <Eye className="w-3 h-3" />
@@ -378,9 +536,22 @@ export default function Blog() {
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-8 md:mb-12">
-          <div className="inline-flex items-center gap-2 bg-pink-100 text-pink-700 px-4 py-2 rounded-full mb-4">
-            <TrendingUp className="w-4 h-4" />
-            <span className="text-sm font-medium">Atualizado semanalmente</span>
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <div className="inline-flex items-center gap-2 bg-pink-100 text-pink-700 px-4 py-2 rounded-full">
+              <TrendingUp className="w-4 h-4" />
+              <span className="text-sm font-medium">Atualizado semanalmente</span>
+            </div>
+
+            {/* NOVO: Botão Criar Post */}
+            {podePostar() && (
+              <Button
+                onClick={() => setMostrarModalCriarPost(true)}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Criar Post
+              </Button>
+            )}
           </div>
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-2 px-4">
             Fique por Dentro do Universo da Estética
@@ -731,6 +902,345 @@ export default function Blog() {
               </div>
             </>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* NOVO: Modal Criar Post */}
+      <Dialog open={mostrarModalCriarPost} onOpenChange={setMostrarModalCriarPost}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl flex items-center gap-2">
+              <Sparkles className="w-6 h-6 text-purple-600" />
+              Criar Novo Post
+            </DialogTitle>
+            <DialogDescription>
+              Crie conteúdo de qualidade para o blog do Mapa da Estética
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6 py-4">
+            {/* Tipo de Post */}
+            <div>
+              <Label>Tipo de Artigo *</Label>
+              <Select
+                value={dadosPost.tipo}
+                onValueChange={(value) => setDadosPost({ ...dadosPost, tipo: value })}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="profissional">
+                    <div className="flex items-center gap-2">
+                      <Briefcase className="w-4 h-4" />
+                      Para Profissionais
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="geral">
+                    <div className="flex items-center gap-2">
+                      <Users className="w-4 h-4" />
+                      Artigo Geral
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Título */}
+            <div>
+              <Label>Título do Artigo *</Label>
+              <Input
+                placeholder="Ex: Como Escolher o Melhor Tratamento Facial"
+                value={dadosPost.titulo}
+                onChange={(e) => setDadosPost({ ...dadosPost, titulo: e.target.value })}
+                className="mt-1"
+              />
+            </div>
+
+            {/* Resumo */}
+            <div>
+              <Label>Resumo/Subtítulo *</Label>
+              <Textarea
+                placeholder="Breve resumo que aparecerá no card do artigo (máx 200 caracteres)"
+                value={dadosPost.resumo}
+                onChange={(e) => setDadosPost({ ...dadosPost, resumo: e.target.value })}
+                className="mt-1"
+                rows={3}
+                maxLength={200}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                {dadosPost.resumo.length}/200 caracteres
+              </p>
+            </div>
+
+            {/* Categoria */}
+            <div>
+              <Label>Categoria *</Label>
+              <Select
+                value={dadosPost.categoria}
+                onValueChange={(value) => setDadosPost({ ...dadosPost, categoria: value })}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Estética Facial">Estética Facial</SelectItem>
+                  <SelectItem value="Estética Corporal">Estética Corporal</SelectItem>
+                  <SelectItem value="Cuidados com a Pele">Cuidados com a Pele</SelectItem>
+                  <SelectItem value="Tratamentos">Tratamentos</SelectItem>
+                  <SelectItem value="Tendências">Tendências</SelectItem>
+                  <SelectItem value="Novidades">Novidades</SelectItem>
+                  <SelectItem value="Harmonização Facial">Harmonização Facial</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Conteúdo */}
+            <div>
+              <Label>Conteúdo do Artigo *</Label>
+              <Textarea
+                placeholder="Escreva o conteúdo completo do artigo aqui..."
+                value={dadosPost.conteudo}
+                onChange={(e) => setDadosPost({ ...dadosPost, conteudo: e.target.value })}
+                className="mt-1"
+                rows={10}
+              />
+            </div>
+
+            {/* Tempo de Leitura */}
+            <div>
+              <Label>Tempo de Leitura (minutos)</Label>
+              <Input
+                type="number"
+                min="1"
+                max="60"
+                placeholder="5"
+                value={dadosPost.tempo_leitura}
+                onChange={(e) => setDadosPost({ ...dadosPost, tempo_leitura: parseInt(e.target.value) || 5 })}
+                className="mt-1"
+              />
+            </div>
+
+            {/* Links do Patrocinador */}
+            <div className="pt-4 border-t">
+              <div className="flex items-center justify-between mb-3">
+                <Label className="flex items-center gap-2">
+                  <LinkIcon className="w-4 h-4 text-purple-600" />
+                  Links de Patrocínio (opcional)
+                </Label>
+              </div>
+
+              {dadosPost.links_patrocinador.length > 0 && (
+                <div className="space-y-2 mb-4">
+                  {dadosPost.links_patrocinador.map((link, index) => (
+                    <div key={index} className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                      <div className="flex-1">
+                        <p className="font-medium text-sm">{link.titulo}</p>
+                        <p className="text-xs text-gray-500 truncate">{link.url}</p>
+                        <Badge variant="outline" className="text-xs mt-1">{link.tipo}</Badge>
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleRemoverLink(index)}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="p-4 bg-purple-50 rounded-lg border-2 border-purple-200 space-y-3">
+                <h4 className="font-semibold text-sm">Adicionar Novo Link</h4>
+                <div className="grid md:grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs">Tipo de Link</Label>
+                    <Select value={novoLink.tipo} onValueChange={(value) => setNovoLink({ ...novoLink, tipo: value })}>
+                      <SelectTrigger className="mt-1 h-9">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="site">🌐 Site</SelectItem>
+                        <SelectItem value="loja">🛍️ Loja</SelectItem>
+                        <SelectItem value="instagram">📸 Instagram</SelectItem>
+                        <SelectItem value="facebook">📘 Facebook</SelectItem>
+                        <SelectItem value="whatsapp">💬 WhatsApp</SelectItem>
+                        <SelectItem value="outro">🔗 Outro</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs">Título do Link</Label>
+                    <Input
+                      value={novoLink.titulo}
+                      onChange={(e) => setNovoLink({ ...novoLink, titulo: e.target.value })}
+                      placeholder="Ex: Visite nossa loja"
+                      className="mt-1 h-9 text-sm"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="text-xs">URL</Label>
+                  <Input
+                    value={novoLink.url}
+                    onChange={(e) => setNovoLink({ ...novoLink, url: e.target.value })}
+                    placeholder="https://..."
+                    className="mt-1 h-9 text-sm"
+                  />
+                </div>
+
+                <Button
+                  type="button"
+                  onClick={handleAdicionarLink}
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Adicionar Link
+                </Button>
+              </div>
+            </div>
+
+            {/* Agendamento */}
+            <div className="pt-4 border-t">
+              <h4 className="font-semibold mb-3">📅 Publicação</h4>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Agendar para (opcional)</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start text-left mt-1"
+                      >
+                        <Calendar className="w-4 h-4 mr-2" />
+                        {dadosPost.data_publicacao ?
+                          format(dadosPost.data_publicacao, "dd/MM/yyyy", { locale: ptBR }) :
+                          "Publicar agora"
+                        }
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <CalendarComponent
+                        mode="single"
+                        selected={dadosPost.data_publicacao}
+                        onSelect={(date) => setDadosPost({ ...dadosPost, data_publicacao: date })}
+                        disabled={(date) => date < new Date()}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  {dadosPost.data_publicacao && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setDadosPost({ ...dadosPost, data_publicacao: null })}
+                      className="mt-1 text-xs"
+                    >
+                      <X className="w-3 h-3 mr-1" />
+                      Limpar agendamento
+                    </Button>
+                  )}
+                </div>
+
+                {dadosPost.data_publicacao && (
+                  <div>
+                    <Label>Horário</Label>
+                    <Select
+                      value={dadosPost.hora_publicacao}
+                      onValueChange={(value) => setDadosPost({ ...dadosPost, hora_publicacao: value })}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[200px]">
+                        {Array.from({ length: 24 }, (_, i) => {
+                          const hora = i.toString().padStart(2, '0');
+                          return (
+                            <SelectItem key={hora} value={`${hora}:00`}>
+                              {hora}:00
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </div>
+
+              {dadosPost.data_publicacao && (
+                <Alert className="mt-4 bg-blue-50 border-blue-200">
+                  <Clock className="h-4 w-4 text-blue-600" />
+                  <AlertDescription className="text-blue-800 text-sm">
+                    📅 Este post será publicado em: <strong>{format(dadosPost.data_publicacao, "dd/MM/yyyy", { locale: ptBR })} às {dadosPost.hora_publicacao}</strong>
+                  </AlertDescription>
+                </Alert>
+              )}
+            </div>
+
+            {/* Alerta de Plano */}
+            <Alert className="bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
+              <Sparkles className="h-4 w-4 text-purple-600" />
+              <AlertDescription className="text-purple-900 text-sm">
+                <p className="font-semibold mb-2">✨ Benefício do seu plano:</p>
+                {user?.role === 'admin' ? (
+                  <p>Como <strong>Admin</strong>, você tem acesso ilimitado para criação de posts.</p>
+                ) : user?.plano_ativo === 'platina' ? (
+                  <p>Plano <strong>DELUXE</strong>: Crie posts ilimitados e conteúdo patrocinado mensal incluído!</p>
+                ) : (
+                  <p>Plano <strong>Patrocinador {user?.plano_patrocinador?.toUpperCase()}</strong>: Publique artigos mensais no blog!</p>
+                )}
+              </AlertDescription>
+            </Alert>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setMostrarModalCriarPost(false);
+                setDadosPost({
+                  titulo: "",
+                  resumo: "",
+                  conteudo: "",
+                  categoria: "Estética Facial",
+                  tipo: "profissional",
+                  tempo_leitura: 5,
+                  status: "publicado",
+                  data_publicacao: null,
+                  hora_publicacao: "09:00",
+                  links_patrocinador: []
+                });
+                setNovoLink({ titulo: "", url: "", tipo: "site" });
+              }}
+              disabled={criarPostMutation.isPending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleCriarPost}
+              disabled={criarPostMutation.isPending}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+            >
+              {criarPostMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  {dadosPost.data_publicacao ? 'Agendando...' : 'Publicando...'}
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  {dadosPost.data_publicacao ? 'Agendar Post' : 'Publicar Agora'}
+                </>
+              )}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
