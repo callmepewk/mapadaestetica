@@ -101,8 +101,18 @@ const STATUS_INFO = {
   pagamento_pendente_mp: { label: "Pagamento Pendente", cor: "bg-orange-100 text-orange-800", icon: Clock },
   pagamento_rejeitado_mp: { label: "Pagamento Rejeitado", cor: "bg-red-100 text-red-800", icon: XCircle },
   ativado_admin: { label: "Ativado", cor: "bg-green-100 text-green-800", icon: CheckCircle },
-  cancelado: { label: "Cancelado", cor: "bg-gray-100 text-gray-800", icon: XCircle }
+  cancelado: { label: "Cancelado", cor: "bg-gray-100 text-gray-800", icon: XCircle },
+  ativo: { label: "Ativo", cor: "bg-green-100 text-green-800", icon: CheckCircle },
+  pausado: { label: "Pausado", cor: "bg-yellow-100 text-yellow-800", icon: Clock },
+  inativo: { label: "Inativo", cor: "bg-gray-100 text-gray-800", icon: XCircle },
+  excluido: { label: "Excluído", cor: "bg-red-100 text-red-800", icon: Trash2 },
+  publicado: { label: "Publicado", cor: "bg-green-100 text-green-800", icon: CheckCircle },
+  rascunho: { label: "Rascunho", cor: "bg-gray-100 text-gray-800", icon: FileText },
+  programado: { label: "Programado", cor: "bg-blue-100 text-blue-800", icon: CalendarIcon },
+  pendente: { label: "Pendente", cor: "bg-yellow-100 text-yellow-800", icon: Clock },
+  expirado: { label: "Expirado", cor: "bg-red-100 text-red-800", icon: XCircle },
 };
+
 
 export default function ControleAdmin() {
   const navigate = useNavigate();
@@ -2220,23 +2230,1567 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
           </TabsList>
 
           <TabsContent value="planos">
-            <p className="text-gray-500 text-center py-12">Conteúdo mantido do arquivo original...</p>
+            <Tabs defaultValue="solicitacoes" className="w-full">
+              <TabsList className="w-full mb-6 grid grid-cols-2 md:grid-cols-7 gap-1">
+                <TabsTrigger value="solicitacoes" className="text-xs sm:text-sm">
+                  <CreditCard className="w-4 h-4 mr-2" />
+                  Solicitações ({solicitacoesPlanos.length})
+                </TabsTrigger>
+                <TabsTrigger value="impulsionamento" className="text-xs sm:text-sm">
+                  <Zap className="w-4 h-4 mr-2" />
+                  Impulsionamento ({solicitacoesImpulsionamento.length})
+                </TabsTrigger>
+                <TabsTrigger value="profissionais" className="text-xs sm:text-sm">
+                  <User className="w-4 h-4 mr-2" />
+                  Profissionais ({usuarios.length})
+                </TabsTrigger>
+                <TabsTrigger value="anuncios" className="text-xs sm:text-sm">
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Anúncios ({todosAnuncios.length})
+                </TabsTrigger>
+                <TabsTrigger value="clube" className="text-xs sm:text-sm">
+                  <Crown className="w-4 h-4 mr-2" />
+                  Clube ({usuariosClube.length})
+                </TabsTrigger>
+                <TabsTrigger value="patrocinadores" className="text-xs sm:text-sm">
+                  <Users className="w-4 h-4 mr-2" />
+                  Patrocinadores ({usuariosPatrocinadores.length})
+                </TabsTrigger>
+                <TabsTrigger value="todos-usuarios" className="text-xs sm:text-sm">
+                  <Users className="w-4 h-4 mr-2" />
+                  Todos ({todosUsuarios.length})
+                </TabsTrigger>
+              </TabsList>
+
+              {/* Sub-aba: Solicitações */}
+              <TabsContent value="solicitacoes">
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle>Solicitações de Planos</CardTitle>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={exportarRelatorioSolicitacoes}
+                          variant="outline"
+                          size="sm"
+                          disabled={solicitacoesPlanos.length === 0}
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          PDF
+                        </Button>
+                        <Button
+                          onClick={enviarRelatorioWhatsApp}
+                          variant="outline"
+                          size="sm"
+                          disabled={enviandoWhatsApp}
+                          className="border-green-300 text-green-700"
+                        >
+                          {enviandoWhatsApp ? (
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          ) : (
+                            <Send className="w-4 h-4 mr-2" />
+                          )}
+                          WhatsApp
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {loadingSolicitacoesPlanos ? (
+                      <div className="flex justify-center py-12">
+                        <Loader2 className="w-8 h-8 animate-spin text-pink-600" />
+                      </div>
+                    ) : solicitacoesPlanos.length === 0 ? (
+                      <div className="text-center py-12">
+                        <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-600">Nenhuma solicitação encontrada</p>
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Profissional</TableHead>
+                              <TableHead>Plano</TableHead>
+                              <TableHead>Status</TableHead>
+                              <TableHead>Data</TableHead>
+                              <TableHead className="text-right">Ações</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {solicitacoesPlanos.map((sol) => {
+                              const StatusIcon = STATUS_INFO[sol.status]?.icon || Clock;
+                              return (
+                                <TableRow key={sol.id}>
+                                  <TableCell>
+                                    <div>
+                                      <p className="font-medium">{sol.usuario_nome}</p>
+                                      <p className="text-sm text-gray-500">{sol.usuario_email}</p>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Badge className={PLANOS_INFO[sol.plano_solicitado]?.cor}>
+                                      {PLANOS_INFO[sol.plano_solicitado]?.nome}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Badge className={STATUS_INFO[sol.status]?.cor}>
+                                      <StatusIcon className="w-3 h-3 mr-1" />
+                                      {STATUS_INFO[sol.status]?.label}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell className="text-sm">
+                                    {sol.data_solicitacao ? format(new Date(sol.data_solicitacao), "dd/MM/yyyy HH:mm", { locale: ptBR }) : "-"}
+                                  </TableCell>
+                                  <TableCell className="text-right">
+                                    <div className="flex items-center justify-end gap-2">
+                                      {sol.status !== "ativado_admin" && (
+                                        <Button
+                                          onClick={() => {
+                                            setSolicitacaoSelecionada(sol);
+                                            setMostrarModalAtivar(true);
+                                          }}
+                                          size="sm"
+                                          className="bg-green-600 hover:bg-green-700"
+                                        >
+                                          <CheckCircle className="w-4 h-4 mr-1" />
+                                          Ativar
+                                        </Button>
+                                      )}
+                                      <Button
+                                        onClick={() => {
+                                          if (confirm(`Excluir solicitação de ${sol.usuario_nome}?`)) {
+                                            deletarSolicitacaoMutation.mutate(sol.id);
+                                          }
+                                        }}
+                                        size="sm"
+                                        variant="outline"
+                                        className="border-red-300 text-red-700"
+                                      >
+                                        <Trash2 className="w-4 h-4" />
+                                      </Button>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Sub-aba: Impulsionamento */}
+              <TabsContent value="impulsionamento">
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle>Solicitações de Impulsionamento</CardTitle>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={exportarRelatorioImpulsionamento}
+                          variant="outline"
+                          size="sm"
+                          disabled={solicitacoesImpulsionamento.length === 0}
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          PDF
+                        </Button>
+                        <Button
+                          onClick={enviarRelatorioImpulsionamentoWhatsApp}
+                          variant="outline"
+                          size="sm"
+                          className="border-green-300 text-green-700"
+                        >
+                          <Send className="w-4 h-4 mr-2" />
+                          WhatsApp
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {loadingSolicitacoesImpulsionamento ? (
+                      <div className="flex justify-center py-12">
+                        <Loader2 className="w-8 h-8 animate-spin text-orange-600" />
+                      </div>
+                    ) : solicitacoesImpulsionamento.length === 0 ? (
+                      <div className="text-center py-12">
+                        <Zap className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-600">Nenhuma solicitação encontrada</p>
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Profissional</TableHead>
+                              <TableHead>Anúncio</TableHead>
+                              <TableHead>Plano</TableHead>
+                              <TableHead>Duração/Valor</TableHead>
+                              <TableHead>Status</TableHead>
+                              <TableHead>Data</TableHead>
+                              <TableHead className="text-right">Ações</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {solicitacoesImpulsionamento.map((sol) => {
+                              const StatusIcon = STATUS_INFO[sol.status]?.icon || Clock;
+                              const planoInfo = PLANOS_IMPULSIONAMENTO_INFO[sol.plano_impulsionamento];
+                              return (
+                                <TableRow key={sol.id}>
+                                  <TableCell>
+                                    <div>
+                                      <p className="font-medium">{sol.usuario_nome}</p>
+                                      <p className="text-sm text-gray-500">{sol.usuario_email}</p>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <p className="text-sm font-medium line-clamp-2">{sol.anuncio_titulo}</p>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Badge className={planoInfo?.cor}>
+                                      <Zap className="w-3 h-3 mr-1" />
+                                      {planoInfo?.nome}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="text-sm">
+                                      <p className="font-medium">{sol.duracao_dias} dias</p>
+                                      <p className="text-gray-500">R$ {sol.valor?.toFixed(2)}</p>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Badge className={STATUS_INFO[sol.status]?.cor}>
+                                      <StatusIcon className="w-3 h-3 mr-1" />
+                                      {STATUS_INFO[sol.status]?.label}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell className="text-sm">
+                                    {sol.data_solicitacao ? format(new Date(sol.data_solicitacao), "dd/MM/yyyy HH:mm", { locale: ptBR }) : "-"}
+                                  </TableCell>
+                                  <TableCell className="text-right">
+                                    <div className="flex items-center justify-end gap-2">
+                                      {sol.status !== "ativado_admin" && (
+                                        <Button
+                                          onClick={() => handleAtivarImpulsionamento(sol)}
+                                          size="sm"
+                                          disabled={processando}
+                                          className="bg-orange-600 hover:bg-orange-700"
+                                        >
+                                          <Zap className="w-4 h-4 mr-1" />
+                                          Ativar
+                                        </Button>
+                                      )}
+                                      <Button
+                                        onClick={() => {
+                                          if (confirm(`Excluir solicitação de impulsionamento?`)) {
+                                            deletarImpulsionamentoMutation.mutate(sol.id);
+                                          }
+                                        }}
+                                        size="sm"
+                                        variant="outline"
+                                        className="border-red-300 text-red-700"
+                                      >
+                                        <Trash2 className="w-4 h-4" />
+                                      </Button>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Sub-aba: Profissionais */}
+              <TabsContent value="profissionais">
+                <Card>
+                  <CardHeader>
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                      <CardTitle>Profissionais Cadastrados</CardTitle>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Buscar profissional (nome, email)"
+                          value={buscaProfissional}
+                          onChange={(e) => setBuscaProfissional(e.target.value)}
+                          className="max-w-xs"
+                        />
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {loadingUsuarios ? (
+                      <div className="flex justify-center py-12">
+                        <Loader2 className="w-8 h-8 animate-spin text-pink-600" />
+                      </div>
+                    ) : usuariosFiltrados.length === 0 ? (
+                      <div className="text-center py-12">
+                        <User className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-600">Nenhum profissional encontrado</p>
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Nome</TableHead>
+                              <TableHead>Email</TableHead>
+                              <TableHead>Plano Ativo</TableHead>
+                              <TableHead>BeautyCoins</TableHead>
+                              <TableHead className="text-right">Ações</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {usuariosFiltrados.map((u) => (
+                              <TableRow key={u.id}>
+                                <TableCell>
+                                  <p className="font-medium">{u.full_name}</p>
+                                  <p className="text-sm text-gray-500">{u.telefone}</p>
+                                </TableCell>
+                                <TableCell>{u.email}</TableCell>
+                                <TableCell>
+                                  <Badge className={PLANOS_INFO[u.plano_ativo]?.cor}>
+                                    {PLANOS_INFO[u.plano_ativo]?.nome}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <Badge variant="outline" className="text-sm text-purple-600 border-purple-200">
+                                    <DollarSign className="w-3 h-3 mr-1" />
+                                    {u.beauty_coins || 0}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  <div className="flex items-center justify-end gap-2">
+                                    <Button size="sm" variant="outline" onClick={() => handleEditarPontos(u)}>
+                                      <Star className="w-4 h-4 mr-1" />
+                                      Pontos
+                                    </Button>
+                                    <Button size="sm" onClick={() => handleTrocarPlano(u)} className="bg-blue-600 hover:bg-blue-700">
+                                      <RefreshCw className="w-4 h-4 mr-1" />
+                                      Trocar Plano
+                                    </Button>
+                                    <Button size="sm" variant="outline" className="border-red-300 text-red-700" onClick={() => handleExcluirProfissional(u)}>
+                                      <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Sub-aba: Anúncios */}
+              <TabsContent value="anuncios">
+                <Card>
+                  <CardHeader>
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                      <CardTitle>Anúncios ({anunciosFiltrados.length})</CardTitle>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Buscar anúncio (título, profissional, email)"
+                          value={buscaAnuncio}
+                          onChange={(e) => setBuscaAnuncio(e.target.value)}
+                          className="max-w-xs"
+                        />
+                        <Select value={filtroStatusAnuncio} onValueChange={setFiltroStatusAnuncio}>
+                          <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Filtrar por status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value={null}>Todos os Status</SelectItem>
+                            <SelectItem value="ativo">Ativo</SelectItem>
+                            <SelectItem value="pendente">Pendente</SelectItem>
+                            <SelectItem value="expirado">Expirado</SelectItem>
+                            <SelectItem value="pausado">Pausado</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Button
+                          onClick={exportarRelatorioAnuncios}
+                          variant="outline"
+                          size="sm"
+                          disabled={todosAnuncios.length === 0}
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          PDF
+                        </Button>
+                        <Button
+                          onClick={enviarRelatorioAnunciosWhatsApp}
+                          variant="outline"
+                          size="sm"
+                          className="border-green-300 text-green-700"
+                        >
+                          <Send className="w-4 h-4 mr-2" />
+                          WhatsApp
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {loadingAnuncios ? (
+                      <div className="flex justify-center py-12">
+                        <Loader2 className="w-8 h-8 animate-spin text-pink-600" />
+                      </div>
+                    ) : anunciosFiltrados.length === 0 ? (
+                      <div className="text-center py-12">
+                        <Sparkles className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-600">Nenhum anúncio encontrado</p>
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Título</TableHead>
+                              <TableHead>Profissional</TableHead>
+                              <TableHead>Status</TableHead>
+                              <TableHead>Visualizações</TableHead>
+                              <TableHead>Expiração</TableHead>
+                              <TableHead className="text-right">Ações</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {anunciosFiltrados.map((anuncio) => {
+                              const StatusIcon = STATUS_INFO[anuncio.status]?.icon || Clock;
+                              return (
+                                <TableRow key={anuncio.id}>
+                                  <TableCell className="font-medium max-w-[200px] whitespace-normal">
+                                    <p className="truncate">{anuncio.titulo}</p>
+                                  </TableCell>
+                                  <TableCell>
+                                    <p>{anuncio.profissional}</p>
+                                    <p className="text-sm text-gray-500">{anuncio.created_by}</p>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Badge className={STATUS_INFO[anuncio.status]?.cor}>
+                                      <StatusIcon className="w-3 h-3 mr-1" />
+                                      {STATUS_INFO[anuncio.status]?.label}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell>{anuncio.visualizacoes || 0}</TableCell>
+                                  <TableCell>{calcularTempoRestante(anuncio)}</TableCell>
+                                  <TableCell className="text-right">
+                                    <div className="flex items-center justify-end gap-2">
+                                      <Button size="sm" variant="outline" onClick={() => handleVerDetalhesAnuncio(anuncio)}>
+                                        <Eye className="w-4 h-4" />
+                                      </Button>
+                                      <Button size="sm" onClick={() => handleEditarAnuncio(anuncio)}>
+                                        <Edit className="w-4 h-4" />
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="border-red-300 text-red-700"
+                                        onClick={() => handleExcluirAnuncio(anuncio)}
+                                      >
+                                        <Trash2 className="w-4 h-4" />
+                                      </Button>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Sub-aba: Clube da Beleza */}
+              <TabsContent value="clube">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Crown className="w-6 h-6 text-yellow-600" />
+                      Membros do Clube da Beleza ({usuariosClube.length})
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {loadingTodosUsuarios ? (
+                      <div className="flex justify-center py-12">
+                        <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+                      </div>
+                    ) : usuariosClube.length === 0 ? (
+                      <div className="text-center py-12">
+                        <Crown className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-600">Nenhum membro no Clube da Beleza</p>
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Nome</TableHead>
+                              <TableHead>Email</TableHead>
+                              <TableHead>Plano Clube</TableHead>
+                              <TableHead>Beauty Coins</TableHead>
+                              <TableHead className="text-right">Ações</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {usuariosClube.map((u) => (
+                              <TableRow key={u.id}>
+                                <TableCell>
+                                  <p className="font-medium">{u.full_name}</p>
+                                </TableCell>
+                                <TableCell>{u.email}</TableCell>
+                                <TableCell>
+                                  <Badge className="bg-yellow-100 text-yellow-800">
+                                    {u.plano_clube_beleza === 'ativo' ? 'Ativo' : 'Inativo'}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <Badge variant="outline" className="text-purple-600 border-purple-200">
+                                    <DollarSign className="w-3 h-3 mr-1" />
+                                    {u.beauty_coins || 0}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  <Button size="sm" onClick={() => handleSincronizarClubeBeleza(u)}>
+                                    <ExternalLink className="w-4 h-4 mr-1" />
+                                    Sincronizar
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Sub-aba: Patrocinadores */}
+              <TabsContent value="patrocinadores">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Shield className="w-6 h-6 text-green-600" />
+                      Patrocinadores ({usuariosPatrocinadores.length})
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {loadingTodosUsuarios ? (
+                      <div className="flex justify-center py-12">
+                        <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+                      </div>
+                    ) : usuariosPatrocinadores.length === 0 ? (
+                      <div className="text-center py-12">
+                        <Shield className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-600">Nenhum patrocinador encontrado</p>
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Nome</TableHead>
+                              <TableHead>Email</TableHead>
+                              <TableHead>Plano Patrocinador</TableHead>
+                              <TableHead className="text-right">Ações</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {usuariosPatrocinadores.map((u) => (
+                              <TableRow key={u.id}>
+                                <TableCell>
+                                  <p className="font-medium">{u.full_name}</p>
+                                </TableCell>
+                                <TableCell>{u.email}</TableCell>
+                                <TableCell>
+                                  <Badge className="bg-green-100 text-green-800">
+                                    {u.plano_patrocinador}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  <Button size="sm" onClick={() => handleEditarUsuarioCompleto(u)}>
+                                    <Edit className="w-4 h-4 mr-1" />
+                                    Editar
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Sub-aba: Todos os Usuários */}
+              <TabsContent value="todos-usuarios">
+                <Card>
+                  <CardHeader>
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                      <CardTitle>Todos os Usuários ({todosUsuariosFiltrados.length})</CardTitle>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Buscar usuário (nome, email)"
+                          value={buscaTodosUsuarios}
+                          onChange={(e) => setBuscaTodosUsuarios(e.target.value)}
+                          className="max-w-xs"
+                        />
+                        <Select value={filtroTipoUsuario} onValueChange={setFiltroTipoUsuario}>
+                          <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Filtrar por tipo" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value={null}>Todos os Tipos</SelectItem>
+                            <SelectItem value="paciente">Paciente</SelectItem>
+                            <SelectItem value="profissional">Profissional</SelectItem>
+                            <SelectItem value="parceiro">Parceiro</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Select value={filtroRole} onValueChange={setFiltroRole}>
+                          <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Filtrar por Role" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value={null}>Todas as Roles</SelectItem>
+                            <SelectItem value="user">Usuário Comum</SelectItem>
+                            <SelectItem value="admin">Administrador</SelectItem>
+                            <SelectItem value="tester">Tester</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Button
+                          onClick={exportarRelatorioTodosUsuarios}
+                          variant="outline"
+                          size="sm"
+                          disabled={todosUsuarios.length === 0}
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          PDF
+                        </Button>
+                        <Button
+                          onClick={enviarRelatorioTodosUsuariosWhatsApp}
+                          variant="outline"
+                          size="sm"
+                          className="border-green-300 text-green-700"
+                        >
+                          <Send className="w-4 h-4 mr-2" />
+                          WhatsApp
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {loadingTodosUsuarios ? (
+                      <div className="flex justify-center py-12">
+                        <Loader2 className="w-8 h-8 animate-spin text-pink-600" />
+                      </div>
+                    ) : todosUsuariosFiltrados.length === 0 ? (
+                      <div className="text-center py-12">
+                        <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-600">Nenhum usuário encontrado com os filtros aplicados</p>
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Nome</TableHead>
+                              <TableHead>Email</TableHead>
+                              <TableHead>Tipo</TableHead>
+                              <TableHead>Role</TableHead>
+                              <TableHead>Plano</TableHead>
+                              <TableHead>BeautyCoins</TableHead>
+                              <TableHead className="text-right">Ações</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {todosUsuariosFiltrados.map((u) => (
+                              <TableRow key={u.id}>
+                                <TableCell>
+                                  <p className="font-medium">{u.full_name}</p>
+                                  <p className="text-sm text-gray-500">{u.telefone}</p>
+                                </TableCell>
+                                <TableCell>{u.email}</TableCell>
+                                <TableCell>
+                                  <Badge variant="outline">{u.tipo_usuario || 'N/D'}</Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <Badge variant="secondary">{u.role || 'user'}</Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <Badge className={PLANOS_INFO[u.plano_ativo]?.cor}>
+                                    {PLANOS_INFO[u.plano_ativo]?.nome}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <Badge variant="outline" className="text-sm text-purple-600 border-purple-200">
+                                    <DollarSign className="w-3 h-3 mr-1" />
+                                    {u.beauty_coins || 0}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  <div className="flex items-center justify-end gap-2">
+                                    <Button size="sm" onClick={() => handleEditarUsuarioCompleto(u)}>
+                                      <Edit className="w-4 h-4" />
+                                    </Button>
+                                    {u.tipo_usuario === 'profissional' && (
+                                      <Button size="sm" variant="outline" className="border-red-300 text-red-700" onClick={() => handleExcluirProfissional(u)}>
+                                        <Trash2 className="w-4 h-4" />
+                                      </Button>
+                                    )}
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
           </TabsContent>
 
           <TabsContent value="produtos">
-            <p className="text-gray-500 text-center py-12">Conteúdo mantido do arquivo original...</p>
+            <Card>
+              <CardHeader>
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <CardTitle>Pedidos de Produtos ({pedidosFiltrados.length})</CardTitle>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Buscar pedido (usuário, produto)"
+                      value={busca}
+                      onChange={(e) => setBusca(e.target.value)}
+                      className="max-w-xs"
+                    />
+                    <Select value={filtroStatus} onValueChange={setFiltroStatus}>
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Filtrar por status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={null}>Todos os Status</SelectItem>
+                        <SelectItem value="aguardando_pagamento">Aguardando Pagamento</SelectItem>
+                        <SelectItem value="pago">Pago</SelectItem>
+                        <SelectItem value="enviado">Enviado</SelectItem>
+                        <SelectItem value="entregue">Entregue</SelectItem>
+                        <SelectItem value="cancelado">Cancelado</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select value={filtroUsuario} onValueChange={setFiltroUsuario}>
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Filtrar por usuário" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={null}>Todos os Usuários</SelectItem>
+                        {usuariosUnicos.map((email) => (
+                          <SelectItem key={email} value={email}>
+                            {email}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {loadingPedidos ? (
+                  <div className="flex justify-center py-12">
+                    <Loader2 className="w-8 h-8 animate-spin text-pink-600" />
+                  </div>
+                ) : pedidosFiltrados.length === 0 ? (
+                  <div className="text-center py-12">
+                    <ShoppingCart className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600">Nenhum pedido encontrado</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>ID Pedido</TableHead>
+                          <TableHead>Usuário</TableHead>
+                          <TableHead>Produto</TableHead>
+                          <TableHead>Valor Total</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Data</TableHead>
+                          <TableHead className="text-right">Ações</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {pedidosFiltrados.map((pedido) => {
+                          const StatusIcon = STATUS_INFO[pedido.status_pedido]?.icon || Clock;
+                          return (
+                            <TableRow key={pedido.id}>
+                              <TableCell className="font-medium">#{pedido.id.substring(0, 8)}</TableCell>
+                              <TableCell>
+                                <p className="font-medium">{pedido.usuario_nome}</p>
+                                <p className="text-sm text-gray-500">{pedido.usuario_email}</p>
+                              </TableCell>
+                              <TableCell>{pedido.produto_nome}</TableCell>
+                              <TableCell>R$ {pedido.valor_total?.toFixed(2)}</TableCell>
+                              <TableCell>
+                                <Badge className={STATUS_INFO[pedido.status_pedido]?.cor}>
+                                  <StatusIcon className="w-3 h-3 mr-1" />
+                                  {STATUS_INFO[pedido.status_pedido]?.label}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-sm">
+                                {pedido.created_date ? format(new Date(pedido.created_date), "dd/MM/yyyy HH:mm", { locale: ptBR }) : "-"}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex items-center justify-end gap-2">
+                                  {pedido.status_pedido === 'aguardando_pagamento' && (
+                                    <>
+                                      <Button
+                                        onClick={() => aprovarPedidoMutation.mutate(pedido.id)}
+                                        size="sm"
+                                        className="bg-green-600 hover:bg-green-700"
+                                      >
+                                        <CheckCircle className="w-4 h-4 mr-1" />
+                                        Aprovar
+                                      </Button>
+                                      <Button
+                                        onClick={() => rejeitarPedidoMutation.mutate(pedido.id)}
+                                        size="sm"
+                                        variant="outline"
+                                        className="border-red-300 text-red-700"
+                                      >
+                                        <XCircle className="w-4 h-4" />
+                                      </Button>
+                                    </>
+                                  )}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="banners">
-            <p className="text-gray-500 text-center py-12">Conteúdo mantido do arquivo original...</p>
+            <Card>
+              <CardHeader>
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <CardTitle>Banners ({bannersFiltrados.length})</CardTitle>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Buscar banner (título, empresa)"
+                      value={buscaBanner}
+                      onChange={(e) => setBuscaBanner(e.target.value)}
+                      className="max-w-xs"
+                    />
+                    <Select value={filtroStatusBanner} onValueChange={setFiltroStatusBanner}>
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Filtrar por status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={null}>Todos os Status</SelectItem>
+                        <SelectItem value="ativo">Ativo</SelectItem>
+                        <SelectItem value="pausado">Pausado</SelectItem>
+                        <SelectItem value="inativo">Inativo</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      onClick={exportarRelatorioBanners}
+                      variant="outline"
+                      size="sm"
+                      disabled={banners.length === 0}
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      PDF
+                    </Button>
+                    <Button
+                      onClick={enviarRelatorioBannersWhatsApp}
+                      variant="outline"
+                      size="sm"
+                      className="border-green-300 text-green-700"
+                    >
+                      <Send className="w-4 h-4 mr-2" />
+                      WhatsApp
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {loadingBanners ? (
+                  <div className="flex justify-center py-12">
+                    <Loader2 className="w-8 h-8 animate-spin text-pink-600" />
+                  </div>
+                ) : bannersFiltrados.length === 0 ? (
+                  <div className="text-center py-12">
+                    <ImageIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600">Nenhum banner encontrado</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Título</TableHead>
+                          <TableHead>Empresa</TableHead>
+                          <TableHead>Plano Patrocínio</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Visualizações</TableHead>
+                          <TableHead className="text-right">Ações</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {bannersFiltrados.map((banner) => {
+                          const StatusIcon = STATUS_INFO[banner.status]?.icon || Clock;
+                          return (
+                            <TableRow key={banner.id}>
+                              <TableCell className="font-medium">{banner.titulo}</TableCell>
+                              <TableCell>{banner.nome_empresa}</TableCell>
+                              <TableCell>
+                                <Badge className={PLANOS_INFO[banner.plano_patrocinador]?.cor || 'bg-gray-100 text-gray-800'}>
+                                  {PLANOS_INFO[banner.plano_patrocinador]?.nome || 'Nenhum'}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <Badge className={STATUS_INFO[banner.status]?.cor}>
+                                  <StatusIcon className="w-3 h-3 mr-1" />
+                                  {STATUS_INFO[banner.status]?.label}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>{banner.metricas?.visualizacoes || 0}</TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex items-center justify-end gap-2">
+                                  <Button size="sm" variant="outline" onClick={() => handleVerDetalhesBanner(banner)}>
+                                    <Eye className="w-4 h-4" />
+                                  </Button>
+                                  {banner.status !== 'ativo' && (
+                                    <Button size="sm" onClick={() => handleAlterarStatusBanner(banner, 'ativo')}>
+                                      <CheckCircle className="w-4 h-4" />
+                                    </Button>
+                                  )}
+                                  {banner.status !== 'pausado' && (
+                                    <Button size="sm" variant="outline" onClick={() => handleAlterarStatusBanner(banner, 'pausado')}>
+                                      <Clock className="w-4 h-4" />
+                                    </Button>
+                                  )}
+                                  <Button size="sm" variant="outline" className="border-red-300 text-red-700" onClick={() => handleExcluirBanner(banner)}>
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="posts">
-            <p className="text-gray-500 text-center py-12">Conteúdo mantido do arquivo original...</p>
+            <Card>
+              <CardHeader>
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <CardTitle>Posts do Blog ({postsFiltrados.length})</CardTitle>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Buscar post (título, autor)"
+                      value={buscaPost}
+                      onChange={(e) => setBuscaPost(e.target.value)}
+                      className="max-w-xs"
+                    />
+                    <Select value={filtroStatusPost} onValueChange={setFiltroStatusPost}>
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Filtrar por status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={null}>Todos os Status</SelectItem>
+                        <SelectItem value="publicado">Publicado</SelectItem>
+                        <SelectItem value="rascunho">Rascunho</SelectItem>
+                        <SelectItem value="programado">Programado</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      onClick={exportarRelatorioPosts}
+                      variant="outline"
+                      size="sm"
+                      disabled={posts.length === 0}
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      PDF
+                    </Button>
+                    <Button
+                      onClick={enviarRelatorioPostsWhatsApp}
+                      variant="outline"
+                      size="sm"
+                      className="border-green-300 text-green-700"
+                    >
+                      <Send className="w-4 h-4 mr-2" />
+                      WhatsApp
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {loadingPosts ? (
+                  <div className="flex justify-center py-12">
+                    <Loader2 className="w-8 h-8 animate-spin text-pink-600" />
+                  </div>
+                ) : postsFiltrados.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Newspaper className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600">Nenhum post encontrado</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Título</TableHead>
+                          <TableHead>Autor</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Visualizações</TableHead>
+                          <TableHead>Data Publicação</TableHead>
+                          <TableHead className="text-right">Ações</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {postsFiltrados.map((post) => {
+                          const StatusIcon = STATUS_INFO[post.status]?.icon || Clock;
+                          return (
+                            <TableRow key={post.id}>
+                              <TableCell className="font-medium max-w-[200px] whitespace-normal">
+                                <p className="truncate">{post.titulo}</p>
+                              </TableCell>
+                              <TableCell>{post.created_by}</TableCell>
+                              <TableCell>
+                                <Badge className={STATUS_INFO[post.status]?.cor}>
+                                  <StatusIcon className="w-3 h-3 mr-1" />
+                                  {STATUS_INFO[post.status]?.label}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>{post.visualizacoes || 0}</TableCell>
+                              <TableCell>
+                                {post.data_publicacao ? format(new Date(post.data_publicacao), "dd/MM/yyyy HH:mm", { locale: ptBR }) : "-"}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex items-center justify-end gap-2">
+                                  <Button size="sm" variant="outline" onClick={() => handleVerDetalhesPost(post)}>
+                                    <Eye className="w-4 h-4" />
+                                  </Button>
+                                  <Button size="sm" onClick={() => handleVerPostagemBlog(post)}>
+                                    <ExternalLink className="w-4 h-4" />
+                                  </Button>
+                                  {post.status !== 'publicado' && (
+                                    <Button size="sm" onClick={() => handleAlterarStatusPost(post, 'publicado')}>
+                                      <CheckCircle className="w-4 h-4" />
+                                    </Button>
+                                  )}
+                                  {post.status !== 'rascunho' && (
+                                    <Button size="sm" variant="outline" onClick={() => handleAlterarStatusPost(post, 'rascunho')}>
+                                      <FileText className="w-4 h-4" />
+                                    </Button>
+                                  )}
+                                  <Button size="sm" variant="outline" className="border-red-300 text-red-700" onClick={() => handleExcluirPost(post)}>
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
 
-        {/* Modals from original file are assumed to be here */}
+        {/* Modal Ativar Plano */}
+        <Dialog open={mostrarModalAtivar} onOpenChange={setMostrarModalAtivar}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Ativar Plano para {solicitacaoSelecionada?.usuario_nome}</DialogTitle>
+              <DialogDescription>
+                Confirme a ativação do plano {PLANOS_INFO[solicitacaoSelecionada?.plano_solicitado]?.nome} para o usuário.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <p>
+                <strong>Usuário:</strong> {solicitacaoSelecionada?.usuario_nome} ({solicitacaoSelecionada?.usuario_email})
+              </p>
+              <p>
+                <strong>Plano Solicitado:</strong>{" "}
+                <Badge className={PLANOS_INFO[solicitacaoSelecionada?.plano_solicitado]?.cor}>
+                  {PLANOS_INFO[solicitacaoSelecionada?.plano_solicitado]?.nome}
+                </Badge>
+              </p>
+              <div className="mt-4">
+                <Label htmlFor="observacoes">Observações (opcional)</Label>
+                <Textarea
+                  id="observacoes"
+                  placeholder="Ex: Pagamento confirmado via pix, brinde ativado..."
+                  value={observacoes}
+                  onChange={(e) => setObservacoes(e.target.value)}
+                  className="mt-2"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setMostrarModalAtivar(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleAtivarPlano} disabled={processando}>
+                {processando ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                )}
+                Ativar Plano
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Modal Trocar Plano */}
+        <Dialog open={mostrarModalTrocarPlano} onOpenChange={setMostrarModalTrocarPlano}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Trocar Plano do Usuário</DialogTitle>
+              <DialogDescription>
+                Selecione o novo plano para {planoSelecionadoUsuario?.full_name}.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <Label htmlFor="novoPlano">Novo Plano</Label>
+              <Select value={novoPlano} onValueChange={setNovoPlano}>
+                <SelectTrigger className="w-full mt-2">
+                  <SelectValue placeholder="Selecione um plano" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.keys(PLANOS_INFO).map((planoKey) => (
+                    <SelectItem key={planoKey} value={planoKey}>
+                      {PLANOS_INFO[planoKey].nome}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setMostrarModalTrocarPlano(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={confirmarTrocaPlano} disabled={trocarPlanoMutation.isPending}>
+                {trocarPlanoMutation.isPending ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Check className="mr-2 h-4 w-4" />
+                )}
+                Confirmar Troca
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Modal Editar Pontos */}
+        <Dialog open={mostrarModalPontos} onOpenChange={setMostrarModalPontos}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Ajustar Pontos e Beauty Coins</DialogTitle>
+              <DialogDescription>
+                Ajuste os pontos acumulados e Beauty Coins de {usuarioEditandoPontos?.full_name}.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4 space-y-4">
+              <div>
+                <Label htmlFor="novosPontos">Pontos Acumulados</Label>
+                <Input
+                  id="novosPontos"
+                  type="number"
+                  value={novosPontos}
+                  onChange={(e) => setNovosPontos(parseInt(e.target.value) || 0)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="novosBeautyCoins">Beauty Coins</Label>
+                <Input
+                  id="novosBeautyCoins"
+                  type="number"
+                  value={novosBeautyCoins}
+                  onChange={(e) => setNovosBeautyCoins(parseInt(e.target.value) || 0)}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setMostrarModalPontos(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={confirmarEditarPontos} disabled={atualizarPontosMutation.isPending}>
+                {atualizarPontosMutation.isPending ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Check className="mr-2 h-4 w-4" />
+                )}
+                Salvar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Modal Detalhes Banner */}
+        <Dialog open={mostrarDetalhesBanner} onOpenChange={setMostrarDetalhesBanner}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>{bannerSelecionado?.titulo}</DialogTitle>
+              <DialogDescription>Detalhes e ações para o banner.</DialogDescription>
+            </DialogHeader>
+            <div className="py-4 space-y-4">
+              {bannerSelecionado?.imagem_url && (
+                <img
+                  src={bannerSelecionado.imagem_url}
+                  alt={bannerSelecionado.titulo}
+                  className="w-full h-auto rounded-lg object-cover max-h-[300px]"
+                />
+              )}
+              <p><strong>Empresa:</strong> {bannerSelecionado?.nome_empresa}</p>
+              <p><strong>Link:</strong> <a href={bannerSelecionado?.link_redirecionamento} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">{bannerSelecionado?.link_redirecionamento}</a></p>
+              <p>
+                <strong>Status:</strong>{" "}
+                <Badge className={STATUS_INFO[bannerSelecionado?.status]?.cor}>
+                  {STATUS_INFO[bannerSelecionado?.status]?.label}
+                </Badge>
+              </p>
+              <p><strong>Visualizações:</strong> {bannerSelecionado?.metricas?.visualizacoes || 0}</p>
+              <p><strong>Cliques:</strong> {bannerSelecionado?.metricas?.cliques || 0}</p>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setMostrarDetalhesBanner(false)}>
+                Fechar
+              </Button>
+              {bannerSelecionado?.status !== 'ativo' && (
+                <Button onClick={() => handleAlterarStatusBanner(bannerSelecionado, 'ativo')}>Ativar</Button>
+              )}
+              {bannerSelecionado?.status !== 'pausado' && (
+                <Button variant="secondary" onClick={() => handleAlterarStatusBanner(bannerSelecionado, 'pausado')}>Pausar</Button>
+              )}
+              <Button variant="destructive" onClick={() => handleExcluirBanner(bannerSelecionado)}>Excluir</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Modal Detalhes Post */}
+        <Dialog open={mostrarDetalhesPost} onOpenChange={setMostrarDetalhesPost}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>{postSelecionado?.titulo}</DialogTitle>
+              <DialogDescription>Detalhes e ações para o post.</DialogDescription>
+            </DialogHeader>
+            <div className="py-4 space-y-4">
+              {postSelecionado?.imagem_capa_url && (
+                <img
+                  src={postSelecionado.imagem_capa_url}
+                  alt={postSelecionado.titulo}
+                  className="w-full h-auto rounded-lg object-cover max-h-[300px]"
+                />
+              )}
+              <p><strong>Autor:</strong> {postSelecionado?.created_by}</p>
+              <p><strong>Categoria:</strong> {postSelecionado?.categoria}</p>
+              <p>
+                <strong>Status:</strong>{" "}
+                <Badge className={STATUS_INFO[postSelecionado?.status]?.cor}>
+                  {STATUS_INFO[postSelecionado?.status]?.label}
+                </Badge>
+              </p>
+              <p><strong>Descrição:</strong> {postSelecionado?.descricao_curta}</p>
+              <p><strong>Visualizações:</strong> {postSelecionado?.visualizacoes || 0}</p>
+              <p><strong>Curtidas:</strong> {postSelecionado?.total_curtidas || 0}</p>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setMostrarDetalhesPost(false)}>
+                Fechar
+              </Button>
+              <Button onClick={() => handleVerPostagemBlog(postSelecionado)}>Ver no Blog</Button>
+              {postSelecionado?.status !== 'publicado' && (
+                <Button onClick={() => handleAlterarStatusPost(postSelecionado, 'publicado')}>Publicar</Button>
+              )}
+              {postSelecionado?.status !== 'rascunho' && (
+                <Button variant="secondary" onClick={() => handleAlterarStatusPost(postSelecionado, 'rascunho')}>Mover para Rascunho</Button>
+              )}
+              <Button variant="destructive" onClick={() => handleExcluirPost(postSelecionado)}>Excluir</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Modal Notificação (para enviar novidade) */}
+        <Dialog open={mostrarModalAtualizacao} onOpenChange={setMostrarModalAtualizacao}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Bell className="w-6 h-6 text-blue-600" /> Enviar Notificação/Atualização
+              </DialogTitle>
+              <DialogDescription>
+                Crie e agende uma novidade para todos os usuários do sistema.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4 space-y-4">
+              <div>
+                <Label htmlFor="tituloAtualizacao">Título da Novidade *</Label>
+                <Input
+                  id="tituloAtualizacao"
+                  placeholder="Ex: Nova funcionalidade de busca"
+                  value={tituloAtualizacao}
+                  onChange={(e) => setTituloAtualizacao(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="descricaoAtualizacao">Descrição Curta *</Label>
+                <Textarea
+                  id="descricaoAtualizacao"
+                  placeholder="Resumo da novidade para a notificação"
+                  value={descricaoAtualizacao}
+                  onChange={(e) => setDescricaoAtualizacao(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="conteudoAtualizacao">Conteúdo Detalhado (opcional)</Label>
+                <Textarea
+                  id="conteudoAtualizacao"
+                  placeholder="Detalhes completos sobre a novidade (será exibido em uma página específica)"
+                  value={conteudoAtualizacao}
+                  onChange={(e) => setConteudoAtualizacao(e.target.value)}
+                  rows={5}
+                />
+              </div>
+              <div>
+                <Label className="block mb-2">Agendar Publicação (Opcional)</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={`w-full justify-start text-left font-normal ${!dataAgendamento && "text-muted-foreground"}`}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {dataAgendamento ? format(dataAgendamento, "PPP", { locale: ptBR }) : <span>Selecione uma data</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={dataAgendamento}
+                      onSelect={setDataAgendamento}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                <p className="text-sm text-gray-500 mt-1">
+                  Se uma data for selecionada, a novidade será publicada e as notificações enviadas somente nesse dia.
+                </p>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setMostrarModalAtualizacao(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleEnviarAtualizacao} disabled={enviandoAtualizacao}>
+                {enviandoAtualizacao ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="mr-2 h-4 w-4" />
+                )}
+                Enviar Novidade
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Modal Agendamento (forçada) */}
+        <Dialog open={mostrarModalAgendarForcada} onOpenChange={setMostrarModalAgendarForcada}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Rocket className="w-6 h-6 text-red-600" /> Agendar Atualização Forçada
+              </DialogTitle>
+              <DialogDescription>
+                Agende um horário para forçar o recarregamento do site para todos os usuários.
+                Use com cautela!
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4 space-y-4">
+              <div>
+                <Label htmlFor="tituloAgendamentoForcada">Título da Atualização *</Label>
+                <Input
+                  id="tituloAgendamentoForcada"
+                  placeholder="Ex: Manutenção agendada"
+                  value={tituloAgendamentoForcada}
+                  onChange={(e) => setTituloAgendamentoForcada(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="descricaoAgendamentoForcada">Descrição (opcional)</Label>
+                <Textarea
+                  id="descricaoAgendamentoForcada"
+                  placeholder="Breve descrição do motivo do recarregamento."
+                  value={descricaoAgendamentoForcada}
+                  onChange={(e) => setDescricaoAgendamentoForcada(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label className="block mb-2">Data e Hora do Agendamento *</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={`w-full justify-start text-left font-normal ${!dataAgendamentoForcada && "text-muted-foreground"}`}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {dataAgendamentoForcada ? format(dataAgendamentoForcada, "dd/MM/yyyy HH:mm", { locale: ptBR }) : <span>Selecione data e hora</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={dataAgendamentoForcada}
+                      onSelect={setDataAgendamentoForcada}
+                      initialFocus
+                    />
+                    <div className="p-3 border-t border-gray-200">
+                      <Input
+                        type="time"
+                        value={dataAgendamentoForcada ? format(dataAgendamentoForcada, "HH:mm") : "00:00"}
+                        onChange={(e) => {
+                          const [hours, minutes] = e.target.value.split(':');
+                          const newDate = dataAgendamentoForcada ? new Date(dataAgendamentoForcada) : new Date();
+                          newDate.setHours(parseInt(hours), parseInt(minutes));
+                          setDataAgendamentoForcada(newDate);
+                        }}
+                      />
+                    </div>
+                  </PopoverContent>
+                </Popover>
+                <p className="text-sm text-gray-500 mt-1">
+                  A atualização será forçada na data e hora selecionadas.
+                </p>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setMostrarModalAgendarForcada(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleAgendarAtualizacaoForcada} disabled={agendarAtualizacaoForcadaMutation.isPending}>
+                {agendarAtualizacaoForcadaMutation.isPending ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Rocket className="mr-2 h-4 w-4" />
+                )}
+                Agendar Forçada
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Modal Detalhes Anúncio */}
+        <Dialog open={mostrarDetalhesAnuncio} onOpenChange={setMostrarDetalhesAnuncio}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>{anuncioSelecionado?.titulo}</DialogTitle>
+              <DialogDescription>Detalhes e ações para o anúncio.</DialogDescription>
+            </DialogHeader>
+            <div className="py-4 space-y-4">
+              <p><strong>Profissional:</strong> {anuncioSelecionado?.profissional} ({anuncioSelecionado?.created_by})</p>
+              <p><strong>Status:</strong> <Badge className={STATUS_INFO[anuncioSelecionado?.status]?.cor}>{STATUS_INFO[anuncioSelecionado?.status]?.label}</Badge></p>
+              <p><strong>Exposição:</strong> {calcularTempoRestante(anuncioSelecionado)}</p>
+              <p><strong>Visualizações:</strong> {anuncioSelecionado?.visualizacoes || 0}</p>
+              <p><strong>Impulsionado:</strong> {anuncioSelecionado?.impulsionado ? "Sim" : "Não"}</p>
+              {anuncioSelecionado?.descricao && (
+                <div>
+                  <strong>Descrição:</strong>
+                  <p className="text-sm text-gray-700">{anuncioSelecionado.descricao}</p>
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setMostrarDetalhesAnuncio(false)}>
+                Fechar
+              </Button>
+              <Button onClick={() => handleEditarAnuncio(anuncioSelecionado)}>
+                <Edit className="w-4 h-4 mr-1" />
+                Editar
+              </Button>
+              {anuncioSelecionado?.status === 'ativo' && (
+                <Button variant="secondary" onClick={() => handleAlterarStatusAnuncio(anuncioSelecionado, 'pausado')}>
+                  <Clock className="w-4 h-4 mr-1" />
+                  Pausar
+                </Button>
+              )}
+              {anuncioSelecionado?.status !== 'ativo' && (
+                <Button onClick={() => handleAlterarStatusAnuncio(anuncioSelecionado, 'ativo')}>
+                  <CheckCircle className="w-4 h-4 mr-1" />
+                  Ativar
+                </Button>
+              )}
+              <Button onClick={() => handleEstenderTempoExposicao(anuncioSelecionado)}>
+                <CalendarIcon className="w-4 h-4 mr-1" /> Estender
+              </Button>
+              <Button variant="destructive" onClick={() => handleExcluirAnuncio(anuncioSelecionado)}>
+                <Trash2 className="w-4 h-4 mr-1" /> Excluir
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Modal Tutorial */}
+        <Dialog open={mostrarTutorialDrBeleza} onOpenChange={setMostrarTutorialDrBeleza}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <MessageCircle className="w-6 h-6 text-cyan-600" /> Tutorial
+              </DialogTitle>
+              <DialogDescription>
+                Aprenda a usar o chat do Dr. Beleza para gerar mensagens.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <h3 className="text-lg font-semibold mb-2">Como usar o chat do Dr. Beleza:</h3>
+              <ul className="list-disc pl-5 space-y-2 text-gray-700">
+                <li>
+                  <strong className="text-cyan-600">Para mensagens de marketing:</strong> Peça para ele criar posts para redes sociais, campanhas de e-mail marketing, textos para anúncios.
+                  <br />Ex: "Crie 3 posts para Instagram sobre o verão e cuidados com a pele."
+                </li>
+                <li>
+                  <strong className="text-cyan-600">Para respostas a pacientes:</strong> Use para gerar respostas educadas e informativas para perguntas comuns de pacientes.
+                  <br />Ex: "Elabore uma resposta para um paciente perguntando sobre os efeitos colaterais do preenchimento labial."
+                </li>
+                <li>
+                  <strong className="text-cyan-600">Para criação de conteúdo:</strong> Ajuda a desenvolver ideias para artigos de blog, roteiros para vídeos ou FAQs.
+                  <br />Ex: "Liste 5 tópicos para um artigo de blog sobre 'harmonização facial para iniciantes'."
+                </li>
+                <li>
+                  <strong className="text-cyan-600">Para otimização de perfil:</strong> Peça sugestões para melhorar a descrição do perfil, título do anúncio, etc.
+                  <br />Ex: "Sugira 3 títulos criativos para um anúncio de clínica de estética."
+                </li>
+              </ul>
+              <p className="mt-4 text-sm text-gray-600 italic">
+                Lembre-se: O Dr. Beleza é uma ferramenta de apoio. Sempre revise e personalize as sugestões para garantir que estejam alinhadas com sua voz e a realidade do seu negócio.
+              </p>
+            </div>
+            <DialogFooter>
+              <Button onClick={() => setMostrarTutorialDrBeleza(false)}>Fechar</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* NOVO: Modal Criar Nova Versão */}
         <Dialog open={mostrarModalNovaVersao} onOpenChange={setMostrarModalNovaVersao}>
@@ -2624,33 +4178,6 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
             </DialogFooter>
           </DialogContent>
         </Dialog>
-
-        {/* Modal Ativar Plano */}
-        {/* Placeholder - assuming other modals existed before this change and are kept. */}
-
-        {/* Modal Trocar Plano */}
-        {/* Placeholder - assuming other modals existed before this change and are kept. */}
-
-        {/* Modal Editar Pontos */}
-        {/* Placeholder - assuming other modals existed before this change and are kept. */}
-
-        {/* Modal Detalhes Banner */}
-        {/* Placeholder - assuming other modals existed before this change and are kept. */}
-
-        {/* Modal Detalhes Post */}
-        {/* Placeholder - assuming other modals existed before this change and are kept. */}
-
-        {/* Modal Agendamento (forçada) */}
-        {/* Placeholder - assuming other modals existed before this change and are kept. */}
-
-        {/* Modal Notificação (para enviar novidade) */}
-        {/* Placeholder - assuming other modals existed before this change and are kept. */}
-
-        {/* Modal Detalhes Anúncio */}
-        {/* Placeholder - assuming other modals existed before this change and are kept. */}
-
-        {/* Modal Tutorial */}
-        {/* Placeholder - assuming other modals existed before this change and are kept. */}
 
         {/* Modal Editar Usuário Completo (from the outline) */}
         <Dialog open={mostrarModalEditarUsuario} onOpenChange={setMostrarModalEditarUsuario}>
