@@ -165,6 +165,11 @@ export default function ControleAdmin() {
   const [buscaAnuncio, setBuscaAnuncio] = useState("");
   const [filtroStatusAnuncio, setFiltroStatusAnuncio] = useState("");
 
+  // NOVO: Estados para aba Todos os Usuários
+  const [buscaTodosUsuarios, setBuscaTodosUsuarios] = useState("");
+  const [filtroTipoUsuario, setFiltroTipoUsuario] = useState("");
+  const [filtroRole, setFiltroRole] = useState("");
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -437,6 +442,7 @@ Bem-vindo(a)! 💆‍♀️
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['usuarios-profissionais'] });
+      queryClient.invalidateQueries({ queryKey: ['todos-usuarios'] });
       setSucesso("Plano atualizado!");
       setTimeout(() => setSucesso(null), 3000);
       setMostrarModalTrocarPlano(false);
@@ -1561,6 +1567,95 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
   const usuariosClube = todosUsuarios.filter(u => u.plano_clube_beleza && u.plano_clube_beleza !== 'nenhum');
   const usuariosPatrocinadores = todosUsuarios.filter(u => u.plano_patrocinador && u.plano_patrocinador !== 'nenhum');
 
+  // NOVO: Filtro para Todos os Usuários
+  const todosUsuariosFiltrados = todosUsuarios.filter(u => {
+    const matchBusca = !buscaTodosUsuarios || 
+      u.full_name?.toLowerCase().includes(buscaTodosUsuarios.toLowerCase()) ||
+      u.email?.toLowerCase().includes(buscaTodosUsuarios.toLowerCase());
+    const matchTipo = !filtroTipoUsuario || u.tipo_usuario === filtroTipoUsuario;
+    const matchRole = !filtroRole || u.role === filtroRole;
+    return matchBusca && matchTipo && matchRole;
+  });
+
+  // NOVO: Exportar relatório de todos os usuários
+  const exportarRelatorioTodosUsuarios = () => {
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Relatório de Todos os Usuários</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; }
+          h1 { color: #EC4899; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+          th { background: #EC4899; color: white; }
+        </style>
+      </head>
+      <body>
+        <h1>👥 Relatório de Todos os Usuários</h1>
+        <p>Gerado em ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR })}</p>
+        <p><strong>Total:</strong> ${todosUsuariosFiltrados.length}</p>
+        <p><strong>Profissionais:</strong> ${todosUsuariosFiltrados.filter(u => u.tipo_usuario === 'profissional').length}</p>
+        <p><strong>Pacientes:</strong> ${todosUsuariosFiltrados.filter(u => u.tipo_usuario === 'paciente').length}</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Email</th>
+              <th>Tipo</th>
+              <th>Role</th>
+              <th>Cadastro Completo</th>
+              <th>Data Cadastro</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${todosUsuariosFiltrados.map(u => `
+              <tr>
+                <td>${u.full_name}</td>
+                <td>${u.email}</td>
+                <td>${u.tipo_usuario || 'N/D'}</td>
+                <td>${u.role || 'user'}</td>
+                <td>${u.cadastro_completo ? 'Sim' : 'Não'}</td>
+                <td>${u.created_date ? format(new Date(u.created_date), "dd/MM/yyyy", { locale: ptBR }) : "-"}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </body>
+      </html>
+    `;
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `todos-usuarios-${format(new Date(), "yyyy-MM-dd")}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // NOVO: Enviar relatório via WhatsApp
+  const enviarRelatorioTodosUsuariosWhatsApp = () => {
+    const mensagem = `
+📊 *RELATÓRIO DE USUÁRIOS*
+Data: ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+
+📈 *RESUMO:*
+Total: ${todosUsuariosFiltrados.length}
+Profissionais: ${todosUsuariosFiltrados.filter(u => u.tipo_usuario === 'profissional').length}
+Pacientes: ${todosUsuariosFiltrados.filter(u => u.tipo_usuario === 'paciente').length}
+Admins: ${todosUsuariosFiltrados.filter(u => u.role === 'admin').length}
+Testers: ${todosUsuariosFiltrados.filter(u => u.role === 'tester').length}
+
+📋 *CADASTROS:*
+Completos: ${todosUsuariosFiltrados.filter(u => u.cadastro_completo).length}
+Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
+    `.trim();
+    
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(mensagem)}`, '_blank');
+  };
+
   const usuariosUnicos = [...new Set(pedidos.map(p => p.usuario_email))].sort();
   const pedidosPendentes = pedidosFiltrados.filter(p => p.status_pedido === 'aguardando_pagamento');
 
@@ -1889,7 +1984,7 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
           {/* ============================================ */}
           <TabsContent value="planos">
             <Tabs defaultValue="solicitacoes" className="w-full">
-              <TabsList className="w-full mb-6 grid grid-cols-2 md:grid-cols-6 gap-1">
+              <TabsList className="w-full mb-6 grid grid-cols-2 md:grid-cols-7 gap-1">
                 <TabsTrigger value="solicitacoes" className="text-xs sm:text-sm">
                   <CreditCard className="w-4 h-4 mr-2" />
                   Solicitações ({solicitacoesPlanos.length})
@@ -1913,6 +2008,10 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
                 <TabsTrigger value="patrocinadores" className="text-xs sm:text-sm">
                   <Users className="w-4 h-4 mr-2" />
                   Patrocinadores ({usuariosPatrocinadores.length})
+                </TabsTrigger>
+                <TabsTrigger value="todos-usuarios" className="text-xs sm:text-sm">
+                  <Users className="w-4 h-4 mr-2" />
+                  Todos ({todosUsuarios.length})
                 </TabsTrigger>
               </TabsList>
 
@@ -2808,6 +2907,286 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
                   </CardContent>
                 </Card>
               </TabsContent>
+
+              {/* NOVA Sub-aba: Todos os Usuários */}
+              <TabsContent value="todos-usuarios">
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2">
+                        <Users className="w-6 h-6 text-indigo-600" />
+                        Todos os Usuários Cadastrados
+                      </CardTitle>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={exportarRelatorioTodosUsuarios}
+                          variant="outline"
+                          size="sm"
+                          disabled={todosUsuariosFiltrados.length === 0}
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          PDF
+                        </Button>
+                        <Button
+                          onClick={enviarRelatorioTodosUsuariosWhatsApp}
+                          variant="outline"
+                          size="sm"
+                          className="border-green-300 text-green-700"
+                        >
+                          <Send className="w-4 h-4 mr-2" />
+                          WhatsApp
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {/* Stats Cards */}
+                    <div className="grid md:grid-cols-4 gap-4 mb-6">
+                      <Card className="border-none shadow-lg">
+                        <CardContent className="p-6">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm text-gray-600">Total</p>
+                              <p className="text-3xl font-bold text-gray-900">{todosUsuariosFiltrados.length}</p>
+                            </div>
+                            <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
+                              <Users className="w-6 h-6 text-indigo-600" />
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="border-none shadow-lg">
+                        <CardContent className="p-6">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm text-gray-600">Profissionais</p>
+                              <p className="text-3xl font-bold text-purple-600">{todosUsuariosFiltrados.filter(u => u.tipo_usuario === 'profissional').length}</p>
+                            </div>
+                            <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                              <User className="w-6 h-6 text-purple-600" />
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="border-none shadow-lg">
+                        <CardContent className="p-6">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm text-gray-600">Pacientes</p>
+                              <p className="text-3xl font-bold text-blue-600">{todosUsuariosFiltrados.filter(u => u.tipo_usuario === 'paciente').length}</p>
+                            </div>
+                            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                              <User className="w-6 h-6 text-blue-600" />
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="border-none shadow-lg">
+                        <CardContent className="p-6">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm text-gray-600">Cadastros Incompletos</p>
+                              <p className="text-3xl font-bold text-yellow-600">{todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}</p>
+                            </div>
+                            <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
+                              <AlertCircle className="w-6 h-6 text-yellow-600" />
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    {/* Filtros */}
+                    <Card className="mb-6 border-none shadow-lg bg-gray-50">
+                      <CardContent className="p-4">
+                        <div className="grid md:grid-cols-3 gap-4">
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">Buscar</label>
+                            <div className="relative">
+                              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                              <Input
+                                placeholder="Nome ou email..."
+                                value={buscaTodosUsuarios}
+                                onChange={(e) => setBuscaTodosUsuarios(e.target.value)}
+                                className="pl-10"
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">Tipo de Usuário</label>
+                            <Select value={filtroTipoUsuario} onValueChange={setFiltroTipoUsuario}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Todos" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value={null}>Todos</SelectItem>
+                                <SelectItem value="paciente">Paciente</SelectItem>
+                                <SelectItem value="profissional">Profissional</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">Role</label>
+                            <Select value={filtroRole} onValueChange={setFiltroRole}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Todos" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value={null}>Todos</SelectItem>
+                                <SelectItem value="user">User</SelectItem>
+                                <SelectItem value="admin">Admin</SelectItem>
+                                <SelectItem value="tester">Tester</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Tabela de Todos os Usuários */}
+                    {loadingTodosUsuarios ? (
+                      <div className="flex justify-center py-12">
+                        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+                      </div>
+                    ) : todosUsuariosFiltrados.length === 0 ? (
+                      <div className="text-center py-12">
+                        <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-600">Nenhum usuário encontrado</p>
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Usuário</TableHead>
+                              <TableHead>Contato</TableHead>
+                              <TableHead>Tipo/Role</TableHead>
+                              <TableHead>Planos</TableHead>
+                              <TableHead>Pontos/Coins</TableHead>
+                              <TableHead>Cadastro</TableHead>
+                              <TableHead className="text-right">Ações</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {todosUsuariosFiltrados.map((usuario) => (
+                              <TableRow key={usuario.id}>
+                                <TableCell>
+                                  <div>
+                                    <p className="font-medium">{usuario.full_name}</p>
+                                    <p className="text-sm text-gray-500">{usuario.email}</p>
+                                    {usuario.cidade && usuario.estado && (
+                                      <p className="text-xs text-gray-400">{usuario.cidade}, {usuario.estado}</p>
+                                    )}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="text-sm">
+                                    {usuario.telefone && <p>{usuario.telefone}</p>}
+                                    {usuario.whatsapp && (
+                                      <p className="text-green-600">WhatsApp: {usuario.whatsapp}</p>
+                                    )}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="space-y-1">
+                                    {usuario.tipo_usuario && (
+                                      <Badge className={usuario.tipo_usuario === 'paciente' ? "bg-blue-100 text-blue-800" : "bg-purple-100 text-purple-800"}>
+                                        {usuario.tipo_usuario}
+                                      </Badge>
+                                    )}
+                                    {usuario.role && usuario.role !== 'user' && (
+                                      <Badge className={
+                                        usuario.role === 'admin' ? "bg-red-100 text-red-800" :
+                                        usuario.role === 'tester' ? "bg-yellow-100 text-yellow-800" :
+                                        "bg-gray-100 text-gray-800"
+                                      }>
+                                        {usuario.role}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="text-sm space-y-1">
+                                    {usuario.plano_ativo && (
+                                      <Badge className={PLANOS_INFO[usuario.plano_ativo]?.cor}>
+                                        Mapa: {PLANOS_INFO[usuario.plano_ativo]?.nome}
+                                      </Badge>
+                                    )}
+                                    {usuario.plano_clube_beleza && usuario.plano_clube_beleza !== 'nenhum' && (
+                                      <Badge className="bg-purple-100 text-purple-800">
+                                        Clube: {usuario.plano_clube_beleza}
+                                      </Badge>
+                                    )}
+                                    {usuario.plano_patrocinador && usuario.plano_patrocinador !== 'nenhum' && (
+                                      <Badge className="bg-blue-100 text-blue-800">
+                                        Pat: {usuario.plano_patrocinador}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="text-sm">
+                                    <p className="flex items-center gap-1">
+                                      <Star className="w-3 h-3 text-yellow-500" />
+                                      {usuario.pontos_acumulados || 0} pts
+                                    </p>
+                                    <p className="flex items-center gap-1">
+                                      <DollarSign className="w-3 h-3 text-purple-500" />
+                                      {usuario.beauty_coins || 0} BC
+                                    </p>
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="text-sm">
+                                    <Badge className={usuario.cadastro_completo ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}>
+                                      {usuario.cadastro_completo ? "Completo" : "Incompleto"}
+                                    </Badge>
+                                    {usuario.created_date && (
+                                      <p className="text-xs text-gray-500 mt-1">
+                                        {format(new Date(usuario.created_date), "dd/MM/yyyy", { locale: ptBR })}
+                                      </p>
+                                    )}
+                                  </div>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  <div className="flex items-center justify-end gap-2">
+                                    <Button
+                                      onClick={() => handleEditarPontos(usuario)}
+                                      size="sm"
+                                      variant="outline"
+                                      className="border-purple-300 text-purple-700"
+                                    >
+                                      <Star className="w-4 h-4 mr-1" />
+                                      Editar
+                                    </Button>
+                                    {usuario.whatsapp && (
+                                      <Button
+                                        onClick={() => {
+                                          const mensagem = `Olá ${usuario.full_name}! Aqui é o suporte do Mapa da Estética.`;
+                                          window.open(`https://wa.me/${usuario.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(mensagem)}`, '_blank');
+                                        }}
+                                        size="sm"
+                                        className="bg-green-600 hover:bg-green-700"
+                                      >
+                                        <MessageCircle className="w-4 h-4" />
+                                      </Button>
+                                    )}
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
             </Tabs>
           </TabsContent>
 
@@ -3387,8 +3766,8 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
                     <div>
                       <p className="text-sm text-gray-600">Publicados</p>
                       <p className="text-3xl font-bold text-green-600">{postsFiltrados.filter(p => p.status === 'publicado').length}</p>
-                    </div>
-                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                            </div>
+                            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
                       <CheckCircle className="w-6 h-6 text-green-600" />
                     </div>
                   </div>
@@ -4819,6 +5198,17 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
                         <li>Quantidade de banners e posts de cada uno</li>
                         <li><strong>Editar Pontos:</strong> Gerenciar benefícios</li>
                         <li><strong>WhatsApp:</strong> Contato direto com patrocinador</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <p className="font-semibold text-purple-800 mb-2">🔹 Todos os Usuários:</p>
+                      <ul className="list-disc ml-6 space-y-1 text-gray-700">
+                        <li>Lista de todos os usuários (profissionais e pacientes)</li>
+                        <li><strong>Filtros:</strong> Buscar por nome/email, tipo e role</li>
+                        <li><strong>Editar Pontos:</strong> Ajustar pontos e Beauty Coins</li>
+                        <li><strong>WhatsApp:</strong> Contato direto com o usuário</li>
+                        <li><strong>Exportar PDF/WhatsApp:</strong> Gerar relatório com filtros</li>
                       </ul>
                     </div>
                   </div>
