@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -196,6 +195,131 @@ const planos = [
     ],
     observacao: "💎 Condições especiais ao assinar o Cloud IA no plano DELUXE - Créditos a mais sob consulta",
     naoInclui: []
+  }
+];
+
+// Planos de Patrocinadores
+const planosPatrocinadores = [
+  {
+    nome: "COBRE",
+    tipo: "cobre",
+    preco: "R$ 97/mês",
+    precoNumerico: 97,
+    minContratacao: "90 dias",
+    pacotes: "3, 6 ou 12 meses",
+    cor: "from-orange-400 to-amber-600",
+    icone: Star,
+    destaque: false,
+    linkPagamento: "https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=64f4c445e58443728fa6a1f17b709f77",
+    beneficios: [
+      "Logo na home page",
+      "1 banner rotativo",
+      "Link para site/redes sociais",
+      "Destaque em busca",
+      "Relatório mensal",
+      "Suporte básico"
+    ]
+  },
+  {
+    nome: "PRATA",
+    tipo: "prata",
+    preco: "R$ 297/mês",
+    precoNumerico: 297,
+    minContratacao: "90 dias",
+    pacotes: "3, 6 ou 12 meses",
+    cor: "from-gray-300 to-gray-500",
+    icone: Star,
+    destaque: false,
+    linkPagamento: "https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=3dc10d6629d0434b9ca9508a5cd29b14",
+    beneficios: [
+      "Logo destacado na home",
+      "5 banners rotativos",
+      "Link para site/redes sociais",
+      "Produtos na loja (a partir do Prata)",
+      "Prioridade alta em buscas",
+      "Post mensal no blog",
+      "Relatório mensal",
+      "Suporte prioritário"
+    ]
+  },
+  {
+    nome: "OURO",
+    tipo: "ouro",
+    preco: "R$ 497/mês",
+    precoNumerico: 497,
+    minContratacao: "90 dias",
+    pacotes: "3, 6 ou 12 meses",
+    cor: "from-yellow-400 to-amber-500",
+    icone: Crown,
+    destaque: true,
+    linkPagamento: "https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=7a61721455d54390b2ab88cb00359c33",
+    beneficios: [
+      "Logo premium na home",
+      "10 banners rotativos",
+      "Produtos na loja",
+      "Seção exclusiva de patrocinador",
+      "Artigos mensais no blog",
+      "Espaço Golden Doctors",
+      "Prioridade máxima em buscas",
+      "Campanhas personalizadas",
+      "Relatório semanal",
+      "Suporte prioritário"
+    ]
+  },
+  {
+    nome: "DIAMANTE",
+    tipo: "diamante",
+    preco: "R$ 997/mês",
+    precoNumerico: 997,
+    minContratacao: "90 dias",
+    pacotes: "3, 6 ou 12 meses",
+    cor: "from-blue-400 to-cyan-500",
+    icone: Gem,
+    destaque: false,
+    linkPagamento: "https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=a56e5ac52e244ea5a987d3138b7114c6",
+    beneficios: [
+      "Logo destaque máximo",
+      "15 banners rotativos",
+      "Produtos na loja",
+      "Seção exclusiva premium",
+      "2 artigos mensais no blog",
+      "Espaço Golden Doctors",
+      "Até 200 pacientes (Cloud.IA) - R$ 697",
+      "Campanhas de email marketing",
+      "Prioridade absoluta com assistente de vendas virtual 24h",
+      "Relatório semanal",
+      "Dashboards personalizados"
+    ],
+    observacao: "💎 Condições especiais ao assinar o Cloud IA no plano DIAMANTE - Créditos a mais sob consulta"
+  },
+  {
+    nome: "PLATINA",
+    tipo: "platina",
+    preco: "R$ 1.997/mês",
+    precoNumerico: 1997,
+    minContratacao: "90 dias",
+    pacotes: "3, 6 ou 12 meses",
+    cor: "from-purple-500 to-pink-600",
+    icone: Zap,
+    destaque: false,
+    linkPagamento: "https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=adde87a060b34328a11e5cd77f56fbd8",
+    beneficios: [
+      "Parceria estratégica completa",
+      "Banners ilimitados",
+      "Produtos na loja",
+      "Smart Clinic R$ 298 + R$ 399 (e Cloud IA) - Incluídos",
+      "Cloud.IA sem integração de sistemas internos (sob consulta)",
+      "Programa de Afiliado",
+      "Clube Golden Doctors",
+      "Conteúdo ilimitado no blog",
+      "Campanhas de performance",
+      "Integração API completa",
+      "Assistente de Marketing Virtual",
+      "Relatórios em tempo real",
+      "Dashboards personalizados",
+      "Primeiro a saber novidades"
+    ],
+    observacao: "💎 Condições especiais ao assinar o Cloud IA no plano PLATINA - Créditos a mais sob consulta"
   }
 ];
 

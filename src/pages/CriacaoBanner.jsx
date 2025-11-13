@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
@@ -174,19 +175,15 @@ export default function CriacaoBanner() {
   }, [navigate]);
 
   const handleAjudaTitulo = async () => {
-    if (!formData.descricao) {
-      setErro("Escreva uma descrição primeiro para gerar o título!");
-      setTimeout(() => setErro(null), 3000);
-      return;
-    }
-
     setGerandoIA(true);
     try {
+      const contexto = formData.descricao || `empresa de estética chamada ${formData.nome_empresa}`;
+      
       const resposta = await base44.integrations.Core.InvokeLLM({
         prompt: `Você é o Dr. Beleza, um assistente especializado em marketing de estética.
 
-DESCRIÇÃO DO BANNER:
-"${formData.descricao}"
+CONTEXTO: ${contexto}
+EMPRESA: ${formData.nome_empresa}
 
 TAREFA: Crie um título ATRAENTE e PROFISSIONAL para este banner publicitário.
 
@@ -200,6 +197,7 @@ Retorne APENAS o título, sem aspas ou explicações.`
       });
 
       setFormData({ ...formData, titulo: resposta.trim() });
+      setErro(null);
     } catch (error) {
       setErro("Erro ao gerar título com IA");
       setTimeout(() => setErro(null), 3000);
@@ -209,19 +207,15 @@ Retorne APENAS o título, sem aspas ou explicações.`
   };
 
   const handleAjudaDescricao = async () => {
-    if (!formData.titulo) {
-      setErro("Escreva um título primeiro para gerar a descrição!");
-      setTimeout(() => setErro(null), 3000);
-      return;
-    }
-
     setGerandoIA(true);
     try {
+      const contexto = formData.titulo || `banner para ${formData.nome_empresa}`;
+      
       const resposta = await base44.integrations.Core.InvokeLLM({
         prompt: `Você é o Dr. Beleza, um assistente especializado em marketing de estética.
 
-TÍTULO DO BANNER:
-"${formData.titulo}"
+CONTEXTO: ${contexto}
+EMPRESA: ${formData.nome_empresa}
 
 TAREFA: Crie uma descrição PERSUASIVA e PROFISSIONAL para este banner publicitário.
 
@@ -236,6 +230,7 @@ Retorne APENAS a descrição, sem aspas ou explicações.`
       });
 
       setFormData({ ...formData, descricao: resposta.trim() });
+      setErro(null);
     } catch (error) {
       setErro("Erro ao gerar descrição com IA");
       setTimeout(() => setErro(null), 3000);
@@ -316,15 +311,9 @@ Dimensions: ${dimensoesPorPlano[formData.plano_patrocinador].largura}x${dimensoe
   };
 
   const handleGerarImagem = async () => {
-    if (!formData.titulo && !formData.descricao) {
-      setErro("Preencha o título ou descrição primeiro!");
-      setTimeout(() => setErro(null), 3000);
-      return;
-    }
-
     setGerandoImagem(true);
     try {
-      const conteudo = `${formData.titulo || ''} ${formData.descricao || ''}`.trim();
+      const conteudo = formData.titulo || formData.descricao || `Banner profissional para ${formData.nome_empresa}`;
       const promptImagem = `Professional elegant banner for an aesthetic clinic. 
 Theme: ${conteudo}. 
 Company: ${formData.nome_empresa}.
@@ -337,6 +326,7 @@ Dimensions: ${dimensoesPorPlano[formData.plano_patrocinador].largura}x${dimensoe
       });
 
       setFormData({ ...formData, imagem_banner: url });
+      setErro(null);
     } catch (error) {
       console.error("Erro ao gerar imagem:", error);
       setErro("Erro ao gerar imagem. Tente novamente.");
@@ -516,10 +506,10 @@ Dimensions: ${dimensoesPorPlano[formData.plano_patrocinador].largura}x${dimensoe
               <Button
                 type="button"
                 onClick={handleGerarBannerCompleto}
-                disabled={gerandoIA || !formData.nome_empresa}
+                disabled={gerandoIA || gerandoImagem}
                 className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
               >
-                {gerandoIA ? (
+                {(gerandoIA || gerandoImagem) ? (
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 ) : (
                   <Wand2 className="w-4 h-4 mr-2" />
@@ -530,7 +520,7 @@ Dimensions: ${dimensoesPorPlano[formData.plano_patrocinador].largura}x${dimensoe
               <Button
                 type="button"
                 onClick={handleAjudaTitulo}
-                disabled={gerandoIA || !formData.descricao}
+                disabled={gerandoIA}
                 variant="outline"
                 className="border-2 border-blue-300 text-blue-700"
               >
@@ -545,7 +535,7 @@ Dimensions: ${dimensoesPorPlano[formData.plano_patrocinador].largura}x${dimensoe
               <Button
                 type="button"
                 onClick={handleAjudaDescricao}
-                disabled={gerandoIA || !formData.titulo}
+                disabled={gerandoIA}
                 variant="outline"
                 className="border-2 border-green-300 text-green-700"
               >
@@ -677,7 +667,7 @@ Dimensions: ${dimensoesPorPlano[formData.plano_patrocinador].largura}x${dimensoe
                     size="sm"
                     variant="outline"
                     onClick={handleAjudaTitulo}
-                    disabled={gerandoIA || !formData.descricao}
+                    disabled={gerandoIA}
                     className="text-xs border-blue-300 text-blue-700"
                   >
                     <Sparkles className="w-3 h-3 mr-1" />
@@ -701,7 +691,7 @@ Dimensions: ${dimensoesPorPlano[formData.plano_patrocinador].largura}x${dimensoe
                     size="sm"
                     variant="outline"
                     onClick={handleAjudaDescricao}
-                    disabled={gerandoIA || !formData.titulo}
+                    disabled={gerandoIA}
                     className="text-xs border-green-300 text-green-700"
                   >
                     <Sparkles className="w-3 h-3 mr-1" />
@@ -835,7 +825,7 @@ Dimensions: ${dimensoesPorPlano[formData.plano_patrocinador].largura}x${dimensoe
                     type="button"
                     size="sm"
                     onClick={handleGerarImagem}
-                    disabled={gerandoImagem || (!formData.titulo && !formData.descricao)}
+                    disabled={gerandoImagem}
                     className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-xs"
                   >
                     {gerandoImagem ? (
@@ -901,7 +891,7 @@ Dimensions: ${dimensoesPorPlano[formData.plano_patrocinador].largura}x${dimensoe
                     <img
                       src={formData.logo_empresa}
                       alt="Logo"
-                      className="h-20 sm:h-24 md:h-32 w-auto rounded-lg border-2 border-gray-200"
+                      className="h-12 sm:h-16 md:h-20 w-auto rounded-lg border-2 border-gray-200"
                     />
                     <Button
                       type="button"
