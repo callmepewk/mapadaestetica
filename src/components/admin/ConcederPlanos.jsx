@@ -42,44 +42,64 @@ export default function ConcederPlanos({ todosUsuarios }) {
   const [planoClube, setPlanoClube] = useState("nenhum");
   const [planoPatrocinador, setPlanoPatrocinador] = useState("nenhum");
   const [tipoUsuario, setTipoUsuario] = useState("paciente");
+  const [roleUsuario, setRoleUsuario] = useState("user");
+  const [pontosUsuario, setPontosUsuario] = useState(0);
+  const [beautyCoinsUsuario, setBeautyCoinsUsuario] = useState(0);
   const [sucesso, setSucesso] = useState(null);
   const [erro, setErro] = useState(null);
 
   const concederPlanosMutation = useMutation({
-    mutationFn: async ({ usuario, planos, tipo }) => {
-      console.log("🎁 CONCEDENDO PLANOS:");
-      console.log("Usuário completo:", usuario);
-      console.log("Email:", usuario.email);
-      console.log("Tipo:", tipo);
-      console.log("Planos:", planos);
+    mutationFn: async ({ email, planos, tipo, pontos, beautyCoins, role }) => {
+      console.log("🎁 INICIANDO ATUALIZAÇÃO ADMINISTRATIVA");
+      console.log("📧 Email do usuário:", email);
+      console.log("📊 Dados a atualizar:", { tipo, planos, pontos, beautyCoins, role });
 
+      // Primeiro, buscar o usuário para confirmar que existe
+      const usuarios = await base44.entities.User.filter({ email }, null, 1);
+      
+      if (!usuarios || usuarios.length === 0) {
+        throw new Error(`Usuário com email ${email} não encontrado no banco de dados`);
+      }
+
+      const usuarioExistente = usuarios[0];
+      console.log("✅ Usuário encontrado:", usuarioExistente.email);
+
+      // Preparar dados completos para update
       const updateData = {
         tipo_usuario: tipo,
         plano_ativo: planos.mapa,
         plano_clube_beleza: planos.clube,
         plano_patrocinador: planos.patrocinador,
+        pontos_acumulados: parseInt(pontos) || 0,
+        beauty_coins: parseInt(beautyCoins) || 0,
+        role: role
       };
 
-      console.log("📤 Enviando update:", updateData);
+      console.log("📤 Executando update com dados:", updateData);
 
-      // Atualizar usando a entidade User diretamente
-      const resultado = await base44.entities.User.update(usuario.email, updateData);
-      console.log("✅ Update executado:", resultado);
+      // Usar updateMany para garantir que funciona (admin tem permissão)
+      const resultado = await base44.entities.User.updateMany(
+        { email: email },
+        updateData
+      );
 
-      // Criar notificação para o usuário
+      console.log("✅ Update executado com sucesso:", resultado);
+
+      // Criar notificação
       try {
         await base44.entities.Notificacao.create({
-          usuario_email: usuario.email,
+          usuario_email: email,
           tipo: 'planos_atualizados',
-          titulo: '🎉 Seus Planos Foram Atualizados!',
-          mensagem: `Planos atualizados: Mapa (${PLANOS_INFO[planos.mapa]?.nome}), Clube (${planos.clube}), Patrocinador (${planos.patrocinador})`,
+          titulo: '🎉 Seus Planos Foram Atualizados pelo Admin!',
+          mensagem: `Planos: Mapa (${PLANOS_INFO[planos.mapa]?.nome}), Clube (${planos.clube}), Patrocinador (${planos.patrocinador}). Pontos: ${pontos}, Beauty Coins: ${beautyCoins}`,
           link_acao: '/perfil'
         });
+        console.log("✉️ Notificação criada");
       } catch (err) {
         console.log("⚠️ Erro ao criar notificação (não crítico):", err);
       }
 
-      return { usuario, updateData };
+      return { email, updateData, resultado };
     },
     onSuccess: (data) => {
       console.log("✅ Planos concedidos com sucesso:", data);
@@ -109,11 +129,14 @@ export default function ConcederPlanos({ todosUsuarios }) {
       return;
     }
 
-    console.log("🔵 Iniciando concessão para:", usuarioSelecionado);
+    console.log("🔵 Iniciando atualização administrativa para:", usuarioSelecionado.email);
     
     concederPlanosMutation.mutate({
-      usuario: usuarioSelecionado,
+      email: usuarioSelecionado.email,
       tipo: tipoUsuario,
+      role: roleUsuario,
+      pontos: pontosUsuario,
+      beautyCoins: beautyCoinsUsuario,
       planos: {
         mapa: planoMapa,
         clube: planoClube,
@@ -181,9 +204,12 @@ export default function ConcederPlanos({ todosUsuarios }) {
                     onClick={() => {
                       setUsuarioSelecionado(usuario);
                       setTipoUsuario(usuario.tipo_usuario || 'paciente');
+                      setRoleUsuario(usuario.role || 'user');
                       setPlanoMapa(usuario.plano_ativo || 'cobre');
                       setPlanoClube(usuario.plano_clube_beleza || 'nenhum');
                       setPlanoPatrocinador(usuario.plano_patrocinador || 'nenhum');
+                      setPontosUsuario(usuario.pontos_acumulados || 0);
+                      setBeautyCoinsUsuario(usuario.beauty_coins || 0);
                     }}
                     className={`w-full p-4 text-left hover:bg-gray-50 transition-colors ${
                       usuarioSelecionado?.id === usuario.id ? 'bg-purple-50 border-l-4 border-purple-600' : ''
@@ -237,6 +263,75 @@ export default function ConcederPlanos({ todosUsuarios }) {
                     <SelectItem value="patrocinador">👑 Patrocinador</SelectItem>
                   </SelectContent>
                 </Select>
+                <p className="text-xs text-gray-600 mt-1">
+                  Atual: <Badge className="bg-blue-600 text-white">
+                    {usuarioSelecionado.tipo_usuario || 'N/D'}
+                  </Badge>
+                </p>
+              </div>
+
+              {/* Role do Usuário */}
+              <div>
+                <Label className="font-semibold mb-2 block">🔑 Role (Permissão)</Label>
+                <Select value={roleUsuario} onValueChange={setRoleUsuario}>
+                  <SelectTrigger className="bg-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="user">👤 User (Padrão)</SelectItem>
+                    <SelectItem value="tester">🧪 Tester (7 dias)</SelectItem>
+                    <SelectItem value="admin">👑 Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-gray-600 mt-1">
+                  Atual: <Badge className={
+                    usuarioSelecionado.role === 'admin' ? 'bg-orange-600 text-white' :
+                    usuarioSelecionado.role === 'tester' ? 'bg-blue-600 text-white' :
+                    'bg-gray-600 text-white'
+                  }>
+                    {usuarioSelecionado.role || 'user'}
+                  </Badge>
+                </p>
+              </div>
+
+              {/* Pontos */}
+              <div>
+                <Label className="font-semibold mb-2 block flex items-center gap-2">
+                  <Star className="w-4 h-4 text-yellow-600" />
+                  Pontos Acumulados
+                </Label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={pontosUsuario}
+                  onChange={(e) => setPontosUsuario(parseInt(e.target.value) || 0)}
+                  className="bg-white"
+                />
+                <p className="text-xs text-gray-600 mt-1">
+                  Atual: <Badge className="bg-yellow-600 text-white">
+                    {usuarioSelecionado.pontos_acumulados || 0} pontos
+                  </Badge>
+                </p>
+              </div>
+
+              {/* Beauty Coins */}
+              <div>
+                <Label className="font-semibold mb-2 block flex items-center gap-2">
+                  <DollarSign className="w-4 h-4 text-purple-600" />
+                  Beauty Coins
+                </Label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={beautyCoinsUsuario}
+                  onChange={(e) => setBeautyCoinsUsuario(parseInt(e.target.value) || 0)}
+                  className="bg-white"
+                />
+                <p className="text-xs text-gray-600 mt-1">
+                  Atual: <Badge className="bg-purple-600 text-white">
+                    {usuarioSelecionado.beauty_coins || 0} coins
+                  </Badge>
+                </p>
               </div>
 
               {/* Plano Mapa da Estética */}
@@ -325,9 +420,12 @@ export default function ConcederPlanos({ todosUsuarios }) {
                   <strong>📋 Resumo das Alterações:</strong>
                   <ul className="mt-2 space-y-1 text-xs">
                     <li>• Tipo: <strong>{tipoUsuario}</strong></li>
-                    <li>• Mapa: <strong>{PLANOS_INFO[planoMapa]?.nome}</strong></li>
-                    <li>• Clube: <strong>{planoClube}</strong></li>
-                    <li>• Patrocinador: <strong>{planoPatrocinador}</strong></li>
+                    <li>• Role: <strong>{roleUsuario}</strong></li>
+                    <li>• Plano Mapa: <strong>{PLANOS_INFO[planoMapa]?.nome}</strong></li>
+                    <li>• Clube: <strong>{planoClube.toUpperCase()}</strong></li>
+                    <li>• Patrocinador: <strong>{planoPatrocinador.toUpperCase()}</strong></li>
+                    <li>• Pontos: <strong>{pontosUsuario}</strong></li>
+                    <li>• Beauty Coins: <strong>{beautyCoinsUsuario}</strong></li>
                   </ul>
                 </AlertDescription>
               </Alert>
@@ -345,10 +443,13 @@ export default function ConcederPlanos({ todosUsuarios }) {
                 ) : (
                   <>
                     <Gift className="w-4 h-4 mr-2" />
-                    Conceder Planos
+                    Salvar Todas as Alterações
                   </>
                 )}
               </Button>
+              <p className="text-xs text-center text-gray-600 mt-2">
+                ⚡ As alterações serão aplicadas imediatamente e o usuário verá ao recarregar a página
+              </p>
             </CardContent>
           </Card>
         )}
