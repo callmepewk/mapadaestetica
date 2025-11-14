@@ -46,9 +46,10 @@ export default function ConcederPlanos({ todosUsuarios }) {
   const [erro, setErro] = useState(null);
 
   const concederPlanosMutation = useMutation({
-    mutationFn: async ({ email, planos, tipo }) => {
+    mutationFn: async ({ usuario, planos, tipo }) => {
       console.log("🎁 CONCEDENDO PLANOS:");
-      console.log("Email:", email);
+      console.log("Usuário completo:", usuario);
+      console.log("Email:", usuario.email);
       console.log("Tipo:", tipo);
       console.log("Planos:", planos);
 
@@ -61,18 +62,23 @@ export default function ConcederPlanos({ todosUsuarios }) {
 
       console.log("📤 Enviando update:", updateData);
 
-      await base44.entities.User.update(email, updateData);
+      // User entity usa email como ID
+      await base44.auth.updateUser(usuario.email, updateData);
 
       // Criar notificação para o usuário
-      await base44.entities.Notificacao.create({
-        usuario_email: email,
-        tipo: 'planos_atualizados',
-        titulo: '🎉 Seus Planos Foram Atualizados!',
-        mensagem: `Planos atualizados: Mapa (${PLANOS_INFO[planos.mapa]?.nome}), Clube (${planos.clube}), Patrocinador (${planos.patrocinador})`,
-        link_acao: '/perfil'
-      });
+      try {
+        await base44.entities.Notificacao.create({
+          usuario_email: usuario.email,
+          tipo: 'planos_atualizados',
+          titulo: '🎉 Seus Planos Foram Atualizados!',
+          mensagem: `Planos atualizados: Mapa (${PLANOS_INFO[planos.mapa]?.nome}), Clube (${planos.clube}), Patrocinador (${planos.patrocinador})`,
+          link_acao: '/perfil'
+        });
+      } catch (err) {
+        console.log("⚠️ Erro ao criar notificação (não crítico):", err);
+      }
 
-      return { email, updateData };
+      return { usuario, updateData };
     },
     onSuccess: (data) => {
       console.log("✅ Planos concedidos com sucesso:", data);
@@ -102,8 +108,10 @@ export default function ConcederPlanos({ todosUsuarios }) {
       return;
     }
 
+    console.log("🔵 Iniciando concessão para:", usuarioSelecionado);
+    
     concederPlanosMutation.mutate({
-      email: usuarioSelecionado.email,
+      usuario: usuarioSelecionado,
       tipo: tipoUsuario,
       planos: {
         mapa: planoMapa,
