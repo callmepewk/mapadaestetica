@@ -41,13 +41,7 @@ import {
   FileText
 } from "lucide-react";
 
-const PLANOS_INFO = {
-  cobre: { nome: "Cobre", cor: "bg-orange-100 text-orange-800" },
-  prata: { nome: "Prata", cor: "bg-gray-100 text-gray-800" },
-  ouro: { nome: "Ouro", cor: "bg-yellow-100 text-yellow-800" },
-  diamante: { nome: "Diamante", cor: "bg-blue-100 text-blue-800" },
-  platina: { nome: "Platina", cor: "bg-purple-100 text-purple-800" }
-};
+
 
 export default function ModalEditarUsuario({
   open,
@@ -56,7 +50,8 @@ export default function ModalEditarUsuario({
   dadosEdicaoUsuario,
   setDadosEdicaoUsuario,
   onSalvar,
-  isPending
+  isPending,
+  PLANOS_INFO
 }) {
   if (!usuarioEditando) return null;
 

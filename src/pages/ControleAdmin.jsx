@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -750,9 +749,28 @@ Bem-vindo(a)! 💆‍♀️
 
   const editarUsuarioCompletoMutation = useMutation({
     mutationFn: async ({ email, dados }) => {
-      await base44.entities.User.update(email, dados);
+      // GARANTIR QUE TODOS OS CAMPOS SEJAM ENVIADOS
+      const dadosCompletos = {
+        full_name: dados.full_name,
+        telefone: dados.telefone || "",
+        whatsapp: dados.whatsapp || "",
+        tipo_usuario: dados.tipo_usuario,
+        role: dados.role,
+        plano_ativo: dados.plano_ativo,
+        plano_clube_beleza: dados.plano_clube_beleza,
+        plano_patrocinador: dados.plano_patrocinador,
+        pontos_acumulados: Number(dados.pontos_acumulados) || 0,
+        beauty_coins: Number(dados.beauty_coins) || 0,
+        cadastro_completo: Boolean(dados.cadastro_completo)
+      };
+      
+      console.log("Salvando dados do usuário:", email, dadosCompletos);
+      await base44.entities.User.update(email, dadosCompletos);
+      return { email, dadosCompletos };
     },
-    onSuccess: async () => {
+    onSuccess: async (result) => {
+      console.log("Usuário atualizado com sucesso:", result);
+      
       // Invalidar TODAS as queries relacionadas a usuários
       await queryClient.invalidateQueries({ queryKey: ['todos-usuarios'] });
       await queryClient.invalidateQueries({ queryKey: ['usuarios-profissionais'] });
@@ -761,18 +779,20 @@ Bem-vindo(a)! 💆‍♀️
       // Refetch imediato
       await queryClient.refetchQueries({ queryKey: ['todos-usuarios'] });
       await queryClient.refetchQueries({ queryKey: ['usuarios-profissionais'] });
+      await queryClient.refetchQueries({ queryKey: ['testers'] });
       
       setMostrarModalEditarUsuario(false);
       setUsuarioEditando(null);
-      setSucesso("✅ Usuário atualizado! Atualizando dados...");
+      setSucesso("✅ Usuário atualizado! Recarregando...");
       
-      // Forçar reload após 1 segundo para garantir sincronização total
+      // Forçar reload após 500ms
       setTimeout(() => {
         window.location.reload();
-      }, 1000);
+      }, 500);
     },
     onError: (error) => {
-      setErro("Erro ao atualizar usuário: " + error.message);
+      console.error("Erro ao atualizar usuário:", error);
+      setErro("❌ Erro ao atualizar usuário: " + error.message);
       setTimeout(() => setErro(null), 5000);
     }
   });
