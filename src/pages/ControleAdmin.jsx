@@ -84,6 +84,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import ModalEditarUsuario from "../components/admin/ModalEditarUsuario";
+import ConcederPlanos from "../components/admin/ConcederPlanos";
 
 const PLANOS_INFO = {
   cobre: { nome: "Cobre", cor: "bg-orange-100 text-orange-800" },
@@ -2684,7 +2685,11 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
         </Card>
 
         <Tabs value={abaSelecionada} onValueChange={setAbaSelecionada} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 mb-6 gap-1">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 mb-6 gap-1">
+            <TabsTrigger value="conceder">
+              <Crown className="w-4 h-4 mr-2" />
+              Conceder Planos
+            </TabsTrigger>
             <TabsTrigger value="planos">
               <User className="w-4 h-4 mr-2" />
               Perfis
@@ -2706,6 +2711,10 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
               Contas Teste ({testers.length})
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="conceder">
+            <ConcederPlanos todosUsuarios={todosUsuarios} />
+          </TabsContent>
 
           <TabsContent value="planos">
             <Tabs defaultValue="solicitacoes" className="w-full">
