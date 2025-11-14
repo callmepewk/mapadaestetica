@@ -355,7 +355,7 @@ export default function ControleAdmin() {
   });
 
   const ativarPlanoMutation = useMutation({
-    mutationFn: async ({ usuarioEmail, plano, solicitacaoId, usuarioNome, usuarioWhatsApp, observacoesTexto }) => {
+    mutationFn: async ({ usuarioId, usuarioEmail, plano, solicitacaoId, usuarioNome, usuarioWhatsApp, observacoesTexto }) => {
       const beneficiosPlano = {
         cobre: {
           especialidades: "1 especialidade",
@@ -453,7 +453,9 @@ Dúvidas? Fale conosco:
 Bem-vindo(a)! 💆‍♀️
       `.trim();
 
-      await base44.entities.User.update(usuarioEmail, { 
+      console.log("🎯 Ativando plano - ID:", usuarioId, "Plano:", plano);
+      
+      await base44.entities.User.update(usuarioId, { 
         plano_ativo: plano,
         data_adesao_plano: new Date().toISOString().split('T')[0]
       });
@@ -502,8 +504,10 @@ Bem-vindo(a)! 💆‍♀️
   });
 
   const trocarPlanoMutation = useMutation({
-    mutationFn: async ({ email, plano }) => {
-      await base44.entities.User.update(email, {
+    mutationFn: async ({ userId, plano }) => {
+      console.log("🔄 Trocando plano - ID:", userId, "Novo plano:", plano);
+      
+      await base44.entities.User.update(userId, {
         plano_ativo: plano,
         data_adesao_plano: new Date().toISOString().split('T')[0]
       });
@@ -598,11 +602,10 @@ Bem-vindo(a)! 💆‍♀️
   });
 
   const excluirProfissionalMutation = useMutation({
-    mutationFn: async (email) => {
+    mutationFn: async (userId) => {
       console.log("=".repeat(60));
-      console.log("🗑️ ADMIN: CONVERSÃO PARA PACIENTE");
-      console.log("📧 Email:", email);
-      console.log("=".repeat(60));
+      console.log("🗑️ CONVERSÃO PARA PACIENTE");
+      console.log("🆔 User ID:", userId);
       
       const updateData = {
         tipo_usuario: 'paciente',
@@ -612,26 +615,12 @@ Bem-vindo(a)! 💆‍♀️
         role: 'user'
       };
       
-      console.log("📦 Update data:", updateData);
-      console.log("🚀 Chamando API direta...");
+      console.log("📦 Data:", updateData);
+      console.log("🚀 Chamando update com ID...");
       
-      // Usar API direta
-      const response = await fetch('/api/entities/User', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query: { email: email },
-          data: updateData
-        })
-      });
-
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.message || 'Falha na API');
-      }
-
-      const resultado = await response.json();
-      console.log("✅ Conversão OK:", resultado);
+      const resultado = await base44.entities.User.update(userId, updateData);
+      
+      console.log("✅ OK:", resultado);
       console.log("=".repeat(60));
       
       return resultado;
@@ -655,8 +644,10 @@ Bem-vindo(a)! 💆‍♀️
   });
 
   const atualizarPontosMutation = useMutation({
-    mutationFn: async ({ email, pontos, beautyCoins }) => {
-      await base44.entities.User.update(email, {
+    mutationFn: async ({ userId, pontos, beautyCoins }) => {
+      console.log("⭐ Atualizando pontos - ID:", userId);
+      
+      await base44.entities.User.update(userId, {
         pontos_acumulados: pontos,
         beauty_coins: beautyCoins
       });
@@ -786,12 +777,10 @@ Bem-vindo(a)! 💆‍♀️
   });
 
   const editarUsuarioCompletoMutation = useMutation({
-    mutationFn: async ({ email, dados }) => {
+    mutationFn: async ({ userId, dados }) => {
       console.log("=".repeat(60));
-      console.log("✏️ MODAL EDIÇÃO - UPDATE VIA API DIRETA");
-      console.log("=".repeat(60));
-      console.log("📧 Email alvo:", email);
-      console.log("📋 Dados originais:", dados);
+      console.log("✏️ MODAL EDIT - USANDO ID");
+      console.log("🆔 User ID:", userId);
       
       const updateData = {};
       
@@ -808,47 +797,32 @@ Bem-vindo(a)! 💆‍♀️
       updateData.beauty_coins = parseInt(dados.beauty_coins) || 0;
       updateData.cadastro_completo = Boolean(dados.cadastro_completo);
       
-      console.log("📦 Payload preparado:", JSON.stringify(updateData, null, 2));
-      console.log("🚀 Executando via fetch API...");
+      console.log("📦 Update data:", JSON.stringify(updateData, null, 2));
+      console.log("🚀 Chamando base44.entities.User.update(ID, data)...");
       
-      const response = await fetch('/api/entities/User', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query: { email: email },
-          data: updateData
-        })
-      });
-
-      if (!response.ok) {
-        const errData = await response.json();
-        console.error("❌ API retornou erro:", errData);
-        throw new Error(errData.message || `HTTP ${response.status}`);
-      }
-
-      const resultado = await response.json();
-      console.log("✅ SUCESSO API:", resultado);
+      const resultado = await base44.entities.User.update(userId, updateData);
+      
+      console.log("✅ SUCESSO:", resultado);
       console.log("=".repeat(60));
       
-      return { email, updateData, resultado };
+      return resultado;
     },
     onSuccess: async (data) => {
-      console.log("🎉 Update SUCCESS - invalidando cache...");
+      console.log("🎉 Update OK - recarregando...");
       
       setMostrarModalEditarUsuario(false);
       setUsuarioEditando(null);
-      setSucesso("✅ Usuário atualizado!");
+      setSucesso("✅ Atualizado!");
       
       queryClient.invalidateQueries({ queryKey: ['todos-usuarios'] });
       queryClient.invalidateQueries({ queryKey: ['usuarios-profissionais'] });
       queryClient.invalidateQueries({ queryKey: ['testers'] });
       
-      console.log("🔄 Reload em 1s...");
       setTimeout(() => window.location.reload(), 1000);
     },
     onError: (error) => {
-      console.error("💥 ERROR callback:", error);
-      setErro("❌ Falha: " + error.message);
+      console.error("💥 ERRO:", error);
+      setErro("❌ Erro: " + error.message);
       setTimeout(() => setErro(null), 5000);
     }
   });
@@ -1202,18 +1176,19 @@ CONFIGURAÇÕES NECESSÁRIAS:
 
   // NOVA Mutation: Estender Período Tester
   const estenderPeriodoTesterMutation = useMutation({
-    mutationFn: async ({ email, diasAdicionais }) => {
-      const tester = testers.find(t => t.email === email);
+    mutationFn: async ({ userId, diasAdicionais }) => {
+      const tester = testers.find(t => t.id === userId);
       if (!tester) throw new Error("Tester não encontrado");
 
       let dataAtual = tester.data_expiracao_teste ? new Date(tester.data_expiracao_teste) : new Date();
-      // If current expiration is in the past, start from now
       if (dataAtual < new Date()) {
         dataAtual = new Date();
       }
       dataAtual.setDate(dataAtual.getDate() + diasAdicionais);
 
-      await base44.entities.User.update(email, {
+      console.log("⏰ Estendendo teste - ID:", userId, "Dias:", diasAdicionais);
+      
+      await base44.entities.User.update(userId, {
         data_expiracao_teste: dataAtual.toISOString()
       });
 
@@ -1232,8 +1207,10 @@ CONFIGURAÇÕES NECESSÁRIAS:
 
   // NOVA Mutation: Deletar Tester
   const deletarTesterMutation = useMutation({
-    mutationFn: async (email) => {
-      await base44.entities.User.update(email, {
+    mutationFn: async (userId) => {
+      console.log("🗑️ Removendo tester - ID:", userId);
+      
+      await base44.entities.User.update(userId, {
         role: 'user',
         data_expiracao_teste: null,
         plano_ativo: 'cobre',
@@ -1309,7 +1286,12 @@ CONFIGURAÇÕES NECESSÁRIAS:
       const todosUsuariosList = await base44.entities.User.list('-created_date', 1000);
       const usuarioData = todosUsuariosList.find(u => u.email === solicitacaoSelecionada.usuario_email);
       
+      if (!usuarioData || !usuarioData.id) {
+        throw new Error("Usuário não encontrado ou sem ID!");
+      }
+      
       await ativarPlanoMutation.mutateAsync({
+        usuarioId: usuarioData.id,
         usuarioEmail: solicitacaoSelecionada.usuario_email,
         plano: solicitacaoSelecionada.plano_solicitado,
         solicitacaoId: solicitacaoSelecionada.id,
@@ -1375,10 +1357,14 @@ CONFIGURAÇÕES NECESSÁRIAS:
 
   const confirmarTrocaPlano = () => {
     if (!planoSelecionadoUsuario || !novoPlano) return;
+    if (!planoSelecionadoUsuario.id) {
+      alert("❌ Usuário sem ID!");
+      return;
+    }
     
-    if (confirm(`Confirma a troca do plano de ${planoSelecionadoUsuario.full_name} para ${PLANOS_INFO[novoPlano]?.nome}?`)) {
+    if (confirm(`Confirma troca para ${PLANOS_INFO[novoPlano]?.nome}?`)) {
       trocarPlanoMutation.mutate({
-        email: planoSelecionadoUsuario.email,
+        userId: planoSelecionadoUsuario.id,
         plano: novoPlano
       });
     }
@@ -1518,14 +1504,17 @@ CONFIGURAÇÕES NECESSÁRIAS:
   };
 
   const handleExcluirProfissional = (usuario) => {
-    console.log("🔴 Botão de exclusão clicado para:", usuario.full_name);
+    if (!usuario.id) {
+      alert("❌ ERRO: Usuário sem ID!");
+      return;
+    }
     
-    if (confirm(`⚠️ ATENÇÃO: Converter ${usuario.full_name} para Paciente?\n\nEsta ação irá:\n✅ Manter a conta do usuário\n❌ Converter tipo para "Paciente"\n❌ Resetar plano Mapa para "Cobre"\n❌ Remover planos Clube e Patrocinador\n❌ Resetar role para "user"\n\nConfirmar?`)) {
-      console.log("✅ Usuário confirmou - executando mutation");
-      alert(`🔄 Iniciando conversão de:\n${usuario.full_name}\n\nAbra o Console (F12) para acompanhar!`);
-      excluirProfissionalMutation.mutate(usuario.email);
-    } else {
-      console.log("❌ Usuário cancelou");
+    console.log("🔴 Exclusão:", usuario.full_name);
+    console.log("🆔 ID:", usuario.id);
+    
+    if (confirm(`⚠️ Converter ${usuario.full_name} para Paciente?\n\n✅ Manter conta\n❌ Tipo → Paciente\n❌ Planos → Reset\n\nConfirmar?`)) {
+      console.log("✅ Confirmado");
+      excluirProfissionalMutation.mutate(usuario.id);
     }
   };
 
@@ -1537,11 +1526,11 @@ CONFIGURAÇÕES NECESSÁRIAS:
   };
 
   const confirmarEditarPontos = () => {
-    if (!usuarioEditandoPontos) return;
+    if (!usuarioEditandoPontos || !usuarioEditandoPontos.id) return;
     
-    if (confirm(`Atualizar pontos e Beauty Coins de ${usuarioEditandoPontos.full_name}?\n\nPontos: ${novosPontos}\nBeauty Coins: ${novosBeautyCoins}`)) {
+    if (confirm(`Atualizar pontos de ${usuarioEditandoPontos.full_name}?\n\nPontos: ${novosPontos}\nBeauty Coins: ${novosBeautyCoins}`)) {
       atualizarPontosMutation.mutate({
-        email: usuarioEditandoPontos.email,
+        userId: usuarioEditandoPontos.id,
         pontos: novosPontos,
         beautyCoins: novosBeautyCoins
       });
@@ -2121,12 +2110,19 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
   const confirmarEdicaoUsuario = () => {
     if (!usuarioEditando) return;
     
-    console.log("=== SALVANDO ALTERAÇÕES DO USUÁRIO ===");
-    console.log("Email:", usuarioEditando.email);
-    console.log("Dados atuais:", dadosEdicaoUsuario);
+    if (!usuarioEditando.id) {
+      alert("❌ ERRO: Usuário sem ID!");
+      console.error("Usuário:", usuarioEditando);
+      return;
+    }
+    
+    console.log("=== SALVANDO COM ID ===");
+    console.log("🆔 ID:", usuarioEditando.id);
+    console.log("📧 Email:", usuarioEditando.email);
+    console.log("📊 Dados:", dadosEdicaoUsuario);
     
     editarUsuarioCompletoMutation.mutate({
-      email: usuarioEditando.email,
+      userId: usuarioEditando.id,
       dados: dadosEdicaoUsuario
     });
   };
@@ -2263,19 +2259,19 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
   };
 
   const handleEstenderPeriodo = (dias) => {
-    if (!testerSelecionado) return;
+    if (!testerSelecionado || !testerSelecionado.id) return;
     
     estenderPeriodoTesterMutation.mutate({
-      email: testerSelecionado.email,
+      userId: testerSelecionado.id,
       diasAdicionais: dias
     });
   };
 
   const handleDeletarTester = () => {
-    if (!testerSelecionado) return;
+    if (!testerSelecionado || !testerSelecionado.id) return;
     
-    if (confirm(`⚠️ REMOVER CONTA TESTE?\n\nUsuário: ${testerSelecionado.full_name}\nEmail: ${testerSelecionado.email}\n\nEsta ação irá:\n• Converter para usuário comum\n• Resetar todos os planos para gratuito\n• Remover data de expiração`)) {
-      deletarTesterMutation.mutate(testerSelecionado.email);
+    if (confirm(`⚠️ REMOVER CONTA TESTE?\n\nUsuário: ${testerSelecionado.full_name}\n\nIrá resetar planos e converter para comum.`)) {
+      deletarTesterMutation.mutate(testerSelecionado.id);
     }
   };
 
@@ -5519,7 +5515,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                           size="icon"
                           onClick={() => {
                             atualizarPontosMutation.mutate({
-                              email: testerSelecionado.email,
+                              userId: testerSelecionado.id,
                               pontos: testerSelecionado.pontos_acumulados || 0,
                               beautyCoins: Math.max(0, (testerSelecionado.beauty_coins || 0) - 50)
                             });
@@ -5533,7 +5529,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                           value={testerSelecionado.beauty_coins || 0}
                           onChange={(e) => {
                             atualizarPontosMutation.mutate({
-                              email: testerSelecionado.email,
+                              userId: testerSelecionado.id,
                               pontos: testerSelecionado.pontos_acumulados || 0,
                               beautyCoins: parseInt(e.target.value) || 0
                             });
@@ -5546,7 +5542,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                           size="icon"
                           onClick={() => {
                             atualizarPontosMutation.mutate({
-                              email: testerSelecionado.email,
+                              userId: testerSelecionado.id,
                               pontos: testerSelecionado.pontos_acumulados || 0,
                               beautyCoins: (testerSelecionado.beauty_coins || 0) + 50
                             });

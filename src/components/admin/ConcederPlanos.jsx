@@ -49,12 +49,12 @@ export default function ConcederPlanos({ todosUsuarios }) {
   const [erro, setErro] = useState(null);
 
   const concederPlanosMutation = useMutation({
-    mutationFn: async ({ email, planos, tipo, pontos, beautyCoins, role }) => {
+    mutationFn: async ({ userId, planos, tipo, pontos, beautyCoins, role }) => {
       console.log("=".repeat(60));
-      console.log("🔵 ADMIN UPDATE - USANDO update_entities DO SISTEMA");
+      console.log("🔵 ADMIN UPDATE - USANDO ID CORRETO");
       console.log("=".repeat(60));
-      console.log("📧 Email alvo:", email);
-      console.log("📊 Valores a aplicar:");
+      console.log("🆔 User ID:", userId);
+      console.log("📊 Dados a atualizar:");
       console.log("   - Tipo:", tipo);
       console.log("   - Role:", role);
       console.log("   - Plano Mapa:", planos.mapa);
@@ -62,7 +62,6 @@ export default function ConcederPlanos({ todosUsuarios }) {
       console.log("   - Patrocinador:", planos.patrocinador);
       console.log("   - Pontos:", pontos);
       console.log("   - Beauty Coins:", beautyCoins);
-      console.log("=".repeat(60));
 
       const updateData = {
         tipo_usuario: tipo,
@@ -74,63 +73,15 @@ export default function ConcederPlanos({ todosUsuarios }) {
         beauty_coins: parseInt(beautyCoins) || 0
       };
 
-      console.log("📦 Payload completo:", JSON.stringify(updateData, null, 2));
-
-      try {
-        // SOLUÇÃO: Usar a API de update do sistema que bypassa restrições
-        console.log("🚀 Executando UPDATE via API do sistema...");
-        
-        const response = await fetch('/api/entities/User', {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            query: { email: email },
-            data: updateData
-          })
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Erro na requisição');
-        }
-
-        const resultado = await response.json();
-        
-        console.log("✅ SUCESSO VIA API! Resposta:");
-        console.log(JSON.stringify(resultado, null, 2));
-        console.log("=".repeat(60));
-        
-        alert(`✅ ATUALIZAÇÃO APLICADA!\n\nUsuário: ${email}\n\nDados atualizados:\n${JSON.stringify(updateData, null, 2)}`);
-
-        // Notificação
-        try {
-          await base44.entities.Notificacao.create({
-            usuario_email: email,
-            tipo: 'planos_atualizados',
-            titulo: '🎉 Admin Atualizou Seus Planos!',
-            mensagem: `Tipo: ${tipo}, Mapa: ${PLANOS_INFO[planos.mapa]?.nome}, Clube: ${planos.clube}, Patrocinador: ${planos.patrocinador}, Pontos: ${pontos}, BC: ${beautyCoins}`,
-            link_acao: '/perfil'
-          });
-          console.log("📧 Notificação criada");
-        } catch (notifErr) {
-          console.warn("⚠️ Notificação falhou (não crítico):", notifErr);
-        }
-
-        return { email, updateData, resultado };
-        
-      } catch (error) {
-        console.error("=".repeat(60));
-        console.error("❌ FALHA TOTAL:");
-        console.error("Error:", error);
-        console.error("Message:", error.message);
-        console.error("=".repeat(60));
-        
-        alert(`❌ FALHOU!\n\n${error.message}\n\nVerifique:\n1. Console (F12)\n2. Network → Fetch/XHR\n3. Se requisição aparece\n4. Status code (200/400/500)`);
-        
-        throw error;
-      }
+      console.log("📦 Payload:", JSON.stringify(updateData, null, 2));
+      console.log("🚀 Executando base44.entities.User.update(ID, data)...");
+      
+      const resultado = await base44.entities.User.update(userId, updateData);
+      
+      console.log("✅ SUCESSO:", resultado);
+      console.log("=".repeat(60));
+      
+      return resultado;
     },
     onSuccess: (data) => {
       console.log("=".repeat(60));
@@ -173,8 +124,19 @@ export default function ConcederPlanos({ todosUsuarios }) {
       return;
     }
 
-    const dadosAtualizar = {
-      email: usuarioSelecionado.email,
+    if (!usuarioSelecionado.id) {
+      alert("❌ ERRO: Usuário sem ID!\n\nO objeto do usuário não tem campo 'id'.");
+      console.error("Usuário selecionado:", usuarioSelecionado);
+      return;
+    }
+
+    console.log("🔔 BOTÃO SALVAR CLICADO!");
+    console.log("🆔 User ID:", usuarioSelecionado.id);
+    console.log("👤 Nome:", usuarioSelecionado.full_name);
+    console.log("📧 Email:", usuarioSelecionado.email);
+    
+    concederPlanosMutation.mutate({
+      userId: usuarioSelecionado.id,
       tipo: tipoUsuario,
       role: roleUsuario,
       pontos: pontosUsuario,
@@ -184,16 +146,7 @@ export default function ConcederPlanos({ todosUsuarios }) {
         clube: planoClube,
         patrocinador: planoPatrocinador
       }
-    };
-
-    console.log("🔔 BOTÃO SALVAR CLICADO!");
-    console.log("👤 Usuário:", usuarioSelecionado.full_name);
-    console.log("📧 Email:", usuarioSelecionado.email);
-    console.log("📊 Dados a enviar:", JSON.stringify(dadosAtualizar, null, 2));
-    
-    alert(`⚠️ ATENÇÃO!\n\nIniciando atualização de:\n${usuarioSelecionado.full_name}\n\n🔍 Abra o Console (F12) para acompanhar o processo!\n\nVerifique no Network (aba Fetch/XHR) se a requisição aparece.`);
-
-    concederPlanosMutation.mutate(dadosAtualizar);
+    });
   };
 
   const usuariosFiltrados = todosUsuarios.filter(u => 
