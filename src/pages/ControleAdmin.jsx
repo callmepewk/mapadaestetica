@@ -603,9 +603,7 @@ Bem-vindo(a)! 💆‍♀️
 
   const excluirProfissionalMutation = useMutation({
     mutationFn: async (userId) => {
-      console.log("=".repeat(60));
-      console.log("🗑️ CONVERSÃO PARA PACIENTE");
-      console.log("🆔 User ID:", userId);
+      console.log("🗑️ Convert to Patient - ID:", userId);
       
       const updateData = {
         tipo_usuario: 'paciente',
@@ -616,29 +614,23 @@ Bem-vindo(a)! 💆‍♀️
       };
       
       console.log("📦 Data:", updateData);
-      console.log("🚀 Chamando update com ID...");
       
       const resultado = await base44.entities.User.update(userId, updateData);
       
-      console.log("✅ OK:", resultado);
-      console.log("=".repeat(60));
+      console.log("✅ Converted:", resultado);
       
       return resultado;
     },
     onSuccess: () => {
-      console.log("🎉 Mutation success - invalidando queries...");
       queryClient.invalidateQueries({ queryKey: ['usuarios-profissionais'] });
       queryClient.invalidateQueries({ queryKey: ['todos-usuarios'] });
       queryClient.invalidateQueries({ queryKey: ['testers'] });
-      setSucesso("✅ Usuário convertido para paciente com sucesso!");
-      setTimeout(() => {
-        setSucesso(null);
-        window.location.reload();
-      }, 2000);
+      setSucesso("✅ Convertido!");
+      setTimeout(() => window.location.reload(), 1500);
     },
     onError: (error) => {
-      console.error("❌ Erro na mutation:", error);
-      setErro("Erro ao converter usuário: " + error.message);
+      console.error("❌ Erro:", error);
+      setErro("❌ " + error.message);
       setTimeout(() => setErro(null), 5000);
     }
   });

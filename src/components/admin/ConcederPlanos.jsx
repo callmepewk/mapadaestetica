@@ -50,19 +50,8 @@ export default function ConcederPlanos({ todosUsuarios }) {
 
   const concederPlanosMutation = useMutation({
     mutationFn: async ({ userId, planos, tipo, pontos, beautyCoins, role }) => {
-      console.log("=".repeat(60));
-      console.log("🔵 ADMIN UPDATE - USANDO ID CORRETO");
-      console.log("=".repeat(60));
-      console.log("🆔 User ID:", userId);
-      console.log("📊 Dados a atualizar:");
-      console.log("   - Tipo:", tipo);
-      console.log("   - Role:", role);
-      console.log("   - Plano Mapa:", planos.mapa);
-      console.log("   - Clube:", planos.clube);
-      console.log("   - Patrocinador:", planos.patrocinador);
-      console.log("   - Pontos:", pontos);
-      console.log("   - Beauty Coins:", beautyCoins);
-
+      console.log("🆔 UPDATE USER ID:", userId);
+      
       const updateData = {
         tipo_usuario: tipo,
         role: role,
@@ -73,46 +62,27 @@ export default function ConcederPlanos({ todosUsuarios }) {
         beauty_coins: parseInt(beautyCoins) || 0
       };
 
-      console.log("📦 Payload:", JSON.stringify(updateData, null, 2));
-      console.log("🚀 Executando base44.entities.User.update(ID, data)...");
+      console.log("📦 Data:", updateData);
       
       const resultado = await base44.entities.User.update(userId, updateData);
       
-      console.log("✅ SUCESSO:", resultado);
-      console.log("=".repeat(60));
+      console.log("✅ Updated:", resultado);
       
       return resultado;
     },
-    onSuccess: (data) => {
-      console.log("=".repeat(60));
-      console.log("🎉 MUTATION SUCCESS CALLBACK");
-      console.log("Dados retornados:", data);
-      console.log("=".repeat(60));
+    onSuccess: () => {
+      setSucesso(`✅ Atualizado!`);
       
-      setSucesso(`✅ Usuário ${usuarioSelecionado?.full_name} atualizado com sucesso!`);
-      
-      // Invalidar queries imediatamente
       queryClient.invalidateQueries({ queryKey: ['todos-usuarios'] });
       queryClient.invalidateQueries({ queryKey: ['usuarios-profissionais'] });
       queryClient.invalidateQueries({ queryKey: ['testers'] });
       
-      // Refetch forçado
-      queryClient.refetchQueries({ queryKey: ['todos-usuarios'] });
-      
-      console.log("🔄 Recarregando página em 1.5s...");
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
+      setTimeout(() => window.location.reload(), 1500);
     },
     onError: (error) => {
-      console.error("=".repeat(60));
-      console.error("💥 MUTATION ERROR CALLBACK");
-      console.error("Erro:", error);
-      console.error("Mensagem:", error.message);
-      console.error("=".repeat(60));
-      
-      setErro(`❌ Erro: ${error.message}`);
-      setTimeout(() => setErro(null), 8000);
+      console.error("❌ Erro:", error);
+      setErro(`❌ ${error.message}`);
+      setTimeout(() => setErro(null), 5000);
     }
   });
 
