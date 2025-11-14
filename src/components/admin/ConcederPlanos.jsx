@@ -157,14 +157,13 @@ export default function ConcederPlanos({ todosUsuarios }) {
 
   const handleConcederPlanos = () => {
     if (!usuarioSelecionado) {
+      alert("❌ Nenhum usuário selecionado!");
       setErro("Selecione um usuário!");
       setTimeout(() => setErro(null), 3000);
       return;
     }
 
-    console.log("🔵 Iniciando atualização administrativa para:", usuarioSelecionado.email);
-    
-    concederPlanosMutation.mutate({
+    const dadosAtualizar = {
       email: usuarioSelecionado.email,
       tipo: tipoUsuario,
       role: roleUsuario,
@@ -175,7 +174,16 @@ export default function ConcederPlanos({ todosUsuarios }) {
         clube: planoClube,
         patrocinador: planoPatrocinador
       }
-    });
+    };
+
+    console.log("🔔 BOTÃO SALVAR CLICADO!");
+    console.log("👤 Usuário:", usuarioSelecionado.full_name);
+    console.log("📧 Email:", usuarioSelecionado.email);
+    console.log("📊 Dados a enviar:", JSON.stringify(dadosAtualizar, null, 2));
+    
+    alert(`⚠️ ATENÇÃO!\n\nIniciando atualização de:\n${usuarioSelecionado.full_name}\n\n🔍 Abra o Console (F12) para acompanhar o processo!\n\nVerifique no Network (aba Fetch/XHR) se a requisição aparece.`);
+
+    concederPlanosMutation.mutate(dadosAtualizar);
   };
 
   const usuariosFiltrados = todosUsuarios.filter(u => 
