@@ -50,75 +50,101 @@ export default function ConcederPlanos({ todosUsuarios }) {
 
   const concederPlanosMutation = useMutation({
     mutationFn: async ({ email, planos, tipo, pontos, beautyCoins, role }) => {
-      console.log("🎁 INICIANDO ATUALIZAÇÃO ADMINISTRATIVA");
-      console.log("📧 Email do usuário:", email);
-      console.log("📊 Dados a atualizar:", { tipo, planos, pontos, beautyCoins, role });
+      console.log("="repeat(60));
+      console.log("🔵 INICIANDO ATUALIZAÇÃO ADMINISTRATIVA");
+      console.log("="repeat(60));
+      console.log("📧 Email:", email);
+      console.log("📊 Novos valores:");
+      console.log("   - Tipo:", tipo);
+      console.log("   - Role:", role);
+      console.log("   - Plano Mapa:", planos.mapa);
+      console.log("   - Clube:", planos.clube);
+      console.log("   - Patrocinador:", planos.patrocinador);
+      console.log("   - Pontos:", pontos);
+      console.log("   - Beauty Coins:", beautyCoins);
+      console.log("-".repeat(60));
 
-      // Primeiro, buscar o usuário para confirmar que existe
-      const usuarios = await base44.entities.User.filter({ email }, null, 1);
-      
-      if (!usuarios || usuarios.length === 0) {
-        throw new Error(`Usuário com email ${email} não encontrado no banco de dados`);
-      }
-
-      const usuarioExistente = usuarios[0];
-      console.log("✅ Usuário encontrado:", usuarioExistente.email);
-
-      // Preparar dados completos para update
+      // Preparar dados para update (Base44 User entity)
       const updateData = {
         tipo_usuario: tipo,
+        role: role,
         plano_ativo: planos.mapa,
         plano_clube_beleza: planos.clube,
         plano_patrocinador: planos.patrocinador,
         pontos_acumulados: parseInt(pontos) || 0,
-        beauty_coins: parseInt(beautyCoins) || 0,
-        role: role
+        beauty_coins: parseInt(beautyCoins) || 0
       };
 
-      console.log("📤 Executando update com dados:", updateData);
+      console.log("📦 Payload final:", JSON.stringify(updateData, null, 2));
+      console.log("-".repeat(60));
 
-      // Usar updateMany para garantir que funciona (admin tem permissão)
-      const resultado = await base44.entities.User.updateMany(
-        { email: email },
-        updateData
-      );
-
-      console.log("✅ Update executado com sucesso:", resultado);
-
-      // Criar notificação
       try {
-        await base44.entities.Notificacao.create({
-          usuario_email: email,
-          tipo: 'planos_atualizados',
-          titulo: '🎉 Seus Planos Foram Atualizados pelo Admin!',
-          mensagem: `Planos: Mapa (${PLANOS_INFO[planos.mapa]?.nome}), Clube (${planos.clube}), Patrocinador (${planos.patrocinador}). Pontos: ${pontos}, Beauty Coins: ${beautyCoins}`,
-          link_acao: '/perfil'
-        });
-        console.log("✉️ Notificação criada");
-      } catch (err) {
-        console.log("⚠️ Erro ao criar notificação (não crítico):", err);
-      }
+        console.log("🔄 Chamando base44.entities.User.update()...");
+        
+        // User entity no Base44 usa email como identificador
+        const resultado = await base44.entities.User.update(email, updateData);
+        
+        console.log("✅ SUCESSO! Resposta do servidor:");
+        console.log(JSON.stringify(resultado, null, 2));
+        console.log("="repeat(60));
 
-      return { email, updateData, resultado };
+        // Criar notificação
+        try {
+          console.log("📧 Criando notificação para o usuário...");
+          await base44.entities.Notificacao.create({
+            usuario_email: email,
+            tipo: 'planos_atualizados',
+            titulo: '🎉 Seus Planos Foram Atualizados!',
+            mensagem: `Admin atualizou seus planos: Mapa (${PLANOS_INFO[planos.mapa]?.nome}), Clube (${planos.clube}), Patrocinador (${planos.patrocinador})`,
+            link_acao: '/perfil'
+          });
+          console.log("✅ Notificação criada");
+        } catch (notifErr) {
+          console.warn("⚠️ Erro ao criar notificação (não crítico):", notifErr);
+        }
+
+        return { email, updateData, resultado };
+        
+      } catch (error) {
+        console.error("="repeat(60));
+        console.error("❌ ERRO NA ATUALIZAÇÃO:");
+        console.error("Mensagem:", error.message);
+        console.error("Stack:", error.stack);
+        console.error("Erro completo:", error);
+        console.error("="repeat(60));
+        throw error;
+      }
     },
     onSuccess: (data) => {
-      console.log("✅ Planos concedidos com sucesso:", data);
+      console.log("="repeat(60));
+      console.log("🎉 MUTATION SUCCESS CALLBACK");
+      console.log("Dados retornados:", data);
+      console.log("="repeat(60));
       
-      setSucesso(`✅ Planos concedidos para ${usuarioSelecionado?.full_name}!`);
-      setTimeout(() => setSucesso(null), 3000);
+      setSucesso(`✅ Usuário ${usuarioSelecionado?.full_name} atualizado com sucesso!`);
       
-      // Invalidar queries
+      // Invalidar queries imediatamente
       queryClient.invalidateQueries({ queryKey: ['todos-usuarios'] });
       queryClient.invalidateQueries({ queryKey: ['usuarios-profissionais'] });
       queryClient.invalidateQueries({ queryKey: ['testers'] });
       
-      // Reload após 1s
-      setTimeout(() => window.location.reload(), 1000);
+      // Refetch forçado
+      queryClient.refetchQueries({ queryKey: ['todos-usuarios'] });
+      
+      console.log("🔄 Recarregando página em 1.5s...");
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
     },
     onError: (error) => {
-      console.error("❌ Erro ao conceder planos:", error);
-      setErro("Erro: " + error.message);
-      setTimeout(() => setErro(null), 5000);
+      console.error("="repeat(60));
+      console.error("💥 MUTATION ERROR CALLBACK");
+      console.error("Erro:", error);
+      console.error("Mensagem:", error.message);
+      console.error("="repeat(60));
+      
+      setErro(`❌ Erro: ${error.message}`);
+      setTimeout(() => setErro(null), 8000);
     }
   });
 
