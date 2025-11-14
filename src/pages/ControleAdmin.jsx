@@ -207,7 +207,7 @@ export default function ControleAdmin() {
     hora_agendamento: "03:00"
   });
   const [mostrarGerenciadorVersoes, setMostrarGerenciadorVersoes] = useState(false);
-  const [gerandoDescricaoIA, setGerandoDescricaoIA] = useState(false); // NOVO: estado para o botão IA
+  const [gerandoDescricaoIA, setGerandoDescricaoIA] = useState(false);
 
   // NOVOS Estados para Contas Teste
   const [mostrarModalCriarTester, setMostrarModalCriarTester] = useState(false);
@@ -318,7 +318,6 @@ export default function ControleAdmin() {
     enabled: !!user,
   });
 
-  // NOVA Query: Versões do Sistema
   const { data: versoes = [], isLoading: loadingVersoes } = useQuery({
     queryKey: ['versoes-sistema'],
     queryFn: async () => {
@@ -328,7 +327,6 @@ export default function ControleAdmin() {
     refetchInterval: 30000,
   });
 
-  // NOVA Query: Testers
   const { data: testers = [], isLoading: loadingTesters } = useQuery({
     queryKey: ['testers'],
     queryFn: async () => {
@@ -804,7 +802,7 @@ Bem-vindo(a)! 💆‍♀️
       }
 
       const novaVersao = await base44.entities.VersaoSistema.create({
-        numero_versao: proximaVersao,
+        numero_versao: proximaVersimao,
         titulo,
         descricao,
         conteudo_detalhado: conteudo,
@@ -1912,7 +1910,7 @@ Valor Total: R$ ${solicitacoesImpulsionamento.reduce((sum, s) => sum + (s.valor 
           body { font-family: Arial, sans-serif; padding: 20px; }
           h1 { color: #EC4899; }
           table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-          th, td { border: 1px solid #ddd; padding: 12px; text-left: left; }
+          th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
           th { background: #EC4899; color: white; }
         </style>
       </head>
@@ -2008,7 +2006,8 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
       return;
     }
 
-    if (confirm(`Confirma o agendamento de atualização forçada para ${format(dataAgendamentoForcada, "dd/MM/yyyy 'às' HH:mm', { locale: ptBR })}?\n\nTodos os usuários terão o site recarregado automaticamente neste horário.`)) {
+    const dataFormatada = format(dataAgendamentoForcada, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
+    if (confirm(`Confirma o agendamento de atualização forçada para ${dataFormatada}?\n\nTodos os usuários terão o site recarregado automaticamente neste horário.`)) {
       agendarAtualizacaoForcadaMutation.mutate({
         dataAgendada: dataAgendamentoForcada.toISOString(),
         titulo: tituloAgendamentoForcada,
@@ -2057,16 +2056,11 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
     setErro(null);
     try {
       const prompt = `Crie uma descrição resumida para a seguinte atualização do sistema, com foco nos benefícios para o usuário (até 3 frases): "${dadosNovaVersao.titulo}"`;
-      const response = await base44.integrations.Core.GenerateResponse({
-        prompt: prompt,
-        model: "gpt-3.5-turbo",
-        max_tokens: 100
+      const response = await base44.integrations.Core.InvokeLLM({
+        prompt: prompt
       });
-      if (response && response.response) {
-        setDadosNovaVersao(prev => ({ ...prev, descricao: response.response.trim() }));
-      } else {
-        throw new Error("Não foi possível gerar a descrição. Tente novamente.");
-      }
+      // Assuming InvokeLLM returns a string directly
+      setDadosNovaVersao(prev => ({ ...prev, descricao: response.trim() }));
     } catch (error) {
       console.error("Erro ao gerar descrição com IA:", error);
       setErro("Erro ao gerar descrição com IA: " + (error.message || "Serviço indisponível."));
