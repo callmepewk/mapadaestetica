@@ -787,62 +787,68 @@ Bem-vindo(a)! 💆‍♀️
 
   const editarUsuarioCompletoMutation = useMutation({
     mutationFn: async ({ email, dados }) => {
-      console.log("🔵 INICIANDO ATUALIZAÇÃO DO USUÁRIO");
-      console.log("Email:", email);
-      console.log("Dados recebidos:", dados);
+      console.log("=".repeat(60));
+      console.log("✏️ MODAL EDIÇÃO - UPDATE VIA API DIRETA");
+      console.log("=".repeat(60));
+      console.log("📧 Email alvo:", email);
+      console.log("📋 Dados originais:", dados);
       
-      // FORÇAR ATUALIZAÇÃO COM TODOS OS CAMPOS
       const updateData = {};
       
-      // Campos básicos
       if (dados.full_name !== undefined) updateData.full_name = dados.full_name;
       if (dados.telefone !== undefined) updateData.telefone = dados.telefone;
       if (dados.whatsapp !== undefined) updateData.whatsapp = dados.whatsapp;
       
-      // Tipo e role (CRÍTICOS)
       updateData.tipo_usuario = dados.tipo_usuario;
       updateData.role = dados.role;
-      
-      // Planos (CRÍTICOS)
       updateData.plano_ativo = dados.plano_ativo;
       updateData.plano_clube_beleza = dados.plano_clube_beleza;
       updateData.plano_patrocinador = dados.plano_patrocinador;
-      
-      // Pontos e recompensas
       updateData.pontos_acumulados = parseInt(dados.pontos_acumulados) || 0;
       updateData.beauty_coins = parseInt(dados.beauty_coins) || 0;
-      
-      // Cadastro completo
       updateData.cadastro_completo = Boolean(dados.cadastro_completo);
       
-      console.log("🟢 Dados finais para update:", updateData);
+      console.log("📦 Payload preparado:", JSON.stringify(updateData, null, 2));
+      console.log("🚀 Executando via fetch API...");
       
-      const resultado = await base44.entities.User.update(email, updateData);
-      console.log("✅ Update executado, resultado:", resultado);
+      const response = await fetch('/api/entities/User', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: { email: email },
+          data: updateData
+        })
+      });
+
+      if (!response.ok) {
+        const errData = await response.json();
+        console.error("❌ API retornou erro:", errData);
+        throw new Error(errData.message || `HTTP ${response.status}`);
+      }
+
+      const resultado = await response.json();
+      console.log("✅ SUCESSO API:", resultado);
+      console.log("=".repeat(60));
       
       return { email, updateData, resultado };
     },
     onSuccess: async (data) => {
-      console.log("✅ Mutation onSuccess, dados:", data);
+      console.log("🎉 Update SUCCESS - invalidando cache...");
       
       setMostrarModalEditarUsuario(false);
       setUsuarioEditando(null);
-      setSucesso("✅ Usuário atualizado com sucesso!");
+      setSucesso("✅ Usuário atualizado!");
       
-      // Invalidar e refetch
       queryClient.invalidateQueries({ queryKey: ['todos-usuarios'] });
       queryClient.invalidateQueries({ queryKey: ['usuarios-profissionais'] });
       queryClient.invalidateQueries({ queryKey: ['testers'] });
       
-      // Reload forçado após 1s
-      setTimeout(() => {
-        console.log("🔄 Recarregando página...");
-        window.location.reload();
-      }, 1000);
+      console.log("🔄 Reload em 1s...");
+      setTimeout(() => window.location.reload(), 1000);
     },
     onError: (error) => {
-      console.error("❌ Erro na mutation:", error);
-      setErro("❌ Erro ao atualizar: " + error.message);
+      console.error("💥 ERROR callback:", error);
+      setErro("❌ Falha: " + error.message);
       setTimeout(() => setErro(null), 5000);
     }
   });
