@@ -80,13 +80,17 @@ export default function ConcederPlanos({ todosUsuarios }) {
 
       try {
         console.log("🔄 Chamando base44.entities.User.update()...");
+        console.log("🔑 ID/Email usado:", email);
+        console.log("📦 Dados enviados:", updateData);
         
-        // User entity no Base44 usa email como identificador
+        // IMPORTANTE: No Base44, User é atualizado pelo email
         const resultado = await base44.entities.User.update(email, updateData);
         
         console.log("✅ SUCESSO! Resposta do servidor:");
         console.log(JSON.stringify(resultado, null, 2));
         console.log("=".repeat(60));
+        
+        alert(`✅ ATUALIZAÇÃO CONCLUÍDA!\n\nUsuário: ${email}\nVerifique o console para detalhes.`);
 
         // Criar notificação
         try {
@@ -112,6 +116,9 @@ export default function ConcederPlanos({ todosUsuarios }) {
         console.error("Stack:", error.stack);
         console.error("Erro completo:", error);
         console.error("=".repeat(60));
+        
+        alert(`❌ ERRO AO ATUALIZAR!\n\n${error.message}\n\nVerifique o console para mais detalhes.`);
+        
         throw error;
       }
     },
