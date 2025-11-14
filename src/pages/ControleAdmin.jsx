@@ -802,7 +802,7 @@ Bem-vindo(a)! 💆‍♀️
       }
 
       const novaVersao = await base44.entities.VersaoSistema.create({
-        numero_versao: proximaVersimao,
+        numero_versao: proximaVersao,
         titulo,
         descricao,
         conteudo_detalhado: conteudo,
@@ -1759,6 +1759,7 @@ CONFIGURAÇÕES NECESSÁRIAS:
         <p>Gerado em ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR })}</p>
         <p><strong>Total:</strong> ${bannersFiltrados.length}</p>
         <p><strong>Ativos:</strong> ${bannersFiltrados.filter(b => b.status === 'ativo').length}</p>
+        <p><strong>Pausados:</strong> ${bannersFiltrados.filter(b => b.status === 'pausado').length}</p>
         <table>
           <thead>
             <tr>
