@@ -599,21 +599,43 @@ Bem-vindo(a)! 💆‍♀️
 
   const excluirProfissionalMutation = useMutation({
     mutationFn: async (email) => {
-      await base44.entities.User.update(email, {
+      console.log("=".repeat(60));
+      console.log("🗑️ INICIANDO CONVERSÃO DE PROFISSIONAL PARA PACIENTE");
+      console.log("📧 Email:", email);
+      console.log("=".repeat(60));
+      
+      const updateData = {
         tipo_usuario: 'paciente',
         plano_ativo: 'cobre',
-        plano_patrocinador: 'nenhum'
-      });
+        plano_patrocinador: 'nenhum',
+        plano_clube_beleza: 'nenhum',
+        role: 'user'
+      };
+      
+      console.log("📦 Dados update:", updateData);
+      
+      const resultado = await base44.entities.User.update(email, updateData);
+      
+      console.log("✅ Conversão concluída:", resultado);
+      console.log("=".repeat(60));
+      
+      return resultado;
     },
     onSuccess: () => {
+      console.log("🎉 Mutation success - invalidando queries...");
       queryClient.invalidateQueries({ queryKey: ['usuarios-profissionais'] });
       queryClient.invalidateQueries({ queryKey: ['todos-usuarios'] });
-      setSucesso("Profissional removido! Conta convertida para paciente.");
-      setTimeout(() => setSucesso(null), 3000);
+      queryClient.invalidateQueries({ queryKey: ['testers'] });
+      setSucesso("✅ Usuário convertido para paciente com sucesso!");
+      setTimeout(() => {
+        setSucesso(null);
+        window.location.reload();
+      }, 2000);
     },
     onError: (error) => {
-      setErro("Erro ao remover profissional: " + error.message);
-      setTimeout(() => setErro(null), 3000);
+      console.error("❌ Erro na mutation:", error);
+      setErro("Erro ao converter usuário: " + error.message);
+      setTimeout(() => setErro(null), 5000);
     }
   });
 
@@ -1475,8 +1497,14 @@ CONFIGURAÇÕES NECESSÁRIAS:
   };
 
   const handleExcluirProfissional = (usuario) => {
-    if (confirm(`ATENÇÃO: Remover ${usuario.full_name} como profissional?\n\nEsta ação irá:\n- Converter a conta para Paciente\n- Resetar plano para Cobre\n- Remover plano de patrocinador`)) {
+    console.log("🔴 Botão de exclusão clicado para:", usuario.full_name);
+    
+    if (confirm(`⚠️ ATENÇÃO: Converter ${usuario.full_name} para Paciente?\n\nEsta ação irá:\n✅ Manter a conta do usuário\n❌ Converter tipo para "Paciente"\n❌ Resetar plano Mapa para "Cobre"\n❌ Remover planos Clube e Patrocinador\n❌ Resetar role para "user"\n\nConfirmar?`)) {
+      console.log("✅ Usuário confirmou - executando mutation");
+      alert(`🔄 Iniciando conversão de:\n${usuario.full_name}\n\nAbra o Console (F12) para acompanhar!`);
       excluirProfissionalMutation.mutate(usuario.email);
+    } else {
+      console.log("❌ Usuário cancelou");
     }
   };
 
