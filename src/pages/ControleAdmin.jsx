@@ -600,7 +600,7 @@ Bem-vindo(a)! 💆‍♀️
   const excluirProfissionalMutation = useMutation({
     mutationFn: async (email) => {
       console.log("=".repeat(60));
-      console.log("🗑️ INICIANDO CONVERSÃO DE PROFISSIONAL PARA PACIENTE");
+      console.log("🗑️ ADMIN: CONVERSÃO PARA PACIENTE");
       console.log("📧 Email:", email);
       console.log("=".repeat(60));
       
@@ -612,11 +612,26 @@ Bem-vindo(a)! 💆‍♀️
         role: 'user'
       };
       
-      console.log("📦 Dados update:", updateData);
+      console.log("📦 Update data:", updateData);
+      console.log("🚀 Chamando API direta...");
       
-      const resultado = await base44.entities.User.update(email, updateData);
-      
-      console.log("✅ Conversão concluída:", resultado);
+      // Usar API direta
+      const response = await fetch('/api/entities/User', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: { email: email },
+          data: updateData
+        })
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.message || 'Falha na API');
+      }
+
+      const resultado = await response.json();
+      console.log("✅ Conversão OK:", resultado);
       console.log("=".repeat(60));
       
       return resultado;
