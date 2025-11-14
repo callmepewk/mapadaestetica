@@ -62,8 +62,9 @@ export default function ConcederPlanos({ todosUsuarios }) {
 
       console.log("📤 Enviando update:", updateData);
 
-      // User entity usa email como ID
-      await base44.auth.updateUser(usuario.email, updateData);
+      // Atualizar usando a entidade User diretamente
+      const resultado = await base44.entities.User.update(usuario.email, updateData);
+      console.log("✅ Update executado:", resultado);
 
       // Criar notificação para o usuário
       try {
