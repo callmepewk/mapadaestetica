@@ -749,50 +749,62 @@ Bem-vindo(a)! 💆‍♀️
 
   const editarUsuarioCompletoMutation = useMutation({
     mutationFn: async ({ email, dados }) => {
-      // GARANTIR QUE TODOS OS CAMPOS SEJAM ENVIADOS
-      const dadosCompletos = {
-        full_name: dados.full_name,
-        telefone: dados.telefone || "",
-        whatsapp: dados.whatsapp || "",
-        tipo_usuario: dados.tipo_usuario,
-        role: dados.role,
-        plano_ativo: dados.plano_ativo,
-        plano_clube_beleza: dados.plano_clube_beleza,
-        plano_patrocinador: dados.plano_patrocinador,
-        pontos_acumulados: Number(dados.pontos_acumulados) || 0,
-        beauty_coins: Number(dados.beauty_coins) || 0,
-        cadastro_completo: Boolean(dados.cadastro_completo)
-      };
+      console.log("🔵 INICIANDO ATUALIZAÇÃO DO USUÁRIO");
+      console.log("Email:", email);
+      console.log("Dados recebidos:", dados);
       
-      console.log("Salvando dados do usuário:", email, dadosCompletos);
-      await base44.entities.User.update(email, dadosCompletos);
-      return { email, dadosCompletos };
+      // FORÇAR ATUALIZAÇÃO COM TODOS OS CAMPOS
+      const updateData = {};
+      
+      // Campos básicos
+      if (dados.full_name !== undefined) updateData.full_name = dados.full_name;
+      if (dados.telefone !== undefined) updateData.telefone = dados.telefone;
+      if (dados.whatsapp !== undefined) updateData.whatsapp = dados.whatsapp;
+      
+      // Tipo e role (CRÍTICOS)
+      updateData.tipo_usuario = dados.tipo_usuario;
+      updateData.role = dados.role;
+      
+      // Planos (CRÍTICOS)
+      updateData.plano_ativo = dados.plano_ativo;
+      updateData.plano_clube_beleza = dados.plano_clube_beleza;
+      updateData.plano_patrocinador = dados.plano_patrocinador;
+      
+      // Pontos e recompensas
+      updateData.pontos_acumulados = parseInt(dados.pontos_acumulados) || 0;
+      updateData.beauty_coins = parseInt(dados.beauty_coins) || 0;
+      
+      // Cadastro completo
+      updateData.cadastro_completo = Boolean(dados.cadastro_completo);
+      
+      console.log("🟢 Dados finais para update:", updateData);
+      
+      const resultado = await base44.entities.User.update(email, updateData);
+      console.log("✅ Update executado, resultado:", resultado);
+      
+      return { email, updateData, resultado };
     },
-    onSuccess: async (result) => {
-      console.log("Usuário atualizado com sucesso:", result);
-      
-      // Invalidar TODAS as queries relacionadas a usuários
-      await queryClient.invalidateQueries({ queryKey: ['todos-usuarios'] });
-      await queryClient.invalidateQueries({ queryKey: ['usuarios-profissionais'] });
-      await queryClient.invalidateQueries({ queryKey: ['testers'] });
-      
-      // Refetch imediato
-      await queryClient.refetchQueries({ queryKey: ['todos-usuarios'] });
-      await queryClient.refetchQueries({ queryKey: ['usuarios-profissionais'] });
-      await queryClient.refetchQueries({ queryKey: ['testers'] });
+    onSuccess: async (data) => {
+      console.log("✅ Mutation onSuccess, dados:", data);
       
       setMostrarModalEditarUsuario(false);
       setUsuarioEditando(null);
-      setSucesso("✅ Usuário atualizado! Recarregando...");
+      setSucesso("✅ Usuário atualizado com sucesso!");
       
-      // Forçar reload após 500ms
+      // Invalidar e refetch
+      queryClient.invalidateQueries({ queryKey: ['todos-usuarios'] });
+      queryClient.invalidateQueries({ queryKey: ['usuarios-profissionais'] });
+      queryClient.invalidateQueries({ queryKey: ['testers'] });
+      
+      // Reload forçado após 1s
       setTimeout(() => {
+        console.log("🔄 Recarregando página...");
         window.location.reload();
-      }, 500);
+      }, 1000);
     },
     onError: (error) => {
-      console.error("Erro ao atualizar usuário:", error);
-      setErro("❌ Erro ao atualizar usuário: " + error.message);
+      console.error("❌ Erro na mutation:", error);
+      setErro("❌ Erro ao atualizar: " + error.message);
       setTimeout(() => setErro(null), 5000);
     }
   });
