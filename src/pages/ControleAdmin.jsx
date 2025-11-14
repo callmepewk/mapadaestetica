@@ -975,7 +975,7 @@ Equipe Mapa da Estética
 
       const todosUsuariosLista = await base44.entities.User.list('-created_date', 2000);
       for (const usuario of todosUsuariosLista) {
-        await base44.entities.User.update(usuario.email, {
+        await base44.entities.User.update(usuario.id, {
           versao_sistema: novaVersao.numero_versao
         });
         await base44.entities.Notificacao.create({
@@ -1033,7 +1033,7 @@ Equipe Mapa da Estética
 
       const todosUsuariosLista = await base44.entities.User.list('-created_date', 2000);
       for (const usuario of todosUsuariosLista) {
-        await base44.entities.User.update(usuario.email, {
+        await base44.entities.User.update(usuario.id, {
           versao_sistema: novaVersao.numero_versao
         });
       }
@@ -1068,7 +1068,7 @@ Equipe Mapa da Estética
       const usuariosNaVersaoAntiga = todosUsuariosLista.filter(u => u.versao_sistema === versao.numero_versao);
       
       for (const usuario of usuariosNaVersaoAntiga) {
-        await base44.entities.User.update(usuario.email, {
+        await base44.entities.User.update(usuario.id, {
           versao_sistema: versaoAtualFromList.numero_versao
         });
       }
@@ -5461,7 +5461,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                           size="icon"
                           onClick={() => {
                             atualizarPontosMutation.mutate({
-                              email: testerSelecionado.email,
+                              userId: testerSelecionado.id,
                               pontos: Math.max(0, (testerSelecionado.pontos_acumulados || 0) - 100),
                               beautyCoins: testerSelecionado.beauty_coins || 0
                             });
@@ -5475,7 +5475,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                           value={testerSelecionado.pontos_acumulados || 0}
                           onChange={(e) => {
                             atualizarPontosMutation.mutate({
-                              email: testerSelecionado.email,
+                              userId: testerSelecionado.id,
                               pontos: parseInt(e.target.value) || 0,
                               beautyCoins: testerSelecionado.beauty_coins || 0
                             });
@@ -5488,7 +5488,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                           size="icon"
                           onClick={() => {
                             atualizarPontosMutation.mutate({
-                              email: testerSelecionado.email,
+                              userId: testerSelecionado.id,
                               pontos: (testerSelecionado.pontos_acumulados || 0) + 100,
                               beautyCoins: testerSelecionado.beauty_coins || 0
                             });
