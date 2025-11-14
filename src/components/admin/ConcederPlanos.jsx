@@ -50,9 +50,9 @@ export default function ConcederPlanos({ todosUsuarios }) {
 
   const concederPlanosMutation = useMutation({
     mutationFn: async ({ email, planos, tipo, pontos, beautyCoins, role }) => {
-      console.log("="repeat(60));
+      console.log("=".repeat(60));
       console.log("🔵 INICIANDO ATUALIZAÇÃO ADMINISTRATIVA");
-      console.log("="repeat(60));
+      console.log("=".repeat(60));
       console.log("📧 Email:", email);
       console.log("📊 Novos valores:");
       console.log("   - Tipo:", tipo);
@@ -86,7 +86,7 @@ export default function ConcederPlanos({ todosUsuarios }) {
         
         console.log("✅ SUCESSO! Resposta do servidor:");
         console.log(JSON.stringify(resultado, null, 2));
-        console.log("="repeat(60));
+        console.log("=".repeat(60));
 
         // Criar notificação
         try {
@@ -106,20 +106,20 @@ export default function ConcederPlanos({ todosUsuarios }) {
         return { email, updateData, resultado };
         
       } catch (error) {
-        console.error("="repeat(60));
+        console.error("=".repeat(60));
         console.error("❌ ERRO NA ATUALIZAÇÃO:");
         console.error("Mensagem:", error.message);
         console.error("Stack:", error.stack);
         console.error("Erro completo:", error);
-        console.error("="repeat(60));
+        console.error("=".repeat(60));
         throw error;
       }
     },
     onSuccess: (data) => {
-      console.log("="repeat(60));
+      console.log("=".repeat(60));
       console.log("🎉 MUTATION SUCCESS CALLBACK");
       console.log("Dados retornados:", data);
-      console.log("="repeat(60));
+      console.log("=".repeat(60));
       
       setSucesso(`✅ Usuário ${usuarioSelecionado?.full_name} atualizado com sucesso!`);
       
@@ -137,11 +137,11 @@ export default function ConcederPlanos({ todosUsuarios }) {
       }, 1500);
     },
     onError: (error) => {
-      console.error("="repeat(60));
+      console.error("=".repeat(60));
       console.error("💥 MUTATION ERROR CALLBACK");
       console.error("Erro:", error);
       console.error("Mensagem:", error.message);
-      console.error("="repeat(60));
+      console.error("=".repeat(60));
       
       setErro(`❌ Erro: ${error.message}`);
       setTimeout(() => setErro(null), 8000);
