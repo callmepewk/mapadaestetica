@@ -2059,12 +2059,14 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
   const confirmarEdicaoUsuario = () => {
     if (!usuarioEditando) return;
     
-    if (confirm(`⚠️ CONFIRMAR ALTERAÇÕES?\n\nUsuário: ${usuarioEditando.full_name}\n\nNovo Tipo: ${dadosEdicaoUsuario.tipo_usuario}\nNovo Plano Mapa: ${PLANOS_INFO[dadosEdicaoUsuario.plano_ativo]?.nome}\nNovo Plano Clube: ${dadosEdicaoUsuario.plano_clube_beleza}\nNovo Plano Patrocinador: ${dadosEdicaoUsuario.plano_patrocinador}\n\nEsta ação será aplicada IMEDIATAMENTE.`)) {
-      editarUsuarioCompletoMutation.mutate({
-        email: usuarioEditando.email,
-        dados: dadosEdicaoUsuario
-      });
-    }
+    console.log("=== SALVANDO ALTERAÇÕES DO USUÁRIO ===");
+    console.log("Email:", usuarioEditando.email);
+    console.log("Dados atuais:", dadosEdicaoUsuario);
+    
+    editarUsuarioCompletoMutation.mutate({
+      email: usuarioEditando.email,
+      dados: dadosEdicaoUsuario
+    });
   };
 
   const handleGerarDescricaoIA = async () => {
