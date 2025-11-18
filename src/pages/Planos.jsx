@@ -25,13 +25,13 @@ const planos = [
       especialidades: 1,
       anuncios: 1,
       tags: 1,
-      dias_exposicao: 3
+      dias_exposicao: 30
     },
     beneficios: [
       "1 Especialidade cadastrada",
       "1 Anúncio ativo",
       "1 Tag/palavra-chave do Google Negócio",
-      "3 dias de exposição do anúncio",
+      "30 dias de exposição do anúncio",
       "Perfil básico na plataforma",
       "Suporte por email",
       "Estatísticas básicas"
