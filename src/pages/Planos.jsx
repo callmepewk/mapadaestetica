@@ -50,23 +50,23 @@ const planos = [
   {
     nome: "BÁSICO",
     tipo: "prata",
-    preco: "R$ 99/mês",
+    preco: "R$ 49,90/mês",
     cor: "from-gray-300 to-gray-500",
     icone: Star,
     destaque: false,
     linkPagamento: "https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=ecb3830244194758803318fe45d4cbde",
     limites: {
-      especialidades: 2,
+      especialidades: 1,
       anuncios: 10,
       tags: 5,
-      dias_exposicao: 7
+      dias_exposicao: 30
     },
     beneficios: [
       "✅ Acesso ao WhatsApp dos profissionais",
-      "2 Especialidades cadastradas",
+      "1 Especialidade cadastrada",
       "10 Anúncios ativos",
       "5 Tags/palavras-chave do Google Negócio",
-      "7 dias de exposição por anúncio",
+      "30 dias de exposição por anúncio",
       "Perfil destacado",
       "Suporte prioritário",
       "Estatísticas avançadas",
@@ -86,23 +86,23 @@ const planos = [
   {
     nome: "PRO",
     tipo: "ouro",
-    preco: "R$ 197/mês",
+    preco: "R$ 99,00/mês",
     cor: "from-yellow-400 to-amber-500",
     icone: Crown,
     destaque: true,
     linkPagamento: "https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=13c2448777fd4359a6ecd5d545beacd1",
     limites: {
-      especialidades: 3,
-      anuncios: 15,
+      especialidades: 2,
+      anuncios: 20,
       tags: 10,
-      dias_exposicao: 14
+      dias_exposicao: 30
     },
     beneficios: [
       "✅ Acesso ao WhatsApp dos profissionais",
-      "3 Especialidades cadastradas",
-      "15 Anúncios ativos",
+      "2 Especialidades cadastradas",
+      "20 Anúncios ativos",
       "10 Tags/palavras-chave premium",
-      "14 dias de exposição por anúncio",
+      "30 dias de exposição por anúncio",
       "Prioridade alta nas buscas",
       "Perfil premium com destaque dourado",
       "Suporte VIP com chat direto",
@@ -123,7 +123,7 @@ const planos = [
   {
     nome: "PRIME",
     tipo: "diamante",
-    preco: "R$ 697/mês",
+    preco: "R$ 197,00/mês",
     cor: "from-blue-400 to-cyan-500",
     icone: Gem,
     destaque: false,
@@ -132,14 +132,14 @@ const planos = [
       especialidades: 5,
       anuncios: 25,
       tags: 20,
-      dias_exposicao: 21
+      dias_exposicao: 30
     },
     beneficios: [
       "✅ Acesso ao WhatsApp dos profissionais",
       "5 Especialidades cadastradas",
       "25 Anúncios ativos",
       "20 Tags/palavras-chave premium",
-      "21 dias de exposição por anúncio",
+      "30 dias de exposição por anúncio",
       "Até 200 pacientes (Cloud.IA) - R$ 697",
       "Prioridade máxima nas buscas",
       "Perfil PRIME com destaque exclusivo",
@@ -162,11 +162,11 @@ const planos = [
   {
     nome: "DELUXE",
     tipo: "platina",
-    preco: "R$ 997/mês",
+    preco: "Consulte",
     cor: "from-purple-500 to-pink-600",
     icone: Zap,
     destaque: false,
-    linkPagamento: "https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=9e7d3e30f0304d178d1656299feaf459",
+    linkPagamento: null,
     limites: {
       especialidades: "Ilimitadas",
       anuncios: "Ilimitados",
@@ -917,16 +917,25 @@ export default function Planos() {
 
                         <div className="space-y-2 mt-auto">
                           <Button
-                            onClick={() => handleContratarPlano(plano)}
+                            onClick={() => {
+                              if (plano.tipo === 'platina') {
+                                const mensagem = `Olá! Tenho interesse no Plano DELUXE do Mapa da Estética! Gostaria de saber mais detalhes e valores. 💎`;
+                                window.open(`https://wa.me/5531972595643?text=${encodeURIComponent(mensagem)}`, '_blank');
+                              } else {
+                                handleContratarPlano(plano);
+                              }
+                            }}
                             className={`w-full ${
                               plano.destaque
                                 ? "bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700"
                                 : plano.tipo === 'cobre'
                                 ? "bg-[#2C2C2C] hover:bg-[#3A3A3A]"
+                                : plano.tipo === 'platina'
+                                ? "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
                                 : "bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
                             }`}
                           >
-                            {plano.tipo === 'cobre' ? 'Plano Gratuito' : 'Contratar Agora'}
+                            {plano.tipo === 'cobre' ? 'Plano Gratuito' : plano.tipo === 'platina' ? 'Falar com Comercial' : 'Contratar Agora'}
                             <ArrowRight className="w-4 h-4 ml-2" />
                           </Button>
                         </div>
