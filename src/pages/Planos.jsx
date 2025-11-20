@@ -368,7 +368,8 @@ export default function Planos() {
     const verificarPagamento = async () => {
       const params = new URLSearchParams(location.search);
       
-      const collectionStatus = params.get('collection_status');
+      // Suporte para ambos: Mercado Pago (collection_status) e Greenn (status)
+      const collectionStatus = params.get('collection_status') || params.get('status');
       const planoParam = params.get('plano');
       const tipoPlanoParam = params.get('tipo_plano');
 
@@ -394,7 +395,8 @@ export default function Planos() {
             let notificationTitle = null;
             let notificationMessage = null;
 
-            if (collectionStatus === 'approved') {
+            // Aceitar tanto 'approved' quanto 'paid' (Greenn)
+            if (collectionStatus === 'approved' || collectionStatus === 'paid') {
               updateData = { 
                 status: 'pagamento_aprovado_mp', 
                 data_pagamento_mp: new Date().toISOString() 
@@ -442,7 +444,7 @@ export default function Planos() {
               alert(alertMessage);
             }
           } else {
-            if (collectionStatus === 'approved') {
+            if (collectionStatus === 'approved' || collectionStatus === 'paid') {
               await base44.entities.SolicitacaoAtivacaoPlano.create({
                 usuario_email: user.email,
                 usuario_nome: user.full_name,
@@ -532,9 +534,8 @@ export default function Planos() {
       return;
     }
 
-    const redirectUrl = encodeURIComponent(`${window.location.origin}${createPageUrl("Planos")}?plano=${plano.tipo}&tipo_plano=profissional`);
-    const linkWithRedirect = `${plano.linkPagamento}&external_reference=${user.email}-${plano.tipo}&back_url_success=${redirectUrl}&back_url_pending=${redirectUrl}&back_url_failure=${redirectUrl}`;
-    window.open(linkWithRedirect, '_blank');
+    // Greenn/PayFast - abre diretamente o link
+    window.open(plano.linkPagamento, '_blank');
     
     setMostrarModalConfirmacao(true);
   };
@@ -645,9 +646,8 @@ export default function Planos() {
         `
       });
 
-      const redirectUrl = encodeURIComponent(`${window.location.origin}${createPageUrl("Planos")}?plano=${planoSelecionadoPatrocinador.tipo}&tipo_plano=patrocinador`);
-      const linkWithRedirect = `${planoSelecionadoPatrocinador.linkPagamento}&external_reference=${user.email}-${planoSelecionadoPatrocinador.tipo}-patrocinador&back_url_success=${redirectUrl}&back_url_pending=${redirectUrl}&back_url_failure=${redirectUrl}`;
-      window.open(linkWithRedirect, '_blank');
+      // Abre o link direto da Greenn/PayFast para patrocinadores
+      window.open(planoSelecionadoPatrocinador.linkPagamento, '_blank');
       
       setMostrarModalConfirmacaoPatrocinador(false);
       setMensagemSucesso("Solicitação de patrocínio enviada com sucesso! Você será redirecionado para o pagamento.");
