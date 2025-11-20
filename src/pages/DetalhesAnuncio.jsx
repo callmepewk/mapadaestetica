@@ -1,9 +1,8 @@
-
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { MapPin, Phone, Mail, Globe, Clock, Instagram, Facebook, ArrowLeft, Share2, Heart, Eye, Calendar, Lock, Crown, TrendingUp, CheckCircle, Star, Award, DollarSign } from "lucide-react";
+import { MapPin, Phone, Mail, Globe, Clock, Instagram, Facebook, ArrowLeft, Share2, Heart, Eye, Calendar, Lock, Crown, TrendingUp, CheckCircle, Star, Award, DollarSign, Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -630,15 +629,36 @@ export default function DetalhesAnuncio() {
                 
                 <Separator />
                 <div>
-                  <div className="flex items-start gap-2 text-gray-600">
+                  <div className="flex items-start gap-2 text-gray-600 mb-3">
                     <MapPin className="w-5 h-5 text-pink-600 flex-shrink-0 mt-0.5" />
-                    <div>
+                    <div className="flex-1">
                       <p className="font-medium">{anuncio.cidade}, {anuncio.estado}</p>
-                      {anuncio.endereco && <p className="text-sm text-gray-500">{anuncio.endereco}</p>}
+                      {anuncio.rua && (
+                        <p className="text-sm text-gray-500">
+                          {anuncio.rua}{anuncio.numero ? `, ${anuncio.numero}` : ''}
+                        </p>
+                      )}
                       {anuncio.bairro && <p className="text-sm text-gray-500">Bairro: {anuncio.bairro}</p>}
+                      {anuncio.complemento && <p className="text-sm text-gray-500">{anuncio.complemento}</p>}
                       {anuncio.cep && <p className="text-sm text-gray-500">CEP: {anuncio.cep}</p>}
+                      {anuncio.observacoes_endereco && (
+                        <p className="text-xs text-gray-400 mt-1 italic">{anuncio.observacoes_endereco}</p>
+                      )}
                     </div>
                   </div>
+                  
+                  {/* Botão Como Chegar - somente se tiver localização exata */}
+                  {anuncio.compartilhar_localizacao_exata && anuncio.latitude && anuncio.longitude && (
+                    <a
+                      href={`https://www.google.com/maps/dir/?api=1&destination=${anuncio.latitude},${anuncio.longitude}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 p-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all font-semibold shadow-lg"
+                    >
+                      <Navigation className="w-5 h-5" />
+                      <span>Como Chegar</span>
+                    </a>
+                  )}
                 </div>
               </CardContent>
             </Card>
