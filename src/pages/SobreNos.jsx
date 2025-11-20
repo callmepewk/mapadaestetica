@@ -9,9 +9,10 @@ import { createPageUrl } from "@/utils";
 const planosClubeCliente = [
   {
     nome: "LIGHT",
-    preco: "Grátis",
-    cor: "from-amber-100 to-amber-200",
-    textColor: "text-amber-900",
+    preco: "R$ 1,00",
+    periodo: "/dia",
+    cor: "from-blue-100 to-cyan-200",
+    textColor: "text-blue-900",
     beneficios: [
       "Acesso ao aplicativo localizador",
       "Busca de profissionais por categoria",
@@ -22,7 +23,11 @@ const planosClubeCliente = [
   },
   {
     nome: "GOLD",
-    preco: "R$ 49,90/mês",
+    preco: "R$ 49,90",
+    periodo: "/mês",
+    precoOriginal: "R$ 997",
+    promocao: "12x de R$ 397",
+    badge: "⭐ MAIS POPULAR",
     cor: "from-yellow-300 to-amber-400",
     textColor: "text-amber-900",
     destaque: true,
@@ -39,9 +44,10 @@ const planosClubeCliente = [
   },
   {
     nome: "VIP",
-    preco: "R$ 99,90/mês",
-    cor: "from-amber-400 to-yellow-600",
-    textColor: "text-amber-950",
+    preco: "Sob Consulta",
+    periodo: "",
+    cor: "from-gray-800 to-black",
+    textColor: "text-white",
     beneficios: [
       "Todos os benefícios do GOLD",
       "25% de desconto na rede parceira",
@@ -155,14 +161,27 @@ export default function SobreNos() {
             <div className="grid md:grid-cols-3 gap-8">
               {planosClubeCliente.map((plano, index) => (
                 <Card key={index} className={`border-2 border-amber-300 shadow-xl hover:shadow-2xl transition-all ${plano.destaque ? 'ring-4 ring-amber-500 transform scale-105' : ''}`}>
-                  {plano.destaque && (
+                  {plano.badge && (
                     <div className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-center py-2 font-bold text-sm">
-                      🌟 MAIS POPULAR
+                      {plano.badge}
                     </div>
                   )}
-                  <div className={`h-32 bg-gradient-to-br ${plano.cor} p-6 flex flex-col justify-center items-center`}>
+                  <div className={`h-40 bg-gradient-to-br ${plano.cor} p-6 flex flex-col justify-center items-center`}>
                     <h3 className={`text-2xl font-bold ${plano.textColor} mb-2`}>{plano.nome}</h3>
-                    <p className={`text-3xl font-bold ${plano.textColor}`}>{plano.preco}</p>
+                    {plano.precoOriginal && (
+                      <p className={`text-sm ${plano.textColor} opacity-60 line-through mb-1`}>
+                        {plano.precoOriginal}
+                      </p>
+                    )}
+                    <p className={`text-3xl font-bold ${plano.textColor}`}>
+                      {plano.preco}
+                      {plano.periodo && <span className="text-lg">{plano.periodo}</span>}
+                    </p>
+                    {plano.promocao && (
+                      <Badge className="mt-2 bg-red-500 text-white border-none">
+                        🔥 {plano.promocao}
+                      </Badge>
+                    )}
                   </div>
                   <CardContent className="p-6">
                     <div className="space-y-3 mb-6">
