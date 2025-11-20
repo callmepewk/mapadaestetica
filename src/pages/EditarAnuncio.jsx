@@ -161,8 +161,18 @@ export default function EditarAnuncio() {
       return;
     }
 
+    // Montar endereço completo
+    const enderecoCompleto = [
+      formData.rua,
+      formData.numero,
+      formData.bairro
+    ].filter(Boolean).join(', ');
+
     try {
-      await atualizarAnuncioMutation.mutateAsync(formData);
+      await atualizarAnuncioMutation.mutateAsync({
+        ...formData,
+        endereco: enderecoCompleto || formData.endereco
+      });
     } catch (error) {
       console.error("Erro ao atualizar anúncio:", error);
     }
@@ -444,15 +454,17 @@ export default function EditarAnuncio() {
           </Card>
 
           <Card className="border-none shadow-lg">
-            <CardContent className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Localização</h2>
-              <div className="grid md:grid-cols-2 gap-4">
+            <CardContent className="p-6 space-y-4">
+              <h2 className="text-xl font-semibold">Localização</h2>
+              
+              <div className="grid md:grid-cols-3 gap-4">
                 <div>
                   <Label>Cidade *</Label>
                   <Input
                     value={formData.cidade || ""}
                     onChange={(e) => handleInputChange("cidade", e.target.value)}
                     required
+                    placeholder="Ex: São Paulo"
                   />
                 </div>
                 <div>
@@ -470,6 +482,78 @@ export default function EditarAnuncio() {
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+                <div>
+                  <Label>CEP</Label>
+                  <Input
+                    value={formData.cep || ""}
+                    onChange={(e) => handleInputChange("cep", e.target.value)}
+                    placeholder="00000-000"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div className="col-span-2">
+                  <Label>Rua</Label>
+                  <Input
+                    value={formData.rua || ""}
+                    onChange={(e) => handleInputChange("rua", e.target.value)}
+                    placeholder="Ex: Av. Paulista"
+                  />
+                </div>
+                <div>
+                  <Label>Número</Label>
+                  <Input
+                    value={formData.numero || ""}
+                    onChange={(e) => handleInputChange("numero", e.target.value)}
+                    placeholder="Ex: 1000"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label>Bairro</Label>
+                <Input
+                  value={formData.bairro || ""}
+                  onChange={(e) => handleInputChange("bairro", e.target.value)}
+                  placeholder="Ex: Bela Vista"
+                />
+              </div>
+
+              <div>
+                <Label>Complemento</Label>
+                <Input
+                  value={formData.complemento || ""}
+                  onChange={(e) => handleInputChange("complemento", e.target.value)}
+                  placeholder="Ex: Sala 1005, Torre A"
+                />
+              </div>
+
+              <div>
+                <Label>Observações do Endereço</Label>
+                <Input
+                  value={formData.observacoes_endereco || ""}
+                  onChange={(e) => handleInputChange("observacoes_endereco", e.target.value)}
+                  placeholder="Ex: Próximo ao metrô"
+                />
+              </div>
+
+              {/* Checkbox para compartilhar localização exata */}
+              <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-lg">
+                <Checkbox
+                  id="compartilhar_localizacao_exata"
+                  checked={formData.compartilhar_localizacao_exata || false}
+                  onCheckedChange={(checked) => handleInputChange("compartilhar_localizacao_exata", checked)}
+                  className="mt-1"
+                />
+                <div className="flex-1">
+                  <Label htmlFor="compartilhar_localizacao_exata" className="cursor-pointer font-semibold text-blue-900">
+                    📍 Deseja compartilhar a localização exata?
+                  </Label>
+                  <p className="text-xs text-blue-700 mt-1">
+                    Permite que clientes obtenham direções precisas via GPS (Google Maps).
+                  </p>
                 </div>
               </div>
             </CardContent>
