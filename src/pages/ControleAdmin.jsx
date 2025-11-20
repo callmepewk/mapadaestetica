@@ -85,6 +85,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Textarea } from "@/components/ui/textarea";
 import ModalEditarUsuario from "../components/admin/ModalEditarUsuario";
 import ConcederPlanos from "../components/admin/ConcederPlanos";
+import ModalEnviarNotificacao from "../components/admin/ModalEnviarNotificacao";
 
 const PLANOS_INFO = {
   cobre: { nome: "Cobre", cor: "bg-orange-100 text-orange-800" },
@@ -4016,6 +4017,13 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                       Criar Conta Teste
                     </Button>
                     <Button
+                      onClick={() => setMostrarModalNotificacao(true)}
+                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                    >
+                      <Bell className="w-4 h-4 mr-2" />
+                      Enviar Notificação
+                    </Button>
+                    <Button
                       onClick={exportarRelatorioTesters}
                       variant="outline"
                       size="sm"
@@ -5315,6 +5323,16 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Modal Enviar Notificação */}
+        <ModalEnviarNotificacao
+          open={mostrarModalNotificacao}
+          onClose={() => setMostrarModalNotificacao(false)}
+          onSuccess={() => {
+            setSucesso("✅ Notificações enviadas com sucesso!");
+            setTimeout(() => setSucesso(null), 3000);
+          }}
+        />
 
         {/* NOVO: Modal Detalhes Tester */}
         <Dialog open={mostrarDetalhesTester} onOpenChange={setMostrarDetalhesTester}>
