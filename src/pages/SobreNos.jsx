@@ -11,8 +11,8 @@ const planosClubeCliente = [
     nome: "LIGHT",
     preco: "R$ 1,00",
     periodo: "/dia",
-    cor: "from-blue-100 to-cyan-200",
-    textColor: "text-blue-900",
+    imagemCartao: "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/370b33900_cartoclube1.jpeg",
+    corFundo: "from-orange-200 via-pink-200 to-blue-200",
     beneficios: [
       "Acesso ao aplicativo localizador",
       "Busca de profissionais por categoria",
@@ -23,13 +23,12 @@ const planosClubeCliente = [
   },
   {
     nome: "GOLD",
-    preco: "R$ 49,90",
-    periodo: "/mês",
+    preco: "12x de R$ 397",
     precoOriginal: "R$ 997",
-    promocao: "12x de R$ 397",
-    badge: "⭐ MAIS POPULAR",
-    cor: "from-yellow-300 to-amber-400",
-    textColor: "text-amber-900",
+    badge: "🔥 Oferta Black November",
+    descricao: "O plano mais completo",
+    imagemCartao: "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/66e4013fa_cartoclube2.jpeg",
+    corFundo: "from-gray-800 to-gray-900",
     destaque: true,
     beneficios: [
       "Todos os benefícios do LIGHT",
@@ -45,9 +44,9 @@ const planosClubeCliente = [
   {
     nome: "VIP",
     preco: "Sob Consulta",
-    periodo: "",
-    cor: "from-gray-800 to-black",
-    textColor: "text-white",
+    descricao: "Experiência premium completa e personalizada",
+    imagemCartao: "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/6ef43fbb5_cartoclube3.jpeg",
+    corFundo: "from-gray-900 to-black",
     beneficios: [
       "Todos os benefícios do GOLD",
       "25% de desconto na rede parceira",
@@ -160,47 +159,50 @@ export default function SobreNos() {
             </div>
             <div className="grid md:grid-cols-3 gap-8">
               {planosClubeCliente.map((plano, index) => (
-                <Card key={index} className={`border-2 border-amber-300 shadow-xl hover:shadow-2xl transition-all ${plano.destaque ? 'ring-4 ring-amber-500 transform scale-105' : ''}`}>
-                  {plano.badge && (
-                    <div className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-center py-2 font-bold text-sm">
-                      {plano.badge}
-                    </div>
-                  )}
-                  <div className={`h-40 bg-gradient-to-br ${plano.cor} p-6 flex flex-col justify-center items-center`}>
-                    <h3 className={`text-2xl font-bold ${plano.textColor} mb-2`}>{plano.nome}</h3>
+                <div key={index} className={`flex flex-col ${plano.destaque ? 'transform scale-105' : ''}`}>
+                  {/* Imagem do Cartão */}
+                  <div className={`bg-gradient-to-br ${plano.corFundo} rounded-2xl p-8 mb-4 flex items-center justify-center aspect-[3/2] relative overflow-hidden shadow-2xl`}>
+                    <img
+                      src={plano.imagemCartao}
+                      alt={`Cartão ${plano.nome}`}
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+
+                  {/* Informações do Plano */}
+                  <div className="text-center mb-4">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-3">Plano {plano.nome}</h3>
+                    
                     {plano.precoOriginal && (
-                      <p className={`text-sm ${plano.textColor} opacity-60 line-through mb-1`}>
+                      <p className="text-sm text-gray-500 line-through mb-1">
                         {plano.precoOriginal}
                       </p>
                     )}
-                    <p className={`text-3xl font-bold ${plano.textColor}`}>
+                    
+                    <p className="text-3xl font-bold text-amber-600 mb-2">
                       {plano.preco}
                       {plano.periodo && <span className="text-lg">{plano.periodo}</span>}
                     </p>
-                    {plano.promocao && (
-                      <Badge className="mt-2 bg-red-500 text-white border-none">
-                        🔥 {plano.promocao}
+                    
+                    {plano.descricao && (
+                      <p className="text-sm text-gray-600 mb-2">{plano.descricao}</p>
+                    )}
+                    
+                    {plano.badge && (
+                      <Badge className="bg-pink-600 text-white border-none mb-2">
+                        {plano.badge}
                       </Badge>
                     )}
                   </div>
-                  <CardContent className="p-6">
-                    <div className="space-y-3 mb-6">
-                      {plano.beneficios.map((beneficio, i) => (
-                        <div key={i} className="flex items-start gap-3">
-                          <Check className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                          <span className="text-sm text-gray-700">{beneficio}</span>
-                        </div>
-                      ))}
-                    </div>
-                    <Button
-                      onClick={() => handleSelecionarPlano(plano)}
-                      className={`w-full ${plano.destaque ? 'bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700' : 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600'} text-white`}
-                    >
-                      <MessageCircle className="w-4 h-4 mr-2" />
-                      Selecionar Plano
-                    </Button>
-                  </CardContent>
-                </Card>
+
+                  {/* Botão */}
+                  <Button
+                    onClick={() => handleSelecionarPlano(plano)}
+                    className="w-full bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-white font-semibold py-6 rounded-xl shadow-lg"
+                  >
+                    Adquirir Plano →
+                  </Button>
+                </div>
               ))}
             </div>
           </div>
