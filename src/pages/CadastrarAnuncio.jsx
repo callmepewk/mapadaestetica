@@ -251,16 +251,21 @@ export default function CadastrarAnuncio() {
     subcategoria: "",
     faixa_preco: "",
     status_funcionamento: "",
-    tipo_estabelecimento: "", // NEW
-    estrelas_estabelecimento: null, // NEW
+    tipo_estabelecimento: "",
+    estrelas_estabelecimento: null,
     profissional: "",
     telefone: "",
     whatsapp: "",
     email: "",
+    rua: "",
+    numero: "",
+    complemento: "",
+    observacoes_endereco: "",
+    bairro: "",
     cidade: "",
     estado: "",
-    endereco: "",
     cep: "",
+    compartilhar_localizacao_exata: false,
     horario_funcionamento: "",
     procedimentos_servicos: [],
     tags: [],
@@ -276,7 +281,7 @@ export default function CadastrarAnuncio() {
       musica_ambiente: false,
       seguranca: false
     },
-    icone_mapa: "📍" // NOVO: Emoji padrão para o mapa
+    icone_mapa: "📍"
   });
 
   // Estados de upload de imagens
@@ -349,7 +354,11 @@ export default function CadastrarAnuncio() {
           email: userData.email || "",
           cidade: userData.cidade || "",
           estado: userData.estado || "",
-          endereco: userData.endereco_completo || ""
+          rua: userData.rua || "",
+          numero: userData.numero || "",
+          bairro: userData.bairro || "",
+          complemento: userData.complemento || "",
+          cep: userData.cep || ""
         }));
       } catch (error) {
         base44.auth.redirectToLogin(window.location.pathname);
@@ -761,8 +770,13 @@ Seja criativo mas profissional. Use linguagem que converta clientes.`;
                 ...prev,
                 cidade: address.city || address.town || address.village || "",
                 estado: address.state_code || address.state || "",
-                endereco: `${address.road || ""} ${address.house_number || ""}`.trim(),
-                cep: address.postcode || ""
+                rua: address.road || "",
+                numero: address.house_number || "",
+                bairro: address.suburb || address.neighbourhood || "",
+                cep: address.postcode || "",
+                latitude: latitude,
+                longitude: longitude,
+                compartilhar_localizacao_exata: true
               }));
 
               alert("Localização preenchida com sucesso!");
@@ -857,8 +871,16 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
     setErro(null);
 
     try {
+      // Montar endereço completo a partir dos campos separados
+      const enderecoCompleto = [
+        formData.rua,
+        formData.numero,
+        formData.bairro
+      ].filter(Boolean).join(', ');
+
       const anuncioData = {
         ...formData,
+        endereco: enderecoCompleto || formData.endereco, // Usar endereço montado ou o campo legado
         status: "ativo",
         plano: user?.plano_ativo || "cobre",
         dias_exposicao: 30,
@@ -869,7 +891,7 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
         logo: formData.logo,
         imagens_galeria: formData.imagens_galeria,
         amenidades: formData.amenidades,
-        icone_mapa: formData.icone_mapa, // NOVO: Incluir emoji
+        icone_mapa: formData.icone_mapa,
         verificacao_autoridade: {
           licenca_sanitaria: {
             possui: !!documentosVerificacao.licenca_sanitaria,
@@ -1602,6 +1624,7 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
                     value={formData.cidade}
                     onChange={(e) => handleInputChange("cidade", e.target.value)}
                     required
+                    placeholder="Ex: São Paulo"
                     className="h-10 sm:h-11 text-sm"
                   />
                 </div>
@@ -1613,6 +1636,7 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
                     onChange={(e) => handleInputChange("estado", e.target.value)}
                     maxLength={2}
                     required
+                    placeholder="Ex: SP"
                     className="h-10 sm:h-11 text-sm"
                   />
                 </div>
@@ -1628,14 +1652,74 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
                 </div>
               </div>
 
+              <div className="grid grid-cols-3 gap-3 sm:gap-4">
+                <div className="col-span-2">
+                  <Label className="text-sm">Rua</Label>
+                  <Input
+                    value={formData.rua}
+                    onChange={(e) => handleInputChange("rua", e.target.value)}
+                    placeholder="Ex: Av. Paulista"
+                    className="h-10 sm:h-11 text-sm"
+                  />
+                </div>
+                <div>
+                  <Label className="text-sm">Número</Label>
+                  <Input
+                    value={formData.numero}
+                    onChange={(e) => handleInputChange("numero", e.target.value)}
+                    placeholder="Ex: 1000"
+                    className="h-10 sm:h-11 text-sm"
+                  />
+                </div>
+              </div>
+
               <div>
-                <Label className="text-sm">Endereço Completo</Label>
+                <Label className="text-sm">Bairro</Label>
                 <Input
-                  value={formData.endereco}
-                  onChange={(e) => handleInputChange("endereco", e.target.value)}
-                  placeholder="Rua, número, bairro"
+                  value={formData.bairro}
+                  onChange={(e) => handleInputChange("bairro", e.target.value)}
+                  placeholder="Ex: Bela Vista"
                   className="h-10 sm:h-11 text-sm"
                 />
+              </div>
+
+              <div>
+                <Label className="text-sm">Complemento</Label>
+                <Input
+                  value={formData.complemento}
+                  onChange={(e) => handleInputChange("complemento", e.target.value)}
+                  placeholder="Ex: Sala 1005, Torre A"
+                  className="h-10 sm:h-11 text-sm"
+                />
+              </div>
+
+              <div>
+                <Label className="text-sm">Observações do Endereço</Label>
+                <Input
+                  value={formData.observacoes_endereco}
+                  onChange={(e) => handleInputChange("observacoes_endereco", e.target.value)}
+                  placeholder="Ex: Próximo ao metrô, estacionamento na rua"
+                  className="h-10 sm:h-11 text-sm"
+                />
+              </div>
+
+              {/* Checkbox para compartilhar localização exata */}
+              <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-lg">
+                <Checkbox
+                  id="compartilhar_localizacao_exata"
+                  checked={formData.compartilhar_localizacao_exata}
+                  onCheckedChange={(checked) => handleInputChange("compartilhar_localizacao_exata", checked)}
+                  className="mt-1"
+                />
+                <div className="flex-1">
+                  <Label htmlFor="compartilhar_localizacao_exata" className="cursor-pointer font-semibold text-blue-900 text-sm">
+                    📍 Deseja compartilhar a localização exata?
+                  </Label>
+                  <p className="text-xs text-blue-700 mt-1">
+                    Ao marcar esta opção, permitirá que clientes obtenham direções precisas até seu estabelecimento usando GPS (Google Maps). 
+                    Recomendado para clínicas, salões e consultórios.
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
