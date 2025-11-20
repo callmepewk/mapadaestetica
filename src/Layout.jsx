@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -467,6 +466,15 @@ export default function Layout({ children }) {
                         </>
                       )}
                       <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => window.open('https://clube-da-beleza.base44.app', '_blank')}>
+                        <Crown className="w-4 h-4 mr-2" />
+                        Clube da Beleza
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => window.open('https://beauty-center.base44.app', '_blank')}>
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        Beauty Center
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={handleLogout}>
                         <LogOut className="w-4 h-4 mr-2" />
                         Sair
@@ -647,11 +655,32 @@ export default function Layout({ children }) {
                   <PlusCircle className="w-5 h-5" />
                   <span>Cadastrar Anúncio</span>
                 </Link>
-              )}
-            </nav>
-          )}
-        </div>
-      </header>
+                )}
+                <div className="border-t pt-4 mt-4">
+                <p className="text-xs text-gray-500 mb-2 px-4">🌟 Nossos Produtos</p>
+                <a
+                  href="https://clube-da-beleza.base44.app"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg bg-purple-50 text-purple-800 hover:bg-purple-100"
+                >
+                  <Crown className="w-5 h-5" />
+                  <span>Clube da Beleza</span>
+                </a>
+                <a
+                  href="https://beauty-center.base44.app"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg bg-pink-50 text-pink-800 hover:bg-pink-100 mt-2"
+                >
+                  <Sparkles className="w-5 h-5" />
+                  <span>Beauty Center</span>
+                </a>
+                </div>
+                </nav>
+                )}
+                </div>
+                </header>
 
       {/* Main Content */}
       <main className="flex-1 overflow-x-hidden">{children}</main>

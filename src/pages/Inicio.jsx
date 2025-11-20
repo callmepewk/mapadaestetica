@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -624,6 +623,79 @@ export default function Inicio() {
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ECOSSISTEMA - AMBOS */}
+      <section className="py-12 sm:py-16 bg-gradient-to-br from-purple-50 via-pink-50 to-yellow-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-8 sm:mb-12">
+            <Badge className="mb-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold">
+              🌟 Ecossistema Completo
+            </Badge>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 px-2">
+              Mais Produtos para Você
+            </h2>
+            <p className="text-gray-600 text-base sm:text-lg px-4 max-w-2xl mx-auto">
+              Acesse com o mesmo login do Mapa da Estética
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-12">
+            <Card className="border-2 border-purple-200 hover:border-purple-400 transition-all hover:shadow-xl cursor-pointer">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                    <Crown className="w-8 h-8 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">Clube da Beleza</h3>
+                    <Badge className="mt-1 bg-purple-100 text-purple-800">Benefícios Exclusivos</Badge>
+                  </div>
+                </div>
+                <p className="text-gray-600 mb-4">
+                  Descontos de até 25% em estabelecimentos parceiros, pontos, recompensas e benefícios exclusivos.
+                </p>
+                <a
+                  href="https://clube-da-beleza.base44.app"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white">
+                    Acessar Clube da Beleza
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </a>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2 border-pink-200 hover:border-pink-400 transition-all hover:shadow-xl cursor-pointer">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center">
+                    <Sparkles className="w-8 h-8 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">Beauty Center</h3>
+                    <Badge className="mt-1 bg-pink-100 text-pink-800">Gestão Completa</Badge>
+                  </div>
+                </div>
+                <p className="text-gray-600 mb-4">
+                  Sistema completo de gestão para clínicas e consultórios de estética. Agenda, financeiro e muito mais.
+                </p>
+                <a
+                  href="https://beauty-center.base44.app"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button className="w-full bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white">
+                    Acessar Beauty Center
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </a>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
