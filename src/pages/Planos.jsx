@@ -54,7 +54,7 @@ const planos = [
     cor: "from-gray-300 to-gray-500",
     icone: Star,
     destaque: false,
-    linkPagamento: "https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=ecb3830244194758803318fe45d4cbde",
+    linkPagamento: "https://payfast.greenn.com.br/146196",
     limites: {
       especialidades: 1,
       anuncios: 10,
@@ -90,7 +90,7 @@ const planos = [
     cor: "from-yellow-400 to-amber-500",
     icone: Crown,
     destaque: true,
-    linkPagamento: "https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=13c2448777fd4359a6ecd5d545beacd1",
+    linkPagamento: "https://payfast.greenn.com.br/146197",
     limites: {
       especialidades: 2,
       anuncios: 20,
@@ -127,16 +127,16 @@ const planos = [
     cor: "from-blue-400 to-cyan-500",
     icone: Gem,
     destaque: false,
-    linkPagamento: "https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=574848385a584cbd9d6b88c6064c07b3",
+    linkPagamento: "https://payfast.greenn.com.br/146195",
     limites: {
-      especialidades: 5,
+      especialidades: 3,
       anuncios: 25,
       tags: 20,
       dias_exposicao: 30
     },
     beneficios: [
       "✅ Acesso ao WhatsApp dos profissionais",
-      "5 Especialidades cadastradas",
+      "3 Especialidades cadastradas",
       "25 Anúncios ativos",
       "20 Tags/palavras-chave premium",
       "30 dias de exposição por anúncio",
@@ -160,7 +160,7 @@ const planos = [
     ]
   },
   {
-    nome: "DELUXE",
+    nome: "PREMIUM",
     tipo: "platina",
     preco: "Consulte",
     cor: "from-purple-500 to-pink-600",
