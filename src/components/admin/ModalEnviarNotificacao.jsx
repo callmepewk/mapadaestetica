@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Send, X, Users, Loader2 } from "lucide-react";
+import { Send, X, Users, Loader2, Check } from "lucide-react";
 
 export default function ModalEnviarNotificacao({ open, onClose, onSuccess }) {
   const [titulo, setTitulo] = useState("");
