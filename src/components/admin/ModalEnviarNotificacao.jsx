@@ -18,7 +18,6 @@ export default function ModalEnviarNotificacao({ open, onClose, onSuccess }) {
   const [titulo, setTitulo] = useState("");
   const [mensagem, setMensagem] = useState("");
   const [tiposSelecionados, setTiposSelecionados] = useState({
-    todos: true,
     paciente: false,
     profissional: false,
     patrocinador: false,
@@ -36,24 +35,20 @@ export default function ModalEnviarNotificacao({ open, onClose, onSuccess }) {
       try {
         const usuarios = await base44.entities.User.list();
         
-        if (tiposSelecionados.todos) {
-          setContadorUsuarios(usuarios.length);
+        const tiposFiltro = Object.keys(tiposSelecionados).filter(
+          tipo => tiposSelecionados[tipo]
+        );
+        
+        if (tiposFiltro.length === 0) {
+          setContadorUsuarios(0);
         } else {
-          const tiposFiltro = Object.keys(tiposSelecionados).filter(
-            tipo => tipo !== 'todos' && tiposSelecionados[tipo]
-          );
-          
-          if (tiposFiltro.length === 0) {
-            setContadorUsuarios(0);
-          } else {
-            const usuariosFiltrados = usuarios.filter(user => {
-              if (tiposFiltro.includes('admin') && user.role === 'admin') return true;
-              if (tiposFiltro.includes('tester') && user.role === 'tester') return true;
-              if (tiposFiltro.includes(user.tipo_usuario)) return true;
-              return false;
-            });
-            setContadorUsuarios(usuariosFiltrados.length);
-          }
+          const usuariosFiltrados = usuarios.filter(user => {
+            if (tiposFiltro.includes('admin') && user.role === 'admin') return true;
+            if (tiposFiltro.includes('tester') && user.role === 'tester') return true;
+            if (tiposFiltro.includes(user.tipo_usuario)) return true;
+            return false;
+          });
+          setContadorUsuarios(usuariosFiltrados.length);
         }
       } catch (error) {
         console.error("Erro ao contar usuários:", error);
@@ -69,22 +64,21 @@ export default function ModalEnviarNotificacao({ open, onClose, onSuccess }) {
   }, [open, tiposSelecionados]);
 
   const handleTipoChange = (tipo) => {
-    if (tipo === 'todos') {
-      setTiposSelecionados({
-        todos: true,
-        paciente: false,
-        profissional: false,
-        patrocinador: false,
-        admin: false,
-        tester: false
-      });
-    } else {
-      setTiposSelecionados(prev => ({
-        ...prev,
-        todos: false,
-        [tipo]: !prev[tipo]
-      }));
-    }
+    setTiposSelecionados(prev => ({
+      ...prev,
+      [tipo]: !prev[tipo]
+    }));
+  };
+
+  const handleSelecionarTodos = () => {
+    const todosAtivados = Object.values(tiposSelecionados).every(v => v);
+    setTiposSelecionados({
+      paciente: !todosAtivados,
+      profissional: !todosAtivados,
+      patrocinador: !todosAtivados,
+      admin: !todosAtivados,
+      tester: !todosAtivados
+    });
   };
 
   const handleEnviar = async () => {
@@ -106,22 +100,17 @@ export default function ModalEnviarNotificacao({ open, onClose, onSuccess }) {
 
     try {
       const usuarios = await base44.entities.User.list();
-      let usuariosAlvo = [];
-
-      if (tiposSelecionados.todos) {
-        usuariosAlvo = usuarios;
-      } else {
-        const tiposFiltro = Object.keys(tiposSelecionados).filter(
-          tipo => tipo !== 'todos' && tiposSelecionados[tipo]
-        );
-        
-        usuariosAlvo = usuarios.filter(user => {
-          if (tiposFiltro.includes('admin') && user.role === 'admin') return true;
-          if (tiposFiltro.includes('tester') && user.role === 'tester') return true;
-          if (tiposFiltro.includes(user.tipo_usuario)) return true;
-          return false;
-        });
-      }
+      
+      const tiposFiltro = Object.keys(tiposSelecionados).filter(
+        tipo => tiposSelecionados[tipo]
+      );
+      
+      const usuariosAlvo = usuarios.filter(user => {
+        if (tiposFiltro.includes('admin') && user.role === 'admin') return true;
+        if (tiposFiltro.includes('tester') && user.role === 'tester') return true;
+        if (tiposFiltro.includes(user.tipo_usuario)) return true;
+        return false;
+      });
 
       // Criar notificações para cada usuário
       const notificacoes = usuariosAlvo.map(user => ({
@@ -146,7 +135,6 @@ export default function ModalEnviarNotificacao({ open, onClose, onSuccess }) {
       setTitulo("");
       setMensagem("");
       setTiposSelecionados({
-        todos: true,
         paciente: false,
         profissional: false,
         patrocinador: false,
@@ -203,30 +191,39 @@ export default function ModalEnviarNotificacao({ open, onClose, onSuccess }) {
 
           {/* Filtros de Tipo de Usuário */}
           <div>
-            <Label className="text-sm font-semibold mb-3 block">
-              Destinatários
-            </Label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg border-2 border-gray-200">
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="todos"
-                  checked={tiposSelecionados.todos}
-                  onCheckedChange={() => handleTipoChange('todos')}
-                />
-                <Label htmlFor="todos" className="cursor-pointer font-semibold text-blue-700">
-                  Todos os Usuários
-                </Label>
-              </div>
-
+            <div className="flex items-center justify-between mb-3">
+              <Label className="text-sm font-semibold">
+                Destinatários
+              </Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleSelecionarTodos}
+                className="text-xs"
+              >
+                {Object.values(tiposSelecionados).every(v => v) ? (
+                  <>
+                    <X className="w-3 h-3 mr-1" />
+                    Desmarcar Todos
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-3 h-3 mr-1" />
+                    Selecionar Todos
+                  </>
+                )}
+              </Button>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 bg-gray-50 rounded-lg border-2 border-gray-200">
               <div className="flex items-center gap-2">
                 <Checkbox
                   id="paciente"
                   checked={tiposSelecionados.paciente}
                   onCheckedChange={() => handleTipoChange('paciente')}
-                  disabled={tiposSelecionados.todos}
                 />
-                <Label htmlFor="paciente" className="cursor-pointer">
-                  Pacientes
+                <Label htmlFor="paciente" className="cursor-pointer font-medium">
+                  👤 Pacientes
                 </Label>
               </div>
 
@@ -235,10 +232,9 @@ export default function ModalEnviarNotificacao({ open, onClose, onSuccess }) {
                   id="profissional"
                   checked={tiposSelecionados.profissional}
                   onCheckedChange={() => handleTipoChange('profissional')}
-                  disabled={tiposSelecionados.todos}
                 />
-                <Label htmlFor="profissional" className="cursor-pointer">
-                  Profissionais
+                <Label htmlFor="profissional" className="cursor-pointer font-medium">
+                  💼 Profissionais
                 </Label>
               </div>
 
@@ -247,10 +243,9 @@ export default function ModalEnviarNotificacao({ open, onClose, onSuccess }) {
                   id="patrocinador"
                   checked={tiposSelecionados.patrocinador}
                   onCheckedChange={() => handleTipoChange('patrocinador')}
-                  disabled={tiposSelecionados.todos}
                 />
-                <Label htmlFor="patrocinador" className="cursor-pointer">
-                  Patrocinadores
+                <Label htmlFor="patrocinador" className="cursor-pointer font-medium">
+                  👑 Patrocinadores
                 </Label>
               </div>
 
@@ -259,10 +254,9 @@ export default function ModalEnviarNotificacao({ open, onClose, onSuccess }) {
                   id="admin"
                   checked={tiposSelecionados.admin}
                   onCheckedChange={() => handleTipoChange('admin')}
-                  disabled={tiposSelecionados.todos}
                 />
-                <Label htmlFor="admin" className="cursor-pointer">
-                  Admins
+                <Label htmlFor="admin" className="cursor-pointer font-medium">
+                  🔑 Admins
                 </Label>
               </div>
 
@@ -271,10 +265,9 @@ export default function ModalEnviarNotificacao({ open, onClose, onSuccess }) {
                   id="tester"
                   checked={tiposSelecionados.tester}
                   onCheckedChange={() => handleTipoChange('tester')}
-                  disabled={tiposSelecionados.todos}
                 />
-                <Label htmlFor="tester" className="cursor-pointer">
-                  Testers
+                <Label htmlFor="tester" className="cursor-pointer font-medium">
+                  🧪 Testers
                 </Label>
               </div>
             </div>
