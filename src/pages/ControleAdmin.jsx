@@ -2532,6 +2532,13 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
             </div>
             <div className="flex gap-2">
               <Button
+                onClick={() => setMostrarModalNotificacao(true)}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+              >
+                <Bell className="w-4 h-4 mr-2" />
+                Enviar Notificação
+              </Button>
+              <Button
                 onClick={() => setMostrarGerenciadorVersoes(true)}
                 className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
               >
@@ -4015,13 +4022,6 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                     >
                       <UserPlus className="w-4 h-4 mr-2" />
                       Criar Conta Teste
-                    </Button>
-                    <Button
-                      onClick={() => setMostrarModalNotificacao(true)}
-                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                    >
-                      <Bell className="w-4 h-4 mr-2" />
-                      Enviar Notificação
                     </Button>
                     <Button
                       onClick={exportarRelatorioTesters}
