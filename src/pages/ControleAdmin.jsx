@@ -211,6 +211,7 @@ export default function ControleAdmin() {
 
   // NOVOS Estados para Contas Teste
   const [mostrarModalCriarTester, setMostrarModalCriarTester] = useState(false);
+  const [mostrarModalNotificacao, setMostrarModalNotificacao] = useState(false);
   const [dadosTester, setDadosTester] = useState({
     full_name: "",
     email: "",
