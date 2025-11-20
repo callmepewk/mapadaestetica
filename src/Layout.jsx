@@ -19,8 +19,9 @@ import {
   Star,
   DollarSign,
   ShoppingCart,
-  Crown, // Added Crown icon
-  Briefcase // Added Briefcase icon for admin view
+  Crown,
+  Briefcase,
+  Sparkles
 } from "lucide-react";
 import {
   DropdownMenu,
