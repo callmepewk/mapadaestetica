@@ -23,6 +23,7 @@ import DashboardPatrocinador from './pages/DashboardPatrocinador';
 import Novidades from './pages/Novidades';
 import ControleAdmin from './pages/ControleAdmin';
 import Mapa from './pages/Mapa';
+import AgradecimentoPlano from './pages/AgradecimentoPlano';
 import __Layout from './Layout.jsx';
 
 
@@ -52,6 +53,7 @@ export const PAGES = {
     "Novidades": Novidades,
     "ControleAdmin": ControleAdmin,
     "Mapa": Mapa,
+    "AgradecimentoPlano": AgradecimentoPlano,
 }
 
 export const pagesConfig = {
