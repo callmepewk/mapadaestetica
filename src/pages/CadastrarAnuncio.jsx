@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
@@ -73,7 +72,11 @@ const tiposAnuncio = [
   { valor: "troca_produto", label: "Troca de Produto" },
   { valor: "troca_aparelho", label: "Troca de Aparelho" },
   { valor: "venda_moveis", label: "Venda de Móveis" },
-  { valor: "troca_moveis", label: "Troca de Móveis" }
+  { valor: "troca_moveis", label: "Troca de Móveis" },
+  { valor: "ia", label: "IA" },
+  { valor: "servicos", label: "Serviços" },
+  { valor: "servicos_ia", label: "Serviços de IA" },
+  { valor: "midia_marketing", label: "Mídia e Marketing" }
 ];
 
 const faixasPreco = [

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from '@tanstack/react-query';
@@ -55,7 +54,11 @@ const categorias = [
   "Outros",
   "Serviços Contratáveis",
   "Serviços para Pacientes",
-  "Produtos para Pacientes"
+  "Produtos para Pacientes",
+  "IA",
+  "Serviços",
+  "Serviços de IA",
+  "Mídia e Marketing"
 ];
 
 const servicosContrataveis = [
