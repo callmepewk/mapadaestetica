@@ -477,9 +477,9 @@ export default function Layout({ children }) {
                         <Crown className="w-4 h-4 mr-2" />
                         Clube da Beleza
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => window.open('https://beauty-center.base44.app', '_blank')}>
+                      <DropdownMenuItem onClick={() => window.open('https://clube-mais.base44.app', '_blank')}>
                         <Sparkles className="w-4 h-4 mr-2" />
-                        Beauty Center
+                        Clube +
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={handleLogout}>
@@ -675,13 +675,13 @@ export default function Layout({ children }) {
                   <span>Clube da Beleza</span>
                 </a>
                 <a
-                  href="https://beauty-center.base44.app"
+                  href="https://clube-mais.base44.app"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 px-4 py-3 rounded-lg bg-pink-50 text-pink-800 hover:bg-pink-100 mt-2"
                 >
                   <Sparkles className="w-5 h-5" />
-                  <span>Beauty Center</span>
+                  <span>Clube +</span>
                 </a>
                 </div>
                 </nav>

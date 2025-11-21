@@ -678,7 +678,7 @@ export default function Inicio() {
                     <Sparkles className="w-8 h-8 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900">Beauty Center</h3>
+                    <h3 className="text-xl font-bold text-gray-900">Clube +</h3>
                     <Badge className="mt-1 bg-pink-100 text-pink-800">Gestão Completa</Badge>
                   </div>
                 </div>
@@ -686,12 +686,12 @@ export default function Inicio() {
                   Sistema completo de gestão para clínicas e consultórios de estética. Agenda, financeiro e muito mais.
                 </p>
                 <a
-                  href="https://beauty-center.base44.app"
+                  href="https://clube-mais.base44.app"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
                   <Button className="w-full bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white">
-                    Acessar Beauty Center
+                    Acessar Clube +
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </a>
