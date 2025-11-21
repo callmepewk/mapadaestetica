@@ -92,7 +92,7 @@ export default function SobreNos() {
           {/* Logo do Clube da Beleza */}
           <div className="mb-6 flex justify-center">
             <a 
-              href="https://clube-da-beleza-c6e913bb.base44.app" 
+              href="https://clube-da-beleza.base44.app" 
               target="_blank" 
               rel="noopener noreferrer"
               className="hover:opacity-80 transition-opacity"
@@ -128,7 +128,7 @@ export default function SobreNos() {
               {mostrarPlanos ? <ChevronUp className="w-5 h-5 ml-2" /> : <ChevronDown className="w-5 h-5 ml-2" />}
             </Button>
             <a 
-              href="https://clube-da-beleza-c6e913bb.base44.app" 
+              href="https://clube-da-beleza.base44.app" 
               target="_blank" 
               rel="noopener noreferrer"
             >
@@ -406,7 +406,7 @@ export default function SobreNos() {
                   </div>
 
                   <a 
-                    href="https://clube-da-beleza-c6e913bb.base44.app" 
+                    href="https://clube-da-beleza.base44.app" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="block w-full"
@@ -461,12 +461,17 @@ export default function SobreNos() {
                     </div>
                   </div>
 
-                  <Link to={createPageUrl("PesquisaEspecializada")} className="block w-full">
+                  <a 
+                    href="https://dr-beleza-ai.base44.app"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full"
+                  >
                     <Button className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white">
-                      Consultar Dr. Beleza
+                      Acessar Dr. Beleza
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </Button>
-                  </Link>
+                  </a>
                 </CardContent>
               </Card>
 
@@ -507,13 +512,17 @@ export default function SobreNos() {
                     </div>
                   </div>
 
-                  <Button 
-                    onClick={handleSaberMaisLaserCode}
-                    className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white"
+                  <a 
+                    href="https://laser-code-pro.base44.app"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full"
                   >
-                    <MessageCircle className="w-4 h-4 mr-2" />
-                    Saber Mais pelo WhatsApp
-                  </Button>
+                    <Button className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white">
+                      Acessar LaserCode Pro
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </a>
                 </CardContent>
               </Card>
 
@@ -554,13 +563,17 @@ export default function SobreNos() {
                     </div>
                   </div>
 
-                  <Button 
-                    onClick={handleSaberMaisDrSpok}
-                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
+                  <a 
+                    href="https://dr-spok-pd.base44.app"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full"
                   >
-                    <MessageCircle className="w-4 h-4 mr-2" />
-                    Saber Mais pelo WhatsApp
-                  </Button>
+                    <Button className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white">
+                      Acessar Dr. Spok PD
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </a>
                 </CardContent>
               </Card>
             </div>
