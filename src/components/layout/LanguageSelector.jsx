@@ -19,12 +19,13 @@ export default function LanguageSelector() {
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <Button 
-          variant="ghost" 
-          size="icon"
-          className="relative h-9 w-9"
+          variant="outline" 
+          size="sm"
+          className="relative h-9 px-3 border-2 border-[#F7D426] bg-white hover:bg-[#FFF9E6] transition-all shadow-md hover:shadow-lg"
           title={currentLanguage?.name || 'Selecionar idioma'}
         >
-          <span className="text-xl">{currentLanguage?.flag || '🌐'}</span>
+          <span className="text-2xl mr-1">{currentLanguage?.flag || '🌐'}</span>
+          <span className="hidden sm:inline text-xs font-bold text-[#2C2C2C]">{language.split('-')[0].toUpperCase()}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
