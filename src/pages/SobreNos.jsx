@@ -142,7 +142,7 @@ export default function SobreNos() {
               </Button>
             </a>
             <a 
-              href="https://beauty-center.base44.app" 
+              href="https://clube-mais.base44.app" 
               target="_blank" 
               rel="noopener noreferrer"
             >
@@ -151,7 +151,7 @@ export default function SobreNos() {
                 variant="outline"
                 className="w-full sm:w-auto border-2 border-amber-600 text-amber-600 hover:bg-amber-50 font-bold"
               >
-                Visitar Site Clube da Beleza
+                Visitar Clube +
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </a>
@@ -420,7 +420,7 @@ export default function SobreNos() {
                   </div>
 
                   <a 
-                    href="https://beauty-center.base44.app" 
+                    href="https://clube-da-beleza.base44.app" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="block w-full"
