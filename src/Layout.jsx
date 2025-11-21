@@ -39,6 +39,8 @@ import NotificationBell from "./components/layout/NotificationBell";
 import CarrinhoModal from "./components/home/CarrinhoModal";
 import SeletorTipoUsuario from "./components/home/SeletorTipoUsuario";
 import SeletorVisaoAdmin from "./components/layout/SeletorVisaoAdmin";
+import LanguageSelector from "./components/layout/LanguageSelector";
+import { I18nProvider } from "./components/i18n/I18nProvider";
 
 export default function Layout({ children }) {
   const location = useLocation();
@@ -191,7 +193,8 @@ export default function Layout({ children }) {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col">
+    <I18nProvider>
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col">
       <style>{`
         :root {
           --primary: #F7D426;
@@ -344,6 +347,9 @@ export default function Layout({ children }) {
 
               {/* Sino de Notificações */}
               <NotificationBell user={user} />
+
+              {/* Seletor de Idiomas */}
+              <LanguageSelector />
 
               {/* CARRINHO DE COMPRAS - SEMPRE VISÍVEL */}
               <Button
@@ -794,6 +800,7 @@ export default function Layout({ children }) {
         user={user}
         onSuccess={handleTrocaTipoSuccess}
       />
-    </div>
+      </div>
+    </I18nProvider>
   );
 }
