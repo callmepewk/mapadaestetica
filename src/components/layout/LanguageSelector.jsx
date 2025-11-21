@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useTranslation, LANGUAGES } from "@/utils/i18n";
+import { useTranslation, LANGUAGES } from "@/components/i18n/I18nProvider";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
