@@ -12,7 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Upload, X, CheckCircle, AlertCircle, ArrowLeft, Plus } from "lucide-react";
+import { Upload, X, CheckCircle, AlertCircle, ArrowLeft, Plus, MapPin, Loader2 } from "lucide-react";
 
 const categorias = [
   "Estética Facial - Tratamentos Básicos",
@@ -110,10 +110,34 @@ const tiposEstabelecimento = [
   { valor: "Clínica de Luxo", label: "Clínica de Luxo", estrelas: 5 }
 ];
 
-const estados = [
-  "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA",
-  "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN",
-  "RS", "RO", "RR", "SC", "SP", "SE", "TO"
+const ESTADOS_BRASIL = [
+  { sigla: "AC", nome: "Acre" },
+  { sigla: "AL", nome: "Alagoas" },
+  { sigla: "AP", nome: "Amapá" },
+  { sigla: "AM", nome: "Amazonas" },
+  { sigla: "BA", nome: "Bahia" },
+  { sigla: "CE", nome: "Ceará" },
+  { sigla: "DF", nome: "Distrito Federal" },
+  { sigla: "ES", nome: "Espírito Santo" },
+  { sigla: "GO", nome: "Goiás" },
+  { sigla: "MA", nome: "Maranhão" },
+  { sigla: "MT", nome: "Mato Grosso" },
+  { sigla: "MS", nome: "Mato Grosso do Sul" },
+  { sigla: "MG", nome: "Minas Gerais" },
+  { sigla: "PA", nome: "Pará" },
+  { sigla: "PB", nome: "Paraíba" },
+  { sigla: "PR", nome: "Paraná" },
+  { sigla: "PE", nome: "Pernambuco" },
+  { sigla: "PI", nome: "Piauí" },
+  { sigla: "RJ", nome: "Rio de Janeiro" },
+  { sigla: "RN", nome: "Rio Grande do Norte" },
+  { sigla: "RO", nome: "Rondônia" },
+  { sigla: "RR", nome: "Roraima" },
+  { sigla: "RS", nome: "Rio Grande do Sul" },
+  { sigla: "SC", nome: "Santa Catarina" },
+  { sigla: "SE", nome: "Sergipe" },
+  { sigla: "SP", nome: "São Paulo" },
+  { sigla: "TO", nome: "Tocantins" }
 ];
 
 export default function EditarAnuncio() {
@@ -125,6 +149,66 @@ export default function EditarAnuncio() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [formData, setFormData] = useState(null);
   const [novaTag, setNovaTag] = useState("");
+  const [obtendoLocalizacao, setObtendoLocalizacao] = useState(false);
+
+  const handleObterLocalizacao = () => {
+    if (!navigator.geolocation) {
+      alert("Seu navegador não suporta geolocalização");
+      return;
+    }
+
+    setObtendoLocalizacao(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=pt-BR`
+          );
+          const data = await response.json();
+          
+          if (data.address) {
+            const cidade = data.address.city || data.address.town || data.address.village || data.address.municipality || "";
+            const estadoRetornado = data.address.state || "";
+            
+            // Converter nome do estado para sigla
+            const estadoEncontrado = ESTADOS_BRASIL.find(e => 
+              e.nome.toLowerCase() === estadoRetornado.toLowerCase() ||
+              e.nome.toLowerCase().includes(estadoRetornado.toLowerCase()) ||
+              estadoRetornado.toLowerCase().includes(e.nome.toLowerCase())
+            );
+            const estadoSigla = estadoEncontrado ? estadoEncontrado.sigla : estadoRetornado;
+            
+            setFormData(prev => ({
+              ...prev,
+              latitude,
+              longitude,
+              cidade: cidade,
+              estado: estadoSigla,
+              bairro: data.address.suburb || data.address.neighbourhood || prev?.bairro || "",
+              rua: data.address.road || prev?.rua || "",
+              cep: data.address.postcode || prev?.cep || "",
+              compartilhar_localizacao_exata: true
+            }));
+          } else {
+            setFormData(prev => ({ ...prev, latitude, longitude, compartilhar_localizacao_exata: true }));
+          }
+        } catch (error) {
+          console.error("Erro ao obter localização:", error);
+          setFormData(prev => ({ ...prev, latitude, longitude, compartilhar_localizacao_exata: true }));
+        }
+        
+        setObtendoLocalizacao(false);
+      },
+      (error) => {
+        console.error("Erro ao obter geolocalização:", error);
+        alert("Não foi possível obter sua localização. Por favor, preencha manualmente.");
+        setObtendoLocalizacao(false);
+      },
+      { timeout: 10000, enableHighAccuracy: false }
+    );
+  };
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
