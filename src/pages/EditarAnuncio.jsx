@@ -718,6 +718,15 @@ export default function EditarAnuncio() {
                   </p>
                 </div>
               </div>
+
+              {formData.latitude && formData.longitude && (
+                <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                  <p className="text-sm text-green-800 flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4" />
+                    Localização GPS salva: {formData.latitude.toFixed(6)}, {formData.longitude.toFixed(6)}
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
 
