@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
@@ -102,6 +101,7 @@ export default function CriacaoBanner() {
   const [loading, setLoading] = useState(true);
   const [enviando, setEnviando] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
+  const [uploadingVideoBanner, setUploadingVideoBanner] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [sucesso, setSucesso] = useState(false);
   const [erro, setErro] = useState(null);
@@ -113,6 +113,8 @@ export default function CriacaoBanner() {
     descricao: "",
     plano_patrocinador: "",
     imagem_banner: "",
+    video_banner: "",
+    tipo_midia: "imagem",
     dimensoes_banner: { largura: 0, altura: 0 },
     logo_empresa: "",
     nome_empresa: "",
@@ -343,13 +345,59 @@ Dimensions: ${dimensoesPorPlano[formData.plano_patrocinador].largura}x${dimensoe
     setUploadingBanner(true);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      setFormData({ ...formData, imagem_banner: file_url });
+      setFormData({ 
+        ...formData, 
+        imagem_banner: file_url,
+        video_banner: "",
+        tipo_midia: "imagem"
+      });
     } catch (error) {
       console.error("Erro ao fazer upload:", error);
       setErro("Erro ao fazer upload do banner");
     } finally {
       setUploadingBanner(false);
     }
+  };
+
+  const handleUploadVideoBanner = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('video/')) {
+      setErro("Por favor, selecione um arquivo de vídeo válido");
+      return;
+    }
+
+    const video = document.createElement('video');
+    video.preload = 'metadata';
+    
+    video.onloadedmetadata = async () => {
+      window.URL.revokeObjectURL(video.src);
+      
+      if (video.duration > 30) {
+        setErro("O vídeo deve ter no máximo 30 segundos");
+        return;
+      }
+
+      setUploadingVideoBanner(true);
+      try {
+        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        setFormData({ 
+          ...formData, 
+          video_banner: file_url,
+          imagem_banner: "",
+          tipo_midia: "video"
+        });
+        setErro(null);
+      } catch (error) {
+        console.error("Erro ao fazer upload:", error);
+        setErro("Erro ao fazer upload do vídeo");
+      } finally {
+        setUploadingVideoBanner(false);
+      }
+    };
+
+    video.src = URL.createObjectURL(file);
   };
 
   const handleUploadLogo = async (e) => {
@@ -393,8 +441,8 @@ Dimensions: ${dimensoesPorPlano[formData.plano_patrocinador].largura}x${dimensoe
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.titulo || !formData.imagem_banner || !formData.nome_empresa) {
-      setErro("Preencha os campos obrigatórios: título, imagem do banner e nome da empresa");
+    if (!formData.titulo || (!formData.imagem_banner && !formData.video_banner) || !formData.nome_empresa) {
+      setErro("Preencha os campos obrigatórios: título, mídia do banner (imagem ou vídeo) e nome da empresa");
       return;
     }
 
@@ -806,20 +854,23 @@ Dimensions: ${dimensoesPorPlano[formData.plano_patrocinador].largura}x${dimensoe
             </CardContent>
           </Card>
 
-          {/* Upload de Imagens */}
+          {/* Upload de Imagens e Vídeos */}
           <Card className="border-none shadow-lg">
             <CardHeader className="p-4 sm:p-6">
               <CardTitle className="text-lg sm:text-xl flex items-center gap-2">
                 <ImageIcon className="w-5 h-5 text-pink-600" />
-                Imagens
+                📸 Mídia do Banner
               </CardTitle>
+              <p className="text-xs sm:text-sm text-gray-500 mt-2">
+                💡 Escolha imagem ou vídeo (vídeos: máx 30 segundos)
+              </p>
             </CardHeader>
             <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-              {/* Upload Banner */}
+              {/* Upload Banner - Imagem ou Vídeo */}
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <Label className="text-sm sm:text-base">
-                    Imagem do Banner * ({dimensoes?.largura}x{dimensoes?.altura}px)
+                    Mídia do Banner * ({dimensoes?.largura}x{dimensoes?.altura}px)
                   </Label>
                   <Button
                     type="button"
@@ -833,54 +884,101 @@ Dimensions: ${dimensoesPorPlano[formData.plano_patrocinador].largura}x${dimensoe
                     ) : (
                       <ImageIcon className="w-3 h-3 mr-1" />
                     )}
-                    Gerar com IA
+                    Gerar Imagem com IA
                   </Button>
                 </div>
                 
-                {formData.imagem_banner ? (
+                {formData.tipo_midia === "imagem" && formData.imagem_banner ? (
                   <div className="relative">
                     <img
                       src={formData.imagem_banner}
                       alt="Banner"
                       className="w-full h-auto rounded-lg border-2 border-gray-200"
                     />
+                    <Badge className="absolute top-2 left-2 bg-blue-600">📸 Imagem</Badge>
                     <Button
                       type="button"
                       size="sm"
                       variant="destructive"
                       className="absolute top-2 right-2"
-                      onClick={() => setFormData({ ...formData, imagem_banner: "" })}
+                      onClick={() => setFormData({ ...formData, imagem_banner: "", tipo_midia: "imagem" })}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ) : formData.tipo_midia === "video" && formData.video_banner ? (
+                  <div className="relative">
+                    <video
+                      src={formData.video_banner}
+                      controls
+                      className="w-full h-auto rounded-lg border-2 border-gray-200"
+                    />
+                    <Badge className="absolute top-2 left-2 bg-purple-600">🎥 Vídeo</Badge>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="destructive"
+                      className="absolute top-2 right-2"
+                      onClick={() => setFormData({ ...formData, video_banner: "", tipo_midia: "imagem" })}
                     >
                       <X className="w-4 h-4" />
                     </Button>
                   </div>
                 ) : (
-                  <Label htmlFor="banner-upload" className="cursor-pointer">
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 sm:p-8 md:p-12 text-center hover:border-purple-400 transition-colors">
-                      {uploadingBanner ? (
-                        <Loader2 className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 mx-auto animate-spin text-purple-600" />
-                      ) : (
-                        <>
-                          <Upload className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 mx-auto text-gray-400 mb-3 sm:mb-4" />
-                          <span className="text-sm sm:text-base text-purple-600 font-medium">
-                            Clique para enviar o banner
-                          </span>
-                          <p className="text-xs sm:text-sm text-gray-500 mt-2">
-                            Formatos: JPG, PNG • Dimensões: {dimensoes?.largura}x{dimensoes?.altura}px
-                          </p>
-                        </>
-                      )}
-                    </div>
-                  </Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Label htmlFor="banner-upload" className="cursor-pointer">
+                      <div className="border-2 border-dashed border-blue-300 rounded-lg p-6 sm:p-8 md:p-10 text-center hover:border-blue-400 transition-colors">
+                        {uploadingBanner ? (
+                          <Loader2 className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 mx-auto animate-spin text-blue-600" />
+                        ) : (
+                          <>
+                            <Upload className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 mx-auto text-blue-400 mb-2 sm:mb-3" />
+                            <span className="text-sm sm:text-base text-blue-600 font-medium block">
+                              📸 Imagem
+                            </span>
+                            <p className="text-xs text-gray-500 mt-2">
+                              JPG, PNG
+                            </p>
+                          </>
+                        )}
+                      </div>
+                    </Label>
+                    <Input
+                      id="banner-upload"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleUploadBanner}
+                      disabled={uploadingBanner}
+                    />
+
+                    <Label htmlFor="video-banner-upload" className="cursor-pointer">
+                      <div className="border-2 border-dashed border-purple-300 rounded-lg p-6 sm:p-8 md:p-10 text-center hover:border-purple-400 transition-colors">
+                        {uploadingVideoBanner ? (
+                          <Loader2 className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 mx-auto animate-spin text-purple-600" />
+                        ) : (
+                          <>
+                            <Upload className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 mx-auto text-purple-400 mb-2 sm:mb-3" />
+                            <span className="text-sm sm:text-base text-purple-600 font-medium block">
+                              🎥 Vídeo (30s)
+                            </span>
+                            <p className="text-xs text-gray-500 mt-2">
+                              MP4, MOV
+                            </p>
+                          </>
+                        )}
+                      </div>
+                    </Label>
+                    <Input
+                      id="video-banner-upload"
+                      type="file"
+                      accept="video/*"
+                      className="hidden"
+                      onChange={handleUploadVideoBanner}
+                      disabled={uploadingVideoBanner}
+                    />
+                  </div>
                 )}
-                <Input
-                  id="banner-upload"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleUploadBanner}
-                  disabled={uploadingBanner}
-                />
               </div>
 
               {/* Upload Logo */}
@@ -935,11 +1033,12 @@ Dimensions: ${dimensoesPorPlano[formData.plano_patrocinador].largura}x${dimensoe
           </Card>
 
           {/* VALIDAÇÃO DE DIMENSÕES - ALERTA */}
-          {formData.imagem_banner && (
+          {(formData.imagem_banner || formData.video_banner) && (
             <Alert className="bg-green-50 border-green-200">
               <CheckCircle className="h-4 w-4 text-green-600" />
               <AlertDescription className="text-green-800 text-xs sm:text-sm">
-                ✅ Imagem carregada! Certifique-se de que as dimensões estão corretas: <strong>{dimensoes?.largura}x{dimensoes?.altura}px</strong>
+                ✅ {formData.tipo_midia === "video" ? "Vídeo" : "Imagem"} carregada! 
+                {formData.tipo_midia === "imagem" && <> Certifique-se de que as dimensões estão corretas: <strong>{dimensoes?.largura}x{dimensoes?.altura}px</strong></>}
               </AlertDescription>
             </Alert>
           )}
@@ -1035,7 +1134,7 @@ Dimensions: ${dimensoesPorPlano[formData.plano_patrocinador].largura}x${dimensoe
           </Card>
 
           {/* Preview */}
-          {formData.imagem_banner && (
+          {(formData.imagem_banner || formData.video_banner) && (
             <Card className="border-2 border-purple-300">
               <CardHeader className="p-4 sm:p-6">
                 <CardTitle className="text-lg sm:text-xl flex items-center gap-2">
@@ -1045,11 +1144,19 @@ Dimensions: ${dimensoesPorPlano[formData.plano_patrocinador].largura}x${dimensoe
               </CardHeader>
               <CardContent className="p-4 sm:p-6">
                 <div className="bg-gray-100 p-3 sm:p-4 md:p-6 rounded-lg">
-                  <img
-                    src={formData.imagem_banner}
-                    alt="Preview"
-                    className="w-full h-auto rounded-lg shadow-lg"
-                  />
+                  {formData.tipo_midia === "video" && formData.video_banner ? (
+                    <video
+                      src={formData.video_banner}
+                      controls
+                      className="w-full h-auto rounded-lg shadow-lg"
+                    />
+                  ) : (
+                    <img
+                      src={formData.imagem_banner}
+                      alt="Preview"
+                      className="w-full h-auto rounded-lg shadow-lg"
+                    />
+                  )}
                   {formData.logo_empresa && (
                     <div className="mt-3 sm:mt-4 flex justify-center">
                       <img
@@ -1076,7 +1183,7 @@ Dimensions: ${dimensoesPorPlano[formData.plano_patrocinador].largura}x${dimensoe
             </Button>
             <Button
               type="submit"
-              disabled={enviando || uploadingBanner || uploadingLogo || gerandoIA || gerandoImagem}
+              disabled={enviando || uploadingBanner || uploadingVideoBanner || uploadingLogo || gerandoIA || gerandoImagem}
               className="w-full sm:flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 h-11 order-1 sm:order-2"
             >
               {enviando ? (
