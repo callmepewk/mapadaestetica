@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { MapPin, Phone, Mail, Globe, Clock, Instagram, Facebook, ArrowLeft, Share2, Heart, Eye, Calendar, Lock, Crown, TrendingUp, CheckCircle, Star, Award, DollarSign, Navigation } from "lucide-react";
+import { MapPin, Phone, Mail, Globe, Clock, Instagram, Facebook, ArrowLeft, Share2, Heart, Eye, Calendar, Lock, Crown, TrendingUp, CheckCircle, Star, Award, DollarSign, Navigation, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -283,6 +283,18 @@ export default function DetalhesAnuncio() {
                     </div>
                   </div>
                   <div className="flex gap-2">
+                    {/* Botão Editar - visível para autor ou admin */}
+                    {(isAutor || isAdmin) && (
+                      <Button
+                        onClick={() => navigate(`${createPageUrl("EditarAnuncio")}?id=${anuncio.id}`)}
+                        variant="outline"
+                        className="border-blue-300 text-blue-700 hover:bg-blue-50"
+                      >
+                        <Pencil className="w-4 h-4 mr-2" />
+                        Editar
+                      </Button>
+                    )}
+
                     {isProfissionalAutor && (
                       <Button
                         onClick={() => setMostrarImpulsionar(true)}
