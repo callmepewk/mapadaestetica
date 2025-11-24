@@ -488,14 +488,18 @@ export default function OnboardingModal({ open, onClose, onComplete }) {
                     <Label htmlFor="estado">Estado *</Label>
                     <Select
                       value={dados.estado}
-                      onValueChange={(value) => setDados({ ...dados, estado: value })}
+                      onValueChange={(value) => {
+                        setDados(prev => ({ ...prev, estado: value }));
+                      }}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger id="estado">
                         <SelectValue placeholder="Selecione" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="max-h-[200px]">
                         {ESTADOS_BRASIL.map(estado => (
-                          <SelectItem key={estado} value={estado}>{estado}</SelectItem>
+                          <SelectItem key={estado.sigla} value={estado.sigla}>
+                            {estado.sigla} - {estado.nome}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
