@@ -575,14 +575,28 @@ export default function EditarAnuncio() {
           </Card>
 
           <Card className="border-none shadow-lg">
-            <CardContent className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Contato</h2>
+            <CardContent className="p-6 space-y-4">
+              <h2 className="text-xl font-semibold">Profissional e Contato</h2>
+              
+              <div>
+                <Label>Nome do Profissional / Empresa *</Label>
+                <Input
+                  value={formData.profissional || ""}
+                  onChange={(e) => handleInputChange("profissional", e.target.value)}
+                  placeholder="Nome que aparecerá no anúncio"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Este é o nome que será exibido publicamente no seu anúncio
+                </p>
+              </div>
+
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <Label>Telefone</Label>
                   <Input
                     value={formData.telefone || ""}
                     onChange={(e) => handleInputChange("telefone", e.target.value)}
+                    placeholder="(00) 00000-0000"
                   />
                 </div>
                 <div>
@@ -590,8 +604,57 @@ export default function EditarAnuncio() {
                   <Input
                     value={formData.whatsapp || ""}
                     onChange={(e) => handleInputChange("whatsapp", e.target.value)}
+                    placeholder="(00) 00000-0000"
                   />
                 </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Email</Label>
+                  <Input
+                    value={formData.email || ""}
+                    onChange={(e) => handleInputChange("email", e.target.value)}
+                    placeholder="email@exemplo.com"
+                    type="email"
+                  />
+                </div>
+                <div>
+                  <Label>Site</Label>
+                  <Input
+                    value={formData.site || ""}
+                    onChange={(e) => handleInputChange("site", e.target.value)}
+                    placeholder="https://www.seusite.com"
+                  />
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Instagram</Label>
+                  <Input
+                    value={formData.instagram || ""}
+                    onChange={(e) => handleInputChange("instagram", e.target.value)}
+                    placeholder="@seuperfil"
+                  />
+                </div>
+                <div>
+                  <Label>Facebook</Label>
+                  <Input
+                    value={formData.facebook || ""}
+                    onChange={(e) => handleInputChange("facebook", e.target.value)}
+                    placeholder="facebook.com/seuperfil"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label>Horário de Funcionamento</Label>
+                <Input
+                  value={formData.horario_funcionamento || ""}
+                  onChange={(e) => handleInputChange("horario_funcionamento", e.target.value)}
+                  placeholder="Ex: Seg a Sex: 9h às 18h"
+                />
               </div>
             </CardContent>
           </Card>
