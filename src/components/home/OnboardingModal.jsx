@@ -491,23 +491,32 @@ export default function OnboardingModal({ open, onClose, onComplete }) {
                   </div>
                   <div>
                     <Label htmlFor="estado">Estado *</Label>
-                    <Select
-                      value={dados.estado}
-                      onValueChange={(value) => {
-                        setDados(prev => ({ ...prev, estado: value }));
-                      }}
-                    >
-                      <SelectTrigger id="estado">
-                        <SelectValue placeholder="Selecione" />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-[200px]">
-                        {ESTADOS_BRASIL.map(estado => (
-                          <SelectItem key={estado.sigla} value={estado.sigla}>
-                            {estado.sigla} - {estado.nome}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    {dados.pais === "Brasil" || dados.pais === "brazil" || dados.pais === "" ? (
+                      <Select
+                        value={dados.estado}
+                        onValueChange={(value) => {
+                          setDados(prev => ({ ...prev, estado: value }));
+                        }}
+                      >
+                        <SelectTrigger id="estado">
+                          <SelectValue placeholder="Selecione" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-[200px]">
+                          {ESTADOS_BRASIL.map(estado => (
+                            <SelectItem key={estado.sigla} value={estado.sigla}>
+                              {estado.sigla} - {estado.nome}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Input
+                        id="estado"
+                        value={dados.estado}
+                        onChange={(e) => setDados(prev => ({ ...prev, estado: e.target.value }))}
+                        placeholder="Digite seu estado/região"
+                      />
+                    )}
                   </div>
                   <div>
                     <Label htmlFor="pais">País</Label>
