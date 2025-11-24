@@ -978,44 +978,12 @@ Retorne APENAS o JSON com as traduções, sem explicações.`;
       planActivated: "Plano ativado",
       pointsEarned: "Pontos ganhos"
     }
-  }
-};
+  });
 
-// Tradução base em português
-const getPortugueseTranslations = () => translations['pt-BR'];
-
-// Provider de i18n com geração automática de traduções
-export const I18nProvider = ({ children }) => {
-  const [language, setLanguage] = useState('pt-BR');
-  const [currentTranslations, setCurrentTranslations] = useState(getPortugueseTranslations());
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const initLanguage = async () => {
-      const saved = localStorage.getItem('mapadaestetica_language');
-      const lang = (saved && LANGUAGES[saved]) ? saved : detectBrowserLanguage();
-      
-      setLanguage(lang);
-      await loadTranslations(lang);
-      
-      // Configurar direção do texto
-      document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-      document.documentElement.lang = lang;
-    };
-    
-    initLanguage();
-  }, []);
-
-  const detectBrowserLanguage = () => {
-    const browserLang = navigator.language || navigator.userLanguage;
-    return Object.keys(LANGUAGES).find(lang => 
-      browserLang.startsWith(lang) || browserLang.startsWith(lang.split('-')[0])
-    ) || 'pt-BR';
-  };
-
+  // Carregar traduções
   const loadTranslations = async (lang) => {
     if (lang === 'pt-BR') {
-      setCurrentTranslations(getPortugueseTranslations());
+      setTranslations(getPortugueseBase());
       setLoading(false);
       return;
     }
@@ -1027,13 +995,12 @@ export const I18nProvider = ({ children }) => {
       const cached = localStorage.getItem(cacheKey);
       
       if (cached) {
-        setCurrentTranslations(JSON.parse(cached));
+        setTranslations(JSON.parse(cached));
         setLoading(false);
         return;
       }
 
-      // Gerar traduções via IA
-      const basePt = getPortugueseTranslations();
+      const basePt = getPortugueseBase();
       
       const resultado = await base44.integrations.Core.InvokeLLM({
         prompt: `You are a professional translator. Translate ALL the following JSON strings from Portuguese to ${LANGUAGES[lang].name}.
@@ -1077,21 +1044,21 @@ Return ONLY the translated JSON, no explanations.`,
       });
 
       localStorage.setItem(cacheKey, JSON.stringify(resultado));
-      setCurrentTranslations(resultado);
+      setTranslations(resultado);
       
     } catch (error) {
       console.error('Translation error:', error);
-      setCurrentTranslations(getPortugueseTranslations());
+      setTranslations(getPortugueseBase());
     } finally {
       setLoading(false);
     }
   };
 
   const t = (key, params = {}) => {
-    if (!currentTranslations) return key;
+    if (!translations) return key;
     
     const keys = key.split('.');
-    let value = currentTranslations;
+    let value = translations;
 
     for (const k of keys) {
       if (value && typeof value === 'object') {
