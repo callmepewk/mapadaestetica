@@ -270,8 +270,11 @@ export default function CadastrarAnuncio() {
     procedimentos_servicos: [],
     tags: [],
     imagem_principal: "",
+    video_principal: "",
+    tipo_midia_principal: "imagem",
     logo: "",
     imagens_galeria: [],
+    videos_galeria: [],
     amenidades: {
       estacionamento: false,
       estacionamento_valet: false,
@@ -284,10 +287,12 @@ export default function CadastrarAnuncio() {
     icone_mapa: "📍"
   });
 
-  // Estados de upload de imagens
+  // Estados de upload de imagens e vídeos
   const [uploadingImagemPrincipal, setUploadingImagemPrincipal] = useState(false);
+  const [uploadingVideoPrincipal, setUploadingVideoPrincipal] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingGaleria, setUploadingGaleria] = useState(false);
+  const [uploadingVideoGaleria, setUploadingVideoGaleria] = useState(false);
 
   // Estados de verificação de autoridade
   const [documentosVerificacao, setDocumentosVerificacao] = useState({
@@ -416,13 +421,62 @@ export default function CadastrarAnuncio() {
     setUploadingImagemPrincipal(true);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      setFormData(prev => ({ ...prev, imagem_principal: file_url }));
+      setFormData(prev => ({ 
+        ...prev, 
+        imagem_principal: file_url,
+        video_principal: "",
+        tipo_midia_principal: "imagem"
+      }));
     } catch (error) {
       console.error("Erro ao fazer upload:", error);
       setErro("Erro ao fazer upload da imagem");
     } finally {
       setUploadingImagemPrincipal(false);
     }
+  };
+
+  // Upload de vídeo principal
+  const handleUploadVideoPrincipal = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validar tipo de arquivo
+    if (!file.type.startsWith('video/')) {
+      setErro("Por favor, selecione um arquivo de vídeo válido");
+      return;
+    }
+
+    // Criar elemento de vídeo para validar duração
+    const video = document.createElement('video');
+    video.preload = 'metadata';
+    
+    video.onloadedmetadata = async () => {
+      window.URL.revokeObjectURL(video.src);
+      
+      if (video.duration > 30) {
+        setErro("O vídeo deve ter no máximo 30 segundos");
+        return;
+      }
+
+      setUploadingVideoPrincipal(true);
+      try {
+        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        setFormData(prev => ({ 
+          ...prev, 
+          video_principal: file_url,
+          imagem_principal: "",
+          tipo_midia_principal: "video"
+        }));
+        setErro(null);
+      } catch (error) {
+        console.error("Erro ao fazer upload:", error);
+        setErro("Erro ao fazer upload do vídeo");
+      } finally {
+        setUploadingVideoPrincipal(false);
+      }
+    };
+
+    video.src = URL.createObjectURL(file);
   };
 
   // Upload de galeria de imagens
@@ -449,11 +503,76 @@ export default function CadastrarAnuncio() {
     }
   };
 
+  // Upload de galeria de vídeos
+  const handleUploadVideoGaleria = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    setUploadingVideoGaleria(true);
+    let errosValidacao = [];
+
+    try {
+      const urls = [];
+      
+      for (const file of files) {
+        if (!file.type.startsWith('video/')) {
+          errosValidacao.push(`${file.name} não é um vídeo válido`);
+          continue;
+        }
+
+        // Validar duração
+        const video = document.createElement('video');
+        video.preload = 'metadata';
+        
+        const duracao = await new Promise((resolve) => {
+          video.onloadedmetadata = () => {
+            window.URL.revokeObjectURL(video.src);
+            resolve(video.duration);
+          };
+          video.src = URL.createObjectURL(file);
+        });
+
+        if (duracao > 30) {
+          errosValidacao.push(`${file.name} excede 30 segundos (${Math.round(duracao)}s)`);
+          continue;
+        }
+
+        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        urls.push(file_url);
+      }
+
+      if (urls.length > 0) {
+        setFormData(prev => ({
+          ...prev,
+          videos_galeria: [...prev.videos_galeria, ...urls]
+        }));
+      }
+
+      if (errosValidacao.length > 0) {
+        setErro(`Alguns vídeos não foram adicionados: ${errosValidacao.join(', ')}`);
+        setTimeout(() => setErro(null), 5000);
+      }
+    } catch (error) {
+      console.error("Erro ao fazer upload:", error);
+      setErro("Erro ao fazer upload dos vídeos");
+    } finally {
+      setUploadingVideoGaleria(false);
+    }
+  };
+
   // Remover imagem da galeria
   const handleRemoverImagemGaleria = (index) => {
     setFormData(prev => ({
       ...prev,
       imagens_galeria: prev.imagens_galeria.filter((_, i) => i !== index)
+    }));
+  };
+
+  // Remover vídeo da galeria
+  const handleRemoverVideoGaleria = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      videos_galeria: prev.videos_galeria.filter((_, i) => i !== index)
     }));
   };
 
@@ -1347,32 +1466,62 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
               </div>
 
               <div>
-                <Label className="text-sm">Imagem Principal *</Label>
-                <p className="text-xs text-gray-500 mb-2">Imagem de capa do seu anúncio</p>
-                <div className="mt-2">
-                  {formData.imagem_principal ? (
-                    <div className="relative">
-                      <img
-                        src={formData.imagem_principal}
-                        alt="Imagem principal"
-                        className="w-full h-48 sm:h-64 object-cover rounded-lg"
-                      />
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="sm"
-                        className="absolute top-2 right-2 w-7 h-7 p-0 sm:w-8 sm:h-8"
-                        onClick={() => setFormData(prev => ({ ...prev, imagem_principal: "" }))}
-                      >
-                        <X className="w-3 h-3 sm:w-4 sm:h-4" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 sm:p-8 text-center">
-                      <Upload className="w-10 h-10 sm:w-12 sm:h-12 mx-auto text-gray-400 mb-3 sm:mb-4" />
+                <Label className="text-sm">Mídia Principal * (Imagem ou Vídeo)</Label>
+                <p className="text-xs text-gray-500 mb-2">
+                  Escolha uma imagem ou vídeo de capa (vídeos: máx 30s)
+                </p>
+
+                {formData.tipo_midia_principal === "imagem" && formData.imagem_principal ? (
+                  <div className="relative">
+                    <img
+                      src={formData.imagem_principal}
+                      alt="Imagem principal"
+                      className="w-full h-48 sm:h-64 object-cover rounded-lg"
+                    />
+                    <Badge className="absolute top-2 left-2 bg-blue-600">📸 Imagem</Badge>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="absolute top-2 right-2 w-7 h-7 p-0 sm:w-8 sm:h-8"
+                      onClick={() => setFormData(prev => ({ 
+                        ...prev, 
+                        imagem_principal: "", 
+                        tipo_midia_principal: "imagem" 
+                      }))}
+                    >
+                      <X className="w-3 h-3 sm:w-4 sm:h-4" />
+                    </Button>
+                  </div>
+                ) : formData.tipo_midia_principal === "video" && formData.video_principal ? (
+                  <div className="relative">
+                    <video
+                      src={formData.video_principal}
+                      controls
+                      className="w-full h-48 sm:h-64 object-cover rounded-lg"
+                    />
+                    <Badge className="absolute top-2 left-2 bg-purple-600">🎥 Vídeo</Badge>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="absolute top-2 right-2 w-7 h-7 p-0 sm:w-8 sm:h-8"
+                      onClick={() => setFormData(prev => ({ 
+                        ...prev, 
+                        video_principal: "", 
+                        tipo_midia_principal: "imagem" 
+                      }))}
+                    >
+                      <X className="w-3 h-3 sm:w-4 sm:h-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="border-2 border-dashed border-blue-300 rounded-lg p-4 sm:p-6 text-center hover:border-blue-500 transition-colors">
+                      <Upload className="w-8 h-8 sm:w-10 sm:h-10 mx-auto text-blue-400 mb-2" />
                       <Label htmlFor="imagem-principal" className="cursor-pointer">
-                        <span className="text-blue-600 hover:text-blue-700 text-sm">
-                          {uploadingImagemPrincipal ? "Enviando..." : "Clique para enviar"}
+                        <span className="text-blue-600 hover:text-blue-700 text-xs sm:text-sm font-medium block">
+                          {uploadingImagemPrincipal ? "Enviando..." : "📸 Imagem"}
                         </span>
                       </Label>
                       <Input
@@ -1382,11 +1531,27 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
                         className="hidden"
                         onChange={handleUploadImagemPrincipal}
                         disabled={uploadingImagemPrincipal}
-                        required
                       />
                     </div>
-                  )}
-                </div>
+
+                    <div className="border-2 border-dashed border-purple-300 rounded-lg p-4 sm:p-6 text-center hover:border-purple-500 transition-colors">
+                      <Upload className="w-8 h-8 sm:w-10 sm:h-10 mx-auto text-purple-400 mb-2" />
+                      <Label htmlFor="video-principal" className="cursor-pointer">
+                        <span className="text-purple-600 hover:text-purple-700 text-xs sm:text-sm font-medium block">
+                          {uploadingVideoPrincipal ? "Enviando..." : "🎥 Vídeo (30s)"}
+                        </span>
+                      </Label>
+                      <Input
+                        id="video-principal"
+                        type="file"
+                        accept="video/*"
+                        className="hidden"
+                        onChange={handleUploadVideoPrincipal}
+                        disabled={uploadingVideoPrincipal}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -1400,6 +1565,7 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
                           alt={`Galeria ${index + 1}`}
                           className="w-full h-24 sm:h-32 object-cover rounded-lg"
                         />
+                        <Badge className="absolute bottom-1 left-1 bg-blue-600 text-xs">📸</Badge>
                         <Button
                           type="button"
                           variant="destructive"
@@ -1418,7 +1584,7 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
                       <Upload className="w-7 h-7 sm:w-8 sm:h-8 mx-auto text-gray-400 mb-2" />
                       <Label htmlFor="galeria" className="cursor-pointer">
                         <span className="text-blue-600 hover:text-blue-700 text-sm">
-                          {uploadingGaleria ? "Enviando..." : "Adicionar mais imagens"}
+                          {uploadingGaleria ? "Enviando..." : "📸 Adicionar mais imagens"}
                         </span>
                       </Label>
                       <Input
@@ -1429,6 +1595,54 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
                         className="hidden"
                         onChange={handleUploadGaleria}
                         disabled={uploadingGaleria}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-sm">Galeria de Vídeos (até 5 vídeos de 30s cada)</Label>
+                <div className="mt-2">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 mb-4">
+                    {formData.videos_galeria?.map((video, index) => (
+                      <div key={index} className="relative">
+                        <video
+                          src={video}
+                          className="w-full h-24 sm:h-32 object-cover rounded-lg"
+                          controls
+                        />
+                        <Badge className="absolute bottom-1 left-1 bg-purple-600 text-xs">🎥</Badge>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          className="absolute top-1 right-1 w-6 h-6 p-0 sm:w-7 sm:h-7"
+                          onClick={() => handleRemoverVideoGaleria(index)}
+                        >
+                          <X className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+
+                  {(!formData.videos_galeria || formData.videos_galeria.length < 5) && (
+                    <div className="border-2 border-dashed border-purple-300 rounded-lg p-4 sm:p-6 text-center">
+                      <Upload className="w-7 h-7 sm:w-8 sm:h-8 mx-auto text-purple-400 mb-2" />
+                      <Label htmlFor="galeria-videos" className="cursor-pointer">
+                        <span className="text-purple-600 hover:text-purple-700 text-sm">
+                          {uploadingVideoGaleria ? "Enviando..." : "🎥 Adicionar vídeos (máx 30s cada)"}
+                        </span>
+                      </Label>
+                      <p className="text-xs text-gray-500 mt-1">Formatos: MP4, MOV, AVI • Duração: até 30 segundos</p>
+                      <Input
+                        id="galeria-videos"
+                        type="file"
+                        accept="video/*"
+                        multiple
+                        className="hidden"
+                        onChange={handleUploadVideoGaleria}
+                        disabled={uploadingVideoGaleria}
                       />
                     </div>
                   )}
