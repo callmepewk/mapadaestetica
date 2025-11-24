@@ -194,25 +194,33 @@ export default function OnboardingModal({ open, onClose, onComplete }) {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
-        setDados(prev => ({ ...prev, latitude, longitude }));
         
         // Tentar obter cidade/estado via reverse geocoding
         try {
           const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=pt-BR`
           );
           const data = await response.json();
           
           if (data.address) {
+            const cidade = data.address.city || data.address.town || data.address.village || data.address.municipality || "";
+            const estadoRetornado = data.address.state || "";
+            const estadoSigla = converterEstadoParaSigla(estadoRetornado);
+            
             setDados(prev => ({
               ...prev,
-              cidade: data.address.city || data.address.town || data.address.village || "",
-              estado: data.address.state || "",
+              latitude,
+              longitude,
+              cidade: cidade,
+              estado: estadoSigla,
               pais: data.address.country || "Brasil"
             }));
+          } else {
+            setDados(prev => ({ ...prev, latitude, longitude }));
           }
         } catch (error) {
           console.error("Erro ao obter localização:", error);
+          setDados(prev => ({ ...prev, latitude, longitude }));
         }
         
         setObtendoLocalizacao(false);
@@ -221,7 +229,8 @@ export default function OnboardingModal({ open, onClose, onComplete }) {
         console.error("Erro ao obter geolocalização:", error);
         alert("Não foi possível obter sua localização. Por favor, preencha manualmente.");
         setObtendoLocalizacao(false);
-      }
+      },
+      { timeout: 10000, enableHighAccuracy: false }
     );
   };
 
