@@ -40,21 +40,41 @@ const getPortugueseBase = () => ({
     createAd: "Cadastrar Anúncio",
     beautyClub: "Clube da Beleza",
     clubePlus: "Clube +",
-    drBeleza: "Dr. Beleza"
+    drBeleza: "Dr. Beleza",
+    reports: "Relatórios",
+    adminPanel: "Painel Admin",
+    sponsorDashboard: "Dashboard Patrocinador",
+    pointsStore: "Loja de Pontos",
+    switchAccountType: "Trocar Tipo de Conta"
   },
+  
   common: {
     welcome: "Bem-vindo",
+    welcomeTo: "Bem-vindo ao Mapa da Estética",
+    bestProfessionals: "Os melhores profissionais perto de você",
     login: "Entrar",
     logout: "Sair",
-    loading: "Carregando...",
+    signup: "Criar Conta",
     save: "Salvar",
     cancel: "Cancelar",
     delete: "Excluir",
     edit: "Editar",
     search: "Buscar",
+    filter: "Filtrar",
+    loading: "Carregando...",
+    error: "Erro",
+    success: "Sucesso",
+    back: "Voltar",
+    next: "Próximo",
+    previous: "Anterior",
     close: "Fechar",
+    confirm: "Confirmar",
     yes: "Sim",
-    no: "Não"
+    no: "Não",
+    seeMore: "Ver mais",
+    viewAll: "Ver todos",
+    points: "Pontos",
+    beautyCoins: "Beauty Coins"
   }
 });
 
@@ -83,7 +103,7 @@ export const I18nProvider = ({ children }) => {
 
     setLoading(true);
     try {
-      const cacheKey = `tr_${lang}_v1`;
+      const cacheKey = `tr_${lang}_v2`;
       const cached = localStorage.getItem(cacheKey);
       if (cached) {
         setTranslations(JSON.parse(cached));
@@ -92,8 +112,14 @@ export const I18nProvider = ({ children }) => {
       }
 
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Translate this JSON from Portuguese to ${LANGUAGES[lang].name}. Keep structure, keys, emojis, and {{placeholders}} unchanged:\n${JSON.stringify(getPortugueseBase(), null, 2)}`,
-        response_json_schema: { type: "object", properties: { nav: { type: "object" }, common: { type: "object" } } }
+        prompt: `Translate ALL strings from Portuguese to ${LANGUAGES[lang].name}. Keep JSON structure, keys, emojis unchanged:\n${JSON.stringify(getPortugueseBase(), null, 2)}`,
+        response_json_schema: { 
+          type: "object", 
+          properties: { 
+            nav: { type: "object" }, 
+            common: { type: "object" } 
+          } 
+        }
       });
 
       localStorage.setItem(cacheKey, JSON.stringify(result));
@@ -106,13 +132,20 @@ export const I18nProvider = ({ children }) => {
     }
   };
 
-  const t = (key) => {
+  const t = (key, params = {}) => {
     const keys = key.split('.');
     let value = translations;
     for (const k of keys) {
       value = value?.[k];
       if (!value) return key;
     }
+    
+    if (typeof value === 'string' && params) {
+      return value.replace(/\{\{(\w+)\}\}/g, (match, paramKey) => {
+        return params[paramKey] !== undefined ? params[paramKey] : match;
+      });
+    }
+    
     return value || key;
   };
 
