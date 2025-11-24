@@ -598,7 +598,24 @@ export default function EditarAnuncio() {
 
           <Card className="border-none shadow-lg">
             <CardContent className="p-6 space-y-4">
-              <h2 className="text-xl font-semibold">Localização</h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold">Localização</h2>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleObterLocalizacao}
+                  disabled={obtendoLocalizacao}
+                  className="border-blue-300 text-blue-700 hover:bg-blue-50"
+                >
+                  {obtendoLocalizacao ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <MapPin className="w-4 h-4 mr-2" />
+                  )}
+                  Obter Localização Automática
+                </Button>
+              </div>
               
               <div className="grid md:grid-cols-3 gap-4">
                 <div>
@@ -617,11 +634,13 @@ export default function EditarAnuncio() {
                     onValueChange={(value) => handleInputChange("estado", value)}
                   >
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="Selecione" />
                     </SelectTrigger>
-                    <SelectContent>
-                      {estados.map((uf) => (
-                        <SelectItem key={uf} value={uf}>{uf}</SelectItem>
+                    <SelectContent className="max-h-[200px]">
+                      {ESTADOS_BRASIL.map((estado) => (
+                        <SelectItem key={estado.sigla} value={estado.sigla}>
+                          {estado.sigla} - {estado.nome}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
