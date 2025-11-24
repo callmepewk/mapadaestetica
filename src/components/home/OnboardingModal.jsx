@@ -241,8 +241,13 @@ export default function OnboardingModal({ open, onClose, onComplete }) {
     }
     
     if (etapa === 2) {
-      if (!dados.full_name || !dados.telefone || !dados.cidade || !dados.estado) {
-        alert("Preencha todos os campos obrigatórios");
+      const nomeValido = dados.full_name && dados.full_name.trim().length > 0;
+      const telefoneValido = dados.telefone && dados.telefone.trim().length > 0;
+      const cidadeValida = dados.cidade && dados.cidade.trim().length > 0;
+      const estadoValido = dados.estado && dados.estado.trim().length > 0;
+      
+      if (!nomeValido || !telefoneValido || !cidadeValida || !estadoValido) {
+        alert("Preencha todos os campos obrigatórios: Nome, Telefone, Cidade e Estado");
         return;
       }
     }
@@ -254,7 +259,7 @@ export default function OnboardingModal({ open, onClose, onComplete }) {
       }
     }
 
-    setEtapa(etapa + 1);
+    setEtapa(prev => prev + 1);
   };
 
   const handleFinalizarCadastro = async () => {
