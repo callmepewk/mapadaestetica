@@ -105,173 +105,172 @@ export default function FaleConosco() {
   };
 
   return (
-    <div className=\"min-h-screen bg-gradient-to-b from-gray-50 to-white py-8\"> 
-        <div className=\"max-w-4xl mx-auto px-4\">
-            <div className=\"text-center mb-8\">
-                <Badge className=\"mb-4 bg-purple-100 text-purple-700 border-purple-300\">
-                    <Bot className=\"w-3 h-3 mr-1\" />
-                    Assistente Virtual
-                </Badge>
-                <h1 className=\"text-3xl md:text-4xl font-bold text-gray-900 mb-2\">
-                    Suporte
-                </h1>
-                <p className=\"text-gray-600 max-w-xl mx-auto\">
-                    Tire suas dúvidas com nossa assistente virtual inteligente
-                </p>
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
+      <div className="max-w-4xl mx-auto px-4">
+        <div className="text-center mb-8">
+          <Badge className="mb-4 bg-purple-100 text-purple-700 border-purple-300">
+            <Bot className="w-3 h-3 mr-1" />
+            Assistente Virtual
+          </Badge>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+            Suporte
+          </h1>
+          <p className="text-gray-600 max-w-xl mx-auto">
+            Tire suas dúvidas com nossa assistente virtual inteligente
+          </p>
+        </div>
+
+        <Card className="border-none shadow-xl overflow-hidden">
+          <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-4 text-white">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                <Sparkles className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-bold text-lg">Assistente Mapa da Estética</h3>
+                <p className="text-white/80 text-sm">Online • Responde instantaneamente</p>
+              </div>
+            </div>
+          </div>
+
+          <ScrollArea className="h-[400px] p-4" ref={scrollRef}>
+            <div className="space-y-4">
+              {mensagens.map((msg, index) => (
+                <div
+                  key={index}
+                  className={`flex ${msg.tipo === "user" ? "justify-end" : "justify-start"}`}
+                >
+                  <div
+                    className={`max-w-[85%] p-4 rounded-2xl ${
+                      msg.tipo === "user"
+                        ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-br-md"
+                        : "bg-gray-100 text-gray-800 rounded-bl-md"
+                    }`}
+                  >
+                    <div className="flex items-start gap-2">
+                      {msg.tipo === "bot" && (
+                        <Bot className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
+                      )}
+                      <p className="text-sm whitespace-pre-line leading-relaxed">{msg.texto}</p>
+                      {msg.tipo === "user" && (
+                        <User className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {modoTutorial && etapaTutorial === 0 && !tipoUsuarioTutorial && (
+                <div className="flex flex-wrap gap-2 justify-center mt-4">
+                  <Button
+                    onClick={() => selecionarTipoTutorial("paciente")}
+                    variant="outline"
+                    className="border-blue-300 text-blue-700 hover:bg-blue-50"
+                  >
+                    👤 Paciente
+                  </Button>
+                  <Button
+                    onClick={() => selecionarTipoTutorial("profissional")}
+                    variant="outline"
+                    className="border-purple-300 text-purple-700 hover:bg-purple-50"
+                  >
+                    💼 Profissional
+                  </Button>
+                  <Button
+                    onClick={() => selecionarTipoTutorial("patrocinador")}
+                    variant="outline"
+                    className="border-green-300 text-green-700 hover:bg-green-50"
+                  >
+                    👑 Patrocinador
+                  </Button>
+                </div>
+              )}
+
+              {perguntarIAMutation.isPending && (
+                <div className="flex justify-start">
+                  <div className="bg-gray-100 p-4 rounded-2xl rounded-bl-md">
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="w-5 h-5 text-purple-600 animate-spin" />
+                      <span className="text-sm text-gray-600">Pensando...</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+
+          <div className="border-t bg-gray-50 p-4">
+            <p className="text-xs text-gray-500 mb-3 flex items-center gap-1">
+              <HelpCircle className="w-3 h-3" />
+              Perguntas frequentes:
+            </p>
+            <div className="flex flex-wrap gap-2 mb-4">
+              {SUGESTOES_PERGUNTAS.slice(0, 5).map((sugestao, index) => (
+                <Button
+                  key={index}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleEnviarMensagem(sugestao.texto)}
+                  disabled={perguntarIAMutation.isPending}
+                  className="text-xs border-gray-300 hover:border-purple-400 hover:bg-purple-50"
+                >
+                  {sugestao.emoji} {sugestao.texto}
+                </Button>
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-2 mb-4">
+              {SUGESTOES_PERGUNTAS.slice(5).map((sugestao, index) => (
+                <Button
+                  key={index}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleEnviarMensagem(sugestao.texto)}
+                  disabled={perguntarIAMutation.isPending}
+                  className="text-xs border-gray-300 hover:border-purple-400 hover:bg-purple-50"
+                >
+                  {sugestao.emoji} {sugestao.texto}
+                </Button>
+              ))}
             </div>
 
-            <Card className=\"border-none shadow-xl overflow-hidden\">
-                <div className=\"bg-gradient-to-r from-purple-600 to-pink-600 p-4 text-white\">
-                    <div className=\"flex items-center gap-3\">
-                        <div className=\"w-12 h-12 bg-white/20 rounded-full flex items-center justify-center\">
-                            <Sparkles className=\"w-6 h-6\" />
-                        </div>
-                        <div>
-                            <h3 className=\"font-bold text-lg\">Assistente Mapa da Estética</h3>
-                            <p className=\"text-white/80 text-sm\">Online • Responde instantaneamente</p>
-                        </div>
-                    </div>
-                </div>
+            <Button
+              onClick={iniciarTutorial}
+              disabled={perguntarIAMutation.isPending}
+              className="w-full mb-4 bg-gradient-to-r from-[#F7D426] to-[#FFE066] text-[#2C2C2C] hover:from-[#E5C215] hover:to-[#F7D426] font-bold border-2 border-[#2C2C2C]"
+            >
+              <BookOpen className="w-4 h-4 mr-2" />
+              Fazer Tutorial Guiado do Site
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
 
-                <ScrollArea className=\"h-[400px] p-4\" ref={scrollRef}>
-                    <div className=\"space-y-4\">
-                        {mensagens.map((msg, index) => (
-                            <div
-                                key={index}
-                                className={`flex ${msg.tipo === \"user\" ? \"justify-end\" : \"justify-start\"}`}
-                            >
-                                <div
-                                    className={`max-w-[85%] p-4 rounded-2xl ${
-                                        msg.tipo === \"user\"
-                                            ? \"bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-br-md\"
-                                            : \"bg-gray-100 text-gray-800 rounded-bl-md\"
-                                    }`}
-                                >
-                                    <div className=\"flex items-start gap-2\">
-                                        {msg.tipo === \"bot\" && (
-                                            <Bot className=\"w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5\" />
-                                        )}
-                                        <p className=\"text-sm whitespace-pre-line leading-relaxed\">{msg.texto}</p>
-                                        {msg.tipo === \"user\" && (
-                                            <User className=\"w-5 h-5 flex-shrink-0 mt-0.5\" />
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-
-                        {modoTutorial && etapaTutorial === 0 && !tipoUsuarioTutorial && (
-                            <div className=\"flex flex-wrap gap-2 justify-center mt-4\">
-                                <Button
-                                    onClick={() => selecionarTipoTutorial(\"paciente\")}
-                                    variant=\"outline\"
-                                    className=\"border-blue-300 text-blue-700 hover:bg-blue-50\"
-                                >
-                                    👤 Paciente
-                                </Button>
-                                <Button
-                                    onClick={() => selecionarTipoTutorial(\"profissional\")}
-                                    variant=\"outline\"
-                                    className=\"border-purple-300 text-purple-700 hover:bg-purple-50\"
-                                >
-                                    💼 Profissional
-                                </Button>
-                                <Button
-                                    onClick={() => selecionarTipoTutorial(\"patrocinador\")}
-                                    variant=\"outline\"
-                                    className=\"border-green-300 text-green-700 hover:bg-green-50\"
-                                >
-                                    👑 Patrocinador
-                                </Button>
-                            </div>
-                        )}
-
-                        {perguntarIAMutation.isPending && (
-                            <div className=\"flex justify-start\">
-                                <div className=\"bg-gray-100 p-4 rounded-2xl rounded-bl-md\">
-                                    <div className=\"flex items-center gap-2\">
-                                        <Loader2 className=\"w-5 h-5 text-purple-600 animate-spin\" />
-                                        <span className=\"text-sm text-gray-600\">Pensando...</span>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </ScrollArea>
-
-                <div className=\"border-t bg-gray-50 p-4\">
-                    <p className=\"text-xs text-gray-500 mb-3 flex items-center gap-1\">
-                        <HelpCircle className=\"w-3 h-3\" />
-                        Perguntas frequentes:
-                    </p>
-                    <div className=\"flex flex-wrap gap-2 mb-4\">
-                        {SUGESTOES_PERGUNTAS.slice(0, 5).map((sugestao, index) => (
-                            <Button
-                                key={index}
-                                variant=\"outline\"
-                                size=\"sm\"
-                                onClick={() => handleEnviarMensagem(sugestao.texto)}
-                                disabled={perguntarIAMutation.isPending}
-                                className=\"text-xs border-gray-300 hover:border-purple-400 hover:bg-purple-50\"
-                            >
-                                {sugestao.emoji} {sugestao.texto}
-                            </Button>
-                        ))}
-                    </div>
-                    <div className=\"flex flex-wrap gap-2 mb-4\">
-                        {SUGESTOES_PERGUNTAS.slice(5).map((sugestao, index) => (
-                            <Button
-                                key={index}
-                                variant=\"outline\"
-                                size=\"sm\"
-                                onClick={() => handleEnviarMensagem(sugestao.texto)}
-                                disabled={perguntarIAMutation.isPending}
-                                className=\"text-xs border-gray-300 hover:border-purple-400 hover:bg-purple-50\"
-                            >
-                                {sugestao.emoji} {sugestao.texto}
-                            </Button>
-                        ))}
-                    </div>
-
-                    <Button
-                        onClick={iniciarTutorial}
-                        disabled={perguntarIAMutation.isPending}
-                        className=\"w-full mb-4 bg-gradient-to-r from-[#F7D426] to-[#FFE066] text-[#2C2C2C] hover:from-[#E5C215] hover:to-[#F7D426] font-bold border-2 border-[#2C2C2C]\"
-                    >
-                        <BookOpen className=\"w-4 h-4 mr-2\" />
-                        Fazer Tutorial Guiado do Site
-                        <ArrowRight className=\"w-4 h-4 ml-2\" />
-                    </Button>
-
-                    <div className=\"flex gap-2\">
-                        <Input
-                            placeholder=\"Digite sua pergunta...\"
-                            value={inputMensagem}
-                            onChange={(e) => setInputMensagem(e.target.value)}
-                            onKeyPress={(e) => {
-                                if (e.key === \"Enter\" && !perguntarIAMutation.isPending) {
-                                    handleEnviarMensagem();
-                                }
-                            }}
-                            className=\"flex-1\"
-                            disabled={perguntarIAMutation.isPending}
-                        />
-                        <Button
-                            onClick={() => handleEnviarMensagem()}
-                            disabled={perguntarIAMutation.isPending || !inputMensagem.trim()}
-                            className=\"bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700\"
-                        >
-                            {perguntarIAMutation.isPending ? (
-                                <Loader2 className=\"w-4 h-4 animate-spin\" />
-                            ) : (
-                                <Send className=\"w-4 h-4\" />
-                            )}
-                        </Button>
-                    </div>
-                </div>
-            </Card>
-
-        </div>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Digite sua pergunta..."
+                value={inputMensagem}
+                onChange={(e) => setInputMensagem(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === "Enter" && !perguntarIAMutation.isPending) {
+                    handleEnviarMensagem();
+                  }
+                }}
+                className="flex-1"
+                disabled={perguntarIAMutation.isPending}
+              />
+              <Button
+                onClick={() => handleEnviarMensagem()}
+                disabled={perguntarIAMutation.isPending || !inputMensagem.trim()}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+              >
+                {perguntarIAMutation.isPending ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
+              </Button>
+            </div>
+          </div>
+        </Card>
+      </div>
     </div>
   );
 }

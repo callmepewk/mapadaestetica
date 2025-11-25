@@ -2731,14 +2731,14 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
         </Card>
 
         <Tabs value={abaSelecionada} onValueChange={setAbaSelecionada} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 mb-6 gap-1">
-            <TabsTrigger value="conceder">
-              <Crown className="w-4 h-4 mr-2" />
-              Conceder Planos
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-7 mb-6 gap-1">
+            <TabsTrigger value="versoes">
+              <GitBranch className="w-4 h-4 mr-2" />
+              Versões e Atualizações
             </TabsTrigger>
-            <TabsTrigger value="planos">
+            <TabsTrigger value="perfis">
               <User className="w-4 h-4 mr-2" />
-              Perfis
+              Perfis e Planos
             </TabsTrigger>
             <TabsTrigger value="produtos">
               <ShoppingCart className="w-4 h-4 mr-2" />
@@ -2756,13 +2756,17 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
               <Shield className="w-4 h-4 mr-2" />
               Contas Teste ({testers.length})
             </TabsTrigger>
+             <TabsTrigger value="seo">
+              <TrendingUp className="w-4 h-4 mr-2" />
+              SEO
+            </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="conceder">
-            <ConcederPlanos todosUsuarios={todosUsuarios} />
+          <TabsContent value="versoes">
+            {/* ... Mova o conteúdo de versões para cá ... */}
           </TabsContent>
-
-          <TabsContent value="planos">
+          
+          <TabsContent value="perfis">
             <Tabs defaultValue="solicitacoes" className="w-full">
               <TabsList className="w-full mb-6 grid grid-cols-2 md:grid-cols-7 gap-1">
                 <TabsTrigger value="solicitacoes" className="text-xs sm:text-sm">
@@ -2794,6 +2798,11 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                   Todos ({todosUsuarios.length})
                 </TabsTrigger>
               </TabsList>
+              
+              <TabsContent value="solicitacoes">
+                <ConcederPlanos todosUsuarios={todosUsuarios} />
+              </TabsContent>
+
 
               {/* Sub-aba: Solicitações */}
               <TabsContent value="solicitacoes">
