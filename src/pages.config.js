@@ -16,7 +16,6 @@ import AgradecimentoCompra from './pages/AgradecimentoCompra';
 import EditarAnuncio from './pages/EditarAnuncio';
 import RelatorioPrecoMedio from './pages/RelatorioPrecoMedio';
 import LojaPontos from './pages/LojaPontos';
-import Relatorios from './pages/Relatorios';
 import AdicionarProduto from './pages/AdicionarProduto';
 import CriacaoBanner from './pages/CriacaoBanner';
 import DashboardPatrocinador from './pages/DashboardPatrocinador';
@@ -46,7 +45,6 @@ export const PAGES = {
     "EditarAnuncio": EditarAnuncio,
     "RelatorioPrecoMedio": RelatorioPrecoMedio,
     "LojaPontos": LojaPontos,
-    "Relatorios": Relatorios,
     "AdicionarProduto": AdicionarProduto,
     "CriacaoBanner": CriacaoBanner,
     "DashboardPatrocinador": DashboardPatrocinador,
