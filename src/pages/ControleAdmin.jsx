@@ -4502,7 +4502,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                     type="button"
                     size="sm"
                     onClick={handleGerarDescricaoIA}
-                    disabled={gerandoDescricaoIA || !dadosNovaVersao.titulo}
+                    disabled={gerandoDescricaoIA}
                     className="bg-purple-100 text-purple-700 hover:bg-purple-200 disabled:bg-gray-100 disabled:text-gray-400 border-purple-300"
                   >
                     {gerandoDescricaoIA ? (
