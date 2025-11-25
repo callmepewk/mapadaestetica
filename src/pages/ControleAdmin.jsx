@@ -2137,7 +2137,7 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
         prompt: prompt
       });
       // Assuming InvokeLLM returns a string directly
-      setDadosNovaVersao(prev => ({ ...prev, descricao: response.trim() }));
+      setDadosNovaVersao(prev => ({ ...prev, descricao: (response.result || response).trim() }));
     } catch (error) {
       console.error("Erro ao gerar descrição com IA:", error);
       setErro("Erro ao gerar descrição com IA: " + (error.message || "Serviço indisponível."));
@@ -4463,7 +4463,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
             <DialogHeader>
               <DialogTitle className="text-2xl flex items-center gap-2">
                 <Rocket className="w-6 h-6 text-blue-600" />
-                Agendar Nova Versão do Sistema
+                Nova Versão do Sistema
               </DialogTitle>
               <DialogDescription>
                 Crie e agende uma nova versão ou publique imediatamente
@@ -4501,10 +4501,9 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                   <Button
                     type="button"
                     size="sm"
-                    variant="outline"
                     onClick={handleGerarDescricaoIA}
                     disabled={gerandoDescricaoIA || !dadosNovaVersao.titulo}
-                    className="border-purple-300 text-purple-700"
+                    className="bg-purple-100 text-purple-700 hover:bg-purple-200 disabled:bg-gray-100 disabled:text-gray-400 border-purple-300"
                   >
                     {gerandoDescricaoIA ? (
                       <Loader2 className="w-3 h-3 mr-1 animate-spin" />
