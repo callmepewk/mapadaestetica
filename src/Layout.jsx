@@ -186,7 +186,7 @@ export default function Layout({ children }) {
     { title: "Início", url: createPageUrl("Inicio"), icon: Home },
     { title: "Mapa", url: createPageUrl("Mapa"), icon: Search },
     { title: "Blog", url: createPageUrl("Blog"), icon: Newspaper },
-    { title: "Produtos", url: createPageUrl("Produtos"), icon: CreditCard },
+    { title: "Produtos", url: createPageUrl("Produtos"), icon: ShoppingCart },
     ...(!isPaciente ? [{ title: "Planos", url: createPageUrl("Planos"), icon: CreditCard }] : []),
     { title: "Suporte", url: createPageUrl("FaleConosco"), icon: MessageCircle },
     { title: "Sobre Nós", url: createPageUrl("SobreNos"), icon: Info },

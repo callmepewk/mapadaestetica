@@ -86,6 +86,8 @@ import { Textarea } from "@/components/ui/textarea";
 import ModalEditarUsuario from "../components/admin/ModalEditarUsuario";
 import ConcederPlanos from "../components/admin/ConcederPlanos";
 import ModalEnviarNotificacao from "../components/admin/ModalEnviarNotificacao";
+import GerenciadorProdutos from "../components/admin/GerenciadorProdutos";
+import AbaSEO from "../components/admin/AbaSEO";
 
 const PLANOS_INFO = {
   cobre: { nome: "Cobre", cor: "bg-orange-100 text-orange-800" },
@@ -2515,220 +2517,53 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
       <div className="max-w-7xl mx-auto px-4">
         <div className="mb-8">
-          <div className="flex flex-wrap items-center justify-between mb-4 gap-4">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-                  Painel Administrativo
-                </h1>
-                {versaoAtual && (
-                  <Badge className="bg-gradient-to-r from-green-600 to-emerald-600 text-white text-lg px-4 py-2">
-                    <Code className="w-4 h-4 mr-2" />
-                    v{versaoAtual.numero_versao}
-                  </Badge>
+                  <div className="flex flex-wrap items-center justify-between mb-4 gap-4">
+                    <div>
+                      <div className="flex items-center gap-3 mb-2">
+                        <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+                          Painel Administrativo
+                        </h1>
+                        {versaoAtual && (
+                          <Badge className="bg-gradient-to-r from-green-600 to-emerald-600 text-white text-lg px-4 py-2">
+                            <Code className="w-4 h-4 mr-2" />
+                            v{versaoAtual.numero_versao}
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-gray-600">Gerencie perfis, produtos e versões da plataforma</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => setMostrarModalNotificacao(true)}
+                        className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                      >
+                        <Bell className="w-4 h-4 mr-2" />
+                        Enviar Notificação
+                      </Button>
+                      <Button
+                        onClick={exportarRelatorioGeral}
+                        className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Relatório Geral
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {erro && (
+                  <Alert variant="destructive" className="mb-6">
+                    <XCircle className="h-4 w-4" />
+                    <AlertDescription>{erro}</AlertDescription>
+                  </Alert>
                 )}
-              </div>
-              <p className="text-gray-600">Gerencie perfis, produtos e versões da plataforma</p>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                onClick={() => setMostrarModalNotificacao(true)}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-              >
-                <Bell className="w-4 h-4 mr-2" />
-                Enviar Notificação
-              </Button>
-              <Button
-                onClick={() => setMostrarGerenciadorVersoes(true)}
-                className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
-              >
-                <GitBranch className="w-4 h-4 mr-2" />
-                Versões ({versoes.length})
-              </Button>
-              <Button
-                onClick={() => setMostrarTutorialDrBeleza(true)}
-                className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
-              >
-                <MessageCircle className="w-4 h-4 mr-2" />
-                Tutorial
-              </Button>
-              <Button
-                onClick={exportarRelatorioGeral}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                PDF Geral
-              </Button>
-            </div>
-          </div>
-        </div>
 
-        {erro && (
-          <Alert variant="destructive" className="mb-6">
-            <XCircle className="h-4 w-4" />
-            <AlertDescription>{erro}</AlertDescription>
-          </Alert>
-        )}
-
-        {sucesso && (
-          <Alert className="mb-6 bg-green-50 border-green-200">
-            <CheckCircle className="h-4 w-4 text-green-600" />
-            <AlertDescription className="text-green-800">{sucesso}</AlertDescription>
-          </Alert>
-        )}
-
-        <Card className="mb-8 border-2 border-green-300 bg-gradient-to-br from-green-50 to-emerald-50 shadow-xl">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-green-600 to-emerald-600 rounded-full flex items-center justify-center">
-                  <GitBranch className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <CardTitle className="text-2xl text-green-900">Controle de Versões</CardTitle>
-                  <p className="text-sm text-green-700">Gerencie atualizações e versões do sistema</p>
-                </div>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-3 gap-4">
-              <Card className="border-2 border-green-200 bg-white">
-                <CardContent className="p-6">
-                  <div className="text-center mb-4">
-                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <CheckCircle className="w-8 h-8 text-green-600" />
-                    </div>
-                    <h3 className="font-bold text-lg mb-2">✅ Versão Atual</h3>
-                    {versaoAtual ? (
-                      <div>
-                        <p className="text-3xl font-bold text-green-600 mb-2">v{versaoAtual.numero_versao}</p>
-                        <p className="text-sm text-gray-600 mb-2">{versaoAtual.titulo}</p>
-                        <Badge className="bg-green-100 text-green-800">
-                          {versaoAtual.usuarios_nesta_versao || 0} usuários
-                        </Badge>
-                      </div>
-                    ) : (
-                      <p className="text-sm text-gray-500">Nenhuma versão ativa</p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-2 border-blue-200 hover:border-blue-400 transition-colors">
-                <CardContent className="p-6">
-                  <div className="text-center mb-4">
-                    <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <CalendarIcon className="w-8 h-8 text-blue-600" />
-                    </div>
-                    <h3 className="font-bold text-lg mb-2">📅 Agendar Versão</h3>
-                    <p className="text-sm text-gray-600 mb-4">
-                      Programe nova atualização e notifique usuários
-                    </p>
-                    {versoesAgendadas.length > 0 && (
-                      <Badge className="bg-blue-100 text-blue-800 mb-2">
-                        {versoesAgendadas.length} agendada(s)
-                      </Badge>
-                    )}
-                  </div>
-                  <Button
-                    onClick={() => setMostrarModalNovaVersao(true)}
-                    className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
-                  >
-                    <Rocket className="w-4 h-4 mr-2" />
-                    Agendar Nova Versão
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card className="border-2 border-purple-200 hover:border-purple-400 transition-colors">
-                <CardContent className="p-6">
-                  <div className="text-center mb-4">
-                    <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <GitBranch className="w-8 h-8 text-purple-600" />
-                    </div>
-                    <h3 className="font-bold text-lg mb-2">📚 Histórico</h3>
-                    <p className="text-sm text-gray-600 mb-4">
-                      Ver e gerenciar versões anteriores
-                    </p>
-                    <Badge className="bg-purple-100 text-purple-800 mb-2">
-                      {versoesAnteriores.length} anterior(es)
-                    </Badge>
-                  </div>
-                  <Button
-                    onClick={() => setMostrarGerenciadorVersoes(true)}
-                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                  >
-                    <FileText className="w-4 h-4 mr-2" />
-                    Gerenciar Versões
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-
-            {versoesAgendadas.length > 0 && (
-              <div className="mt-6 pt-6 border-t border-green-200">
-                <h4 className="font-semibold text-lg mb-4 text-blue-900">📅 Próximas Atualizações Agendadas</h4>
-                <div className="space-y-3">
-                  {versoesAgendadas.map((versao) => {
-                    const dataAgendada = new Date(versao.data_agendamento);
-                    const agora = new Date();
-                    const tempoRestante = Math.max(0, Math.ceil((dataAgendada - agora) / (1000 * 60 * 60)));
-                    
-                    return (
-                      <div key={versao.id} className="p-4 bg-white rounded-lg border-2 border-blue-200 hover:border-blue-400 transition-colors">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Rocket className="w-5 h-5 text-blue-600" />
-                              <h5 className="font-bold text-gray-900">v{versao.numero_versao} - {versao.titulo}</h5>
-                              <Badge className="bg-blue-100 text-blue-800">
-                                Agendada
-                              </Badge>
-                            </div>
-                            <p className="text-sm text-gray-600 mb-2">{versao.descricao}</p>
-                            <div className="flex items-center gap-4 text-xs text-gray-500">
-                              <span className="flex items-center gap-1">
-                                <CalendarIcon className="w-3 h-3" />
-                                {format(dataAgendada, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
-                              </span>
-                              <span>•</span>
-                              <span className="text-blue-600 font-semibold">
-                                Em {tempoRestante} horas
-                              </span>
-                              {versao.notificacoes_enviadas && (
-                                <>
-                                  <span>•</span>
-                                  <span className="text-green-600 flex items-center gap-1">
-                                    <Mail className="w-3 h-3" />
-                                    Emails enviados
-                                  </span>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="border-red-300 text-red-700"
-                            onClick={() => {
-                              if (confirm(`Cancelar agendamento da versão ${versao.numero_versao}?\n\nOs emails já foram enviados aos usuários!`)) {
-                                deletarVersaoMutation.mutate(versao.id);
-                              }
-                            }}
-                            disabled={deletarVersaoMutation.isPending}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                {sucesso && (
+                  <Alert className="mb-6 bg-green-50 border-green-200">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <AlertDescription className="text-green-800">{sucesso}</AlertDescription>
+                  </Alert>
+                )}
 
         <Tabs value={abaSelecionada} onValueChange={setAbaSelecionada} className="w-full">
           <TabsList className="grid w-full grid-cols-2 md:grid-cols-7 mb-6 gap-1">
@@ -2763,7 +2598,99 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
           </TabsList>
 
           <TabsContent value="versoes">
-            {/* ... Mova o conteúdo de versões para cá ... */}
+            <Card className="mb-8 border-2 border-green-300 bg-gradient-to-br from-green-50 to-emerald-50 shadow-xl">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-gradient-to-br from-green-600 to-emerald-600 rounded-full flex items-center justify-center">
+                      <GitBranch className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-2xl text-green-900">Controle de Versões</CardTitle>
+                      <p className="text-sm text-green-700">Gerencie atualizações e versões do sistema</p>
+                    </div>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <Card className="border-2 border-green-200 bg-white">
+                    <CardContent className="p-6">
+                      <div className="text-center mb-4">
+                        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                          <CheckCircle className="w-8 h-8 text-green-600" />
+                        </div>
+                        <h3 className="font-bold text-lg mb-2">✅ Versão Atual</h3>
+                        {versaoAtual ? (
+                          <div>
+                            <p className="text-3xl font-bold text-green-600 mb-2">v{versaoAtual.numero_versao}</p>
+                            <p className="text-sm text-gray-600 mb-2">{versaoAtual.titulo}</p>
+                            <Badge className="bg-green-100 text-green-800">
+                              {versaoAtual.usuarios_nesta_versao || 0} usuários
+                            </Badge>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray-500">Nenhuma versão ativa</p>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+  
+                  <Card className="border-2 border-blue-200 hover:border-blue-400 transition-colors">
+                    <CardContent className="p-6">
+                      <div className="text-center mb-4">
+                        <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                          <CalendarIcon className="w-8 h-8 text-blue-600" />
+                        </div>
+                        <h3 className="font-bold text-lg mb-2">📅 Nova Versão</h3>
+                        <p className="text-sm text-gray-600 mb-4">
+                          Programe nova atualização e notifique usuários
+                        </p>
+                        {versoesAgendadas.length > 0 && (
+                          <Badge className="bg-blue-100 text-blue-800 mb-2">
+                            {versoesAgendadas.length} agendada(s)
+                          </Badge>
+                        )}
+                      </div>
+                      <Button
+                        onClick={() => setMostrarModalNovaVersao(true)}
+                        className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+                      >
+                        <Rocket className="w-4 h-4 mr-2" />
+                        Nova Versão
+                      </Button>
+                    </CardContent>
+                  </Card>
+  
+                  <Card className="border-2 border-purple-200 hover:border-purple-400 transition-colors">
+                    <CardContent className="p-6">
+                      <div className="text-center mb-4">
+                        <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                          <GitBranch className="w-8 h-8 text-purple-600" />
+                        </div>
+                        <h3 className="font-bold text-lg mb-2">📚 Histórico</h3>
+                        <p className="text-sm text-gray-600 mb-4">
+                          Ver e gerenciar versões anteriores
+                        </p>
+                        <Badge className="bg-purple-100 text-purple-800 mb-2">
+                          {versoesAnteriores.length} anterior(es)
+                        </Badge>
+                      </div>
+                      <Button
+                        onClick={() => setMostrarGerenciadorVersoes(true)}
+                        className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                      >
+                        <FileText className="w-4 h-4 mr-2" />
+                        Gerenciar Versões
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          <TabsContent value="seo">
+            <AbaSEO />
           </TabsContent>
           
           <TabsContent value="perfis">
@@ -3653,124 +3580,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
           </TabsContent>
 
           <TabsContent value="produtos">
-            <Card>
-              <CardHeader>
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <CardTitle>Pedidos de Produtos ({pedidosFiltrados.length})</CardTitle>
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="Buscar pedido (usuário, produto)"
-                      value={busca}
-                      onChange={(e) => setBusca(e.target.value)}
-                      className="max-w-xs"
-                    />
-                    <Select value={filtroStatus} onValueChange={setFiltroStatus}>
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Filtrar por status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value={null}>Todos os Status</SelectItem>
-                        <SelectItem value="aguardando_pagamento">Aguardando Pagamento</SelectItem>
-                        <SelectItem value="pago">Pago</SelectItem>
-                        <SelectItem value="enviado">Enviado</SelectItem>
-                        <SelectItem value="entregue">Entregue</SelectItem>
-                        <SelectItem value="cancelado">Cancelado</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Select value={filtroUsuario} onValueChange={setFiltroUsuario}>
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Filtrar por usuário" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value={null}>Todos os Usuários</SelectItem>
-                        {usuariosUnicos.map((email) => (
-                          <SelectItem key={email} value={email}>
-                            {email}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {loadingPedidos ? (
-                  <div className="flex justify-center py-12">
-                    <Loader2 className="w-8 h-8 animate-spin text-pink-600" />
-                  </div>
-                ) : pedidosFiltrados.length === 0 ? (
-                  <div className="text-center py-12">
-                    <ShoppingCart className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600">Nenhum pedido encontrado</p>
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>ID Pedido</TableHead>
-                          <TableHead>Usuário</TableHead>
-                          <TableHead>Produto</TableHead>
-                          <TableHead>Valor Total</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Data</TableHead>
-                          <TableHead className="text-right">Ações</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {pedidosFiltrados.map((pedido) => {
-                          const StatusIcon = STATUS_INFO[pedido.status_pedido]?.icon || Clock;
-                          return (
-                            <TableRow key={pedido.id}>
-                              <TableCell className="font-medium">#{pedido.id.substring(0, 8)}</TableCell>
-                              <TableCell>
-                                <p className="font-medium">{pedido.usuario_nome}</p>
-                                <p className="text-sm text-gray-500">{pedido.usuario_email}</p>
-                              </TableCell>
-                              <TableCell>{pedido.produto_nome}</TableCell>
-                              <TableCell>R$ {pedido.valor_total?.toFixed(2)}</TableCell>
-                              <TableCell>
-                                <Badge className={STATUS_INFO[pedido.status_pedido]?.cor}>
-                                  <StatusIcon className="w-3 h-3 mr-1" />
-                                  {STATUS_INFO[pedido.status_pedido]?.label}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="text-sm">
-                                {pedido.created_date ? format(new Date(pedido.created_date), "dd/MM/yyyy HH:mm", { locale: ptBR }) : "-"}
-                              </TableCell>
-                              <TableCell className="text-right">
-                                <div className="flex items-center justify-end gap-2">
-                                  {pedido.status_pedido === 'aguardando_pagamento' && (
-                                    <>
-                                      <Button
-                                        onClick={() => aprovarPedidoMutation.mutate(pedido.id)}
-                                        size="sm"
-                                        className="bg-green-600 hover:bg-green-700"
-                                      >
-                                        <CheckCircle className="w-4 h-4 mr-1" />
-                                        Aprovar
-                                      </Button>
-                                      <Button
-                                        onClick={() => rejeitarPedidoMutation.mutate(pedido.id)}
-                                        size="sm"
-                                        variant="outline"
-                                        className="border-red-300 text-red-700"
-                                      >
-                                        <XCircle className="w-4 h-4" />
-                                      </Button>
-                                    </>
-                                  )}
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <GerenciadorProdutos />
           </TabsContent>
 
           <TabsContent value="banners">
