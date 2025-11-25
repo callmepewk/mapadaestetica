@@ -185,11 +185,11 @@ export default function Layout({ children }) {
   const navigationItems = [
     { title: "Início", url: createPageUrl("Inicio"), icon: Home },
     { title: "Mapa", url: createPageUrl("Mapa"), icon: Search },
+    { title: "Blog", url: createPageUrl("Blog"), icon: Newspaper },
     { title: "Produtos", url: createPageUrl("Produtos"), icon: CreditCard },
     ...(!isPaciente ? [{ title: "Planos", url: createPageUrl("Planos"), icon: CreditCard }] : []),
-    { title: "Blog", url: createPageUrl("Blog"), icon: Newspaper },
+    { title: "Suporte", url: createPageUrl("FaleConosco"), icon: MessageCircle },
     { title: "Sobre Nós", url: createPageUrl("SobreNos"), icon: Info },
-    { title: "Fale Conosco", url: createPageUrl("FaleConosco"), icon: MessageCircle },
   ];
 
   return (
@@ -461,16 +461,10 @@ export default function Layout({ children }) {
                         </DropdownMenuItem>
                       )}
                       {isAdmin && (
-                        <>
-                          <DropdownMenuItem onClick={() => navigate(createPageUrl("Relatorios"))}>
-                            <TrendingUp className="w-4 h-4 mr-2" />
-                            Relatórios
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => navigate(createPageUrl("ControleAdmin"))}>
-                            <CreditCard className="w-4 h-4 mr-2" />
-                            Painel Admin
-                          </DropdownMenuItem>
-                        </>
+                        <DropdownMenuItem onClick={() => navigate(createPageUrl("ControleAdmin"))}>
+                          <CreditCard className="w-4 h-4 mr-2" />
+                          Painel Admin
+                        </DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => window.open('https://clube-da-beleza.base44.app', '_blank')}>
