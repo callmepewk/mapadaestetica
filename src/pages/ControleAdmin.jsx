@@ -83,11 +83,13 @@ import { createPageUrl } from "@/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import ModalEditarUsuario from "../components/admin/ModalEditarUsuario";
 import ConcederPlanos from "../components/admin/ConcederPlanos";
 import ModalEnviarNotificacao from "../components/admin/ModalEnviarNotificacao";
 import GerenciadorProdutos from "../components/admin/GerenciadorProdutos";
 import AbaSEO from "../components/admin/AbaSEO";
+import EditorAnuncioIA from "../components/admin/EditorAnuncioIA";
 import GeradorCampanhas from "../components/admin/GeradorCampanhas";
 import CadastroLoteUsuarios from "../components/admin/CadastroLoteUsuarios";
 
@@ -180,6 +182,13 @@ export default function ControleAdmin() {
   const [mostrarDetalhesAnuncio, setMostrarDetalhesAnuncio] = useState(false);
   const [buscaAnuncio, setBuscaAnuncio] = useState("");
   const [filtroStatusAnuncio, setFiltroStatusAnuncio] = useState("");
+  const [selecionadosAnuncios, setSelecionadosAnuncios] = useState([]);
+  const [mostrarModalCampanhaSelecao, setMostrarModalCampanhaSelecao] = useState(false);
+  const [campanhaFormato, setCampanhaFormato] = useState('barra');
+  const [campanhaPosicao, setCampanhaPosicao] = useState('home_topo');
+  const [campanhaCor, setCampanhaCor] = useState('#F7D426');
+  const [campanhaAplicarTema, setCampanhaAplicarTema] = useState(false);
+  const [anuncioIAEditando, setAnuncioIAEditando] = useState(null);
 
   const [buscaTodosUsuarios, setBuscaTodosUsuarios] = useState("");
   const [filtroTipoUsuario, setFiltroTipoUsuario] = useState("");
@@ -1567,6 +1576,34 @@ CONFIGURAÇÕES NECESSÁRIAS:
     if (confirm(`Tem certeza que deseja excluir o anúncio "${anuncio.titulo}"?\n\nEsta ação não pode ser desfeita.`)) {
       deletarAnuncioMutation.mutate(anuncio.id);
     }
+  };
+
+  const toggleSelectAnuncio = (id) => {
+    setSelecionadosAnuncios(prev => prev.includes(id) ? prev.filter(x=>x!==id) : [...prev, id]);
+  };
+
+  const criarCampanhaSelecionados = async () => {
+    if (selecionadosAnuncios.length === 0) return;
+    const ads = todosAnuncios.filter(a => selecionadosAnuncios.includes(a.id));
+    for (const a of ads) {
+      await base44.entities.Banner.create({
+        titulo: `Campanha - ${a.titulo || 'Anúncio'}`,
+        descricao: a.descricao || '',
+        plano_patrocinador: a.plano || 'cobre',
+        imagem_banner: a.imagem_principal || a.logo || '',
+        tipo_midia: 'imagem',
+        nome_empresa: a.profissional || 'Admin',
+        posicao: campanhaPosicao,
+        status: 'ativo',
+        cor_tema: campanhaAplicarTema ? campanhaCor : null,
+        aplicar_tema_global: campanhaAplicarTema
+      });
+    }
+    setSelecionadosAnuncios([]);
+    setMostrarModalCampanhaSelecao(false);
+    queryClient.invalidateQueries({ queryKey: ['admin-banners'] });
+    setSucesso('Campanha criada a partir dos selecionados!');
+    setTimeout(()=> setSucesso(null), 3000);
   };
 
   const handleEstenderTempoExposicao = async (anuncio, diasAdicionais) => {
@@ -3127,9 +3164,20 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                       </div>
                     ) : (
                       <div className="overflow-x-auto">
+                        {selecionadosAnuncios.length > 0 && (
+                          <div className="mb-3 p-3 bg-blue-50 border-2 border-blue-200 rounded flex items-center justify-between">
+                            <p className="text-sm text-blue-900 font-semibold">{selecionadosAnuncios.length} anúncio(s) selecionado(s)</p>
+                            <div className="flex items-center gap-2">
+                              <Input type="color" value={campanhaCor} onChange={(e)=> setCampanhaCor(e.target.value)} className="w-10 h-8 p-0"/>
+                              <label className="flex items-center gap-2 text-sm"><Checkbox checked={campanhaAplicarTema} onCheckedChange={setCampanhaAplicarTema}/>Aplicar como tema global</label>
+                              <Button size="sm" onClick={()=> setMostrarModalCampanhaSelecao(true)} className="bg-blue-600 hover:bg-blue-700">Criar Campanha</Button>
+                            </div>
+                          </div>
+                        )}
                         <Table>
                           <TableHeader>
                             <TableRow>
+                              <TableHead className="w-8"><Checkbox checked={selecionadosAnuncios.length>0 && selecionadosAnuncios.length===anunciosFiltrados.length} onCheckedChange={(v)=> setSelecionadosAnuncios(v? anunciosFiltrados.map(a=>a.id): [])}/></TableHead>
                               <TableHead>Título</TableHead>
                               <TableHead>Profissional</TableHead>
                               <TableHead>Status</TableHead>
@@ -3143,6 +3191,9 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                               const StatusIcon = STATUS_INFO[anuncio.status]?.icon || Clock;
                               return (
                                 <TableRow key={anuncio.id}>
+                                  <TableCell>
+                                    <Checkbox checked={selecionadosAnuncios.includes(anuncio.id)} onCheckedChange={()=> toggleSelectAnuncio(anuncio.id)} />
+                                  </TableCell>
                                   <TableCell className="font-medium max-w-[200px] whitespace-normal">
                                     <p className="truncate">{anuncio.titulo}</p>
                                   </TableCell>
@@ -3163,7 +3214,10 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                                       <Button size="sm" variant="outline" onClick={() => handleVerDetalhesAnuncio(anuncio)}>
                                         <Eye className="w-4 h-4" />
                                       </Button>
-                                      <Button size="sm" onClick={() => handleEditarAnuncio(anuncio)}>
+                                      <Button size="sm" variant="outline" className="border-purple-300 text-purple-700" onClick={() => setAnuncioIAEditando(anuncio)} title="Editar com IA">
+                                        <Sparkles className="w-4 h-4" />
+                                      </Button>
+                                      <Button size="sm" onClick={() => handleEditarAnuncio(anuncio)} title="Editar">
                                         <Edit className="w-4 h-4" />
                                       </Button>
                                       <Button
@@ -4430,6 +4484,50 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
               <Button variant="destructive" onClick={() => handleExcluirAnuncio(anuncioSelecionado)}>
                 <Trash2 className="w-4 h-4 mr-1" /> Excluir
               </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Dialog Campanha Selecionados */}
+        <Dialog open={mostrarModalCampanhaSelecao} onOpenChange={setMostrarModalCampanhaSelecao}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Criar Campanha (Selecionados)</DialogTitle>
+              <DialogDescription>Defina formato, posição e cor opcional de tema.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3">
+              <div>
+                <Label>Formato</Label>
+                <Select value={campanhaFormato} onValueChange={setCampanhaFormato}>
+                  <SelectTrigger className="mt-1"><SelectValue/></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="barra">Barra (1 banner)</SelectItem>
+                    <SelectItem value="carrossel">Carrossel (vários)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Posição</Label>
+                <Select value={campanhaPosicao} onValueChange={setCampanhaPosicao}>
+                  <SelectTrigger className="mt-1"><SelectValue/></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="home_topo">Home - Topo</SelectItem>
+                    <SelectItem value="home_meio">Home - Meio</SelectItem>
+                    <SelectItem value="home_rodape">Home - Rodapé</SelectItem>
+                    <SelectItem value="blog">Blog</SelectItem>
+                    <SelectItem value="produtos">Produtos</SelectItem>
+                    <SelectItem value="mapa">Mapa</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-2">
+                <Input type="color" value={campanhaCor} onChange={(e)=> setCampanhaCor(e.target.value)} className="w-10 h-8 p-0"/>
+                <label className="flex items-center gap-2 text-sm"><Checkbox checked={campanhaAplicarTema} onCheckedChange={setCampanhaAplicarTema}/>Aplicar como tema global</label>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={()=> setMostrarModalCampanhaSelecao(false)}>Cancelar</Button>
+              <Button onClick={criarCampanhaSelecionados}>Criar</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
