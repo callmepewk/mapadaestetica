@@ -16,6 +16,8 @@ export default function GeradorCampanhas() {
   const [admin, setAdmin] = useState(null);
   const [formato, setFormato] = useState("barra"); // barra | carrossel
   const [posicao, setPosicao] = useState("home_topo");
+  const [corTema, setCorTema] = useState("#F7D426");
+  const [aplicarTema, setAplicarTema] = useState(false);
   const [selecionados, setSelecionados] = useState([]); // ids de anuncios
   const [itens, setItens] = useState({}); // id -> {titulo, descricao, imagem, substituirImagem}
   const [gerandoImgId, setGerandoImgId] = useState(null);
@@ -94,7 +96,9 @@ export default function GeradorCampanhas() {
           tipo_midia: 'imagem',
           nome_empresa: admin?.full_name || a.profissional || 'Admin',
           posicao: posicao,
-          status: 'ativo'
+          status: 'ativo',
+          cor_tema: aplicarTema ? corTema : null,
+          aplicar_tema_global: aplicarTema
         });
       });
       // Criar 1 (barra) ou vários (carrossel)
@@ -119,7 +123,7 @@ export default function GeradorCampanhas() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="grid md:grid-cols-3 gap-4">
+        <div className="grid md:grid-cols-4 gap-4">
           <div>
             <Label>Formato</Label>
             <Select value={formato} onValueChange={setFormato}>
@@ -144,9 +148,19 @@ export default function GeradorCampanhas() {
               </SelectContent>
             </Select>
           </div>
-          <div className="p-3 rounded-lg bg-gray-50 border">
+          <div>
+            <Label>Cor do Tema</Label>
+            <div className="flex items-center gap-2 mt-1">
+              <Input type="color" value={corTema} onChange={(e)=> setCorTema(e.target.value)} className="w-12 h-10 p-0"/>
+              <div className="flex items-center gap-2 text-sm">
+                <Checkbox checked={aplicarTema} onCheckedChange={setAplicarTema} />
+                <span>Aplicar como tema global</span>
+              </div>
+            </div>
+          </div>
+          <div className="p-3 rounded-lg bg-gray-50 border md:col-span-2">
             <p className="text-sm text-gray-700">
-              Selecione até 5 anúncios; gere imagens com IA apenas se não houver imagem. Depois, opcionalmente gere título e descrição por IA.
+              Selecione até 5 anúncios; gere imagens com IA apenas se não houver imagem. Depois, opcionalmente gere título e descrição por IA. Definindo uma cor e marcando "tema global", o site inteiro usará esta cor automaticamente.
             </p>
           </div>
         </div>

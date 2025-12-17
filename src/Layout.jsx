@@ -54,6 +54,7 @@ export default function Layout({ children }) {
   const [mostrarCarrinho, setMostrarCarrinho] = useState(false);
   const [mostrarSeletorTipo, setMostrarSeletorTipo] = useState(false);
   const [visaoAdmin, setVisaoAdmin] = useState("profissional");
+        const [temaCor, setTemaCor] = useState('#F7D426');
 
   // Carregar carrinho do localStorage
   useEffect(() => {
@@ -118,7 +119,22 @@ export default function Layout({ children }) {
       }
     };
     checkAuth();
-  }, [location.pathname]);
+    }, [location.pathname]);
+
+    // Tema de campanha global (cor)
+    useEffect(() => {
+    const loadTheme = async () => {
+      try {
+        const banners = await base44.entities.Banner.filter({ aplicar_tema_global: true, status: 'ativo' }, '-created_date', 1);
+        if (banners && banners.length && banners[0].cor_tema) {
+          setTemaCor(banners[0].cor_tema);
+        }
+      } catch (e) {
+        // ignore
+      }
+    };
+    loadTheme();
+    }, []);
 
   const handleLogout = () => {
     base44.auth.logout();
@@ -197,9 +213,9 @@ export default function Layout({ children }) {
       <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col">
       <style>{`
         :root {
-          --primary: #F7D426;
-          --primary-dark: #E5C215;
-          --primary-light: #FFF9E6;
+          --primary: ${temaCor};
+          --primary-dark: ${temaCor};
+          --primary-light: ${temaCor}33;
           --secondary: #2C2C2C;
           --accent: #FF6B35;
         }

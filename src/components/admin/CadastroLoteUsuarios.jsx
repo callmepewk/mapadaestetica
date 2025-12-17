@@ -23,6 +23,7 @@ export default function CadastroLoteUsuarios(){
   const [planoClubeAll, setPlanoClubeAll] = useState("nenhum");
   const [pacoteAll, setPacoteAll] = useState(PACOTES[0]);
   const [assistidoIA, setAssistidoIA] = useState(false);
+  const [fotoUrl, setFotoUrl] = useState(null);
   const [enviando, setEnviando] = useState(false);
 
   useEffect(()=>{ (async()=>{ try{ setAdmin(await base44.auth.me()); }catch{ setAdmin(null); }})(); },[]);
@@ -40,16 +41,23 @@ export default function CadastroLoteUsuarios(){
   })), [nomes, aplicarParaTodos, planoMapaAll, planoClubeAll, pacoteAll, custom]);
 
   const aplicarIA = async () => {
-    // IA apenas replica seleção para todos conforme pedido
     setAssistidoIA(true);
-    setTimeout(()=> setAssistidoIA(false), 800);
+    try {
+      const prompt = `Reescreva os nomes a seguir em formato de nome próprio (primeiras letras maiúsculas), um por linha, sem numeração.\n${nomes.join('\n')}`;
+      const res = await base44.integrations.Core.InvokeLLM({ prompt });
+      if (typeof res === 'string') {
+        setTexto(res.trim());
+      }
+      // Aplicar as seleções globais para todos conforme solicitado
+      setAplicarParaTodos(true);
+    } finally { setAssistidoIA(false); }
   };
 
   const enviar = async () => {
     if (linhas.length===0) return alert('Cole ao menos um nome.');
     setEnviando(true);
     try {
-      const corpo = `CADASTRO EM LOTE\nAdministrador: ${admin?.full_name} (${admin?.email})\nTipo de usuário: ${tipo}\n\nItens (${linhas.length}):\n` + linhas.map(l=> `- ${l.nome} | Mapa:${l.planoMapa} | Clube:${l.planoClube} | Pontos:${l.p} | BC:${l.bc}`).join('\n') + `\n\nAção necessária: Convidar os usuários pelo dashboard e, após aceite, aplicar os planos e créditos listados.`;
+      const corpo = `CADASTRO EM LOTE\nAdministrador: ${admin?.full_name} (${admin?.email})\nTipo de usuário: ${tipo}\nFoto anexa: ${fotoUrl ? fotoUrl : 'Nenhuma'}\n\nItens (${linhas.length}):\n` + linhas.map(l=> `- ${l.nome} | Mapa:${l.planoMapa} | Clube:${l.planoClube} | Pontos:${l.p} | BC:${l.bc}`).join('\n') + `\n\nAção necessária: Convidar os usuários pelo dashboard e, após aceite, aplicar os planos e créditos listados.`;
       await base44.integrations.Core.SendEmail({
         to: admin?.email || 'admin@mapa.com',
         from_name: 'Mapa da Estética - Admin',
@@ -123,6 +131,22 @@ export default function CadastroLoteUsuarios(){
           <Label>Nomes (um por linha)</Label>
           <Textarea rows={6} value={texto} onChange={(e)=> setTexto(e.target.value)} placeholder={"Exemplo:\nMaria Silva\nJoão Souza\n..."} className="mt-1"/>
           <p className="text-xs text-gray-500 mt-1">Máximo de 200 nomes. Emails serão convidados manualmente após este passo.</p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-4 items-end">
+          <div className="md:col-span-2">
+            <Label>Tirar foto (opcional)</Label>
+            <Input type="file" accept="image/*" capture="environment" onChange={async (e)=>{
+              const f = e.target.files?.[0];
+              if (!f) return;
+              const { file_url } = await base44.integrations.Core.UploadFile({ file: f });
+              setFotoUrl(file_url);
+            }}/>
+            {fotoUrl && (<div className="mt-2"><img src={fotoUrl} alt="foto" className="h-24 rounded border"/></div>)}
+          </div>
+          <div>
+            <Button type="button" variant="outline" onClick={aplicarIA}><Sparkles className="w-4 h-4 mr-2"/>Cadastro assistido por IA</Button>
+          </div>
         </div>
 
         {!aplicarParaTodos && nomes.length>0 && (
