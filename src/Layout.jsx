@@ -318,7 +318,7 @@ export default function Layout({ children }) {
             </Link>
 
             {/* Desktop Navigation - COMPACTADO */}
-            <nav className="hidden xl:flex items-center gap-0.5">
+            <nav className="hidden md:flex items-center gap-0.5">
               {navigationItems.map((item) => (
                 <Link
                   key={item.title}
@@ -522,7 +522,7 @@ export default function Layout({ children }) {
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="xl:hidden p-1.5 sm:p-2 rounded-lg hover:bg-gray-100"
+                className="md:hidden p-1.5 sm:p-2 rounded-lg hover:bg-gray-100"
               >
                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
@@ -531,7 +531,7 @@ export default function Layout({ children }) {
 
           {/* Mobile Navigation */}
           {mobileMenuOpen && (
-            <nav className="xl:hidden mt-4 pb-4 space-y-2 border-t pt-4">
+            <nav className="md:hidden mt-4 pb-4 space-y-2 border-t pt-4">
               {/* NOVO: Seletor de Visão Mobile (apenas admin) */}
               {isAdmin && (
                 <div className="mb-4 p-3 bg-orange-50 border-2 border-orange-200 rounded-lg">
