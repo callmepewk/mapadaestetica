@@ -50,6 +50,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import BannerRotativo from "../components/banners/BannerRotativo";
+import PatrocinadoresGrid from "../components/home/PatrocinadoresGrid";
 import SecaoTutoriais from "../components/home/SecaoTutoriais";
 import SeletorTipoUsuario from "../components/home/SeletorTipoUsuario";
 
@@ -716,18 +717,7 @@ export default function Inicio() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-6">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <Card key={i} className="aspect-square flex items-center justify-center bg-white hover:shadow-xl transition-shadow border-none">
-                <CardContent className="p-4 flex items-center justify-center w-full h-full">
-                  <div className="text-center">
-                    <div className="text-4xl mb-2">🏢</div>
-                    <p className="text-xs text-gray-500">Patrocinador {i}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <PatrocinadoresGrid />
 
           <div className="text-center mt-8">
             <p className="text-gray-600 mb-4">

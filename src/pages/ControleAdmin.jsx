@@ -88,6 +88,8 @@ import ConcederPlanos from "../components/admin/ConcederPlanos";
 import ModalEnviarNotificacao from "../components/admin/ModalEnviarNotificacao";
 import GerenciadorProdutos from "../components/admin/GerenciadorProdutos";
 import AbaSEO from "../components/admin/AbaSEO";
+import GeradorCampanhas from "../components/admin/GeradorCampanhas";
+import CadastroLoteUsuarios from "../components/admin/CadastroLoteUsuarios";
 
 const PLANOS_INFO = {
   cobre: { nome: "Cobre", cor: "bg-orange-100 text-orange-800" },
@@ -2566,7 +2568,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                 )}
 
         <Tabs value={abaSelecionada} onValueChange={setAbaSelecionada} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-7 mb-6 gap-1">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-8 mb-6 gap-1">
             <TabsTrigger value="versoes">
               <GitBranch className="w-4 h-4 mr-2" />
               Versões e Atualizações
@@ -2594,6 +2596,10 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
              <TabsTrigger value="seo">
               <TrendingUp className="w-4 h-4 mr-2" />
               SEO
+            </TabsTrigger>
+            <TabsTrigger value="campanhas">
+              <ImageIcon className="w-4 h-4 mr-2" />
+              Campanhas
             </TabsTrigger>
           </TabsList>
 
@@ -2695,7 +2701,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
           
           <TabsContent value="perfis">
             <Tabs defaultValue="solicitacoes" className="w-full">
-              <TabsList className="w-full mb-6 grid grid-cols-2 md:grid-cols-7 gap-1">
+              <TabsList className="w-full mb-6 grid grid-cols-2 md:grid-cols-8 gap-1">
                 <TabsTrigger value="solicitacoes" className="text-xs sm:text-sm">
                   <CreditCard className="w-4 h-4 mr-2" />
                   Solicitações ({solicitacoesPlanos.length})
@@ -2721,8 +2727,12 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                   Patrocinadores ({usuariosPatrocinadores.length})
                 </TabsTrigger>
                 <TabsTrigger value="todos-usuarios" className="text-xs sm:text-sm">
-                  <Users className="w-4 h-4 mr-2" />
-                  Todos ({todosUsuarios.length})
+                 <Users className="w-4 h-4 mr-2" />
+                 Todos ({todosUsuarios.length})
+                </TabsTrigger>
+                <TabsTrigger value="cadastro-lote" className="text-xs sm:text-sm">
+                 <UserPlus className="w-4 h-4 mr-2" />
+                 Cadastro em Lote
                 </TabsTrigger>
               </TabsList>
               
@@ -3576,11 +3586,19 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                   </CardContent>
                 </Card>
               </TabsContent>
+
+              <TabsContent value="cadastro-lote">
+                <CadastroLoteUsuarios />
+              </TabsContent>
             </Tabs>
           </TabsContent>
 
           <TabsContent value="produtos">
             <GerenciadorProdutos />
+          </TabsContent>
+
+          <TabsContent value="campanhas">
+            <GeradorCampanhas />
           </TabsContent>
 
           <TabsContent value="banners">

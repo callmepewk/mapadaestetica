@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -109,7 +108,11 @@ const tiposAnuncio = [
   { valor: "troca_aparelho", label: "Troca - Aparelho" },
   { valor: "venda_moveis", label: "Venda - Móveis" },
   { valor: "troca_moveis", label: "Troca - Móveis" },
-  { valor: "evento", label: "Evento" }
+  { valor: "evento", label: "Evento" },
+  { valor: "ia", label: "IA" },
+  { valor: "servicos", label: "Serviços" },
+  { valor: "servicos_ia", label: "Serviços de IA" },
+  { valor: "midia_marketing", label: "Mídia e Marketing" }
 ];
 
 const statusFuncionamento = [
@@ -160,6 +163,7 @@ const criarIconeEstabelecimento = (categoria) => {
     "Barbearia": "✂️",
     "Centro de Estética": "✨",
     "Consultório": "🏥",
+    "Personal Trainer": "🏋️",
     "Outros": "📍"
   };
   
@@ -714,6 +718,7 @@ export default function Mapa() {
                     <SelectItem value="Barbearia">✂️ Barbearia</SelectItem>
                     <SelectItem value="Centro de Estética">✨ Centro de Estética</SelectItem>
                     <SelectItem value="Consultório">🏥 Consultório</SelectItem>
+                    <SelectItem value="Personal Trainer">🏋️ Personal Trainer</SelectItem>
                   </SelectContent>
                 </Select>
 

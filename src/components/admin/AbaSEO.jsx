@@ -1,9 +1,21 @@
 import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp, ExternalLink, Activity, BarChart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const AbaSEO = () => {
+  const { data: anuncios = [] } = useQuery({ queryKey: ['seo-anuncios'], queryFn: () => base44.entities.Anuncio.list('-created_date', 1000), staleTime: 0 });
+  const { data: posts = [] } = useQuery({ queryKey: ['seo-posts'], queryFn: () => base44.entities.ArtigoBlog.list('-created_date', 500), staleTime: 0 });
+  const { data: banners = [] } = useQuery({ queryKey: ['seo-banners'], queryFn: () => base44.entities.Banner.list('-created_date', 500), staleTime: 0 });
+  const { data: users = [] } = useQuery({ queryKey: ['seo-users'], queryFn: () => base44.entities.User.list('-created_date', 2000), staleTime: 0 });
+
+  const totalViews = anuncios.reduce((s,a)=> s + (a.visualizacoes||0), 0) + posts.reduce((s,p)=> s + (p.visualizacoes||0), 0) + banners.reduce((s,b)=> s + (b.metricas?.visualizacoes||0), 0);
+  const totalBounces = 0; // não disponível
+  const bounceRate = users.length ? Math.round((totalBounces / Math.max(1,totalViews)) * 100) : 0;
+  const avgSession = 'N/D';
+
   return (
     <Card>
       <CardHeader>
@@ -17,42 +29,42 @@ const AbaSEO = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Visitantes Únicos</CardTitle>
+              <CardTitle className="text-sm font-medium">Usuários</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">12,543</div>
-              <p className="text-xs text-muted-foreground">+10.2% vs mês passado</p>
+              <div className="text-2xl font-bold">{users.length}</div>
+              <p className="text-xs text-muted-foreground">Total de contas</p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Visualizações de Página</CardTitle>
+              <CardTitle className="text-sm font-medium">Visualizações (Tempo Real)</CardTitle>
               <Eye className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">89,921</div>
-              <p className="text-xs text-muted-foreground">+21% vs mês passado</p>
+              <div className="text-2xl font-bold">{totalViews}</div>
+              <p className="text-xs text-muted-foreground">Anúncios, Posts e Banners</p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Taxa de Rejeição</CardTitle>
+              <CardTitle className="text-sm font-medium">Banners Ativos</CardTitle>
+              <Activity className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{banners.filter(b=> b.status==='ativo').length}</div>
+              <p className="text-xs text-muted-foreground">Rodando agora</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Posts Publicados</CardTitle>
               <BarChart className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">28.5%</div>
-              <p className="text-xs text-muted-foreground">-5% vs mês passado</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Tempo Médio da Sessão</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">3m 45s</div>
-              <p className="text-xs text-muted-foreground">+15s vs mês passado</p>
+              <div className="text-2xl font-bold">{posts.filter(p=> p.status==='publicado').length}</div>
+              <p className="text-xs text-muted-foreground">Conteúdo ativo</p>
             </CardContent>
           </Card>
         </div>
