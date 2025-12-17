@@ -4530,9 +4530,19 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
               <Button onClick={criarCampanhaSelecionados}>Criar</Button>
             </DialogFooter>
           </DialogContent>
-        </Dialog>
+          </Dialog>
 
-        {/* Modal Tutorial */}
+          {/* Editor IA Anúncio */}
+          {anuncioIAEditando && (
+          <EditorAnuncioIA
+            open={!!anuncioIAEditando}
+            anuncio={anuncioIAEditando}
+            onClose={() => setAnuncioIAEditando(null)}
+            onSaved={() => { queryClient.invalidateQueries({ queryKey: ['admin-anuncios'] }); }}
+          />
+          )}
+
+          {/* Modal Tutorial */}
         <Dialog open={mostrarTutorialDrBeleza} onOpenChange={setMostrarTutorialDrBeleza}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
