@@ -28,6 +28,7 @@ import {
 
 const PLANOS_INFO = {
   cobre: { nome: "Cobre", cor: "bg-orange-100 text-orange-800" },
+  lite: { nome: "Lite", cor: "bg-rose-100 text-rose-800" },
   prata: { nome: "Prata", cor: "bg-gray-100 text-gray-800" },
   ouro: { nome: "Ouro", cor: "bg-yellow-100 text-yellow-800" },
   diamante: { nome: "Diamante", cor: "bg-blue-100 text-blue-800" },
@@ -47,6 +48,9 @@ export default function ConcederPlanos({ todosUsuarios }) {
   const [beautyCoinsUsuario, setBeautyCoinsUsuario] = useState(0);
   const [sucesso, setSucesso] = useState(null);
   const [erro, setErro] = useState(null);
+
+  const [trialQtd, setTrialQtd] = useState(7);
+  const [trialTipo, setTrialTipo] = useState('dias');
 
   const concederPlanosMutation = useMutation({
     mutationFn: async ({ userId, planos, tipo, pontos, beautyCoins, role }) => {
@@ -85,6 +89,43 @@ export default function ConcederPlanos({ todosUsuarios }) {
       setTimeout(() => setErro(null), 5000);
     }
   });
+
+  const concederTrial = async () => {
+    if (!usuarioSelecionado) return;
+    const agora = new Date();
+    const fim = new Date(agora);
+    if (trialTipo === 'meses') {
+      fim.setMonth(fim.getMonth() + (parseInt(trialQtd) || 0));
+    } else {
+      fim.setDate(fim.getDate() + (parseInt(trialQtd) || 0));
+    }
+    await base44.entities.User.update(usuarioSelecionado.id, {
+      plano_trial_ativo: true,
+      plano_trial_fim: fim.toISOString()
+    });
+    setUsuarioSelecionado({ ...usuarioSelecionado, plano_trial_ativo: true, plano_trial_fim: fim.toISOString() });
+    queryClient.invalidateQueries({ queryKey: ['todos-usuarios'] });
+    setSucesso('Período grátis concedido!');
+    setTimeout(()=> setSucesso(null), 3000);
+  };
+
+  const estenderTrial = async (dias = 7) => {
+    if (!usuarioSelecionado?.plano_trial_fim) return;
+    const fim = new Date(usuarioSelecionado.plano_trial_fim);
+    fim.setDate(fim.getDate() + dias);
+    await base44.entities.User.update(usuarioSelecionado.id, { plano_trial_fim: fim.toISOString() });
+    setUsuarioSelecionado({ ...usuarioSelecionado, plano_trial_fim: fim.toISOString() });
+    setSucesso(`Período grátis estendido em ${dias} dias!`);
+    setTimeout(()=> setSucesso(null), 3000);
+  };
+
+  const encerrarTrial = async () => {
+    if (!usuarioSelecionado) return;
+    await base44.entities.User.update(usuarioSelecionado.id, { plano_trial_ativo: false });
+    setUsuarioSelecionado({ ...usuarioSelecionado, plano_trial_ativo: false });
+    setSucesso('Período grátis encerrado!');
+    setTimeout(()=> setSucesso(null), 3000);
+  };
 
   const handleConcederPlanos = () => {
     if (!usuarioSelecionado) {
@@ -332,7 +373,38 @@ export default function ConcederPlanos({ todosUsuarios }) {
                 </p>
               </div>
 
-              {/* Clube da Beleza */}
+              {/* Período Grátis (Trial) */}
+              <div className="p-4 rounded-lg border-2 border-blue-200 bg-blue-50">
+                <Label className="font-semibold mb-2 block">🎁 Período Grátis</Label>
+                <div className="grid md:grid-cols-3 gap-3 items-end">
+                  <div>
+                    <Label>Quantidade</Label>
+                    <Input type="number" min="1" value={trialQtd} onChange={(e)=> setTrialQtd(parseInt(e.target.value)||1)} className="bg-white"/>
+                  </div>
+                  <div>
+                    <Label>Unidade</Label>
+                    <Select value={trialTipo} onValueChange={setTrialTipo}>
+                      <SelectTrigger className="bg-white"><SelectValue/></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="dias">Dias</SelectItem>
+                        <SelectItem value="meses">Meses</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button type="button" onClick={concederTrial} className="bg-blue-600 hover:bg-blue-700">Conceder Trial</Button>
+                    <Button type="button" variant="outline" onClick={()=> estenderTrial(7)}>+7 dias</Button>
+                    <Button type="button" variant="destructive" onClick={encerrarTrial}>Encerrar</Button>
+                  </div>
+                </div>
+                {usuarioSelecionado?.plano_trial_ativo && (
+                  <p className="text-xs text-blue-900 mt-2">
+                    Ativo até: <strong>{new Date(usuarioSelecionado.plano_trial_fim).toLocaleString('pt-BR')}</strong>
+                  </p>
+                )}
+              </div>
+
+               {/* Clube da Beleza */}
               <div>
                 <Label className="font-semibold mb-2 block">👑 Clube da Beleza</Label>
                 <Select value={planoClube} onValueChange={setPlanoClube}>

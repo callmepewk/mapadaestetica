@@ -48,6 +48,36 @@ const planos = [
     ]
   },
   {
+    nome: "LITE",
+    tipo: "lite",
+    preco: "R$ 9,90/mês",
+    cor: "from-rose-300 to-pink-500",
+    icone: Sparkles,
+    destaque: false,
+    linkPagamento: "https://wa.me/5531972595643?text=Quero%20assinar%20o%20plano%20LITE%20(R$9,90)%20do%20Mapa%20da%20Est%C3%A9tica",
+    limites: {
+      especialidades: 1,
+      anuncios: 3,
+      tags: 2,
+      dias_exposicao: 30
+    },
+    beneficios: [
+      "✅ Acesso ao WhatsApp dos profissionais",
+      "1 Especialidade cadastrada",
+      "Até 3 anúncios ativos",
+      "2 Tags/palavras-chave",
+      "30 dias de exposição por anúncio",
+      "Perfil com leve destaque",
+      "Estatísticas essenciais"
+    ],
+    naoInclui: [
+      "Prioridade nas buscas",
+      "Badge de verificação",
+      "Suporte prioritário",
+      "Relatórios avançados"
+    ]
+  },
+  {
     nome: "BÁSICO",
     tipo: "prata",
     preco: "R$ 49,90/mês",

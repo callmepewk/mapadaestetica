@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useNavigate, Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Card, CardContent } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -40,6 +40,21 @@ const planosDisponiveis = {
       anuncios: 1,
       tags: 1
     }
+  },
+  lite: {
+    nome: "LITE",
+    cor: "from-rose-300 to-pink-500",
+    icone: Sparkles,
+    beneficios: [
+      "Acesso ao WhatsApp dos profissionais",
+      "1 Especialidade cadastrada",
+      "Até 3 anúncios ativos",
+      "2 Tags",
+      "30 dias de exposição",
+      "Leve destaque de perfil",
+      "Estatísticas essenciais"
+    ],
+    limites: { especialidades: 1, anuncios: 3, tags: 2 }
   },
   prata: {
     nome: "BÁSICO",
@@ -169,6 +184,27 @@ export default function MeuPlano() {
   }
 
   const planoAtual = user.plano_ativo || 'cobre';
+  const trialAtivo = !!user.plano_trial_ativo;
+  const trialFimISO = user.plano_trial_fim || null;
+  const [trialRestanteMs, setTrialRestanteMs] = useState(0);
+
+  useEffect(() => {
+    if (!trialAtivo || !trialFimISO) return;
+    const fim = new Date(trialFimISO).getTime();
+    const tick = () => setTrialRestanteMs(Math.max(0, fim - Date.now()));
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [trialAtivo, trialFimISO]);
+
+  const formatarTempo = (ms) => {
+    const totalSec = Math.floor(ms / 1000);
+    const dias = Math.floor(totalSec / 86400);
+    const horas = Math.floor((totalSec % 86400) / 3600);
+    const minutos = Math.floor((totalSec % 3600) / 60);
+    const segundos = totalSec % 60;
+    return `${dias}d ${horas}h ${minutos}m ${segundos}s`;
+  };
   const planoInfo = planosDisponiveis[planoAtual];
   const IconeAtual = planoInfo.icone;
 
@@ -200,6 +236,24 @@ export default function MeuPlano() {
             Veja seus benefícios e explore opções de upgrade
           </p>
         </div>
+
+        {/* Trial Banner */}
+        {trialAtivo && (
+          trialRestanteMs > 0 ? (
+            <Alert className="max-w-4xl mx-auto mb-6 bg-green-50 border-green-200">
+              <AlertDescription className="text-green-800">
+                🎁 Você está em um período grátis! Tempo restante: <strong>{formatarTempo(trialRestanteMs)}</strong>
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <Alert className="max-w-4xl mx-auto mb-6 bg-yellow-50 border-yellow-200">
+              <AlertDescription className="text-yellow-800 flex items-center justify-between gap-3">
+                <span>⚠️ Seu período grátis terminou. Assine um plano para continuar em destaque.</span>
+                <Button size="sm" onClick={() => navigate(createPageUrl("Planos"))} className="bg-[#F7D426] text-[#2C2C2C] border-2 border-[#2C2C2C]">Ver Planos</Button>
+              </AlertDescription>
+            </Alert>
+          )
+        )}
 
         {/* Current Plan Card */}
         <Card className="border-none shadow-2xl mb-12 overflow-hidden">
