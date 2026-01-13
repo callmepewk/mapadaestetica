@@ -179,7 +179,27 @@ export default function TrendRadar() {
       m[d][h] += 1;
     }
     return m;
-  }, [searches, start, now]);
+  }, [filteredSearches, start, now]);
+
+  async function handleUseMyLocation() {
+    if (!navigator.geolocation) { alert('Geolocalização não suportada.'); return; }
+    setGeoLoading(true);
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      const { latitude, longitude } = pos.coords;
+      try {
+        const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+        const data = await resp.json();
+        const cidade = data.address.city || data.address.town || data.address.village || data.address.county || '';
+        const estado = data.address.state || data.address.region || '';
+        const pais = data.address.country || '';
+        setCenter({ lat: latitude, lon: longitude });
+        if (!citySel) setCitySel(cidade);
+        if (!stateSel) setStateSel(estado);
+        if (!countrySel) setCountrySel(pais);
+      } catch {}
+      setGeoLoading(false);
+    }, () => setGeoLoading(false));
+  }
 
   return (
     <div className="space-y-4">
