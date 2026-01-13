@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { MapPin, Sparkles, TrendingUp } from "lucide-react";
 import TrendWordCloud from "./TrendWordCloud";
 import TrendSeasonalityChart from "./TrendSeasonalityChart";
@@ -65,6 +66,13 @@ export default function TrendRadar() {
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(true);
   const [openAll, setOpenAll] = useState(false);
+  const [localizationMode, setLocalizationMode] = useState('radius'); // 'radius' | 'city'
+  const [radiusKm, setRadiusKm] = useState(25);
+  const [center, setCenter] = useState({ lat: null, lon: null });
+  const [citySel, setCitySel] = useState('');
+  const [stateSel, setStateSel] = useState('');
+  const [countrySel, setCountrySel] = useState('');
+  const [geoLoading, setGeoLoading] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -81,11 +89,39 @@ export default function TrendRadar() {
   const start = new Date(now - days*24*60*60*1000);
   const prevStart = new Date(start.getTime() - days*24*60*60*1000);
 
+  const filteredSearches = useMemo(() => {
+    if (localizationMode === 'radius') {
+      if (!center.lat || !center.lon) return searches;
+      const R = 6371;
+      const toRad = (v) => (v * Math.PI) / 180;
+      const dist = (a, b, c, d) => {
+        const dLat = toRad(c - a);
+        const dLon = toRad(d - b);
+        const aa = Math.sin(dLat/2)**2 + Math.cos(toRad(a))*Math.cos(toRad(c))*Math.sin(dLon/2)**2;
+        return 2 * R * Math.asin(Math.sqrt(aa));
+      };
+      return searches.filter(s => typeof s.latitude === 'number' && typeof s.longitude === 'number' && dist(center.lat, center.lon, s.latitude, s.longitude) <= radiusKm);
+    } else {
+      const cityN = (citySel || '').toLowerCase().trim();
+      const stateN = (stateSel || '').toLowerCase().trim();
+      const countryN = (countrySel || '').toLowerCase().trim();
+      return searches.filter(s => {
+        const c = (s.cidade || '').toLowerCase();
+        const e = (s.estado || '').toLowerCase();
+        const p = (s.pais || '').toLowerCase();
+        const cityOk = cityN ? c === cityN : true;
+        const stateOk = stateN ? e === stateN : true;
+        const countryOk = countryN ? p === countryN : true;
+        return cityOk && stateOk && countryOk;
+      });
+    }
+  }, [searches, localizationMode, center, radiusKm, citySel, stateSel, countrySel]);
+
   const byDay = useMemo(() => {
     // agrega contagens por dia e termo canônico
     const fmt = (d) => new Date(d).toISOString().slice(0,10);
     const curr = {}; const prev = {};
-    for (const s of searches) {
+    for (const s of filteredSearches) {
       const ts = new Date(s.created_date);
       const bucket = fmt(ts);
       const tokens = tokenize(s.query || "");
@@ -135,7 +171,7 @@ export default function TrendRadar() {
 
   const heatMatrix = useMemo(() => {
     const m = Array.from({ length: 7 }, () => Array.from({ length: 24 }, () => 0));
-    for (const s of searches) {
+    for (const s of filteredSearches) {
       const ts = new Date(s.created_date);
       if (ts < start || ts > new Date(now)) continue;
       const d = ts.getDay();
@@ -166,6 +202,36 @@ export default function TrendRadar() {
               <SelectItem value="90">90 dias</SelectItem>
             </SelectContent>
           </Select>
+        </div>
+      </div>
+
+      <div className="grid gap-2 sm:grid-cols-2 items-end">
+        <div className="flex flex-wrap items-center gap-2">
+          <Select value={localizationMode} onValueChange={setLocalizationMode}>
+            <SelectTrigger className="w-[180px]"><SelectValue placeholder="Localização"/></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="radius">Raio (km)</SelectItem>
+              <SelectItem value="city">Cidade/Estado</SelectItem>
+            </SelectContent>
+          </Select>
+          {localizationMode === 'radius' ? (
+            <>
+              <Input type="number" min="1" max="200" value={radiusKm} onChange={(e)=>setRadiusKm(parseInt(e.target.value) || 1)} className="w-24" />
+              <Button variant="outline" onClick={handleUseMyLocation} disabled={geoLoading}>
+                <MapPin className="w-4 h-4 mr-1" /> {geoLoading ? 'Localizando...' : 'Usar minha localização'}
+              </Button>
+              {center.lat && <Badge variant="outline" className="hidden sm:inline">lat {center.lat.toFixed(2)}, lon {center.lon.toFixed(2)}</Badge>}
+            </>
+          ) : (
+            <>
+              <Input placeholder="Cidade" value={citySel} onChange={(e)=>setCitySel(e.target.value)} className="w-40" />
+              <Input placeholder="Estado" value={stateSel} onChange={(e)=>setStateSel(e.target.value)} className="w-32" />
+              <Input placeholder="País" value={countrySel} onChange={(e)=>setCountrySel(e.target.value)} className="w-32" />
+            </>
+          )}
+        </div>
+        <div className="text-xs text-gray-500">
+          {localizationMode === 'radius' && !center.lat && 'Dica: clique em "Usar minha localização" para filtrar por raio.'}
         </div>
       </div>
 
