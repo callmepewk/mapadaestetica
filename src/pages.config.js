@@ -4,9 +4,6 @@ import AgradecimentoPlano from './pages/AgradecimentoPlano';
 import Anuncios from './pages/Anuncios';
 import ArtigoBlog from './pages/ArtigoBlog';
 import Blog from './pages/Blog';
-import CFMAnalytics from './pages/CFMAnalytics';
-import CFMPipeline from './pages/CFMPipeline';
-import CFMValidacao from './pages/CFMValidacao';
 import CadastrarAnuncio from './pages/CadastrarAnuncio';
 import CalculadoraLaser from './pages/CalculadoraLaser';
 import ControleAdmin from './pages/ControleAdmin';
@@ -39,9 +36,6 @@ export const PAGES = {
     "Anuncios": Anuncios,
     "ArtigoBlog": ArtigoBlog,
     "Blog": Blog,
-    "CFMAnalytics": CFMAnalytics,
-    "CFMPipeline": CFMPipeline,
-    "CFMValidacao": CFMValidacao,
     "CadastrarAnuncio": CadastrarAnuncio,
     "CalculadoraLaser": CalculadoraLaser,
     "ControleAdmin": ControleAdmin,

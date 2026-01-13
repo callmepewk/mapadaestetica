@@ -6,10 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Database, Shield, Activity, Upload, Rocket, RefreshCw, CheckCircle, AlertCircle } from "lucide-react";
-import { createPageUrl } from "@/utils";
 
 const UF_COUNTS = [
   { uf: 'RS', total: 2636 }, { uf: 'SC', total: 42585 }, { uf: 'PR', total: 62861 }, { uf: 'MS', total: 16034 },
@@ -117,7 +115,6 @@ export default function CFMPipeline() {
           prompt: `Gere ${n} médicos SIMULADOS da UF ${uf} no Brasil. Devolva JSON array com campos: nome_completo, crm (número), uf_crm, situacao (ativo|inativo|suspenso|cancelado), especialidade, data_inscricao (YYYY-MM-DD), municipio.`,
           response_json_schema: { type: 'object', properties: { data: { type: 'array' } } }
         });
-        // caso não venha no wrapper {data:[]} tentar interpretar diretamente
         rows = sim?.data || sim || [];
         await log(runId, 'info', `Gerados ${rows.length} registros simulados para ${uf}`);
       } else {
@@ -180,125 +177,117 @@ export default function CFMPipeline() {
     setMsg('Pipeline concluído.');
   };
 
-  if (!user) return (<div className="min-h-screen flex items-center justify-center text-gray-600">Carregando...</div>);
-  if (!isAdmin) return (<div className="min-h-screen flex items-center justify-center text-gray-600">Acesso restrito aos administradores.</div>);
+  if (!user) return (<div className="flex items-center justify-center text-gray-600">Carregando...</div>);
+  if (!isAdmin) return (<div className="flex items-center justify-center text-gray-600">Acesso restrito.</div>);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
-      <div className="max-w-7xl mx-auto px-4 space-y-6">
-        <div className="text-center">
-          <Badge className="mb-3">Pipeline CFM</Badge>
-          <h1 className="text-3xl font-bold mb-2">Ingestão Nacional de Registros Médicos</h1>
-          <p className="text-gray-600">Camada de conector, normalização, versionamento e métricas</p>
-        </div>
+    <div className="space-y-6">
+      {err && (
+        <Alert className="bg-red-50 border-red-200"><AlertCircle className="h-4 w-4 text-red-600" /><AlertDescription className="text-red-800">{err}</AlertDescription></Alert>
+      )}
+      {msg && (
+        <Alert className="bg-green-50 border-green-200"><CheckCircle className="h-4 w-4 text-green-600" /><AlertDescription className="text-green-800">{msg}</AlertDescription></Alert>
+      )}
 
-        {err && (
-          <Alert className="bg-red-50 border-red-200"><AlertCircle className="h-4 w-4 text-red-600" /><AlertDescription className="text-red-800">{err}</AlertDescription></Alert>
-        )}
-        {msg && (
-          <Alert className="bg-green-50 border-green-200"><CheckCircle className="h-4 w-4 text-green-600" /><AlertDescription className="text-green-800">{msg}</AlertDescription></Alert>
-        )}
-
-        <Card className="border-2 border-gray-200">
-          <CardContent className="p-6 space-y-4">
-            <div className="grid md:grid-cols-4 gap-4 items-end">
+      <Card className="border-2 border-gray-200">
+        <CardContent className="p-6 space-y-4">
+          <div className="grid md:grid-cols-4 gap-4 items-end">
+            <div>
+              <label className="text-sm font-semibold">Modo</label>
+              <Select value={mode} onValueChange={setMode}>
+                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="simulado">Simulado (gera dados sintéticos)</SelectItem>
+                  <SelectItem value="upload">Upload (CSV/PDF de origem)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {mode === 'simulado' && (
               <div>
-                <label className="text-sm font-semibold">Modo</label>
-                <Select value={mode} onValueChange={setMode}>
-                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="simulado">Simulado (gera dados sintéticos)</SelectItem>
-                    <SelectItem value="upload">Upload (CSV/PDF de origem)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              {mode === 'simulado' && (
-                <div>
-                  <label className="text-sm font-semibold">Registros por UF (amostra)</label>
-                  <Input type="number" value={sampleSize} onChange={e=> setSampleSize(e.target.value)} className="mt-1" />
-                </div>
-              )}
-              <div className="md:col-span-2 text-right">
-                <Button disabled={running} onClick={runAll} className="bg-blue-600 hover:bg-blue-700">
-                  {running ? <><Loader2 className="w-4 h-4 mr-2 animate-spin"/>Processando...</> : <><Rocket className="w-4 h-4 mr-2"/>Executar Pipeline</>}
-                </Button>
-              </div>
-            </div>
-
-            <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-3">
-              {UF_COUNTS.map(({ uf, total }) => (
-                <div key={uf} className={`rounded-lg border p-3 ${selectedUFs.includes(uf) ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white'}`}>
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <input type="checkbox" checked={selectedUFs.includes(uf)} onChange={()=> toggleUF(uf)} />
-                      <span className="font-semibold">{uf}</span>
-                    </div>
-                    <Badge variant="outline">{total.toLocaleString()}</Badge>
-                  </div>
-                  {mode === 'upload' && (
-                    <label className="block text-xs text-gray-600">
-                      <Input type="file" accept=".csv,.pdf,.xlsx,.xls,.json,.txt,.png,.jpg,.jpeg" onChange={e=> handleUpload(uf, e.target.files?.[0])} />
-                    </label>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            {running && (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm text-gray-600">
-                  <span>Processando UF: <strong>{currentUF || '-'}</strong></span>
-                  <span>{progress}%</span>
-                </div>
-                <Progress value={progress} />
+                <label className="text-sm font-semibold">Registros por UF (amostra)</label>
+                <Input type="number" value={sampleSize} onChange={e=> setSampleSize(e.target.value)} className="mt-1" />
               </div>
             )}
-          </CardContent>
-        </Card>
-
-        <Card className="border-2 border-gray-200">
-          <CardContent className="p-6">
-            <h3 className="font-bold mb-3 flex items-center gap-2"><Activity className="w-4 h-4"/> Execuções Recentes</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left text-gray-500">
-                    <th className="p-2">Data</th>
-                    <th className="p-2">UF</th>
-                    <th className="p-2">Modo</th>
-                    <th className="p-2">Total</th>
-                    <th className="p-2">Novos</th>
-                    <th className="p-2">Atualizados</th>
-                    <th className="p-2">Erros</th>
-                    <th className="p-2">Tempo</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {runs.map(r => (
-                    <tr key={r.id} className="border-t">
-                      <td className="p-2">{new Date(r.created_date).toLocaleString('pt-BR')}</td>
-                      <td className="p-2">{r.uf}</td>
-                      <td className="p-2">{r.modo}</td>
-                      <td className="p-2">{r.total_registros}</td>
-                      <td className="p-2 text-green-700">{r.novos_registros}</td>
-                      <td className="p-2 text-blue-700">{r.atualizados}</td>
-                      <td className="p-2 text-red-700">{r.erros}</td>
-                      <td className="p-2">{r.tempo_execucao_ms ? `${Math.round(r.tempo_execucao_ms/1000)}s` : '-'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="md:col-span-2 text-right">
+              <Button disabled={running} onClick={runAll} className="bg-blue-600 hover:bg-blue-700">
+                {running ? <><Loader2 className="w-4 h-4 mr-2 animate-spin"/>Processando...</> : <><Rocket className="w-4 h-4 mr-2"/>Executar Pipeline</>}
+              </Button>
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        <Alert className="bg-yellow-50 border-yellow-200">
-          <AlertCircle className="h-4 w-4 text-yellow-600" />
-          <AlertDescription className="text-yellow-800 text-sm">
-            Esta implementação simula o conector em modo "Simulado" e suporta Upload de arquivos para ingestão real. Para conector automático ao site do CFM, habilite Backend Functions e substitua o Data Connector por um serviço servidor (rate-limit, backoff, autenticação, etc.).
-          </AlertDescription>
-        </Alert>
-      </div>
+          <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-3">
+            {UF_COUNTS.map(({ uf, total }) => (
+              <div key={uf} className={`rounded-lg border p-3 ${selectedUFs.includes(uf) ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white'}`}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <input type="checkbox" checked={selectedUFs.includes(uf)} onChange={()=> toggleUF(uf)} />
+                    <span className="font-semibold">{uf}</span>
+                  </div>
+                  <Badge variant="outline">{total.toLocaleString()}</Badge>
+                </div>
+                {mode === 'upload' && (
+                  <label className="block text-xs text-gray-600">
+                    <Input type="file" accept=".csv,.pdf,.xlsx,.xls,.json,.txt,.png,.jpg,.jpeg" onChange={e=> handleUpload(uf, e.target.files?.[0])} />
+                  </label>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {running && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm text-gray-600">
+                <span>Processando UF: <strong>{currentUF || '-'}</strong></span>
+                <span>{progress}%</span>
+              </div>
+              <Progress value={progress} />
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="border-2 border-gray-200">
+        <CardContent className="p-6">
+          <h3 className="font-bold mb-3 flex items-center gap-2"><Activity className="w-4 h-4"/> Execuções Recentes</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-gray-500">
+                  <th className="p-2">Data</th>
+                  <th className="p-2">UF</th>
+                  <th className="p-2">Modo</th>
+                  <th className="p-2">Total</th>
+                  <th className="p-2">Novos</th>
+                  <th className="p-2">Atualizados</th>
+                  <th className="p-2">Erros</th>
+                  <th className="p-2">Tempo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {runs.map(r => (
+                  <tr key={r.id} className="border-t">
+                    <td className="p-2">{new Date(r.created_date).toLocaleString('pt-BR')}</td>
+                    <td className="p-2">{r.uf}</td>
+                    <td className="p-2">{r.modo}</td>
+                    <td className="p-2">{r.total_registros}</td>
+                    <td className="p-2 text-green-700">{r.novos_registros}</td>
+                    <td className="p-2 text-blue-700">{r.atualizados}</td>
+                    <td className="p-2 text-red-700">{r.erros}</td>
+                    <td className="p-2">{r.tempo_execucao_ms ? `${Math.round(r.tempo_execucao_ms/1000)}s` : '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Alert className="bg-yellow-50 border-yellow-200">
+        <AlertCircle className="h-4 w-4 text-yellow-600" />
+        <AlertDescription className="text-yellow-800 text-sm">
+          Esta implementação simula o conector em modo "Simulado" e suporta Upload de arquivos para ingestão real. Para conector automático ao site do CFM, habilite Backend Functions e substitua o Data Connector por um serviço servidor (rate-limit, backoff, autenticação, etc.).
+        </AlertDescription>
+      </Alert>
     </div>
   );
 }

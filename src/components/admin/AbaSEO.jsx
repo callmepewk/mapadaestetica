@@ -2,19 +2,20 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { TrendingUp, ExternalLink, Activity, BarChart } from 'lucide-react';
+import { TrendingUp, ExternalLink, Activity, Users, Eye, Search as SearchIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const AbaSEO = () => {
-  const { data: anuncios = [] } = useQuery({ queryKey: ['seo-anuncios'], queryFn: () => base44.entities.Anuncio.list('-created_date', 1000), staleTime: 0 });
-  const { data: posts = [] } = useQuery({ queryKey: ['seo-posts'], queryFn: () => base44.entities.ArtigoBlog.list('-created_date', 500), staleTime: 0 });
-  const { data: banners = [] } = useQuery({ queryKey: ['seo-banners'], queryFn: () => base44.entities.Banner.list('-created_date', 500), staleTime: 0 });
   const { data: users = [] } = useQuery({ queryKey: ['seo-users'], queryFn: () => base44.entities.User.list('-created_date', 2000), staleTime: 0 });
+  const { data: pageviews = [] } = useQuery({ queryKey: ['seo-pageviews'], queryFn: () => base44.entities.PageView.list('-created_date', 2000), staleTime: 0 });
+  const { data: searches = [] } = useQuery({ queryKey: ['seo-searches'], queryFn: () => base44.entities.SearchEvent.list('-created_date', 2000), staleTime: 0 });
 
-  const totalViews = anuncios.reduce((s,a)=> s + (a.visualizacoes||0), 0) + posts.reduce((s,p)=> s + (p.visualizacoes||0), 0) + banners.reduce((s,b)=> s + (b.metricas?.visualizacoes||0), 0);
-  const totalBounces = 0; // não disponível
-  const bounceRate = users.length ? Math.round((totalBounces / Math.max(1,totalViews)) * 100) : 0;
-  const avgSession = 'N/D';
+  const startOfDay = new Date(); startOfDay.setHours(0,0,0,0);
+  const fiveMinAgo = Date.now() - 5*60*1000;
+  const visitsToday = pageviews.filter(v => new Date(v.created_date) >= startOfDay).length;
+  const uniqueToday = (() => { const s = new Set(pageviews.filter(v => new Date(v.created_date) >= startOfDay).map(v => v.session_id)); return s.size; })();
+  const onlineNow = (() => { const s = new Set(pageviews.filter(v => new Date(v.created_date).getTime() >= fiveMinAgo).map(v => v.session_id)); return s.size; })();
+  const searchesToday = searches.filter(s => new Date(s.created_date) >= startOfDay).length;
 
   return (
     <Card>
@@ -39,32 +40,32 @@ const AbaSEO = () => {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Visualizações (Tempo Real)</CardTitle>
+              <CardTitle className="text-sm font-medium">Visitas hoje</CardTitle>
               <Eye className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{totalViews}</div>
-              <p className="text-xs text-muted-foreground">Anúncios, Posts e Banners</p>
+              <div className="text-2xl font-bold">{visitsToday}</div>
+              <p className="text-xs text-muted-foreground">Baseado em PageView</p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Banners Ativos</CardTitle>
+              <CardTitle className="text-sm font-medium">Usuários online</CardTitle>
               <Activity className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{banners.filter(b=> b.status==='ativo').length}</div>
-              <p className="text-xs text-muted-foreground">Rodando agora</p>
+              <div className="text-2xl font-bold">{onlineNow}</div>
+              <p className="text-xs text-muted-foreground">Sessões ativas (5 min)</p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Posts Publicados</CardTitle>
-              <BarChart className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Pesquisas hoje</CardTitle>
+              <SearchIcon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{posts.filter(p=> p.status==='publicado').length}</div>
-              <p className="text-xs text-muted-foreground">Conteúdo ativo</p>
+              <div className="text-2xl font-bold">{searchesToday}</div>
+              <p className="text-xs text-muted-foreground">Eventos de busca internos</p>
             </CardContent>
           </Card>
         </div>
@@ -95,11 +96,5 @@ const AbaSEO = () => {
     </Card>
   );
 };
-
-// Mock Icons for AbaSEO as they are not available in ControleAdmin
-const Users = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
-const Eye = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>;
-const Clock = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
-
 
 export default AbaSEO;
