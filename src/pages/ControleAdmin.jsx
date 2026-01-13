@@ -89,6 +89,9 @@ import ConcederPlanos from "../components/admin/ConcederPlanos";
 import ModalEnviarNotificacao from "../components/admin/ModalEnviarNotificacao";
 import GerenciadorProdutos from "../components/admin/GerenciadorProdutos";
 import AbaSEO from "../components/admin/AbaSEO";
+import CFMPipeline from "./CFMPipeline";
+import CFMAnalytics from "./CFMAnalytics";
+import CFMValidacao from "./CFMValidacao";
 import EditorAnuncioIA from "../components/admin/EditorAnuncioIA";
 import GeradorCampanhas from "../components/admin/GeradorCampanhas";
 import CadastroLoteUsuarios from "../components/admin/CadastroLoteUsuarios";
@@ -2605,7 +2608,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                 )}
 
         <Tabs value={abaSelecionada} onValueChange={setAbaSelecionada} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-8 mb-6 gap-1">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-9 mb-6 gap-1">
             <TabsTrigger value="versoes">
               <GitBranch className="w-4 h-4 mr-2" />
               Versões e Atualizações
@@ -2633,6 +2636,10 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
              <TabsTrigger value="seo">
               <TrendingUp className="w-4 h-4 mr-2" />
               SEO
+            </TabsTrigger>
+            <TabsTrigger value="cfm">
+              <Shield className="w-4 h-4 mr-2" />
+              CFM
             </TabsTrigger>
             <TabsTrigger value="campanhas">
               <ImageIcon className="w-4 h-4 mr-2" />
@@ -2733,7 +2740,36 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
             </Card>
           </TabsContent>
           <TabsContent value="seo">
-            <AbaSEO />
+           <AbaSEO />
+          </TabsContent>
+
+          <TabsContent value="cfm">
+           <Card className="mb-6">
+             <CardContent className="p-6">
+               <div className="flex items-center justify-between">
+                 <div>
+                   <h2 className="text-2xl font-bold">CFM - Pipeline, Analytics e Validação</h2>
+                   <p className="text-sm text-gray-600">Centralizamos aqui as três ferramentas do CFM</p>
+                 </div>
+               </div>
+             </CardContent>
+           </Card>
+           <Tabs defaultValue="pipeline" className="w-full">
+             <TabsList className="w-full mb-6 grid grid-cols-3 gap-1">
+               <TabsTrigger value="pipeline">Pipeline</TabsTrigger>
+               <TabsTrigger value="analytics">Analytics</TabsTrigger>
+               <TabsTrigger value="validacao">Validação</TabsTrigger>
+             </TabsList>
+             <TabsContent value="pipeline">
+               <CFMPipeline />
+             </TabsContent>
+             <TabsContent value="analytics">
+               <CFMAnalytics />
+             </TabsContent>
+             <TabsContent value="validacao">
+               <CFMValidacao />
+             </TabsContent>
+           </Tabs>
           </TabsContent>
           
           <TabsContent value="perfis">
