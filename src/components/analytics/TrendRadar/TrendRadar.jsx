@@ -257,53 +257,6 @@ export default function TrendRadar() {
     return Object.entries(sumBy).map(([term, count]) => ({ term, count })).sort((a,b)=>b.count-a.count).slice(0, 20);
   };
 
-  const UF_TO_REGION = {
-    AC: 'Norte', AL: 'Nordeste', AP: 'Norte', AM: 'Norte', BA: 'Nordeste', CE: 'Nordeste', DF: 'Centro-Oeste',
-    ES: 'Sudeste', GO: 'Centro-Oeste', MA: 'Nordeste', MT: 'Centro-Oeste', MS: 'Centro-Oeste', MG: 'Sudeste',
-    PA: 'Norte', PB: 'Nordeste', PR: 'Sul', PE: 'Nordeste', PI: 'Nordeste', RJ: 'Sudeste', RN: 'Nordeste',
-    RS: 'Sul', RO: 'Norte', RR: 'Norte', SC: 'Sul', SP: 'Sudeste', SE: 'Nordeste', TO: 'Norte'
-  };
-  const STATE_NAME_TO_UF = {
-    'acre':'AC','alagoas':'AL','amapa':'AP','amapá':'AP','amazonas':'AM','bahia':'BA','ceara':'CE','ceará':'CE','distrito federal':'DF',
-    'espirito santo':'ES','espírito santo':'ES','goias':'GO','goiás':'GO','maranhao':'MA','maranhão':'MA','mato grosso':'MT','mato grosso do sul':'MS',
-    'minas gerais':'MG','para':'PA','pará':'PA','paraiba':'PB','paraíba':'PB','parana':'PR','paraná':'PR','pernambuco':'PE','piaui':'PI','piauí':'PI',
-    'rio de janeiro':'RJ','rio grande do norte':'RN','rio grande do sul':'RS','rondonia':'RO','rondônia':'RO','roraima':'RR','santa catarina':'SC',
-    'sao paulo':'SP','são paulo':'SP','sergipe':'SE','tocantins':'TO'
-  };
-  function toUF(estado) {
-    const s = (estado||'').toString().toLowerCase().trim();
-    if (s.length === 2) return s.toUpperCase();
-    return (STATE_NAME_TO_UF[s] || '').toUpperCase();
-  }
-  const last24Searches = useMemo(() => {
-    const cutoff = new Date(now - 24*60*60*1000);
-    return filteredSearches.filter(s => new Date(s.created_date) >= cutoff);
-  }, [filteredSearches, now]);
-  const regionAgg = useMemo(() => {
-    const acc = { 'Norte':0,'Nordeste':0,'Centro-Oeste':0,'Sudeste':0,'Sul':0 };
-    for (const s of last24Searches) {
-      const uf = toUF(s.estado);
-      const reg = UF_TO_REGION[uf];
-      if (reg) acc[reg] += 1;
-    }
-    return acc;
-  }, [last24Searches]);
-  const regionItems = (region) => {
-    const sumBy = {};
-    const cutoff = new Date(now - 24*60*60*1000);
-    for (const s of filteredSearches) {
-      const ts = new Date(s.created_date);
-      if (ts < cutoff) continue;
-      const uf = toUF(s.estado);
-      const reg = UF_TO_REGION[uf];
-      if (reg !== region) continue;
-      tokenize(s.query || '').forEach(t => {
-        const canon = SYNONYMS[t] || (t.charAt(0).toUpperCase() + t.slice(1));
-        sumBy[canon] = (sumBy[canon] || 0) + 1;
-      });
-    }
-    return Object.entries(sumBy).map(([term, count]) => ({ term, count })).sort((a,b)=>b.count-a.count).slice(0, 20);
-  };
 
   return (
     <div className="space-y-4">
