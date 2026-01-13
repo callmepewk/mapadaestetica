@@ -89,6 +89,9 @@ import ConcederPlanos from "../components/admin/ConcederPlanos";
 import ModalEnviarNotificacao from "../components/admin/ModalEnviarNotificacao";
 import GerenciadorProdutos from "../components/admin/GerenciadorProdutos";
 import AbaSEO from "../components/admin/AbaSEO";
+import CFMPipeline from "../components/admin/CFMPipeline";
+import CFMAnalytics from "../components/admin/CFMAnalytics";
+import CFMValidacao from "../components/admin/CFMValidacao";
 import CFMPipeline from "./CFMPipeline";
 import CFMAnalytics from "./CFMAnalytics";
 import CFMValidacao from "./CFMValidacao";
@@ -2741,6 +2744,35 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
           </TabsContent>
           <TabsContent value="seo">
            <AbaSEO />
+          </TabsContent>
+
+          <TabsContent value="cfm">
+           <Card className="mb-6">
+             <CardContent className="p-6">
+               <div className="flex items-center justify-between">
+                 <div>
+                   <h2 className="text-2xl font-bold">CFM - Pipeline, Analytics e Validação</h2>
+                   <p className="text-sm text-gray-600">Centralizamos aqui as três ferramentas do CFM</p>
+                 </div>
+               </div>
+             </CardContent>
+           </Card>
+           <Tabs defaultValue="pipeline" className="w-full">
+             <TabsList className="w-full mb-6 grid grid-cols-3 gap-1">
+               <TabsTrigger value="pipeline">Pipeline</TabsTrigger>
+               <TabsTrigger value="analytics">Analytics</TabsTrigger>
+               <TabsTrigger value="validacao">Validação</TabsTrigger>
+             </TabsList>
+             <TabsContent value="pipeline">
+               <CFMPipeline />
+             </TabsContent>
+             <TabsContent value="analytics">
+               <CFMAnalytics />
+             </TabsContent>
+             <TabsContent value="validacao">
+               <CFMValidacao />
+             </TabsContent>
+           </Tabs>
           </TabsContent>
 
           <TabsContent value="cfm">
