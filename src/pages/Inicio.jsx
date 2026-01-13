@@ -53,6 +53,7 @@ import BannerRotativo from "../components/banners/BannerRotativo";
 import PatrocinadoresGrid from "../components/home/PatrocinadoresGrid";
 import SecaoTutoriais from "../components/home/SecaoTutoriais";
 import SeletorTipoUsuario from "../components/home/SeletorTipoUsuario";
+import HomeRealtimeStats from "../components/analytics/HomeRealtimeStats";
 
 const categorias = [
   { nome: "Depilação", cor: "from-pink-500 to-rose-500", icon: "✨" },
@@ -87,6 +88,29 @@ export default function Inicio() {
   const [visaoAtual, setVisaoAtual] = useState(null); // Para controlar a visão do admin
 
   const navigate = useNavigate();
+
+  const getSessionId = () => {
+    try {
+      let id = localStorage.getItem('site_session_id');
+      if (!id) { id = crypto.randomUUID(); localStorage.setItem('site_session_id', id); }
+      return id;
+    } catch { return Math.random().toString(36).slice(2); }
+  };
+
+  useEffect(() => {
+    const sid = getSessionId();
+    (async () => {
+      try {
+        await base44.entities.PageView.create({
+          route: 'Inicio',
+          referrer: document.referrer || '',
+          user_agent: navigator.userAgent,
+          user_email: user?.email || '',
+          session_id: sid
+        });
+      } catch (e) { /* noop */ }
+    })();
+  }, [user]);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -204,7 +228,7 @@ export default function Inicio() {
     initialData: [],
   });
 
-  const handleBuscar = () => {
+  const handleBuscar = async () => {
     if (!user) {
       setTipoLoginPrompt("busca");
       setMostrarLoginPrompt(true);
@@ -214,6 +238,14 @@ export default function Inicio() {
     const params = new URLSearchParams();
     if (buscaCidade) params.append('cidade', buscaCidade);
     if (buscaCategoria) params.append('categoria', buscaCategoria);
+    try {
+      await base44.entities.SearchEvent.create({
+        query: [buscaCidade, buscaCategoria].filter(Boolean).join(' | '),
+        page: 'Inicio',
+        user_email: user?.email || '',
+        session_id: getSessionId()
+      });
+    } catch {}
     window.location.href = createPageUrl("Anuncios") + (params.toString() ? `?${params.toString()}` : '');
   };
 
@@ -378,6 +410,13 @@ export default function Inicio() {
 
           {/* Banner Rotativo Meio */}
           <BannerRotativo posicao="home_meio" />
+
+          <section className="py-8 bg-white">
+            <div className="max-w-7xl mx-auto px-4">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Estatísticas em tempo real</h2>
+              <HomeRealtimeStats />
+            </div>
+          </section>
 
           {/* Anúncios em Destaque */}
           {anunciosDestaque.length > 0 && (
@@ -577,6 +616,13 @@ export default function Inicio() {
               </div>
             </section>
           )}
+
+          <section className="py-8 bg-white">
+            <div className="max-w-7xl mx-auto px-4">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Estatísticas em tempo real</h2>
+              <HomeRealtimeStats />
+            </div>
+          </section>
 
           <SEOStats />
 

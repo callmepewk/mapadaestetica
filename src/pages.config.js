@@ -4,6 +4,9 @@ import AgradecimentoPlano from './pages/AgradecimentoPlano';
 import Anuncios from './pages/Anuncios';
 import ArtigoBlog from './pages/ArtigoBlog';
 import Blog from './pages/Blog';
+import CFMAnalytics from './pages/CFMAnalytics';
+import CFMPipeline from './pages/CFMPipeline';
+import CFMValidacao from './pages/CFMValidacao';
 import CadastrarAnuncio from './pages/CadastrarAnuncio';
 import CalculadoraLaser from './pages/CalculadoraLaser';
 import ControleAdmin from './pages/ControleAdmin';
@@ -26,9 +29,6 @@ import Planos from './pages/Planos';
 import Produtos from './pages/Produtos';
 import RelatorioPrecoMedio from './pages/RelatorioPrecoMedio';
 import SobreNos from './pages/SobreNos';
-import CFMPipeline from './pages/CFMPipeline';
-import CFMAnalytics from './pages/CFMAnalytics';
-import CFMValidacao from './pages/CFMValidacao';
 import __Layout from './Layout.jsx';
 
 
@@ -39,6 +39,9 @@ export const PAGES = {
     "Anuncios": Anuncios,
     "ArtigoBlog": ArtigoBlog,
     "Blog": Blog,
+    "CFMAnalytics": CFMAnalytics,
+    "CFMPipeline": CFMPipeline,
+    "CFMValidacao": CFMValidacao,
     "CadastrarAnuncio": CadastrarAnuncio,
     "CalculadoraLaser": CalculadoraLaser,
     "ControleAdmin": ControleAdmin,
@@ -61,9 +64,6 @@ export const PAGES = {
     "Produtos": Produtos,
     "RelatorioPrecoMedio": RelatorioPrecoMedio,
     "SobreNos": SobreNos,
-    "CFMPipeline": CFMPipeline,
-    "CFMAnalytics": CFMAnalytics,
-    "CFMValidacao": CFMValidacao,
 }
 
 export const pagesConfig = {
