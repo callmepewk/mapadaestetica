@@ -87,6 +87,8 @@ export default function Inicio() {
   const [resumoAnuncios, setResumoAnuncios] = useState([]);
   const [mostrarSeletorTipo, setMostrarSeletorTipo] = useState(false);
   const [visaoAtual, setVisaoAtual] = useState(null); // Para controlar a visão do admin
+  const [geoInfo, setGeoInfo] = useState({ cidade: "", estado: "", pais: "", lat: null, lon: null });
+  const [geoLoading, setGeoLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -244,7 +246,12 @@ export default function Inicio() {
         query: [buscaCidade, buscaCategoria].filter(Boolean).join(' | '),
         page: 'Inicio',
         user_email: user?.email || '',
-        session_id: getSessionId()
+        session_id: getSessionId(),
+        cidade: buscaCidade || geoInfo.cidade || user?.cidade || '',
+        estado: geoInfo.estado || user?.estado || '',
+        pais: geoInfo.pais || '',
+        latitude: geoInfo.lat || null,
+        longitude: geoInfo.lon || null
       });
     } catch {}
     window.location.href = createPageUrl("Anuncios") + (params.toString() ? `?${params.toString()}` : '');
@@ -267,6 +274,27 @@ export default function Inicio() {
     }
     window.open(whatsappMessage, '_blank');
   };
+
+  async function handleUseMyLocation() {
+    if (!navigator.geolocation) {
+      alert('Geolocalização não suportada neste navegador.');
+      return;
+    }
+    setGeoLoading(true);
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      const { latitude, longitude } = pos.coords;
+      try {
+        const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+        const data = await resp.json();
+        const cidade = data.address.city || data.address.town || data.address.village || data.address.county || '';
+        const estado = data.address.state || data.address.region || '';
+        const pais = data.address.country || '';
+        setGeoInfo({ cidade, estado, pais, lat: latitude, lon: longitude });
+        if (!buscaCidade) setBuscaCidade(cidade);
+      } catch {}
+      setGeoLoading(false);
+    }, () => setGeoLoading(false));
+  }
 
   const isAdmin = user?.role === 'admin';
   const isPaciente = visaoAtual === 'paciente';

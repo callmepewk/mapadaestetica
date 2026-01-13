@@ -8,6 +8,9 @@ import { MapPin, Sparkles, TrendingUp } from "lucide-react";
 import TrendWordCloud from "./TrendWordCloud";
 import TrendSeasonalityChart from "./TrendSeasonalityChart";
 import TrendSharePie from "./TrendSharePie";
+import TrendHeatmap from "./TrendHeatmap";
+import TrendListModal from "./TrendListModal";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const PT_STOPWORDS = new Set(["de","da","do","das","dos","a","o","e","ou","em","no","na","nas","nos","para","por","preço","valor","o que é","como","onde","com","sem","um","uma","sobre","ao"]);
 
@@ -61,6 +64,7 @@ export default function TrendRadar() {
   const [period, setPeriod] = useState("7"); // dias: 7,30,90
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [openAll, setOpenAll] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -129,6 +133,18 @@ export default function TrendRadar() {
     return Object.entries(totals).map(([name, value]) => ({ name, value }));
   }, [cloudData]);
 
+  const heatMatrix = useMemo(() => {
+    const m = Array.from({ length: 7 }, () => Array.from({ length: 24 }, () => 0));
+    for (const s of searches) {
+      const ts = new Date(s.created_date);
+      if (ts < start || ts > new Date(now)) continue;
+      const d = ts.getDay();
+      const h = ts.getHours();
+      m[d][h] += 1;
+    }
+    return m;
+  }, [searches, start, now]);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -160,7 +176,10 @@ export default function TrendRadar() {
             <div className="flex items-center gap-2 mb-2 text-gray-800 font-semibold">
               <Sparkles className="w-4 h-4" /> Nuvem de Oportunidades
             </div>
-            <TrendWordCloud items={cloudData} onSelect={setSelected} selected={selected} />
+            <TrendWordCloud items={cloudData.slice(0,5)} onSelect={setSelected} selected={selected} />
+            <div className="mt-2">
+              <Button variant="outline" onClick={() => setOpenAll(true)}>Ver todas</Button>
+            </div>
           </div>
 
           {/* Charts */}
@@ -168,6 +187,9 @@ export default function TrendRadar() {
             <TrendSeasonalityChart data={seasonality} title={selected ? `Sazonalidade: ${selected}` : "Sazonalidade"} />
             <TrendSharePie data={shareData} title="Market Share por Categoria" />
           </div>
+
+          {/* Heatmap */}
+          <TrendHeatmap matrix={heatMatrix} />
 
           {/* CTA */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-t pt-3">
@@ -180,7 +202,7 @@ export default function TrendRadar() {
               onClick={() => window.location.href = "/" + "Perfil"}
               className="border-2 border-[#F7D426] text-[#F7D426] hover:bg-[#FFF9E6]"
             >
-              Ativar tags no meu perfil
+              Ver todas
             </Button>
           </div>
         </CardContent>
