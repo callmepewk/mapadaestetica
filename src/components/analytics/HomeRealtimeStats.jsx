@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Users, Eye, Search as SearchIcon, Activity } from "lucide-react";
+import { Users, Eye, Search as SearchIcon, Activity, MapPin } from "lucide-react";
 import { format } from "date-fns";
 
 function getSessionId() {
@@ -19,6 +20,9 @@ export default function HomeRealtimeStats() {
   const [views, setViews] = useState([]);
   const [searches, setSearches] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedRadiusKm, setSelectedRadiusKm] = useState(25);
+  const [center, setCenter] = useState({ lat: null, lon: null });
+  const [geoLoading, setGeoLoading] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -40,6 +44,19 @@ export default function HomeRealtimeStats() {
     return () => { unsubV?.(); unsubS?.(); };
   }, []);
 
+  async function handleUseMyLocation() {
+    if (!navigator.geolocation) { alert('Geolocalização não suportada.'); return; }
+    setGeoLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setCenter({ lat: latitude, lon: longitude });
+        setGeoLoading(false);
+      },
+      () => setGeoLoading(false)
+    );
+  }
+
   const now = Date.now();
   const startOfDay = new Date(); startOfDay.setHours(0,0,0,0);
 
@@ -57,12 +74,45 @@ export default function HomeRealtimeStats() {
     const s = new Set(views.filter(v => new Date(v.created_date) >= startOfDay).map(v => v.session_id));
     return s.size;
   }, [views]);
-  const searchesToday = useMemo(() => searches.filter(s => new Date(s.created_date) >= startOfDay).length, [searches]);
+  const searchesToday = useMemo(() => {
+    const todays = searches.filter(s => new Date(s.created_date) >= startOfDay);
+    if (!center.lat || !center.lon) return todays.length;
+    const R = 6371;
+    const toRad = (v) => (v * Math.PI) / 180;
+    const dist = (a, b, c, d) => {
+      const dLat = toRad(c - a);
+      const dLon = toRad(d - b);
+      const aa = Math.sin(dLat/2)**2 + Math.cos(toRad(a))*Math.cos(toRad(c))*Math.sin(dLon/2)**2;
+      return 2 * R * Math.asin(Math.sqrt(aa));
+    };
+    return todays.filter(s => typeof s.latitude === 'number' && typeof s.longitude === 'number' && dist(center.lat, center.lon, s.latitude, s.longitude) <= selectedRadiusKm).length;
+  }, [searches, startOfDay, center, selectedRadiusKm]);
 
   const isAdmin = user?.role === 'admin';
 
   return (
-    <div className="grid md:grid-cols-4 gap-4">
+    <div>
+      <div className="flex flex-wrap items-center gap-2 mb-3">
+        {[1,5,10,25,50,100].map((km) => (
+          <Button
+            key={km}
+            size="sm"
+            variant={selectedRadiusKm === km ? "default" : "outline"}
+            onClick={() => setSelectedRadiusKm(km)}
+          >
+            {km} km
+          </Button>
+        ))}
+        <Button variant="outline" size="sm" onClick={handleUseMyLocation} disabled={geoLoading}>
+          <MapPin className="w-4 h-4 mr-1" /> {geoLoading ? 'Localizando...' : 'Usar minha localização'}
+        </Button>
+        {center.lat && (
+          <Badge variant="outline" className="hidden sm:inline">
+            lat {center.lat.toFixed(2)}, lon {center.lon.toFixed(2)}
+          </Badge>
+        )}
+      </div>
+      <div className="grid md:grid-cols-4 gap-4">
       <Card className="border-2 border-blue-200"><CardContent className="p-4">
         <div className="flex items-center gap-2 text-blue-700"><Users className="w-4 h-4"/> Online agora</div>
         <p className="text-3xl font-bold mt-2">{loading ? '-' : online}</p>
@@ -97,5 +147,6 @@ export default function HomeRealtimeStats() {
         </div>
       )}
     </div>
+  </div>
   );
 }
