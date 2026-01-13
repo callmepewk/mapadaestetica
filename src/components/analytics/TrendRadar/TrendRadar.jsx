@@ -11,6 +11,7 @@ import TrendSeasonalityChart from "./TrendSeasonalityChart";
 import TrendSharePie from "./TrendSharePie";
 import TrendHeatmap from "./TrendHeatmap";
 import TrendListModal from "./TrendListModal";
+import BrazilRegionHeatmap from "./BrazilRegionHeatmap";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const PT_STOPWORDS = new Set(["de","da","do","das","dos","a","o","e","ou","em","no","na","nas","nos","para","por","preço","valor","o que é","como","onde","com","sem","um","uma","sobre","ao"]);
@@ -73,6 +74,8 @@ export default function TrendRadar() {
   const [stateSel, setStateSel] = useState('');
   const [countrySel, setCountrySel] = useState('');
   const [geoLoading, setGeoLoading] = useState(false);
+  const [selectedRegion, setSelectedRegion] = useState(null);
+  const [openRegionModal, setOpenRegionModal] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -274,8 +277,14 @@ export default function TrendRadar() {
             <TrendSharePie data={shareData} title="Market Share por Categoria" />
           </div>
 
-          {/* Heatmap */}
+          {/* Heatmap temporal */}
           <TrendHeatmap matrix={heatMatrix} />
+
+          {/* Mapa por Regiões (24h) */}
+          <BrazilRegionHeatmap
+            data={regionAgg}
+            onSelect={(reg) => { setSelectedRegion(reg); setOpenRegionModal(true); }}
+          />
 
           {/* CTA */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-t pt-3">
