@@ -419,6 +419,13 @@ export default function Inicio() {
             </div>
           </section>
 
+          <section className="py-8 bg-white">
+            <div className="max-w-7xl mx-auto px-4">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Radar de Tendências (MVP)</h2>
+              <TrendRadar />
+            </div>
+          </section>
+
           {/* Anúncios em Destaque */}
           {anunciosDestaque.length > 0 && (
             <section className="py-12 sm:py-16 bg-white">
