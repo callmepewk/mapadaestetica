@@ -79,7 +79,23 @@ export default function Layout({ children }) {
   }, [location.pathname]);
 
   useEffect(() => {
-    const checkAuth = async () => {
+            // Google Analytics 4
+            try {
+              const GA_ID = 'G-SKNS18840X';
+              if (typeof window !== 'undefined' && !window.__ga_loaded) {
+                window.__ga_loaded = true;
+                const s = document.createElement('script');
+                s.async = true;
+                s.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
+                document.head.appendChild(s);
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){window.dataLayer.push(arguments);} window.gtag = gtag;
+                window.gtag('js', new Date());
+                window.gtag('config', GA_ID);
+              }
+            } catch {}
+
+            const checkAuth = async () => {
       try {
         const authenticated = await base44.auth.isAuthenticated();
         setIsAuthenticated(authenticated);
