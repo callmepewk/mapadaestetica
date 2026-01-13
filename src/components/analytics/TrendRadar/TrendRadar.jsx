@@ -76,6 +76,8 @@ export default function TrendRadar() {
   const [geoLoading, setGeoLoading] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState(null);
   const [openRegionModal, setOpenRegionModal] = useState(false);
+  const [selectedRegion, setSelectedRegion] = useState(null);
+  const [openRegionModal, setOpenRegionModal] = useState(false);
 
   useEffect(() => {
     (async () => {
