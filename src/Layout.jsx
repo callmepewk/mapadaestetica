@@ -477,10 +477,24 @@ export default function Layout({ children }) {
                         </DropdownMenuItem>
                       )}
                       {isAdmin && (
-                        <DropdownMenuItem onClick={() => navigate(createPageUrl("ControleAdmin"))}>
-                          <CreditCard className="w-4 h-4 mr-2" />
-                          Painel Admin
-                        </DropdownMenuItem>
+                        <>
+                          <DropdownMenuItem onClick={() => navigate(createPageUrl("ControleAdmin"))}>
+                            <CreditCard className="w-4 h-4 mr-2" />
+                            Painel Admin
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => navigate(createPageUrl("CFMPipeline"))}>
+                            <Sparkles className="w-4 h-4 mr-2" />
+                            CFM Pipeline
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => navigate(createPageUrl("CFMAnalytics"))}>
+                            <TrendingUp className="w-4 h-4 mr-2" />
+                            CFM Analytics
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => navigate(createPageUrl("CFMValidacao"))}>
+                            <Briefcase className="w-4 h-4 mr-2" />
+                            Validação CFM
+                          </DropdownMenuItem>
+                        </>
                       )}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => window.open('https://clube-da-beleza.base44.app', '_blank')}>

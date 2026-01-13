@@ -28,6 +28,7 @@ import RelatorioPrecoMedio from './pages/RelatorioPrecoMedio';
 import SobreNos from './pages/SobreNos';
 import CFMPipeline from './pages/CFMPipeline';
 import CFMAnalytics from './pages/CFMAnalytics';
+import CFMValidacao from './pages/CFMValidacao';
 import __Layout from './Layout.jsx';
 
 
@@ -62,6 +63,7 @@ export const PAGES = {
     "SobreNos": SobreNos,
     "CFMPipeline": CFMPipeline,
     "CFMAnalytics": CFMAnalytics,
+    "CFMValidacao": CFMValidacao,
 }
 
 export const pagesConfig = {
