@@ -41,6 +41,7 @@ import SeletorTipoUsuario from "./components/home/SeletorTipoUsuario";
 import SeletorVisaoAdmin from "./components/layout/SeletorVisaoAdmin";
 import LanguageSelector from "./components/layout/LanguageSelector";
 import { I18nProvider } from "./components/i18n/I18nProvider";
+import FloatingQuickbar from "./components/layout/FloatingQuickbar";
 
 export default function Layout({ children }) {
   const location = useLocation();
@@ -826,6 +827,9 @@ export default function Layout({ children }) {
         onRemoverItem={handleRemoverItemCarrinho}
         onLimparCarrinho={handleLimparCarrinho}
       />
+
+      {/* Floating quickbar */}
+      <FloatingQuickbar user={user} cartCount={carrinho.length} onOpenCart={()=>setMostrarCarrinho(true)} />
 
       {/* NOVO: Modal Seletor Tipo */}
       <SeletorTipoUsuario

@@ -374,6 +374,7 @@ export default function AdicionarProduto() {
               {/* Upload de Imagens */}
               <div>
                 <Label>Imagens do {produto.tipo === 'servico' ? 'Serviço' : 'Produto'}</Label>
+                <p className="text-xs text-gray-500 mt-1">Dica: paisagem 1200x900 para cards e retrato 1080x1920 para stories. Nós ajustamos o enquadramento automaticamente.</p>
                 <div className="mt-2">
                   <Label htmlFor="image-upload" className="cursor-pointer">
                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-pink-400 transition-colors">

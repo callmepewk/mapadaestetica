@@ -155,6 +155,21 @@ const criarIconeUsuario = () => {
   });
 };
 
+const criarIconeAnuncio = (verificado) => {
+  const color = verificado ? '#10B981' : '#9CA3AF';
+  return L.divIcon({
+    html: `<div style="background:${color}; width:14px; height:14px; border-radius:50%; border:2px solid white; box-shadow:0 0 10px rgba(0,0,0,0.2)"></div>`,
+    className: 'custom-marker',
+    iconSize: [14, 14]
+  });
+};
+  return L.divIcon({
+    html: `<div style="background: #3B82F6; border: 3px solid white; width: 20px; height: 20px; border-radius: 50%; box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);"></div>`,
+    className: 'custom-marker',
+    iconSize: [20, 20],
+  });
+};
+
 const criarIconeEstabelecimento = (categoria) => {
   const icons = {
     "Salão de Beleza": "💇",
@@ -975,6 +990,23 @@ export default function Mapa() {
                       </Marker>
                     );
                   })}
+
+                  {anunciosFiltrados.map((a) => (
+                    a.latitude && a.longitude ? (
+                      <Marker key={`anuncio-${a.id}`} position={[a.latitude, a.longitude]} icon={criarIconeAnuncio(!!a.profissional_verificado)}>
+                        <Popup>
+                          <div className="p-2 min-w-[220px]">
+                            <p className="font-bold text-gray-900 mb-1">{a.titulo}</p>
+                            {a.profissional && (<p className="text-xs text-gray-600 mb-1">{a.profissional}</p>)}
+                            {a.cidade && (<p className="text-xs text-gray-600 mb-2">{a.cidade} - {a.estado}</p>)}
+                            <button className="text-xs text-pink-600 font-semibold hover:underline" onClick={()=>window.location.href=`${createPageUrl("DetalhesAnuncio")}?id=${a.id}`}>
+                              Ver anúncio
+                            </button>
+                          </div>
+                        </Popup>
+                      </Marker>
+                    ) : null
+                  ))}
 
                   {centralizarEm && <CentralizarMapa center={centralizarEm} />}
                 </MapContainer>

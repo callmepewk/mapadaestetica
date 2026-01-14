@@ -441,13 +441,6 @@ export default function Inicio() {
           {/* Banner Rotativo Meio */}
           <BannerRotativo posicao="home_meio" />
 
-          <section className="py-8 bg-white">
-            <div className="max-w-7xl mx-auto px-4">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Estatísticas em tempo real</h2>
-              <HomeRealtimeStats />
-            </div>
-          </section>
-
           {/* Barra de navegação por seções */}
           <div className="sticky top-[60px] z-40 bg-white/80 backdrop-blur border-b">
             <div className="max-w-7xl mx-auto px-4 py-2 overflow-x-auto">
@@ -689,7 +682,7 @@ export default function Inicio() {
             </div>
           </section>
 
-          <SEOStats />
+          <section id="seo-stats"><SEOStats /></section>
 
           {/* Botão de Comparação */}
           <div className="py-8 bg-white">
@@ -704,7 +697,7 @@ export default function Inicio() {
             </div>
           </div>
 
-          <Tutorial />
+          <section id="tutorial"><Tutorial /></section>
           <CalculadoraLaserSection />
         </>
       )}
