@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -279,7 +278,7 @@ export default function Blog() {
     setGerandoImagemIA(false); // Reset image generation state for combined operation
 
     try {
-      const prompt = `Você é o Dr. Beleza, especialista em conteúdo para estética.
+      const prompt = `Você é o Dr da Beleza, especialista em conteúdo para estética.
 
 TEMA: ${dadosIA.tema}
 CATEGORIA: ${dadosIA.categoria}
@@ -1094,7 +1093,7 @@ Perfect for blog header.`;
               <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center overflow-hidden">
                 <img
                   src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/8b8866b2d_drbeleza.png"
-                  alt="Dr. Beleza"
+                  alt="Dr da Beleza"
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     e.target.style.display = 'none';
@@ -1103,7 +1102,7 @@ Perfect for blog header.`;
                 />
                 <MessageCircle className="w-6 h-6 text-white hidden" />
               </div>
-              Criar Post com Dr. Beleza
+              Criar Post com Dr da Beleza
             </DialogTitle>
             <DialogDescription>
               Deixe a IA criar um artigo completo COM IMAGEM para você

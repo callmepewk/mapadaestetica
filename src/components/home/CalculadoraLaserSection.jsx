@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -442,7 +441,7 @@ export default function CalculadoraLaserSection() {
           <Badge className="mb-4 bg-blue-600 text-white">
             <img 
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe4/f54646e8e_drbeleza.png"
-              alt="Dr. Beleza"
+              alt="Dr da Beleza"
               className="w-4 h-4 rounded-full mr-2 inline-block object-cover"
               onError={(e) => {
                 e.target.onerror = null;
@@ -847,14 +846,14 @@ export default function CalculadoraLaserSection() {
         </div>
       </div>
 
-      {/* Modal de Ajuda com Dr. Beleza */}
+      {/* Modal de Ajuda com Dr da Beleza */}
       <Dialog open={mostrarAjuda} onOpenChange={setMostrarAjuda}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <div className="flex items-center gap-4 mb-4">
               <img
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe4/f54646e8e_drbeleza.png"
-                alt="Dr. Beleza"
+                alt="Dr da Beleza"
                 className="w-16 h-16 rounded-full object-cover border-2 border-blue-600"
                 onError={(e) => {
                   e.target.onerror = null;
@@ -863,7 +862,7 @@ export default function CalculadoraLaserSection() {
               />
               <div>
                 <DialogTitle className="text-2xl">Como Usar a Calculadora de Viabilidade</DialogTitle>
-                <DialogDescription>Dr. Beleza explica tudo para você!</DialogDescription>
+                <DialogDescription>Dr da Beleza explica tudo para você!</DialogDescription>
               </div>
             </div>
           </DialogHeader>
@@ -1009,7 +1008,7 @@ export default function CalculadoraLaserSection() {
             {/* Dica Final */}
             <div className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-xl p-6">
               <h3 className="text-xl font-bold mb-3 flex items-center gap-2">
-                💡 Dica do Dr. Beleza
+                💡 Dica do Dr da Beleza
               </h3>
               <p className="leading-relaxed">
                 Não se preocupe se não tiver todas as informações exatas! Use estimativas conservadoras e 

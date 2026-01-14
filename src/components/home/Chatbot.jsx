@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
@@ -35,8 +34,8 @@ export default function Chatbot({ user, onCompletarCadastro }) {
     {
       type: "bot",
       text: user 
-        ? `Olá ${user.full_name?.split(' ')[0] || 'amigo'}! 👋 Sou o Dr. Beleza, seu assistente virtual. Como posso te ajudar hoje?`
-        : "Olá! 👋 Sou o Dr. Beleza, seu assistente virtual. Para continuar, por favor faça login ou crie sua conta gratuita!"
+        ? `Olá ${user.full_name?.split(' ')[0] || 'amigo'}! 👋 Sou o Dr da Beleza, seu assistente virtual. Como posso te ajudar hoje?`
+        : "Olá! 👋 Sou o Dr da Beleza, seu assistente virtual. Para continuar, por favor faça login ou crie sua conta gratuita!"
     }
   ]);
   const [inputMessage, setInputMessage] = useState("");
@@ -89,7 +88,7 @@ export default function Chatbot({ user, onCompletarCadastro }) {
 
     try {
       const response = await base44.integrations.Core.InvokeLLM({
-        prompt: `Você é o Dr. Beleza, um assistente especializado em estética e beleza para a plataforma Mapa da Estética.
+        prompt: `Você é o Dr da Beleza, um assistente especializado em estética e beleza para a plataforma Mapa da Estética.
         
 Contexto do usuário:
 - Nome: ${user.full_name}
@@ -154,7 +153,7 @@ Responda de forma clara, objetiva e útil.`,
               {/* Tooltip - ESCONDIDO NO MOBILE */}
               <div className="hidden sm:block absolute bottom-full right-0 mb-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
                 <div className="bg-gray-900 text-white text-sm rounded-lg py-3 px-4 shadow-xl max-w-xs">
-                  <p className="font-bold mb-1">💬 Dr. Beleza - Seu Assistente Virtual</p>
+                  <p className="font-bold mb-1">💬 Dr da Beleza - Seu Assistente Virtual</p>
                   <p className="text-xs text-gray-300">
                     Posso te ajudar com: procedimentos estéticos, dúvidas sobre tratamentos, 
                     encontrar profissionais e navegar pela plataforma!
@@ -170,7 +169,7 @@ Responda de forma clara, objetiva e útil.`,
               >
                 <img
                   src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/ec64a4c52_drbeleza.png"
-                  alt="Dr. Beleza"
+                  alt="Dr da Beleza"
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     e.target.style.display = 'none';
@@ -190,10 +189,10 @@ Responda de forma clara, objetiva e útil.`,
                 <div className="absolute inset-0 rounded-full bg-[#F7D426] opacity-30 animate-pulse"></div>
               </button>
 
-              {/* Label "Dr. Beleza" embaixo do botão - MOBILE */}
+              {/* Label "Dr da Beleza" embaixo do botão - MOBILE */}
               <div className="sm:hidden absolute -bottom-6 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
                 <span className="text-xs font-bold text-[#F7D426] bg-white px-2 py-1 rounded-full shadow-md border border-[#F7D426]">
-                  Dr. Beleza
+                  Dr da Beleza
                 </span>
               </div>
             </div>
@@ -224,7 +223,7 @@ Responda de forma clara, objetiva e útil.`,
                   <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden bg-white flex items-center justify-center border-2 border-[#2C2C2C]">
                     <img 
                       src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/ec64a4c52_drbeleza.png" 
-                      alt="Dr. Beleza"
+                      alt="Dr da Beleza"
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         e.target.style.display = 'none';
@@ -233,7 +232,7 @@ Responda de forma clara, objetiva e útil.`,
                     />
                   </div>
                   <div>
-                    <h3 className="font-bold text-[#2C2C2C] text-base sm:text-lg">Dr. Beleza</h3>
+                    <h3 className="font-bold text-[#2C2C2C] text-base sm:text-lg">Dr da Beleza</h3>
                     <p className="text-xs text-[#2C2C2C]/80">Assistente Virtual • Online</p>
                   </div>
                 </div>

@@ -782,7 +782,7 @@ export default function Planos() {
                 <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
                   <img
                     src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/8b8866b2d_drbeleza.png"
-                    alt="Dr. Beleza"
+                    alt="Dr da Beleza"
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       e.target.style.display = 'none';
@@ -793,7 +793,7 @@ export default function Planos() {
                 </div>
                 <div className="flex-1">
                   <h3 className="text-lg font-bold text-gray-900 mb-2">
-                    💬 Fale com o Dr. Beleza
+                    💬 Fale com o Dr da Beleza
                   </h3>
                   <p className="text-sm text-gray-600 mb-4">
                     Nosso assistente inteligente pode te ajudar a escolher o melhor plano!
@@ -802,7 +802,7 @@ export default function Planos() {
                     onClick={() => setMostrarDrBeleza(true)}
                     className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
                   >
-                    Conversar com Dr. Beleza
+                    Conversar com Dr da Beleza
                   </Button>
                 </div>
               </div>
@@ -1317,7 +1317,7 @@ export default function Planos() {
         </DialogContent>
       </Dialog>
 
-      {/* Modal Dr. Beleza */}
+      {/* Modal Dr da Beleza */}
       <DrBelezaPlanosModal
         open={mostrarDrBeleza}
         onClose={() => setMostrarDrBeleza(false)}
