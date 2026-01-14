@@ -1007,7 +1007,7 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
         dias_exposicao: 30,
         visualizacoes: 0,
         curtidas: 0,
-        profissional_verificado: false,
+        profissional_verificado: !!user?.profissional_verificado,
         imagem_principal: formData.imagem_principal,
         logo: formData.logo,
         imagens_galeria: formData.imagens_galeria,
@@ -1972,6 +1972,7 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
           </Card>
 
           {/* Torne-se um Profissional Verificado */}
+          {!user?.profissional_verificado && (
           <Card className="border-2 border-blue-300 bg-gradient-to-br from-blue-50 to-cyan-50">
             <CardHeader className="p-4 sm:p-6">
               <div className="flex items-center gap-2">

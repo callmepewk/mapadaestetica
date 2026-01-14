@@ -944,6 +944,35 @@ export default function Produtos() {
 
           {/* Sidebar - Carrinho */}
           <div className="lg:col-span-1">
+            {user && (
+              <Card className="mb-6 border-2 border-yellow-200 shadow-xl">
+                <CardHeader className="bg-gradient-to-r from-yellow-400 to-amber-500 text-[#2C2C2C]">
+                  <CardTitle className="flex items-center gap-2">
+                    <Star className="w-5 h-5" />
+                    Seus Pontos e Beauty Coins
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-[#F7D426] text-[#2C2C2C] border-2 border-[#2C2C2C]">
+                      <Star className="w-3 h-3 mr-1" />
+                      {user?.pontos_acumulados || 0} pts
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-purple-600 text-white">
+                      <DollarSign className="w-3 h-3 mr-1" />
+                      {user?.beauty_coins || 0}
+                    </Badge>
+                  </div>
+                </CardContent>
+                <CardContent className="pt-0">
+                  <Button onClick={redirectToLojaPontos} variant="outline" className="w-full">
+                    Ver Loja de Pontos
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
             <Card className="sticky top-24 border-2 border-pink-200 shadow-xl">
               <CardHeader className="bg-gradient-to-r from-pink-600 to-rose-600 text-white">
                 <CardTitle className="flex items-center gap-2">
