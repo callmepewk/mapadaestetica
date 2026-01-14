@@ -71,12 +71,15 @@ export default function SecaoTutoriais({ tipoUsuario }) {
                 className="group"
               >
                 <Card className="h-full border-2 border-purple-200 hover:border-purple-400 hover:shadow-xl transition-all overflow-hidden">
-                  {/* Thumbnail com ícone de play */}
-                  <div className="relative h-48 bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
-                    <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-all flex items-center justify-center">
-                      <PlayCircle className="w-16 h-16 text-white drop-shadow-lg group-hover:scale-110 transition-transform" />
-                    </div>
-                    <Icon className="w-20 h-20 text-purple-300" />
+                  {/* Thumbnail com imagem de capa */}
+                  <div className="relative h-48 overflow-hidden">
+                    <img
+                      src={`https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?w=800&q=60&sig=${index}`}
+                      alt={tutorial.titulo}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors"/>
+                    <PlayCircle className="absolute inset-0 m-auto w-16 h-16 text-white drop-shadow-lg group-hover:scale-110 transition-transform" />
                   </div>
 
                   <CardContent className="p-6">

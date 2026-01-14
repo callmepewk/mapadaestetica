@@ -55,6 +55,7 @@ import SecaoTutoriais from "../components/home/SecaoTutoriais";
 import SeletorTipoUsuario from "../components/home/SeletorTipoUsuario";
 import HomeRealtimeStats from "../components/analytics/HomeRealtimeStats";
 import TrendRadar from "../components/analytics/TrendRadar/TrendRadar";
+import AestheticRadar from "../components/analytics/AestheticRadar";
 
 const categorias = [
   { nome: "Depilação", cor: "from-pink-500 to-rose-500", icon: "✨" },
@@ -447,6 +448,22 @@ export default function Inicio() {
             </div>
           </section>
 
+          {/* Barra de navegação por seções */}
+          <div className="sticky top-[60px] z-40 bg-white/80 backdrop-blur border-b">
+            <div className="max-w-7xl mx-auto px-4 py-2 overflow-x-auto">
+              <div className="flex gap-2 text-xs md:text-sm">
+                {[
+                  {id:'aesthetic-radar',label:'Aesthetic Radar'},
+                  {id:'meus-anuncios',label:'Meus Anúncios'},
+                  {id:'seo-stats',label:'SEO'},
+                  {id:'tutorial',label:'Tutoriais'},
+                ].map(i => (
+                  <button key={i.id} onClick={()=>document.getElementById(i.id)?.scrollIntoView({behavior:'smooth'})} className="px-3 py-1 rounded-full border data-[active=true]:bg-pink-600 data-[active=true]:text-white hover:bg-pink-50" data-active={false}>{i.label}</button>
+                ))}
+              </div>
+            </div>
+          </div>
+
           {/* Anúncios em Destaque */}
           {anunciosDestaque.length > 0 && (
             <section className="py-12 sm:py-16 bg-white">
@@ -555,6 +572,19 @@ export default function Inicio() {
       {/* VISÃO PROFISSIONAL/PATROCINADOR */}
       {isProfissional && (
         <>
+          {/* Hero imagem saúde/bem-estar */}
+          <section className="relative py-10 md:py-14 bg-white">
+            <div className="max-w-7xl mx-auto px-4">
+              <div className="relative overflow-hidden rounded-2xl shadow-xl">
+                <img src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=1600&q=80" alt="Saúde e bem-estar" className="w-full h-56 md:h-72 object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent"></div>
+                <div className="absolute left-6 top-6 text-white">
+                  <p className="text-xs md:text-sm mb-1">Bem-vindo, profissional</p>
+                  <h2 className="text-2xl md:text-3xl font-bold">Cuide da sua presença digital</h2>
+                </div>
+              </div>
+            </div>
+          </section>
           {/* Resumo dos Anúncios */}
           {resumoAnuncios.length > 0 && (
             <section className="py-8 bg-white">
@@ -653,10 +683,9 @@ export default function Inicio() {
             </div>
           </section>
 
-          <section className="py-8 bg-white">
+          <section id="aesthetic-radar" className="py-8 bg-white">
             <div className="max-w-7xl mx-auto px-4">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Radar de Tendências (MVP)</h2>
-              <TrendRadar />
+              <AestheticRadar />
             </div>
           </section>
 

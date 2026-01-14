@@ -205,7 +205,7 @@ export default function Mapa() {
   const [localizacaoUsuario, setLocalizacaoUsuario] = useState(null);
   const [buscandoLocalizacao, setBuscandoLocalizacao] = useState(false);
   const [centralizarEm, setCentralizarEm] = useState(null);
-  const [abaSelecionada, setAbaSelecionada] = useState("anuncios");
+  const [abaSelecionada, setAbaSelecionada] = useState("mapa");
   const [mostrarSeletorProcedimentos, setMostrarSeletorProcedimentos] = useState(false);
   
   // Filtros para Anúncios
@@ -424,6 +424,7 @@ export default function Mapa() {
       <div className="max-w-7xl mx-auto px-4 py-6">
         <Tabs value={abaSelecionada} onValueChange={setAbaSelecionada}>
           <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-6">
+            {/* data-state active styling */}
             <TabsTrigger value="anuncios" className="flex items-center gap-2">
               <Sparkles className="w-4 h-4" />
               Anúncios ({anunciosFiltrados.length})

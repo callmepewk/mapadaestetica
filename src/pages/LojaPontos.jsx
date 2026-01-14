@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -370,24 +369,9 @@ export default function LojaPontos() {
                   <DollarSign className="w-5 h-5 text-[#F7D426]" />
                   Pontos por Faixa de Preço
                 </h3>
-                <div className="space-y-3">
-                  {Object.entries(pontosPorFaixaPreco).map(([faixa, pontos]) => {
-                    const info = getFaixaPrecoInfo(faixa);
-                    return (
-                      <div key={faixa} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div className="flex items-center gap-2">
-                          <span className="text-2xl">{info.emoji}</span>
-                          <div>
-                            <p className="font-bold text-gray-900">{faixa}</p>
-                            <p className="text-xs text-gray-600">{info.texto}</p>
-                          </div>
-                        </div>
-                        <Badge className="bg-[#F7D426] text-[#2C2C2C] border-2 border-[#2C2C2C]">
-                          +{pontos} pts
-                        </Badge>
-                      </div>
-                    );
-                  })}
+                <div className="p-4 bg-gray-50 rounded-lg text-sm text-gray-700">
+                  <p><strong>Regra oficial:</strong> 1 real = 1 ponto.</p>
+                  <p className="mt-1">Exemplos: R$ 50 = 50 pontos • R$ 199,90 ≈ 200 pontos.</p>
                 </div>
               </div>
             </div>
@@ -520,6 +504,9 @@ export default function LojaPontos() {
                     <Star className="w-3 h-3 mr-1 fill-[#2C2C2C]" />
                     Destaque
                   </Badge>
+                )}
+                {produto.mostrar_tag_clube && (
+                  <Badge className="absolute bottom-2 left-2 bg-purple-600 text-white">Clube da Beleza</Badge>
                 )}
                 {produto.nome && produto.nome.includes("Beauty Box") && (
                   <Badge className="absolute top-2 left-2 bg-gradient-to-r from-[#F7D426] to-[#FFE066] text-[#2C2C2C] border-2 border-[#2C2C2C] font-bold">

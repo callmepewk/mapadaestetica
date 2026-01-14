@@ -60,6 +60,11 @@ export default function CardAnuncio({ anuncio, distancia }) {
             </Badge>
           </div>
         )}
+        {anuncio.plano === 'platina' && (
+          <div className="absolute inset-y-0 left-2 flex items-center">
+            <div className="w-0 h-0 border-t-8 border-b-8 border-r-8 border-t-transparent border-b-transparent border-r-purple-600 animate-pulse"/>
+          </div>
+        )}
 
         {/* Badge de Estrelas do Estabelecimento */}
         {anuncio.estrelas_estabelecimento && (
