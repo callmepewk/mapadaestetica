@@ -6,6 +6,7 @@ import ArtigoBlog from './pages/ArtigoBlog';
 import Blog from './pages/Blog';
 import CadastrarAnuncio from './pages/CadastrarAnuncio';
 import CalculadoraLaser from './pages/CalculadoraLaser';
+import Checkout from './pages/Checkout';
 import ControleAdmin from './pages/ControleAdmin';
 import ControlePlanos from './pages/ControlePlanos';
 import ControleProdutos from './pages/ControleProdutos';
@@ -26,7 +27,6 @@ import Planos from './pages/Planos';
 import Produtos from './pages/Produtos';
 import RelatorioPrecoMedio from './pages/RelatorioPrecoMedio';
 import SobreNos from './pages/SobreNos';
-import Checkout from './pages/Checkout';
 import __Layout from './Layout.jsx';
 
 
@@ -39,6 +39,7 @@ export const PAGES = {
     "Blog": Blog,
     "CadastrarAnuncio": CadastrarAnuncio,
     "CalculadoraLaser": CalculadoraLaser,
+    "Checkout": Checkout,
     "ControleAdmin": ControleAdmin,
     "ControlePlanos": ControlePlanos,
     "ControleProdutos": ControleProdutos,
@@ -59,7 +60,6 @@ export const PAGES = {
     "Produtos": Produtos,
     "RelatorioPrecoMedio": RelatorioPrecoMedio,
     "SobreNos": SobreNos,
-    "Checkout": Checkout,
 }
 
 export const pagesConfig = {

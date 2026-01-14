@@ -59,6 +59,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import RealtimeStats from "../components/pro/RealtimeStats";
+import BoostProfile from "../components/pro/BoostProfile";
 
 export default function Perfil() {
   const navigate = useNavigate();
@@ -1612,6 +1614,8 @@ www.mapadaestetica.com.br
               {/* Tab Estatísticas (APENAS PROFISSIONAIS) */}
               {isProfissional && (
                 <TabsContent value="estatisticas" className="space-y-4">
+                  <RealtimeStats user={user} />
+                  <BoostProfile />
                   {/* Statistics Cards */}
                   <div className="grid md:grid-cols-4 gap-4">
                     <Card className="border-none shadow-lg">
