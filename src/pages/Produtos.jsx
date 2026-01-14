@@ -709,6 +709,40 @@ export default function Produtos() {
               )}
             </Card>
 
+            {/* Tabela de Pontos por Faixa de Preço */}
+            <Card className="mb-8 border-2 border-[#F7D426] bg-gradient-to-br from-[#FFF9E6] to-white shadow-lg">
+              <CardContent className="p-6">
+                <h3 className="text-xl font-bold text-[#2C2C2C] mb-4 flex items-center gap-2">
+                  <DollarSign className="w-5 h-5 text-[#F7D426]" />
+                  Pontos por Faixa de Preço
+                </h3>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  {Object.entries({ '$': 1, '$$': 5, '$$$': 10, '$$$$': 50, '$$$$$': 100 }).map(([faixa, pontos]) => {
+                    const info = ({
+                      '$': { texto: 'Até R$ 500', emoji: '💚' },
+                      '$$': { texto: 'R$ 500 - R$ 1.000', emoji: '💙' },
+                      '$$$': { texto: 'R$ 1.000 - R$ 2.000', emoji: '💛' },
+                      '$$$$': { texto: 'R$ 2.000 - R$ 5.000', emoji: '🧡' },
+                      '$$$$$': { texto: 'Acima de R$ 5.000', emoji: '❤️' },
+                    })[faixa];
+                    return (
+                      <div key={faixa} className="flex items-center justify-between p-3 bg-white rounded-lg border-2 border-gray-100">
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl">{info.emoji}</span>
+                          <div>
+                            <p className="font-bold text-gray-900">{faixa}</p>
+                            <p className="text-xs text-gray-600">{info.texto}</p>
+                          </div>
+                        </div>
+                        <Badge className="bg-[#F7D426] text-[#2C2C2C] border-2 border-[#2C2C2C]">+{pontos} pts</Badge>
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="text-xs text-gray-500 mt-3">Válido para produtos e serviços.</p>
+              </CardContent>
+            </Card>
+
             {/* Products Grid */}
             {produtosFiltrados.length === 0 ? (
               <Card className="p-12 text-center">
