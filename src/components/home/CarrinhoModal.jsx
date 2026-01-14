@@ -29,36 +29,9 @@ export default function CarrinhoModal({ open, onClose, carrinho, onRemoverItem, 
       alert("Seu carrinho está vazio!");
       return;
     }
-
-    let mensagem = `🛍️ *PEDIDO - MAPA DA ESTÉTICA*\n\n`;
-    mensagem += `📋 *ITENS DO PEDIDO:*\n\n`;
-
-    carrinho.forEach((item, index) => {
-      const preco = item.preco_promocional || item.preco || 0;
-      mensagem += `${index + 1}. *${item.nome}*\n`;
-      mensagem += `   Categoria: ${item.categoria}\n`;
-      if (preco > 0) {
-        mensagem += `   Valor: R$ ${preco.toFixed(2)}\n`;
-      } else {
-        mensagem += `   Valor: ${item.preco_texto || "Consultar"}\n`;
-      }
-      mensagem += `\n`;
-    });
-
-    const total = calcularTotal();
-    if (total > 0) {
-      mensagem += `\n💰 *TOTAL: R$ ${total.toFixed(2)}*\n\n`;
-    }
-
-    mensagem += `📞 Gostaria de finalizar este pedido!`;
-
-    const whatsapp = "5531972595643";
-    const url = `https://wa.me/${whatsapp}?text=${encodeURIComponent(mensagem)}`;
-    window.open(url, '_blank');
-
-    // Limpar carrinho após enviar
-    onLimparCarrinho();
+    // Ir para checkout interno
     onClose();
+    navigate(createPageUrl("Checkout"));
   };
 
   return (
@@ -163,7 +136,7 @@ export default function CarrinhoModal({ open, onClose, carrinho, onRemoverItem, 
               </div>
 
               <p className="text-xs text-center text-gray-500">
-                Você será redirecionado para o WhatsApp para finalizar o pedido
+                Você será redirecionado para o checkout no site
               </p>
             </div>
           </>

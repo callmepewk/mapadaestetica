@@ -490,36 +490,7 @@ export default function Produtos() {
       alert("Seu carrinho está vazio!");
       return;
     }
-
-    let mensagem = `🛍️ *PEDIDO - MAPA DA ESTÉTICA*\n\n`;
-    mensagem += `📋 *ITENS DO PEDIDO:*\n\n`;
-
-    carrinho.forEach((item, index) => {
-      const preco = item.preco_promocional || item.preco || 0;
-      mensagem += `${index + 1}. *${item.nome}*\n`;
-      mensagem += `   Categoria: ${item.categoria}\n`;
-      if (preco > 0) {
-        mensagem += `   Valor: R$ ${preco.toFixed(2)}\n`;
-      } else {
-        mensagem += `   Valor: ${item.preco_texto || "Consultar"}\n`;
-      }
-      mensagem += `\n`;
-    });
-
-    const total = carrinho.reduce((sum, item) => sum + (item.preco_promocional || item.preco || 0), 0);
-    if (total > 0) {
-      mensagem += `\n💰 *TOTAL: R$ ${total.toFixed(2)}*\n\n`;
-    }
-
-    mensagem += `📞 Gostaria de finalizar este pedido!`;
-
-    const whatsapp = "5531972595643";
-    const url = `https://wa.me/${whatsapp}?text=${encodeURIComponent(mensagem)}`;
-    window.open(url, '_blank');
-
-    // Limpar carrinho após enviar
-    setCarrinho([]);
-    localStorage.removeItem('carrinho_mapa_estetica');
+    navigate(createPageUrl("Checkout"));
   };
 
   const handleContratar = (servico) => {
@@ -1071,7 +1042,7 @@ export default function Produtos() {
                       </Button>
 
                       <p className="text-xs text-center text-gray-500 mt-2">
-                        Você será redirecionado para o WhatsApp
+                        Você será redirecionado para o checkout
                       </p>
                     </div>
                   </>
