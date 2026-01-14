@@ -485,6 +485,12 @@ export default function Layout({ children }) {
                           Meu Plano
                         </DropdownMenuItem>
                       )}
+                      {(isProfissional || isAdmin) && (
+                        <DropdownMenuItem onClick={() => navigate(createPageUrl("PainelProfissional"))}>
+                          <TrendingUp className="w-4 h-4 mr-2" />
+                          Painel Profissional
+                        </DropdownMenuItem>
+                      )}
                       {/* NOVO: Dashboard Patrocinador */}
                       {((user?.plano_patrocinador && user.plano_patrocinador !== 'nenhum') || isPatrocinador || isAdmin) && (
                         <DropdownMenuItem onClick={() => navigate(createPageUrl("DashboardPatrocinador"))}>

@@ -27,6 +27,7 @@ import Produtos from './pages/Produtos';
 import RelatorioPrecoMedio from './pages/RelatorioPrecoMedio';
 import SobreNos from './pages/SobreNos';
 import Checkout from './pages/Checkout';
+import PainelProfissional from './pages/PainelProfissional';
 import __Layout from './Layout.jsx';
 
 
@@ -60,6 +61,7 @@ export const PAGES = {
     "RelatorioPrecoMedio": RelatorioPrecoMedio,
     "SobreNos": SobreNos,
     "Checkout": Checkout,
+    "PainelProfissional": PainelProfissional,
 }
 
 export const pagesConfig = {
