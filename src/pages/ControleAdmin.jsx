@@ -211,6 +211,7 @@ export default function ControleAdmin() {
     plano_patrocinador: "",
     pontos_acumulados: 0,
     beauty_coins: 0,
+    profissional_verificado: false,
     cadastro_completo: false
   });
 
@@ -2140,6 +2141,7 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
       plano_patrocinador: usuario.plano_patrocinador || "nenhum",
       pontos_acumulados: usuario.pontos_acumulados || 0,
       beauty_coins: usuario.beauty_coins || 0,
+      profissional_verificado: usuario.profissional_verificado || false,
       cadastro_completo: usuario.cadastro_completo || false
     });
     setMostrarModalEditarUsuario(true);

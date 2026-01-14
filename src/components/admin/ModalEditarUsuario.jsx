@@ -407,6 +407,27 @@ export default function ModalEditarUsuario({
                 </div>
               </div>
 
+              {usuarioEditando.tipo_usuario === 'profissional' && (
+                <div className="pt-3 border-t border-pink-200">
+                  <h4 className="font-semibold text-sm mb-3 text-pink-900">Verificação</h4>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="profissionalVerificado"
+                      checked={!!dadosEdicaoUsuario.profissional_verificado}
+                      onChange={(e) => setDadosEdicaoUsuario({ ...dadosEdicaoUsuario, profissional_verificado: e.target.checked })}
+                      className="w-4 h-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded"
+                      disabled={isPending}
+                    />
+                    <Label htmlFor="profissionalVerificado" className="text-sm font-medium">
+                      ✓ Profissional Verificado
+                    </Label>
+                  </div>
+                  <p className="text-xs text-gray-600 mt-1 ml-6">
+                    Use quando confirmar documentos e identidade do profissional.
+                  </p>
+                </div>
+              )}
               <div className="pt-3 border-t border-pink-200">
                 <div className="flex items-center space-x-2">
                   <input
