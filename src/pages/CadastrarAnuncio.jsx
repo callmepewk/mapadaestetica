@@ -2140,7 +2140,7 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
               </Button>
             </CardContent>
           </Card>
-          )
+          )}
 
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <Button
