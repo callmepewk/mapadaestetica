@@ -1614,7 +1614,11 @@ www.mapadaestetica.com.br
               {/* Tab Estatísticas (APENAS PROFISSIONAIS) */}
               {isProfissional && (
                 <TabsContent value="estatisticas" className="space-y-4">
-                  <RealtimeStats user={user} />
+                  <RealtimeStats
+      user={user}
+      title="O que está acontecendo agora no seu perfil"
+      subtitle="Estatísticas em tempo real dos seus anúncios e campanhas"
+    />
                   <BoostProfile />
                   {/* Statistics Cards */}
                   <div className="grid md:grid-cols-4 gap-4">

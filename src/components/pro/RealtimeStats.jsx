@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { TrendingUp, Eye, Heart, MousePointerClick, Megaphone } from "lucide-react";
 
-export default function RealtimeStats({ user }) {
+export default function RealtimeStats({ user, title = "O que está acontecendo agora", subtitle, badgeLabel = "Estatísticas em Tempo Real" }) {
   const queryClient = useQueryClient();
   const email = user?.email || "";
 
@@ -67,6 +67,11 @@ export default function RealtimeStats({ user }) {
 
   return (
     <div className="space-y-6">
+      <div className="text-center">
+        <span className="inline-flex items-center rounded-full bg-rose-500 text-white text-xs px-3 py-1 mb-2">{badgeLabel}</span>
+        <h2 className="text-2xl md:text-3xl font-bold">{title}</h2>
+        {subtitle && <p className="text-gray-600 text-sm mt-1">{subtitle}</p>}
+      </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="border-2">
           <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><TrendingUp className="w-4 h-4"/>Anúncios Ativos</CardTitle></CardHeader>
