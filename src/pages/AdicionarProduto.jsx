@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Save, Upload, Loader2 } from "lucide-react";
+import { ArrowLeft, Save, Upload, Loader2, Wand2, Image } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const categorias = [
@@ -35,6 +35,8 @@ export default function AdicionarProduto() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [gerandoIA, setGerandoIA] = useState(false);
+  const [gerandoImagem, setGerandoImagem] = useState(false);
   const [produto, setProduto] = useState({
     tipo: "produto", // produto ou servico
     nome: "",
@@ -117,6 +119,45 @@ export default function AdicionarProduto() {
     }
   };
 
+  // IA: preencher dados a partir do nome
+  const handlePreencherComIA = async () => {
+    if (!produto.nome) { alert('Informe o nome do produto/serviço antes.'); return; }
+    setGerandoIA(true);
+    try {
+      const schema = {
+        type: 'object',
+        properties: {
+          descricao: { type: 'string' },
+          categoria: { type: 'string' },
+          preco_texto: { type: 'string' },
+          marca: { type: 'string' },
+        }
+      };
+      const res = await base44.integrations.Core.InvokeLLM({
+        prompt: `Gere um resumo objetivo e vendedor para um ${produto.tipo} chamado "${produto.nome}" dentro do setor de estética/beleza. Sugira uma categoria entre: ${categorias.join(', ')}. Retorne JSON com: descricao (máx 400 chars), categoria (exata de uma das opções), preco_texto (opcional, curto), marca (se couber).`,
+        response_json_schema: schema
+      });
+      const dados = res || {};
+      const categoriaValida = categorias.includes(dados.categoria) ? dados.categoria : (produto.categoria || '');
+      setProduto(p => ({ ...p, descricao: dados.descricao || p.descricao, categoria: categoriaValida, preco_texto: dados.preco_texto || p.preco_texto, marca: dados.marca || p.marca }));
+    } finally {
+      setGerandoIA(false);
+    }
+  };
+
+  // IA: gerar imagem a partir do nome
+  const handleGerarImagemIA = async () => {
+    if (!produto.nome) { alert('Informe o nome antes de gerar a imagem.'); return; }
+    setGerandoImagem(true);
+    try {
+      const prompt = `foto de produto/serviço de estética: ${produto.nome}, fundo limpo, iluminação suave, estilo e-commerce, estética premium`;
+      const { url } = await base44.integrations.Core.GenerateImage({ prompt });
+      if (url) setProduto(p => ({ ...p, imagens: [...p.imagens, url] }));
+    } finally {
+      setGerandoImagem(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
       <div className="max-w-4xl mx-auto px-4">
@@ -138,6 +179,27 @@ export default function AdicionarProduto() {
               <p className="text-gray-600">
                 Preencha as informações abaixo para adicionar um novo item
               </p>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <Button
+                  type="button"
+                  onClick={handlePreencherComIA}
+                  disabled={gerandoIA}
+                  variant="outline"
+                  className="border-2"
+                >
+                  {gerandoIA ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Wand2 className="w-4 h-4 mr-2" />}
+                  Preencher com IA
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleGerarImagemIA}
+                  disabled={gerandoImagem}
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+                >
+                  {gerandoImagem ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Image className="w-4 h-4 mr-2" />}
+                  Gerar Imagem IA
+                </Button>
+              </div>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
