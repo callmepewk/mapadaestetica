@@ -164,12 +164,6 @@ const criarIconeAnuncio = (verificado) => {
     iconSize: [14, 14]
   });
 };
-  return L.divIcon({
-    html: `<div style="background: #3B82F6; border: 3px solid white; width: 20px; height: 20px; border-radius: 50%; box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);"></div>`,
-    className: 'custom-marker',
-    iconSize: [20, 20],
-  });
-};
 
 const criarIconeEstabelecimento = (categoria) => {
   const icons = {
