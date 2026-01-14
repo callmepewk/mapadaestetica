@@ -68,9 +68,9 @@ export default function RealtimeStats({ user, title = "O que está acontecendo a
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <span className="inline-flex items-center rounded-full bg-rose-500 text-white text-xs px-3 py-1 mb-2">{badgeLabel}</span>
-        <h2 className="text-2xl md:text-3xl font-bold">{title}</h2>
-        {subtitle && <p className="text-gray-600 text-sm mt-1">{subtitle}</p>}
+        <span className="inline-flex items-center rounded-full bg-rose-500 text-white text-[10px] md:text-xs px-2.5 py-1 mb-2">{badgeLabel}</span>
+        <h2 className="text-xl md:text-3xl font-bold">{title}</h2>
+        {subtitle && <p className="text-gray-600 text-xs md:text-sm mt-1">{subtitle}</p>}
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="border-2">
