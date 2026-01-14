@@ -244,15 +244,17 @@ export default function CadastrarAnuncio() {
 
   // Estados do formulário
   const [formData, setFormData] = useState({
-    tipo_anuncio: "",
-    titulo: "",
-    descricao: "",
-    categoria: "",
-    subcategoria: "",
-    faixa_preco: "",
-    status_funcionamento: "",
-    tipo_estabelecimento: "",
-    estrelas_estabelecimento: null,
+     tipo_anuncio: "",
+     titulo: "",
+     descricao: "",
+     categoria: "",
+     subcategoria: "",
+     faixa_preco: "",
+     forma_cobranca: "dinheiro",
+     ocultar_apos_venda: false,
+     status_funcionamento: "",
+     tipo_estabelecimento: "",
+     estrelas_estabelecimento: null,
     profissional: "",
     telefone: "",
     whatsapp: "",
@@ -1271,6 +1273,37 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+              </div>
+
+              {/* Forma de Cobrança e Comportamento após Venda */}
+              <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
+                <div>
+                  <Label className="text-sm">Forma de Cobrança *</Label>
+                  <Select value={formData.forma_cobranca} onValueChange={(v) => handleInputChange("forma_cobranca", v)}>
+                    <SelectTrigger className="mt-1 h-10 sm:h-11 text-sm">
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="dinheiro" className="text-sm">Dinheiro (Faixa de Preço)</SelectItem>
+                      <SelectItem value="pontos" className="text-sm">Pontos</SelectItem>
+                      <SelectItem value="beauty_coins" className="text-sm">Beauty Coins</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {formData.forma_cobranca !== 'dinheiro' && (
+                    <p className="text-xs text-gray-500 mt-1">A faixa de preço será ignorada.</p>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2 pt-6">
+                  <Checkbox
+                    id="ocultar_apos_venda"
+                    checked={formData.ocultar_apos_venda}
+                    onCheckedChange={(checked) => handleInputChange("ocultar_apos_venda", checked)}
+                  />
+                  <Label htmlFor="ocultar_apos_venda" className="cursor-pointer text-sm">
+                    Ocultar anúncio após a venda
+                  </Label>
                 </div>
               </div>
 
