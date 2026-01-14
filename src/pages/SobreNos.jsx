@@ -675,6 +675,90 @@ export default function SobreNos() {
         </div>
       </section>
 
+      {/* Seja Nosso Parceiro */}
+      <section className="py-16 bg-gradient-to-br from-purple-50 to-pink-50">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="text-center mb-10">
+            <Badge className="mb-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white border-none">Seja nosso parceiro</Badge>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">Parcerias oficiais do Clube da Beleza</h2>
+            <p className="text-gray-700 max-w-2xl mx-auto">Ganhe destaque no mapa, badges de confiança e benefícios do ecossistema Clube+ para impulsionar sua marca e seus resultados.</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            <Card className="border-2 border-purple-200">
+              <CardContent className="p-6">
+                <h3 className="font-bold text-gray-900 mb-2">Badge de Parceiro</h3>
+                <p className="text-sm text-gray-600">Selo “Parceiro do Clube da Beleza” exibido no seu perfil e, opcionalmente, nos seus produtos.</p>
+              </CardContent>
+            </Card>
+            <Card className="border-2 border-purple-200">
+              <CardContent className="p-6">
+                <h3 className="font-bold text-gray-900 mb-2">Exposição e Confiança</h3>
+                <p className="text-sm text-gray-600">Destaque em buscas, vitrine em seções do site e reconhecimento de qualidade Clube+.</p>
+              </CardContent>
+            </Card>
+            <Card className="border-2 border-purple-200">
+              <CardContent className="p-6">
+                <h3 className="font-bold text-gray-900 mb-2">Benefícios Clube+</h3>
+                <p className="text-sm text-gray-600">Ações com Clube+ e conteúdos do ecossistema: <a className="text-purple-700 underline" href="https://clube-mais.base44.app" target="_blank" rel="noopener noreferrer">Clube+</a> e <a className="text-purple-700 underline" href="https://clubdabeleza.com" target="_blank" rel="noopener noreferrer">Clube da Beleza</a>.</p>
+              </CardContent>
+            </Card>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mt-8">
+            <a href="https://clubdabeleza.com" target="_blank" rel="noopener noreferrer">
+              <Button className="bg-purple-600 hover:bg-purple-700 text-white">Conhecer Clube da Beleza</Button>
+            </a>
+            <a href="https://clube-mais.base44.app" target="_blank" rel="noopener noreferrer">
+              <Button variant="outline" className="border-2 border-purple-600 text-purple-700 hover:bg-purple-50">Ver vantagens no Clube+</Button>
+            </a>
+            <a href="https://wa.me/5531972595643?text=Quero%20ser%20parceiro%20do%20Clube%20da%20Beleza" target="_blank" rel="noopener noreferrer">
+              <Button variant="outline" className="border-2">Quero ser parceiro</Button>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* Seja Nosso Parceiro */}
+      <section className="py-16 bg-gradient-to-br from-purple-50 to-pink-50">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="text-center mb-10">
+            <Badge className="mb-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white border-none">Seja nosso parceiro</Badge>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">Parcerias oficiais do Clube da Beleza</h2>
+            <p className="text-gray-700 max-w-2xl mx-auto">Ganhe destaque no mapa, badges de confiança e benefícios do ecossistema Clube+ para impulsionar sua marca e seus resultados.</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            <Card className="border-2 border-purple-200">
+              <CardContent className="p-6">
+                <h3 className="font-bold text-gray-900 mb-2">Badge de Parceiro</h3>
+                <p className="text-sm text-gray-600">Selo “Parceiro do Clube da Beleza” exibido no seu perfil e, opcionalmente, nos seus produtos.</p>
+              </CardContent>
+            </Card>
+            <Card className="border-2 border-purple-200">
+              <CardContent className="p-6">
+                <h3 className="font-bold text-gray-900 mb-2">Exposição e Confiança</h3>
+                <p className="text-sm text-gray-600">Destaque em buscas, vitrine em seções do site e reconhecimento de qualidade Clube+.</p>
+              </CardContent>
+            </Card>
+            <Card className="border-2 border-purple-200">
+              <CardContent className="p-6">
+                <h3 className="font-bold text-gray-900 mb-2">Benefícios Clube+</h3>
+                <p className="text-sm text-gray-600">Ações com Clube+ e conteúdos do ecossistema: <a className="text-purple-700 underline" href="https://clube-mais.base44.app" target="_blank" rel="noopener noreferrer">Clube+</a> e <a className="text-purple-700 underline" href="https://clubdabeleza.com" target="_blank" rel="noopener noreferrer">Clube da Beleza</a>.</p>
+              </CardContent>
+            </Card>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mt-8">
+            <a href="https://clubdabeleza.com" target="_blank" rel="noopener noreferrer">
+              <Button className="bg-purple-600 hover:bg-purple-700 text-white">Conhecer Clube da Beleza</Button>
+            </a>
+            <a href="https://clube-mais.base44.app" target="_blank" rel="noopener noreferrer">
+              <Button variant="outline" className="border-2 border-purple-600 text-purple-700 hover:bg-purple-50">Ver vantagens no Clube+</Button>
+            </a>
+            <a href="https://wa.me/5531972595643?text=Quero%20ser%20parceiro%20do%20Clube%20da%20Beleza" target="_blank" rel="noopener noreferrer">
+              <Button variant="outline" className="border-2">Quero ser parceiro</Button>
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-20 bg-gradient-to-br from-amber-50 to-yellow-50">
         <div className="max-w-4xl mx-auto px-4 text-center">

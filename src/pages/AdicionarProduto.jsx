@@ -51,7 +51,8 @@ export default function AdicionarProduto() {
     em_destaque: false,
     status: "ativo",
     link_pagamento: "", // Novo campo
-    requer_assinatura: false // Para produtos exclusivos do clube
+    requer_assinatura: false, // Para produtos exclusivos do clube
+    mostrar_tag_clube: false
   });
 
   const handleUploadImage = async (e) => {
@@ -380,6 +381,17 @@ export default function AdicionarProduto() {
                   />
                   <Label htmlFor="requer_assinatura" className="cursor-pointer">
                     Exclusivo Clube da Beleza
+                  </Label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="mostrar_tag_clube"
+                    checked={produto.mostrar_tag_clube}
+                    onCheckedChange={(checked) => setProduto({ ...produto, mostrar_tag_clube: checked })}
+                  />
+                  <Label htmlFor="mostrar_tag_clube" className="cursor-pointer">
+                    Exibir tag do Clube da Beleza
                   </Label>
                 </div>
 

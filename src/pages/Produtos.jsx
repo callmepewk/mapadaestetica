@@ -797,9 +797,16 @@ export default function Produtos() {
                       </div>
 
                       <CardContent className="p-4">
-                        <Badge variant="outline" className="mb-2 bg-gray-100 text-gray-800 border-gray-300">
-                          {produto.categoria}
-                        </Badge>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-300">
+                            {produto.categoria}
+                          </Badge>
+                          {produto.mostrar_tag_clube && (
+                            <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+                              <Crown className="w-3 h-3 mr-1" /> Parceiro Clube+
+                            </Badge>
+                          )}
+                        </div>
                         
                         <h3 className="font-bold text-lg mb-2 line-clamp-2">
                           {produto.nome}

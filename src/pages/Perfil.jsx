@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -321,6 +320,8 @@ export default function Perfil() {
         tem_especializacao: user?.tem_especializacao || false,
         faz_parte_golden_doctors: user?.faz_parte_golden_doctors || false,
         quer_fazer_parte_golden_doctors: user?.quer_fazer_parte_golden_doctors || false,
+       parceiro_clube_beleza: user?.parceiro_clube_beleza || false,
+       parceiro_clube_beleza: user?.parceiro_clube_beleza || false,
       });
     }
   };
