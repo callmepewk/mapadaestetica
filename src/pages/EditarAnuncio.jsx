@@ -511,39 +511,67 @@ export default function EditarAnuncio() {
               </div>
 
               <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <Label>Status</Label>
-                  <Select
-                    value={formData.status}
-                    onValueChange={(value) => handleInputChange("status", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ativo">Ativo</SelectItem>
-                      <SelectItem value="pendente">Pendente</SelectItem>
-                      <SelectItem value="expirado">Expirado</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>Faixa de Preço</Label>
-                  <Select
-                    value={formData.faixa_preco}
-                    onValueChange={(value) => handleInputChange("faixa_preco", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione a faixa de preço" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {faixasPreco.map((faixa) => (
-                        <SelectItem key={faixa.valor} value={faixa.valor}>{faixa.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+                 <div>
+                   <Label>Status</Label>
+                   <Select
+                     value={formData.status}
+                     onValueChange={(value) => handleInputChange("status", value)}
+                   >
+                     <SelectTrigger>
+                       <SelectValue />
+                     </SelectTrigger>
+                     <SelectContent>
+                       <SelectItem value="ativo">Ativo</SelectItem>
+                       <SelectItem value="pendente">Pendente</SelectItem>
+                       <SelectItem value="expirado">Expirado</SelectItem>
+                     </SelectContent>
+                   </Select>
+                 </div>
+                 <div>
+                   <Label>Faixa de Preço</Label>
+                   <Select
+                     value={formData.faixa_preco}
+                     onValueChange={(value) => handleInputChange("faixa_preco", value)}
+                   >
+                     <SelectTrigger>
+                       <SelectValue placeholder="Selecione a faixa de preço" />
+                     </SelectTrigger>
+                     <SelectContent>
+                       {faixasPreco.map((faixa) => (
+                         <SelectItem key={faixa.valor} value={faixa.valor}>{faixa.label}</SelectItem>
+                       ))}
+                     </SelectContent>
+                   </Select>
+                 </div>
+               </div>
+
+               {/* Forma de Cobrança e Ocultar após venda */}
+               <div className="grid md:grid-cols-2 gap-4">
+                 <div>
+                   <Label>Forma de Cobrança</Label>
+                   <Select
+                     value={formData.forma_cobranca || 'dinheiro'}
+                     onValueChange={(value) => handleInputChange('forma_cobranca', value)}
+                   >
+                     <SelectTrigger>
+                       <SelectValue placeholder="Selecione" />
+                     </SelectTrigger>
+                     <SelectContent>
+                       <SelectItem value="dinheiro">Dinheiro (Faixa de Preço)</SelectItem>
+                       <SelectItem value="pontos">Pontos</SelectItem>
+                       <SelectItem value="beauty_coins">Beauty Coins</SelectItem>
+                     </SelectContent>
+                   </Select>
+                 </div>
+                 <div className="flex items-center gap-2 pt-6">
+                   <Checkbox
+                     id="ocultar_apos_venda"
+                     checked={formData.ocultar_apos_venda || false}
+                     onCheckedChange={(checked) => handleInputChange('ocultar_apos_venda', checked)}
+                   />
+                   <Label htmlFor="ocultar_apos_venda">Ocultar anúncio após a venda</Label>
+                 </div>
+               </div>
 
 
               <div>
