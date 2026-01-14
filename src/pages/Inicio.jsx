@@ -487,7 +487,7 @@ export default function Inicio() {
             </section>
           )}
 
-          {/* Dr. Beleza */}
+          {/* Dr da Beleza */}
           <section className="py-8 bg-gradient-to-r from-[#F7D426] to-[#FFE066]">
             <div className="max-w-7xl mx-auto px-4">
               <Card className="border-none shadow-2xl bg-white/95 backdrop-blur overflow-hidden">
@@ -496,7 +496,7 @@ export default function Inicio() {
                     <div className="w-32 h-32 md:w-40 md:h-40 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg overflow-hidden">
                       <img
                         src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/8b8866b2d_drbeleza.png"
-                        alt="Dr. Beleza"
+                        alt="Dr da Beleza"
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           e.target.onerror = null;
@@ -509,7 +509,7 @@ export default function Inicio() {
                         Consulte Tratamentos Agora
                       </Badge>
                       <h2 className="text-2xl md:text-3xl font-bold text-[#2C2C2C] mb-2">
-                        Dr. Beleza - Seu Assistente Inteligente
+                        Dr da Beleza - Seu Assistente Inteligente
                       </h2>
                       <p className="text-gray-600 mb-4">
                         Descubra como funciona e qual o tratamento certo para você com inteligência artificial
@@ -520,7 +520,7 @@ export default function Inicio() {
                       size="lg" 
                       className="bg-[#2C2C2C] hover:bg-[#3A3A3A] text-[#F7D426] font-bold shadow-xl flex-shrink-0"
                     >
-                      Acessar Dr. Beleza
+                      Acessar Dr da Beleza
                       <ArrowRight className="w-5 h-5 ml-2" />
                     </Button>
                   </div>
@@ -969,7 +969,7 @@ export default function Inicio() {
                     <td className="p-4 font-semibold">🤖 Ferramentas com IA</td>
                     <td className="p-4 text-center bg-green-50">
                       <CheckCircle className="w-6 h-6 text-green-600 mx-auto" />
-                      <p className="text-xs text-green-600 mt-1">Dr. Beleza + Assistentes</p>
+                      <p className="text-xs text-green-600 mt-1">Dr da Beleza + Assistentes</p>
                     </td>
                     <td className="p-4 text-center">
                       <X className="w-6 h-6 text-red-500 mx-auto" />

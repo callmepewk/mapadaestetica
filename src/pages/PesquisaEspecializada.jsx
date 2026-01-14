@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useMutation } from "@tanstack/react-query";
@@ -230,7 +229,7 @@ Seja profissional, técnico mas acessível. Use informações baseadas em evidê
           <div className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-full flex items-center justify-center shadow-xl overflow-hidden">
             <img
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/ec64a4c52_drbeleza.png"
-              alt="Dr. Beleza"
+              alt="Dr da Beleza"
               className="w-full h-full object-cover"
               onError={(e) => {
                 e.target.onerror = null; // Prevent infinite loop if the fallback also fails
@@ -246,7 +245,7 @@ Seja profissional, técnico mas acessível. Use informações baseadas em evidê
             Consulte Tratamentos Agora
           </Badge>
           <h1 className="text-3xl md:text-4xl font-bold text-[#2C2C2C] mb-3 mt-3">
-            Dr. Beleza
+            Dr da Beleza
           </h1>
           <p className="text-gray-600 text-lg max-w-2xl mx-auto">
             Descubra como funciona e qual o tratamento certo para você. Depois, encontre profissionais qualificados!

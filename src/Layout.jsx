@@ -794,7 +794,7 @@ export default function Layout({ children }) {
               <ul className="space-y-2 text-sm text-gray-400">
                 <li><Link to={createPageUrl("FaleConosco")} className="hover:text-[#F7D426] transition-colors">Fale Conosco</Link></li>
                 <li><Link to={createPageUrl("SobreNos")} className="hover:text-[#F7D426] transition-colors">Sobre Nós</Link></li>
-                <li><Link to={createPageUrl("PesquisaEspecializada")} className="hover:text-[#F7D426] transition-colors">Dr. Beleza</Link></li>
+                <li><Link to={createPageUrl("PesquisaEspecializada")} className="hover:text-[#F7D426] transition-colors">Dr da Beleza</Link></li>
               </ul>
             </div>
           </div>

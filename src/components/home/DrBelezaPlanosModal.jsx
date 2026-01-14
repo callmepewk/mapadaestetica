@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -99,7 +98,7 @@ export default function DrBelezaPlanosModal({ open, onClose }) {
   const [mensagens, setMensagens] = useState([
     {
       tipo: "bot",
-      texto: "Olá! 👋 Sou o Dr. Beleza e vou te ajudar a escolher o plano perfeito para você! Vou fazer algumas perguntas sobre seu negócio para entender suas necessidades. Vamos lá?"
+      texto: "Olá! 👋 Sou o Dr da Beleza e vou te ajudar a escolher o plano perfeito para você! Vou fazer algumas perguntas sobre seu negócio para entender suas necessidades. Vamos lá?"
     }
   ]);
   const [analisando, setAnalisando] = useState(false);
@@ -280,7 +279,7 @@ export default function DrBelezaPlanosModal({ open, onClose }) {
     setMensagens([
       {
         tipo: "bot",
-        texto: "Olá! 👋 Sou o Dr. Beleza e vou te ajudar a escolher o plano perfeito para você! Vou fazer algumas perguntas sobre seu negócio para entender suas necessidades. Vamos lá?"
+        texto: "Olá! 👋 Sou o Dr da Beleza e vou te ajudar a escolher o plano perfeito para você! Vou fazer algumas perguntas sobre seu negócio para entender suas necessidades. Vamos lá?"
       }
     ]);
     setAnalisando(false);
@@ -299,7 +298,7 @@ export default function DrBelezaPlanosModal({ open, onClose }) {
             <div className="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-r from-[#F7D426] to-[#FFE066] flex items-center justify-center">
               <img
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/ec64a4c52_drbeleza.png"
-                alt="Dr. Beleza"
+                alt="Dr da Beleza"
                 className="w-full h-full object-cover"
                 onError={(e) => {
                   e.target.style.display = 'none';
@@ -309,7 +308,7 @@ export default function DrBelezaPlanosModal({ open, onClose }) {
               <Sparkles className="w-6 h-6 text-[#2C2C2C] hidden" />
             </div>
             <div>
-              <DialogTitle className="text-xl">Dr. Beleza - Consultor de Planos</DialogTitle>
+              <DialogTitle className="text-xl">Dr da Beleza - Consultor de Planos</DialogTitle>
               <p className="text-sm text-gray-500">Vou te ajudar a escolher o melhor plano!</p>
             </div>
           </div>
@@ -417,7 +416,7 @@ export default function DrBelezaPlanosModal({ open, onClose }) {
                 Fechar
               </Button>
               <a
-                href={`https://wa.me/5531972595643?text=${encodeURIComponent(`Olá! O Dr. Beleza me recomendou o plano ${planosInfo[planoSugerido].nome}. Gostaria de contratar! 💆‍♀️`)}`}
+                href={`https://wa.me/5531972595643?text=${encodeURIComponent(`Olá! O Dr da Beleza me recomendou o plano ${planosInfo[planoSugerido].nome}. Gostaria de contratar! 💆‍♀️`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1"

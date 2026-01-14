@@ -433,12 +433,12 @@ export default function SobreNos() {
                 </CardContent>
               </Card>
 
-              {/* Dr. Beleza */}
+              {/* Dr da Beleza */}
               <Card className="border-2 border-cyan-300 shadow-xl hover:shadow-2xl transition-all overflow-hidden">
                 <div className="h-48 bg-gradient-to-br from-cyan-100 to-blue-100 flex items-center justify-center p-6">
                   <img
                     src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/04265179e_drbeleza.png"
-                    alt="Dr. Beleza"
+                    alt="Dr da Beleza"
                     className="max-h-full max-w-full object-contain"
                     onError={(e) => {
                       e.target.onerror = null;
@@ -449,7 +449,7 @@ export default function SobreNos() {
                 <CardContent className="p-6">
                   <div className="mb-4">
                     <Badge className="bg-cyan-100 text-cyan-800 mb-3">Para Todos</Badge>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-3">Dr. Beleza</h3>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-3">Dr da Beleza</h3>
                     <p className="text-gray-600 mb-4">
                       Assistente inteligente com IA que responde suas dúvidas sobre tratamentos, 
                       procedimentos e te ajuda a encontrar a melhor solução estética.
@@ -482,7 +482,7 @@ export default function SobreNos() {
                     className="block w-full"
                   >
                     <Button className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white">
-                      Acessar Dr. Beleza
+                      Acessar Dr da Beleza
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </Button>
                   </a>
