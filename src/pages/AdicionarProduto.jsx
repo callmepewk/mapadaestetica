@@ -385,17 +385,6 @@ export default function AdicionarProduto() {
                 </div>
 
                 <div className="flex items-center space-x-2">
-                 <Checkbox
-                   id="mostrar_tag_clube"
-                   checked={produto.mostrar_tag_clube}
-                   onCheckedChange={(checked) => setProduto({ ...produto, mostrar_tag_clube: checked })}
-                 />
-                 <Label htmlFor="mostrar_tag_clube" className="cursor-pointer">
-                   Exibir tag do Clube da Beleza
-                 </Label>
-                </div>
-
-                <div className="flex items-center space-x-2">
                   <Checkbox
                     id="mostrar_tag_clube"
                     checked={produto.mostrar_tag_clube}
