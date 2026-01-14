@@ -68,7 +68,10 @@
     "tailwindcss-animate": "^1.0.7",
     "three": "^0.171.0",
     "vaul": "^1.1.2",
-    "zod": "^3.24.2"
+    "zod": "^3.24.2",
+    "@stripe/stripe-js": "^2.4.0",
+    "@stripe/react-stripe-js": "^2.5.0",
+    "stripe": "^14.9.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
