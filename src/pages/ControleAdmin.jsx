@@ -807,6 +807,7 @@ Bem-vindo(a)! 💆‍♀️
       updateData.pontos_acumulados = parseInt(dados.pontos_acumulados) || 0;
       updateData.beauty_coins = parseInt(dados.beauty_coins) || 0;
       updateData.cadastro_completo = Boolean(dados.cadastro_completo);
+      updateData.profissional_verificado = Boolean(dados.profissional_verificado);
       
       console.log("📦 Update data:", JSON.stringify(updateData, null, 2));
       console.log("🚀 Chamando base44.entities.User.update(ID, data)...");
