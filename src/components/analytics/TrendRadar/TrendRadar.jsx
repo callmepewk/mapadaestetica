@@ -104,6 +104,10 @@ export default function TrendRadar() {
         return 2 * R * Math.asin(Math.sqrt(aa));
       };
       return searches.filter(s => typeof s.latitude === 'number' && typeof s.longitude === 'number' && dist(center.lat, center.lon, s.latitude, s.longitude) <= radiusKm);
+    } else if (localizationMode === 'state') {
+      const uf = (stateSel || '').toUpperCase().trim();
+      if (!uf) return searches;
+      return searches.filter(s => toUF(s.estado) === uf);
     } else {
       const cityN = (citySel || '').toLowerCase().trim();
       const stateN = (stateSel || '').toLowerCase().trim();
@@ -240,6 +244,13 @@ export default function TrendRadar() {
       .slice(0, 20);
   };
 
+  function openGoogleTrends() {
+    const terms = (cloudData.slice(0,5).map(t => t.term).join(',')) || 'estética,saúde,botox';
+    const geo = (localizationMode === 'state' && stateSel) ? `BR-${stateSel}` : 'BR';
+    const url = `https://trends.google.com/trends/explore?hl=pt-BR&geo=${encodeURIComponent(geo)}&q=${encodeURIComponent(terms)}`;
+    window.open(url, '_blank');
+  }
+
 
   async function handleUseMyLocation() {
     if (!navigator.geolocation) { alert('Geolocalização não suportada.'); return; }
@@ -299,6 +310,7 @@ export default function TrendRadar() {
             <SelectContent>
               <SelectItem value="radius">Raio (km)</SelectItem>
               <SelectItem value="city">Cidade/Estado</SelectItem>
+              <SelectItem value="state">Estado (UF)</SelectItem>
             </SelectContent>
           </Select>
           {localizationMode === 'radius' ? (
@@ -308,6 +320,41 @@ export default function TrendRadar() {
                 <MapPin className="w-4 h-4 mr-1" /> {geoLoading ? 'Localizando...' : 'Usar minha localização'}
               </Button>
               {center.lat && <Badge variant="outline" className="hidden sm:inline">lat {center.lat.toFixed(2)}, lon {center.lon.toFixed(2)}</Badge>}
+            </>
+          ) : localizationMode === 'state' ? (
+            <>
+              <Select value={stateSel} onValueChange={setStateSel}>
+                <SelectTrigger className="w-32"><SelectValue placeholder="UF" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="AC">AC</SelectItem>
+                  <SelectItem value="AL">AL</SelectItem>
+                  <SelectItem value="AP">AP</SelectItem>
+                  <SelectItem value="AM">AM</SelectItem>
+                  <SelectItem value="BA">BA</SelectItem>
+                  <SelectItem value="CE">CE</SelectItem>
+                  <SelectItem value="DF">DF</SelectItem>
+                  <SelectItem value="ES">ES</SelectItem>
+                  <SelectItem value="GO">GO</SelectItem>
+                  <SelectItem value="MA">MA</SelectItem>
+                  <SelectItem value="MT">MT</SelectItem>
+                  <SelectItem value="MS">MS</SelectItem>
+                  <SelectItem value="MG">MG</SelectItem>
+                  <SelectItem value="PA">PA</SelectItem>
+                  <SelectItem value="PB">PB</SelectItem>
+                  <SelectItem value="PR">PR</SelectItem>
+                  <SelectItem value="PE">PE</SelectItem>
+                  <SelectItem value="PI">PI</SelectItem>
+                  <SelectItem value="RJ">RJ</SelectItem>
+                  <SelectItem value="RN">RN</SelectItem>
+                  <SelectItem value="RS">RS</SelectItem>
+                  <SelectItem value="RO">RO</SelectItem>
+                  <SelectItem value="RR">RR</SelectItem>
+                  <SelectItem value="SC">SC</SelectItem>
+                  <SelectItem value="SP">SP</SelectItem>
+                  <SelectItem value="SE">SE</SelectItem>
+                  <SelectItem value="TO">TO</SelectItem>
+                </SelectContent>
+              </Select>
             </>
           ) : (
             <>
@@ -356,13 +403,18 @@ export default function TrendRadar() {
               <TrendingUp className="w-4 h-4 text-pink-600" />
               Dica: clique em um termo para ver a tendência e ajustar suas campanhas.
             </div>
-            <Button
-              variant="outline"
-              onClick={() => window.location.href = "/" + "Perfil"}
-              className="border-2 border-[#F7D426] text-[#F7D426] hover:bg-[#FFF9E6]"
-            >
-              Ver todas
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={() => window.location.href = "/" + "Perfil"}
+                className="border-2 border-[#F7D426] text-[#F7D426] hover:bg-[#FFF9E6]"
+              >
+                Ver todas
+              </Button>
+              <Button variant="outline" onClick={openGoogleTrends}>
+                Ver no Google Trends
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
