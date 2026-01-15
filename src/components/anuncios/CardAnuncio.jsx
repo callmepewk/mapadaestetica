@@ -67,8 +67,19 @@ export default function CardAnuncio({ anuncio, distancia }) {
         )}
 
         {/* Badge de Estrelas do Estabelecimento */}
-        {anuncio.estrelas_estabelecimento && (
+        {/* Selo Clube da Beleza */}
+        {anuncio.exibir_selo_clube && (
           <div className="absolute bottom-2 left-2">
+            <img
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/652cd0312_clubeimg.jpeg"
+              alt="Clube da Beleza"
+              className="w-6 h-6 rounded shadow border border-white"
+            />
+          </div>
+        )}
+
+        {anuncio.estrelas_estabelecimento && (
+          <div className={`absolute bottom-2 ${anuncio.exibir_selo_clube ? 'left-10' : 'left-2'}`}>
             <Badge className="bg-gradient-to-r from-yellow-500 to-amber-600 text-white font-bold border-2 border-white shadow-lg flex items-center gap-0.5 text-xs">
               {[...Array(anuncio.estrelas_estabelecimento)].map((_, i) => (
                 <Star key={i} className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-white" />

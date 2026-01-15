@@ -28,6 +28,8 @@ import Planos from './pages/Planos';
 import Produtos from './pages/Produtos';
 import RelatorioPrecoMedio from './pages/RelatorioPrecoMedio';
 import SobreNos from './pages/SobreNos';
+import HubPontos from './pages/HubPontos';
+import InstitutosAdmin from './pages/InstitutosAdmin';
 import __Layout from './Layout.jsx';
 
 
@@ -62,6 +64,8 @@ export const PAGES = {
     "Produtos": Produtos,
     "RelatorioPrecoMedio": RelatorioPrecoMedio,
     "SobreNos": SobreNos,
+    "HubPontos": HubPontos,
+    "InstitutosAdmin": InstitutosAdmin,
 }
 
 export const pagesConfig = {

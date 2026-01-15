@@ -4,7 +4,7 @@ import { ShoppingCart, Star, DollarSign } from "lucide-react";
 
 export default function FloatingQuickbar({ user, cartCount = 0, onOpenCart }) {
   return (
-    <div className="fixed bottom-4 right-4 z-[1000] flex flex-col items-end gap-2">
+    <div className="fixed bottom-4 left-4 z-[1000] flex flex-col items-start gap-2">
       <div className="flex items-center gap-2 bg-white/90 backdrop-blur border rounded-full shadow-lg px-3 py-2">
         <div className="flex items-center gap-1 text-[#F7D426]"><Star className="w-4 h-4"/><span className="font-bold text-sm">{user?.pontos_acumulados || 0}</span></div>
         <div className="w-px h-4 bg-gray-200"/>
