@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import Autocomplete from "@/components/inputs/Autocomplete";
 import {
   Select,
   SelectContent,
@@ -14,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Save, Upload, Loader2, Wand2, Image } from "lucide-react";
+import { ArrowLeft, Save, Upload, Loader2, Wand2, Image, Sparkles } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const categorias = [
@@ -41,6 +42,16 @@ export default function AdicionarProduto() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [gerandoIA, setGerandoIA] = useState(false);
   const [gerandoImagem, setGerandoImagem] = useState(false);
+  // Opções sugeridas (extensíveis)
+  const [marcaOptions, setMarcaOptions] = useState([
+    "Lumenis","Candela","Cynosure","Alma","Lutronic","Fotona","DEKA","Asclepion","Syneron","Sciton","Cutera","Quanta System","Venus Concept","Zimmer","InMode","BTL","Quanta","Milesman","Primelase","Elysion","Asclepion Thunder","Motus","Clarity","LightSheer","Soprano","Icon","PicoSure","PicoWay","Discovery Pico","StarWalker","Nordlys","M22"
+  ]);
+  const [tipoLaserOptions] = useState([
+    "Alexandrite","Nd:YAG","Diodo","CO2","Er:YAG","IPL (Luz Pulsada)","PDL (Pulsed Dye)","Thulium","Holmium","Q-Switched","Pico (Picosegundo)","Er:Glass","CO2 Fracionado"
+  ]);
+  const [modeloOptions, setModeloOptions] = useState([
+    "GentleMax Pro","GentleLase","GentleYAG","Soprano ICE","Soprano Titanium","LightSheer Duet","LightSheer Desire","Elite+","Elite iQ","Icon","PicoSure","PicoWay","PicoPlus","Discovery Pico","StarWalker","QX Max","Thunder MT","Motus AX","Motus AY","Clarity","Clarity II","Excel V","Xeo","Genesis","Harmony XL Pro","Quanta Q-Plus","Primelase HR","Milesman Blauman","SP Dynamis","CO2RE","SmartXide Touch","Nordlys","M22"
+  ]);
   const [produto, setProduto] = useState({
     tipo: "produto", // produto ou servico
     nome: "",
@@ -193,13 +204,13 @@ export default function AdicionarProduto() {
         </Button>
 
         <Card className="border-none shadow-2xl">
-          <CardContent className="p-8">
+          <CardContent className="p-8 space-y-2">
             <div className="mb-6">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              <h1 className="text-3xl font-bold text-gray-900 mb-1">
                 Adicionar Produto/Serviço
               </h1>
               <p className="text-gray-600">
-                Preencha as informações abaixo para adicionar um novo item
+                Complemente com marca, tipo e modelo (quando for Equipamentos) para melhorar a busca.
               </p>
               <div className="mt-4 flex flex-wrap gap-3">
                 <Button
@@ -288,13 +299,42 @@ export default function AdicionarProduto() {
 
                 <div>
                   <Label htmlFor="marca">Marca</Label>
-                  <Input
+                  <Autocomplete
                     id="marca"
                     value={produto.marca}
-                    onChange={(e) => setProduto({ ...produto, marca: e.target.value })}
-                    placeholder="Nome da marca"
+                    onChange={(v) => setProduto({ ...produto, marca: v })}
+                    options={marcaOptions}
+                    onCreateOption={(v)=> setMarcaOptions((prev)=> [v, ...prev])}
+                    placeholder="Selecione ou digite a marca"
                   />
+                  <p className="text-xs text-gray-500 mt-1">Sugestões populares e opção de adicionar sua marca</p>
                 </div>
+
+                {produto.categoria === 'Equipamentos' && (
+                  <div className="md:col-span-2 grid md:grid-cols-2 gap-4 mt-2">
+                    <div>
+                      <Label htmlFor="tipo_laser">Tipo de Laser</Label>
+                      <Autocomplete
+                        id="tipo_laser"
+                        value={produto.tipo_laser || ""}
+                        onChange={(v) => setProduto({ ...produto, tipo_laser: v })}
+                        options={tipoLaserOptions}
+                        placeholder="Selecione ou digite o tipo (ex: Alexandrite)"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="modelo">Modelo</Label>
+                      <Autocomplete
+                        id="modelo"
+                        value={produto.modelo || ""}
+                        onChange={(v) => setProduto({ ...produto, modelo: v })}
+                        options={modeloOptions}
+                        onCreateOption={(v)=> setModeloOptions((prev)=> [v, ...prev])}
+                        placeholder="Selecione ou digite o modelo"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Fornecedor e Oferta */}
@@ -545,6 +585,7 @@ export default function AdicionarProduto() {
 
               {/* Botões */}
               <div className="flex gap-4 pt-6 border-t">
+                <p className="text-xs text-gray-500 -mt-4 mb-2">Dica: quanto mais completo, maior a exposição nas buscas ✨</p>
                 <Button
                   type="button"
                   variant="outline"
