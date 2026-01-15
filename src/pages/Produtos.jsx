@@ -580,14 +580,12 @@ export default function Produtos() {
               </div>
             </div>
 
-            {/* Banner Informativo - apenas para produtos */}
+            {/* Banner Informativo - apenas para produtos (imagens bem-estar) */}
             {tipoBusca === 'produtos' && (
               <Card className="mb-8 border-none shadow-lg bg-gradient-to-r from-[#F7D426] to-[#FFE066]">
                 <CardContent className="p-6 md:p-8">
                   <div className="flex flex-col md:flex-row items-center gap-6">
-                    <div className="w-16 h-16 bg-[#2C2C2C] rounded-2xl flex items-center justify-center flex-shrink-0">
-                      <Award className="w-8 h-8 text-[#F7D426]" />
-                    </div>
+                    <img src="https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?q=80&w=640&auto=format&fit=crop" alt="Bem-estar" className="w-24 h-24 rounded-2xl object-cover flex-shrink-0" />
                     <div className="flex-1 text-center md:text-left">
                       <h2 className="text-2xl font-bold text-[#2C2C2C] mb-2">
                         Como Funciona o Sistema de Pontos?
@@ -944,8 +942,10 @@ export default function Produtos() {
 
           {/* Sidebar - Carrinho */}
           <div className="lg:col-span-1">
+            {/* Fixar cartões durante o scroll */}
+            <div className="lg:sticky lg:top-24 space-y-6">
             {user && (
-              <Card className="mb-6 border-2 border-yellow-200 shadow-xl">
+              <Card className="border-2 border-yellow-200 shadow-xl">
                 <CardHeader className="bg-gradient-to-r from-yellow-400 to-amber-500 text-[#2C2C2C]">
                   <CardTitle className="flex items-center gap-2">
                     <Star className="w-5 h-5" />
@@ -973,7 +973,7 @@ export default function Produtos() {
                 </CardContent>
               </Card>
             )}
-            <Card className="sticky top-24 border-2 border-pink-200 shadow-xl">
+            <Card className="border-2 border-pink-200 shadow-xl">
               <CardHeader className="bg-gradient-to-r from-pink-600 to-rose-600 text-white">
                 <CardTitle className="flex items-center gap-2">
                   <ShoppingCart className="w-5 h-5" />
@@ -1078,6 +1078,7 @@ export default function Produtos() {
                 )}
               </CardContent>
             </Card>
+            </div>
           </div>
         </div>
       </div>
