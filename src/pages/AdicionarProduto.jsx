@@ -28,6 +28,10 @@ const categorias = [
   "Serviços para Pacientes",
   "Serviços Contratáveis",
   "Produtos para Pacientes",
+  "IA",
+  "Serviços",
+  "Serviços de IA",
+  "Mídia e Marketing",
   "Outros"
 ];
 
