@@ -268,7 +268,10 @@ export default function Mapa() {
       const cid = p.get('cidade');
       const aba = p.get('aba');
       if (cat) setCategoria(cat);
-      if (cid) setBuscaCidade(cid);
+      if (cid) {
+        setCidade(cid);
+        setBuscaCidade(cid);
+      }
       if (aba) setAbaSelecionada(aba);
     })();
   },[]);
