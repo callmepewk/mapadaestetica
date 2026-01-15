@@ -7,7 +7,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Star, Check, ArrowRight, Shield, Upload, Loader2 } from "lucide-react";
+import { Star, Check, ArrowRight, Shield, Upload, Loader2, MessageCircle } from "lucide-react";
+import ChatPedido from "../components/chat/ChatPedido";
 
 const CATALOGO = [
   { id: "kit-skincare", nome: "Kit Skincare Premium", pontos: 2500, img: "https://images.unsplash.com/photo-1556229010-aa3f7ff66b53?q=80&w=1200&auto=format&fit=crop" },
@@ -34,6 +35,9 @@ export default function HubPontos() {
 
   const [mostrarSelo, setMostrarSelo] = useState(false);
   const [bulkAtualizando, setBulkAtualizando] = useState(false);
+  const [pedidos, setPedidos] = useState([]);
+  const [produtosMeus, setProdutosMeus] = useState([]);
+  const [pedidoChatId, setPedidoChatId] = useState(null);
 
   const itemSelecionado = useMemo(() => CATALOGO.find(i => i.id === selecionado) || CATALOGO[0], [selecionado]);
 
@@ -50,6 +54,20 @@ export default function HubPontos() {
       }
     })();
   }, []);
+
+  useEffect(() => {
+    if (!user?.email) return;
+    (async () => {
+      const meus = await base44.entities.Produto.filter({ created_by: user.email }, '-created_date', 200);
+      setProdutosMeus(meus);
+      const all = await base44.entities.PedidoProduto.list('-created_date', 200);
+      setPedidos(all);
+    })();
+    const unsub = base44.entities.PedidoProduto.subscribe((e) => {
+      setPedidos(prev => [e.data, ...prev].slice(0,200));
+    });
+    return () => unsub?.();
+  }, [user]);
 
   if (loading) return <div className="p-6 text-center">Carregando...</div>;
   const isAdmin = user?.role === 'admin';
@@ -193,6 +211,48 @@ export default function HubPontos() {
                 Finalizar Atendimento e Creditar Pontos do Plano
               </Button>
             </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Pedidos da Loja de Pontos */}
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold mb-2">Pedidos da Loja de Pontos</h2>
+          <p className="text-gray-600 mb-4">Aceite pedidos de produtos que você cadastrou e converse com o cliente pelo chat.</p>
+          <div className="grid md:grid-cols-2 gap-4">
+            {(() => {
+              const ids = new Set(produtosMeus.map(p => p.id));
+              const mapa = Object.fromEntries(produtosMeus.map(p => [p.id, p]));
+              const meusPedidos = pedidos.filter(p => ids.has(p.produto_id));
+              if (meusPedidos.length === 0) return <div className="text-gray-500">Nenhum pedido para seus produtos ainda.</div>;
+              return meusPedidos.map(p => (
+                <Card key={p.id} className="border">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <h3 className="font-semibold">{p.produto_nome}</h3>
+                        <div className="text-xs text-gray-500">Qtd: {p.quantidade} • Cliente: {p.usuario_email}</div>
+                      </div>
+                      <Badge variant="outline">{p.status_pedido}</Badge>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={async ()=>{ await base44.entities.PedidoProduto.update(p.id, { status_pedido: 'processando' }); }} className="bg-green-600 hover:bg-green-700 text-white">Aceitar</Button>
+                      <Button size="sm" variant="outline" onClick={async ()=>{ await base44.entities.PedidoProduto.update(p.id, { status_pedido: 'cancelado' }); }}>Recusar</Button>
+                      <Button size="sm" variant="outline" onClick={()=>setPedidoChatId(p.id)} className="flex items-center gap-1"><MessageCircle className="w-4 h-4"/> Chat</Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ));
+            })()}
+          </div>
+        </div>
+
+        {/* Chat Modal */}
+        <Dialog open={!!pedidoChatId} onOpenChange={(o)=>!o && setPedidoChatId(null)}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Chat do Pedido</DialogTitle>
+            </DialogHeader>
+            {pedidoChatId && <ChatPedido pedidoId={pedidoChatId} />}
           </DialogContent>
         </Dialog>
       </div>

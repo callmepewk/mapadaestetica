@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import ChatPedido from "../components/chat/ChatPedido";
 import { Badge } from "@/components/ui/badge";
 import {
   Star,
@@ -45,6 +47,9 @@ export default function LojaPontos() {
   const [categoriaSelecionada, setCategoriaSelecionada] = useState("Todos");
   const [mostrarTrocaBeautyCoins, setMostrarTrocaBeautyCoins] = useState(false);
   const [quantidadeBeautyCoins, setQuantidadeBeautyCoins] = useState(1);
+  const [quantidades, setQuantidades] = useState({});
+  const [pedidoChatId, setPedidoChatId] = useState(null);
+  const [mostraAviso, setMostraAviso] = useState(true);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -89,21 +94,22 @@ export default function LojaPontos() {
     return pontosA - pontosB;
   });
 
-  const handleResgatarProduto = async (produto) => {
+  const handleResgatarProduto = async (produto, quantidade = 1) => {
     if (!user) return;
 
-    if (user.pontos_acumulados < produto.pontos_necessarios) {
+    const custo = (produto.pontos_necessarios || 0) * quantidade;
+    if (user.pontos_acumulados < custo) {
       alert(`Você precisa de ${produto.pontos_necessarios} pontos para resgatar este produto. Você tem apenas ${user.pontos_acumulados} pontos.`);
       return;
     }
 
-    if (produto.estoque <= 0) {
+    if (produto.estoque <= 0 || quantidade > produto.estoque) {
       alert("Produto esgotado!");
       return;
     }
 
     const confirmar = window.confirm(
-      `Deseja resgatar "${produto.nome}" por ${produto.pontos_necessarios} pontos?\n\nSeus pontos atuais: ${user.pontos_acumulados}\nSeus pontos após resgate: ${user.pontos_acumulados - produto.pontos_necessarios}`
+      `Deseja resgatar "${produto.nome}" em quantidade ${quantidade} por ${custo} pontos?\n\nSeus pontos atuais: ${user.pontos_acumulados}\nSeus pontos após resgate: ${user.pontos_acumulados - custo}`
     );
 
     if (!confirmar) return;
@@ -111,28 +117,28 @@ export default function LojaPontos() {
     try {
       // Atualizar pontos do usuário
       await base44.auth.updateMe({
-        pontos_acumulados: user.pontos_acumulados - produto.pontos_necessarios
+        pontos_acumulados: user.pontos_acumulados - custo
       });
 
       // Criar pedido
-      await base44.entities.PedidoProduto.create({
+      const created = await base44.entities.PedidoProduto.create({
         usuario_email: user.email,
         produto_id: produto.id,
         produto_nome: produto.nome,
         tipo: 'produto',
-        quantidade: 1,
-        valor_total: 0, // Resgate com pontos
-        status_pedido: 'processando'
+        quantidade,
+        valor_total: 0,
+        status_pedido: 'aguardando_pagamento'
       });
+      setPedidoChatId(created.id);
 
       // Atualizar estoque
       await base44.entities.Produto.update(produto.id, {
-        estoque: produto.estoque - 1
+        estoque: produto.estoque - quantidade
       });
 
-      alert(`✅ Produto "${produto.nome}" resgatado com sucesso!\n\nEntraremos em contato para organizar a entrega.`);
-      
-      window.location.reload();
+      alert(`✅ Pedido criado! Em até 48 horas um estabelecimento aceitará seu pedido e seguirá com a distribuição. Você já pode conversar pelo chat.`);
+      setUser(await base44.auth.me());
     } catch (error) {
       console.error("Erro ao resgatar produto:", error);
       alert("Erro ao resgatar produto. Tente novamente.");
@@ -200,6 +206,11 @@ export default function LojaPontos() {
 
         {/* Header */}
         <div className="mb-8">
+          {mostraAviso && (
+            <div className="mb-4 p-3 bg-pink-50 border border-pink-200 rounded-lg text-pink-800 text-sm">
+              Após solicitar um resgate, um estabelecimento parceiro aceitará seu pedido em até 48 horas. Tudo é acompanhado por chat dentro do site.
+            </div>
+          )}
           <Badge className="mb-4 bg-[#F7D426] text-[#2C2C2C] font-bold border-2 border-[#2C2C2C]">
             <Star className="w-4 h-4 mr-2 fill-[#2C2C2C]" />
             Loja de Pontos
@@ -555,21 +566,36 @@ export default function LojaPontos() {
                   )}
                 </div>
 
-                <Button
-                  onClick={() => handleResgatarProduto(produto)}
-                  disabled={!user || user.pontos_acumulados < produto.pontos_necessarios || produto.estoque <= 0}
-                  className={`w-full ${
-                    produto.nome && produto.nome.includes("Beauty Box")
-                      ? "bg-gradient-to-r from-[#F7D426] to-[#FFE066] text-[#2C2C2C] hover:from-[#E5C215] hover:to-[#F7D426] border-2 border-[#2C2C2C]"
-                      : "bg-[#2C2C2C] text-[#F7D426] hover:bg-[#3A3A3A]"
-                  }`}
-                >
-                  {user && user.pontos_acumulados < produto.pontos_necessarios 
-                    ? `Faltam ${produto.pontos_necessarios - user.pontos_acumulados} pontos`
-                    : produto.estoque <= 0
-                    ? "Esgotado"
-                    : "Resgatar Agora"}
-                </Button>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-600">Quantidade</span>
+                    <div className="flex items-center border rounded-lg">
+                      <button className="px-2 py-1" onClick={() => setQuantidades(prev=>({ ...prev, [produto.id]: Math.max(1, (prev[produto.id]||1)-1) }))}>-</button>
+                      <span className="px-2 min-w-6 text-center">{quantidades[produto.id] || 1}</span>
+                      <button className="px-2 py-1" onClick={() => setQuantidades(prev=>({ ...prev, [produto.id]: Math.min(produto.estoque, (prev[produto.id]||1)+1) }))}>+</button>
+                    </div>
+                  </div>
+
+                  <Button
+                    onClick={() => handleResgatarProduto(produto, quantidades[produto.id] || 1)}
+                    disabled={!user || ((user.pontos_acumulados||0) < ((produto.pontos_necessarios||0) * (quantidades[produto.id]||1))) || produto.estoque <= 0 || (quantidades[produto.id]||1) > produto.estoque}
+                    className={`w-full ${
+                      produto.nome && produto.nome.includes("Beauty Box")
+                        ? "bg-gradient-to-r from-[#F7D426] to-[#FFE066] text-[#2C2C2C] hover:from-[#E5C215] hover:to-[#F7D426] border-2 border-[#2C2C2C]"
+                        : "bg-[#2C2C2C] text-[#F7D426] hover:bg-[#3A3A3A]"
+                    }`}
+                  >
+                    {(() => {
+                      const q = quantidades[produto.id] || 1;
+                      const custo = (produto.pontos_necessarios||0) * q;
+                      if (!user) return 'Entrar para Resgatar';
+                      if (produto.estoque <= 0 || q > produto.estoque) return 'Esgotado';
+                      if ((user.pontos_acumulados||0) < custo) return `Faltam ${custo - (user.pontos_acumulados||0)} pontos`;
+                      return `Resgatar (${custo} pts)`;
+                    })()}
+                  </Button>
+                  <p className="text-xs text-gray-500">Após o resgate, um estabelecimento parceiro aceitará seu pedido em até 48 horas e seguirá com a distribuição via chat.</p>
+                </div>
               </CardContent>
             </Card>
           ))}
@@ -627,6 +653,16 @@ export default function LojaPontos() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Modal Chat do Pedido */}
+        <Dialog open={!!pedidoChatId} onOpenChange={(o)=>!o && setPedidoChatId(null)}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Chat do Pedido</DialogTitle>
+            </DialogHeader>
+            {pedidoChatId && <ChatPedido pedidoId={pedidoChatId} />}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

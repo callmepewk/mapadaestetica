@@ -670,17 +670,17 @@ export default function Inicio() {
           )}
 
           <section className="py-8 bg-white">
-            <div className="max-w-7xl mx-auto px-4">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Estatísticas em tempo real</h2>
-              <HomeRealtimeStats />
+            <div className="max-w-7xl mx-auto px-4 text-center">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pink-100 text-pink-700 text-xs font-semibold mb-3">Novidade</div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Radares de Tendências e Frequência</h2>
+              <p className="text-gray-600 mb-6">Veja as tendências do mercado e relatórios dos seus anúncios em tempo real.</p>
+              <a href={createPageUrl("Radares")}>
+                <Button className="bg-pink-600 hover:bg-pink-700 text-white">Acessar Radares</Button>
+              </a>
             </div>
           </section>
 
-          <section id="aesthetic-radar" className="py-8 bg-white">
-            <div className="max-w-7xl mx-auto px-4">
-              <AestheticRadar />
-            </div>
-          </section>
+          <section className="py-0"></section>
 
           <section id="seo-stats"><SEOStats /></section>
 
