@@ -103,6 +103,12 @@ export default function AdicionarProduto() {
         return;
       }
 
+      // Preço promocional não pode ser maior que o preço
+      if (produto.preco > 0 && produto.preco_promocional > produto.preco) {
+        alert("Preço promocional não pode ser maior que o preço.");
+        setLoading(false);
+        return;
+      }
       // Se não tem preço, precisa ter preco_texto
       if (produto.preco === 0 && !produto.preco_texto && produto.pontos_necessarios === 0) {
         const confirma = window.confirm(
@@ -302,7 +308,7 @@ export default function AdicionarProduto() {
                 </div>
                 <div>
                   <Label htmlFor="tipo_oferta">Tipo de Oferta</Label>
-                  <Select value={produto.tipo_oferta} onValueChange={(v)=>setProduto({ ...produto, tipo_oferta: v })}>
+                  <Select value={produto.tipo_oferta} onValueChange={(v)=>setProduto({ ...produto, tipo_oferta: v, aceitar_orcamento: v === 'sob_demanda' ? true : produto.aceitar_orcamento })}>
                     <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="unidade">Unidade</SelectItem>
@@ -514,7 +520,7 @@ export default function AdicionarProduto() {
                   <Label htmlFor="status">Status</Label>
                   <Select
                     value={produto.status}
-                    onValueChange={(value) => setProduto({ ...produto, status: value })}
+                    onValueChange={(value) => setProduto({ ...produto, status: value, ...(value === 'esgotado' ? { estoque: 0 } : {}) })}
                   >
                     <SelectTrigger className="w-32">
                       <SelectValue />
