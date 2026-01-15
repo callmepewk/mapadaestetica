@@ -151,6 +151,19 @@ export default function HubPontos() {
         </div>
 
         <div className="flex items-center gap-3 mb-6">
+         <div className="grid md:grid-cols-2 gap-3 w-full">
+           <Input placeholder="Pesquisar no catálogo..." />
+           <Select defaultValue="todos">
+             <SelectTrigger><SelectValue placeholder="Filtrar" /></SelectTrigger>
+             <SelectContent>
+               <SelectItem value="todos">Todos</SelectItem>
+               <SelectItem value="servicos">Serviços</SelectItem>
+               <SelectItem value="produtos">Produtos</SelectItem>
+               <SelectItem value="eventos">Eventos/Convenções</SelectItem>
+               <SelectItem value="dermafellow">Dermafellow</SelectItem>
+             </SelectContent>
+           </Select>
+         </div>
           <Shield className="w-4 h-4 text-pink-600"/>
           <span className="text-sm">Selo do Clube nas minhas postagens</span>
           <Button size="sm" disabled={bulkAtualizando} onClick={() => handleToggleSelo(!mostrarSelo)} className={`${mostrarSelo ? 'bg-pink-600 text-white hover:bg-pink-700' : 'bg-white text-pink-600 border border-pink-600 hover:bg-pink-50'}`}>
@@ -160,6 +173,7 @@ export default function HubPontos() {
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+         {/* TODO: aplicar filtro acima no catálogo ao conectar categorias */}
           {CATALOGO.map(item => (
             <Card key={item.id} className="border shadow-md hover:shadow-lg transition-all">
               <div className="h-40 rounded-t-xl overflow-hidden bg-gray-100">

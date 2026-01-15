@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -450,8 +449,9 @@ export default function CalculadoraLaser() {
         </Button>
 
         <div className="text-center mb-8">
-          <Badge className="mb-4 bg-[#F7D426] text-[#2C2C2C] font-bold">
-            Desenvolvido por Dr. Jauru Nunes de Freitas
+          <p className="text-sm text-gray-600 max-w-2xl mx-auto mb-4">Para o cálculo completo, preencha as 3 etapas: Investimento, Operação e Receita.</p>
+          <Badge className="mb-2 bg-[#F7D426] text-[#2C2C2C] font-bold">
+            Desenvolvido por Dr. Jauru Nunes de Freitas • Importante: complete as 3 etapas (Investimento, Operação, Receita)
           </Badge>
           <h1 className="text-3xl md:text-4xl font-bold text-[#2C2C2C] mb-3">
             Calculadora de Viabilidade de Laser
