@@ -40,7 +40,7 @@ import TermosCondicoes from "../components/home/TermosCondicoes";
 import Tutorial from "../components/home/Tutorial";
 import { CardContent } from "@/components/ui/card";
 import CalculadoraLaserSection from "../components/home/CalculadoraLaserSection";
-import SEOStats from "../components/home/SEOStats";
+
 import OnboardingModal from "../components/home/OnboardingModal";
 import LoginPromptModal from "../components/home/LoginPromptModal";
 import {
@@ -418,8 +418,7 @@ export default function Inicio() {
           {/* Banner Rotativo Topo */}
           <BannerRotativo posicao="home_topo" />
 
-          {/* Curiosidades do mês */}
-          <CuriosidadesMes />
+
 
           {/* Categorias */}
           <section className="py-12 sm:py-16 bg-white">
@@ -449,13 +448,13 @@ export default function Inicio() {
             <div className="max-w-7xl mx-auto px-4 py-2 overflow-x-auto">
               <div className="flex gap-2 text-xs md:text-sm">
                 {[
-                  {id:'aesthetic-radar',label:'Aesthetic Radar'},
-                  {id:'meus-anuncios',label:'Meus Anúncios'},
-                  {id:'seo-stats',label:'SEO'},
-                  {id:'tutorial',label:'Tutoriais'},
-                ].map(i => (
-                  <button key={i.id} onClick={()=>document.getElementById(i.id)?.scrollIntoView({behavior:'smooth'})} className="px-3 py-1 rounded-full border data-[active=true]:bg-pink-600 data-[active=true]:text-white hover:bg-pink-50" data-active={false}>{i.label}</button>
-                ))}
+                          {id:'aesthetic-radar',label:'Aesthetic Radar'},
+                          {id:'meus-anuncios',label:'Meus Anúncios'},
+                          {id:'curiosidades-mes',label:'Curiosidades'},
+                          {id:'tutorial',label:'Tutoriais'},
+                        ].map(i => (
+                          <button key={i.id} onClick={()=>document.getElementById(i.id)?.scrollIntoView({behavior:'smooth'})} className="px-3 py-1 rounded-full border data-[active=true]:bg-pink-600 data-[active=true]:text-white hover:bg-pink-50" data-active={false}>{i.label}</button>
+                        ))}
               </div>
             </div>
           </div>
@@ -685,7 +684,18 @@ export default function Inicio() {
 
           <section className="py-0"></section>
 
-          <section id="seo-stats"><SEOStats /></section>
+          <section id="curiosidades-mes" className="py-12 bg-white">
+            <div className="max-w-7xl mx-auto px-4">
+              <div className="overflow-hidden rounded-2xl shadow-lg mb-6">
+                <img
+                  src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=1600&q=80"
+                  alt="Inspiração em estética e bem-estar"
+                  className="w-full h-64 md:h-80 object-cover"
+                />
+              </div>
+              <CuriosidadesMes />
+            </div>
+          </section>
 
           {/* Botão de Comparação */}
           <div className="py-8 bg-white">
