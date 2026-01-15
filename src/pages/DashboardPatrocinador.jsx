@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -57,6 +56,11 @@ export default function DashboardPatrocinador() {
   const [periodoRelatorio, setPeriodoRelatorio] = useState("tempo_real");
   
   const [paginaBanners, setPaginaBanners] = useState(1);
+  const [destaqueNome, setDestaqueNome] = useState("");
+  const [destaqueDesc, setDestaqueDesc] = useState("");
+  const [destaqueFile, setDestaqueFile] = useState(null);
+  const [publicandoDestaque, setPublicandoDestaque] = useState(false);
+  const [destaqueAviso, setDestaqueAviso] = useState("");
   const [paginaProdutos, setPaginaProdutos] = useState(1);
   const [paginaPosts, setPaginaPosts] = useState(1);
   const [paginaAnuncios, setPaginaAnuncios] = useState(1);
@@ -407,6 +411,46 @@ www.mapadaestetica.com.br
   const totalPaginasPosts = Math.ceil(meusPosts.length / ITEMS_POR_PAGINA);
   const totalPaginasAnuncios = Math.ceil(meusAnuncios.length / ITEMS_POR_PAGINA);
 
+  const handlePublicarDestaque = async () => {
+    if (!user) return;
+    try {
+      setPublicandoDestaque(true);
+      setDestaqueAviso("");
+      const last = user.patro_home_ultimo_update ? new Date(user.patro_home_ultimo_update) : null;
+      const now = new Date();
+      if (last && (now - last) / (1000*60*60*24) < 30) {
+        setDestaqueAviso("Você já atualizou este destaque nos últimos 30 dias.");
+        return;
+      }
+      let imgUrl = "";
+      if (destaqueFile) {
+        const up = await base44.integrations.Core.UploadFile({ file: destaqueFile });
+        imgUrl = up.file_url;
+      }
+      const nome = destaqueNome || user.nome_empresa || user.full_name;
+      const desc = destaqueDesc || "";
+      await base44.auth.updateMe({
+        patro_home_nome: nome,
+        patro_home_desc: desc,
+        patro_home_img: imgUrl,
+        patro_home_ultimo_update: now.toISOString(),
+      });
+      await base44.entities.Banner.create({
+        titulo: nome,
+        descricao: desc,
+        nome_empresa: nome,
+        imagem_banner: imgUrl,
+        tipo_midia: 'imagem',
+        posicao: 'home_meio',
+        status: 'ativo',
+        plano_patrocinador: 'ouro'
+      });
+      setDestaqueAviso("Destaque publicado! Pode levar alguns minutos para aparecer para todos.");
+    } catch (e) {
+      setDestaqueAviso("Erro ao publicar: " + (e?.message || ""));
+    } finally { setPublicandoDestaque(false); }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
       <div className="max-w-7xl mx-auto px-4">
@@ -544,6 +588,27 @@ www.mapadaestetica.com.br
             </CardContent>
           </Card>
         </div>
+
+        {/* Destaque na Home */}
+        <section className="py-6 bg-white">
+          <Card className="border-2 border-purple-200">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-bold">Definir destaque na Home (1 vez/mês)</h3>
+                <Button size="sm" onClick={handlePublicarDestaque} disabled={publicandoDestaque}>
+                  {publicandoDestaque ? 'Publicando...' : 'Publicar na Home'}
+                </Button>
+              </div>
+              <p className="text-sm text-gray-600 mb-3">Escolha uma imagem, nome de exibição e descrição para aparecer na seção de patrocinadores da página inicial.</p>
+              <div className="grid md:grid-cols-3 gap-3">
+                <Input placeholder="Nome de exibição" value={destaqueNome} onChange={e=>setDestaqueNome(e.target.value)} />
+                <Input placeholder="Descrição curta" value={destaqueDesc} onChange={e=>setDestaqueDesc(e.target.value)} />
+                <input type="file" accept="image/*" onChange={e=> setDestaqueFile(e.target.files?.[0]||null)} />
+              </div>
+              {destaqueAviso && <p className="text-xs text-gray-500 mt-2">{destaqueAviso}</p>}
+            </CardContent>
+          </Card>
+        </section>
 
         <Tabs defaultValue="banners" className="w-full">
           <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 mb-6 h-auto gap-1">

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -2578,6 +2579,12 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                       <p className="text-gray-600">Gerencie perfis, produtos e versões da plataforma</p>
                     </div>
                     <div className="flex gap-2">
+                      <Button onClick={() => navigate(createPageUrl("CriacaoBanner"))} className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+                        + Novo Banner
+                      </Button>
+                      <Button onClick={() => navigate(createPageUrl("ArtigoBlog"))} className="bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700">
+                        + Novo Post
+                      </Button>
                       <Button
                         onClick={() => setMostrarModalNotificacao(true)}
                         className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"

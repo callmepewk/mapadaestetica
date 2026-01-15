@@ -51,6 +51,7 @@ import {
 } from "@/components/ui/dialog";
 import BannerRotativo from "../components/banners/BannerRotativo";
 import PatrocinadoresGrid from "../components/home/PatrocinadoresGrid";
+import CuriosidadesMes from "../components/home/CuriosidadesMes";
 import SecaoTutoriais from "../components/home/SecaoTutoriais";
 import SeletorTipoUsuario from "../components/home/SeletorTipoUsuario";
 
@@ -416,6 +417,9 @@ export default function Inicio() {
 
           {/* Banner Rotativo Topo */}
           <BannerRotativo posicao="home_topo" />
+
+          {/* Curiosidades do mês */}
+          <CuriosidadesMes />
 
           {/* Categorias */}
           <section className="py-12 sm:py-16 bg-white">
