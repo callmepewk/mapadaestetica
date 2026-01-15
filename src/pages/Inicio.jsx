@@ -53,7 +53,7 @@ import BannerRotativo from "../components/banners/BannerRotativo";
 import PatrocinadoresGrid from "../components/home/PatrocinadoresGrid";
 import SecaoTutoriais from "../components/home/SecaoTutoriais";
 import SeletorTipoUsuario from "../components/home/SeletorTipoUsuario";
-import HomeRealtimeStats from "../components/analytics/HomeRealtimeStats";
+
 
 
 const categorias = [

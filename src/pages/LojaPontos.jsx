@@ -145,6 +145,23 @@ export default function LojaPontos() {
     }
   };
 
+  const handleSolicitarOrcamento = async (produto) => {
+    if (!user) return;
+    try {
+      const created = await base44.entities.PedidoProduto.create({
+        usuario_email: user.email,
+        produto_id: produto.id,
+        produto_nome: produto.nome,
+        tipo: 'produto',
+        quantidade: 1,
+        valor_total: 0,
+        status_pedido: 'processando'
+      });
+      setPedidoChatId(created.id);
+      alert('Solicitação de orçamento enviada! Um fornecedor entrará em contato pelo chat.');
+    } catch (e) { alert('Erro ao solicitar orçamento.'); }
+  };
+
   const handleTrocarBeautyCoins = async () => {
     if (!user) return;
 
@@ -566,36 +583,53 @@ export default function LojaPontos() {
                   )}
                 </div>
 
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">Quantidade</span>
-                    <div className="flex items-center border rounded-lg">
-                      <button className="px-2 py-1" onClick={() => setQuantidades(prev=>({ ...prev, [produto.id]: Math.max(1, (prev[produto.id]||1)-1) }))}>-</button>
-                      <span className="px-2 min-w-6 text-center">{quantidades[produto.id] || 1}</span>
-                      <button className="px-2 py-1" onClick={() => setQuantidades(prev=>({ ...prev, [produto.id]: Math.min(produto.estoque, (prev[produto.id]||1)+1) }))}>+</button>
-                    </div>
+                {produto.tipo_oferta === 'sob_demanda' ? (
+                  <div className="space-y-3">
+                    <Button onClick={() => handleSolicitarOrcamento(produto)} className="w-full bg-pink-600 hover:bg-pink-700 text-white">
+                      Solicitar Orçamento
+                    </Button>
+                    <p className="text-xs text-gray-500">Converse com o fornecedor pelo chat para definir preço e entrega.</p>
                   </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-600">Quantidade</span>
+                      <div className="flex items-center border rounded-lg">
+                        {(() => { const step = produto.tipo_oferta === 'lote' ? Math.max(1, produto.lote_minimo || 1) : 1; const min = step; return (
+                          <>
+                            <button className="px-2 py-1" onClick={() => setQuantidades(prev=>({ ...prev, [produto.id]: Math.max(min, (prev[produto.id]||min)-step) }))}>-</button>
+                            <span className="px-2 min-w-6 text-center">{quantidades[produto.id] || min}</span>
+                            <button className="px-2 py-1" onClick={() => setQuantidades(prev=>({ ...prev, [produto.id]: Math.min(produto.estoque, (prev[produto.id]||min)+step) }))}>+</button>
+                          </>
+                        ); })()}
+                      </div>
+                      {produto.tipo_oferta === 'lote' && (
+                        <span className="text-xs text-gray-500">mínimo {Math.max(1, produto.lote_minimo || 1)}</span>
+                      )}
+                    </div>
 
-                  <Button
-                    onClick={() => handleResgatarProduto(produto, quantidades[produto.id] || 1)}
-                    disabled={!user || ((user.pontos_acumulados||0) < ((produto.pontos_necessarios||0) * (quantidades[produto.id]||1))) || produto.estoque <= 0 || (quantidades[produto.id]||1) > produto.estoque}
-                    className={`w-full ${
-                      produto.nome && produto.nome.includes("Beauty Box")
-                        ? "bg-gradient-to-r from-[#F7D426] to-[#FFE066] text-[#2C2C2C] hover:from-[#E5C215] hover:to-[#F7D426] border-2 border-[#2C2C2C]"
-                        : "bg-[#2C2C2C] text-[#F7D426] hover:bg-[#3A3A3A]"
-                    }`}
-                  >
-                    {(() => {
-                      const q = quantidades[produto.id] || 1;
-                      const custo = (produto.pontos_necessarios||0) * q;
-                      if (!user) return 'Entrar para Resgatar';
-                      if (produto.estoque <= 0 || q > produto.estoque) return 'Esgotado';
-                      if ((user.pontos_acumulados||0) < custo) return `Faltam ${custo - (user.pontos_acumulados||0)} pontos`;
-                      return `Resgatar (${custo} pts)`;
-                    })()}
-                  </Button>
-                  <p className="text-xs text-gray-500">Após o resgate, um estabelecimento parceiro aceitará seu pedido em até 48 horas e seguirá com a distribuição via chat.</p>
-                </div>
+                    <Button
+                      onClick={() => handleResgatarProduto(produto, (()=>{ const step = produto.tipo_oferta === 'lote' ? Math.max(1, produto.lote_minimo || 1) : 1; return quantidades[produto.id] || step; })())}
+                      disabled={(() => { const step = produto.tipo_oferta === 'lote' ? Math.max(1, produto.lote_minimo || 1) : 1; const q = quantidades[produto.id] || step; const custo = (produto.pontos_necessarios||0) * q; return !user || ((user.pontos_acumulados||0) < custo) || produto.estoque <= 0 || q > produto.estoque; })()}
+                      className={`w-full ${
+                        produto.nome && produto.nome.includes("Beauty Box")
+                          ? "bg-gradient-to-r from-[#F7D426] to-[#FFE066] text-[#2C2C2C] hover:from-[#E5C215] hover:to-[#F7D426] border-2 border-[#2C2C2C]"
+                          : "bg-[#2C2C2C] text-[#F7D426] hover:bg-[#3A3A3A]"
+                      }`}
+                    >
+                      {(() => {
+                        const step = produto.tipo_oferta === 'lote' ? Math.max(1, produto.lote_minimo || 1) : 1;
+                        const q = quantidades[produto.id] || step;
+                        const custo = (produto.pontos_necessarios||0) * q;
+                        if (!user) return 'Entrar para Resgatar';
+                        if (produto.estoque <= 0 || q > produto.estoque) return 'Esgotado';
+                        if ((user.pontos_acumulados||0) < custo) return `Faltam ${custo - (user.pontos_acumulados||0)} pontos`;
+                        return `Resgatar (${custo} pts)`;
+                      })()}
+                    </Button>
+                    <p className="text-xs text-gray-500">Após o resgate, um estabelecimento parceiro aceitará seu pedido em até 48 horas e seguirá com a distribuição via chat.</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}
