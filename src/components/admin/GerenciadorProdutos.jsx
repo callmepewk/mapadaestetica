@@ -77,7 +77,8 @@ export default function GerenciadorProdutos() {
   }, [produtos, aba, busca]);
 
   return (
-    <Card>
+    <>
+      <Card>
       <CardHeader>
         <CardTitle>Gerenciamento de Produtos e Serviços</CardTitle>
         <p className="text-sm text-gray-500">Aprove, edite ou recuse produtos e serviços enviados por patrocinadores.</p>
