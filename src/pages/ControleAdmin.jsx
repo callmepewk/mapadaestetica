@@ -137,6 +137,7 @@ export default function ControleAdmin() {
   const [observacoes, setObservacoes] = useState("");
   const [processando, setProcessando] = useState(false);
   const [buscaProfissional, setBuscaProfissional] = useState("");
+  const [selecionadosProfissionais, setSelecionadosProfissionais] = useState([]);
   const [enviandoWhatsApp, setEnviandoWhatsApp] = useState(false);
   const [planoSelecionadoUsuario, setPlanoSelecionadoUsuario] = useState(null);
   const [mostrarModalTrocarPlano, setMostrarModalTrocarPlano] = useState(false);
@@ -2382,6 +2383,21 @@ Expirados: ${anunciosFiltrados.filter(a => a.status === 'expirado').length}
     URL.revokeObjectURL(url);
   };
 
+  const handleBulkVerificar = async (valor) => {
+    if (!selecionadosProfissionais.length) return;
+    try {
+      await Promise.all(selecionadosProfissionais.map(id => base44.entities.User.update(id, { profissional_verificado: valor })));
+      queryClient.invalidateQueries({ queryKey: ['usuarios-profissionais'] });
+      queryClient.invalidateQueries({ queryKey: ['todos-usuarios'] });
+      setSelecionadosProfissionais([]);
+      setSucesso(valor ? "Marcados como verificados!" : "Verificação removida!");
+      setTimeout(()=>setSucesso(null), 3000);
+    } catch (e) {
+      setErro("Falha ao atualizar verificação em massa.");
+      setTimeout(()=>setErro(null), 3000);
+    }
+  };
+
   const usuariosFiltrados = usuarios.filter(u => 
     !buscaProfissional || 
     u.full_name?.toLowerCase().includes(buscaProfissional.toLowerCase()) ||
@@ -3103,6 +3119,7 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                           <TableBody>
                             {usuariosFiltrados.map((u) => (
                               <TableRow key={u.id}>
+                                <TableCell><Checkbox checked={selecionadosProfissionais.includes(u.id)} onCheckedChange={()=> setSelecionadosProfissionais(prev => prev.includes(u.id)? prev.filter(x=>x!==u.id): [...prev,u.id])} /></TableCell>
                                 <TableCell>
                                   <p className="font-medium">{u.full_name}</p>
                                   <p className="text-sm text-gray-500">{u.telefone}</p>
@@ -4233,9 +4250,9 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
               <DialogDescription>Detalhes e ações para o banner.</DialogDescription>
             </DialogHeader>
             <div className="py-4 space-y-4">
-              {bannerSelecionado?.imagem_url && (
+              {(bannerSelecionado?.imagem_banner || bannerSelecionado?.imagem_url) && (
                 <img
-                  src={bannerSelecionado.imagem_url}
+                  src={bannerSelecionado.imagem_banner || bannerSelecionado.imagem_url}
                   alt={bannerSelecionado.titulo}
                   className="w-full h-auto rounded-lg object-cover max-h-[300px]"
                 />
@@ -4250,6 +4267,14 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
               </p>
               <p><strong>Visualizações:</strong> {bannerSelecionado?.metricas?.visualizacoes || 0}</p>
               <p><strong>Cliques:</strong> {bannerSelecionado?.metricas?.cliques || 0}</p>
+              <div className="mt-2">
+                <p className="font-semibold mb-2">Prévia:</p>
+                <div className="border rounded overflow-hidden">
+                  {(bannerSelecionado?.imagem_banner || bannerSelecionado?.imagem_url) && (
+                    <img src={bannerSelecionado.imagem_banner || bannerSelecionado.imagem_url} alt="Prévia do banner" className="w-full h-auto" />
+                  )}
+                </div>
+              </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setMostrarDetalhesBanner(false)}>
@@ -4292,6 +4317,12 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
               <p><strong>Descrição:</strong> {postSelecionado?.descricao_curta}</p>
               <p><strong>Visualizações:</strong> {postSelecionado?.visualizacoes || 0}</p>
               <p><strong>Curtidas:</strong> {postSelecionado?.total_curtidas || 0}</p>
+              <div className="mt-4">
+                <p className="font-semibold mb-2">Prévia Completa:</p>
+                <div className="w-full rounded border overflow-hidden">
+                  <iframe src={`${createPageUrl("Blog")}?artigo=${postSelecionado?.id}&preview=1`} className="w-full h-[60vh] bg-white" />
+                </div>
+              </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setMostrarDetalhesPost(false)}>

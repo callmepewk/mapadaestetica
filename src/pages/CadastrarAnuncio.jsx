@@ -986,6 +986,51 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
     }
   };
 
+  // Nova função: Sugerir Pontos/Beauty Coins com IA
+  const handleSugerirRecompensasIA = async () => {
+    if (!formData.titulo || !formData.descricao) {
+      setErro("Preencha t\u00edtulo e descri\u00e7\u00e3o para sugerir recompensas!");
+      setTimeout(()=>setErro(null), 3000);
+      return;
+    }
+    const imagens = [
+      formData.imagem_principal,
+      ...(formData.imagens_galeria || [])
+    ].filter(Boolean);
+    const prompt = `Sugira quantidades de pontos e Beauty Coins justas para este anúncio com base no título, descrição, categoria, faixa de preço e tipo de estabelecimento.
+    Retorne números inteiros, considerando o valor percebido e engajamento.
+    Dados:
+    Título: ${formData.titulo}
+    Categoria: ${formData.categoria || '-'}
+    Subcategoria: ${formData.subcategoria || '-'}
+    Faixa de preço: ${formData.faixa_preco || '-'}
+    Tipo de estabelecimento: ${formData.tipo_estabelecimento || '-'}
+    Descrição: ${formData.descricao?.slice(0, 800) || '-'}
+    Regra sugerida: pontos ~ preço (1 real = 1 ponto), Beauty Coins entre 0 e 10 por anúncio comum.`;
+    try {
+      const res = await base44.integrations.Core.InvokeLLM({
+        prompt,
+        add_context_from_internet: false,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            pontos: { type: "number" },
+            beauty_coins: { type: "number" }
+          }
+        },
+        file_urls: imagens.length ? imagens : undefined
+      });
+      const pontos = Math.max(0, Math.round(res.pontos || 0));
+      const bc = Math.max(0, Math.round(res.beauty_coins || 0));
+      setFormData(prev => ({ ...prev, pontos_ganhos: pontos, beauty_coins_recompensa: bc }));
+      setSucesso("Sugest\u00e3o aplicada!");
+      setTimeout(()=>setSucesso(null), 2000);
+    } catch (e) {
+      console.error(e);
+      setErro("N\u00e3o foi poss\u00edvel sugerir recompensas agora.");
+      setTimeout(()=>setErro(null), 3000);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -1014,6 +1059,8 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
         imagens_galeria: formData.imagens_galeria,
         amenidades: formData.amenidades,
         icone_mapa: formData.icone_mapa,
+        pontos_ganhos: formData.pontos_ganhos || 0,
+        beauty_coins_recompensa: formData.beauty_coins_recompensa || 0,
         verificacao_autoridade: {
           licenca_sanitaria: {
             possui: !!documentosVerificacao.licenca_sanitaria,
@@ -1320,6 +1367,48 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
                     Ocultar anúncio após a venda
                   </Label>
                 </div>
+              </div>
+
+              {/* Recompensas (Pontos e Beauty Coins) */}
+              <div className="rounded-lg border-2 border-yellow-200 bg-yellow-50 p-4 sm:p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <Label className="text-sm font-semibold text-yellow-900">Recompensas do Anúncio</Label>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={handleSugerirRecompensasIA}
+                    className="text-xs sm:text-sm h-8 px-2 sm:h-auto sm:px-4 border-yellow-300 text-yellow-800"
+                  >
+                    <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                    Sugerir com IA
+                  </Button>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
+                  <div>
+                    <Label className="text-sm">Pontos que o cliente ganha</Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      value={formData.pontos_ganhos || 0}
+                      onChange={(e) => handleInputChange("pontos_ganhos", parseInt(e.target.value) || 0)}
+                      className="h-10 sm:h-11 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-sm">Beauty Coins de recompensa</Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      value={formData.beauty_coins_recompensa || 0}
+                      onChange={(e) => handleInputChange("beauty_coins_recompensa", parseInt(e.target.value) || 0)}
+                      className="h-10 sm:h-11 text-sm"
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-yellow-800 mt-2">
+                  Dica: use a IA para estimar automaticamente com base no conteúdo do anúncio e imagens.
+                </p>
               </div>
 
               {/* NEW FIELDS */}

@@ -134,9 +134,25 @@ export default function CardAnuncio({ anuncio, distancia }) {
               )}
             </div>
           )}
-        </div>
+          </div>
 
-        <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
+          {anuncio.amenidades && (
+          <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3">
+            {[
+              { key: 'estacionamento', label: 'Estacionamento', emoji: '🅿️' },
+              { key: 'estacionamento_valet', label: 'Valet', emoji: '🚗' },
+              { key: 'aceita_pet', label: 'Pet', emoji: '🐶' },
+              { key: 'lounge', label: 'Lounge', emoji: '🛋️' },
+              { key: 'lounge_bar', label: 'Bar', emoji: '🍷' },
+              { key: 'musica_ambiente', label: 'Música', emoji: '🎵' },
+              { key: 'seguranca', label: 'Segurança', emoji: '🛡️' },
+            ].filter(a => anuncio.amenidades?.[a.key]).map(a => (
+              <Badge key={a.key} className="bg-gray-100 text-gray-800 text-xs">{a.emoji} {a.label}</Badge>
+            ))}
+          </div>
+          )}
+
+          <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
           <Badge className="bg-purple-100 text-purple-800 text-xs">
             <span className="truncate max-w-[120px] sm:max-w-none">{anuncio.categoria}</span>
           </Badge>
