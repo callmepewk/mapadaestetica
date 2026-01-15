@@ -12,6 +12,8 @@ export default function PatrocinadoresGrid(){
     queryFn: async () => base44.entities.Banner.filter({ status: 'ativo' }, '-created_date', 24),
     staleTime: 0,
   });
+  const [selected, setSelected] = useState(null);
+  const [open, setOpen] = useState(false);
 
   if (isLoading) {
     return <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-6">{Array(6).fill(0).map((_,i)=>(<Card key={i} className="aspect-square bg-gray-100 animate-pulse"/>))}</div>;
