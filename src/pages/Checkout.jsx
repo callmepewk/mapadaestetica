@@ -18,6 +18,13 @@ export default function Checkout() {
   const [telefone, setTelefone] = useState("");
   const [observacoes, setObservacoes] = useState("");
   const [endereco, setEndereco] = useState({ rua: "", numero: "", complemento: "", bairro: "", cidade: "", estado: "", cep: "" });
+  const [linhaCartao, setLinhaCartao] = useState("clube"); // clube | beauty
+  const [planoCartao, setPlanoCartao] = useState("basic"); // basic | premium | vip | pro | exclusive
+  const payloadPagamento = useMemo(() => {
+    const plano = linhaCartao === 'clube' ? planoCartao : (planoCartao === 'basic' ? 'basic' : planoCartao);
+    const texto = `beautybanking://payment?line=${linhaCartao}&plan=${plano}&total=${total.toFixed(2)}`;
+    return texto;
+  }, [linhaCartao, planoCartao, total]);
 
   useEffect(() => {
     const carregar = async () => {
@@ -149,10 +156,10 @@ export default function Checkout() {
           </Card>
 
           <Card className="border-2 border-pink-200 shadow-xl">
-            <CardHeader>
-              <CardTitle>Resumo</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+           <CardHeader>
+             <CardTitle>Resumo</CardTitle>
+           </CardHeader>
+           <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-gray-700">Subtotal</span>
                 <span className="font-semibold">{total > 0 ? `R$ ${total.toFixed(2)}` : "A consultar"}</span>
@@ -168,6 +175,32 @@ export default function Checkout() {
 
               <div className="pt-2">
                 <p className="text-xs text-gray-500">Após confirmar, seu pedido ficará "Aguardando Pagamento" para validação pela nossa equipe. Você receberá confirmação no próprio site.</p>
+              </div>
+
+              {/* Pagamento via Beauty Banking */}
+              <div className="p-3 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg border-2 border-purple-200">
+                <p className="font-semibold text-gray-800 mb-2">Pagar com Cartões do Clube da Beleza / Beauty Club</p>
+                <div className="grid grid-cols-2 gap-2 mb-2">
+                  <button onClick={()=>setLinhaCartao('clube')} className={`text-xs py-2 rounded border ${linhaCartao==='clube'?'bg-purple-600 text-white border-purple-600':'bg-white'}`}>Clube da Beleza</button>
+                  <button onClick={()=>setLinhaCartao('beauty')} className={`text-xs py-2 rounded border ${linhaCartao==='beauty'?'bg-pink-600 text-white border-pink-600':'bg-white'}`}>Beauty Club</button>
+                </div>
+                <div className="grid grid-cols-3 gap-2 mb-3">
+                  { (linhaCartao==='clube' ? ['basic','premium','vip'] : ['basic','pro','exclusive']).map(p => (
+                    <button key={p} onClick={()=>setPlanoCartao(p)} className={`text-xs py-2 rounded border capitalize ${planoCartao===p?'bg-black text-white':'bg-white'}`}>{p}</button>
+                  )) }
+                </div>
+                <div className="flex items-center gap-3">
+                  <img alt="QR" className="w-28 h-28 border rounded" src={`https://chart.googleapis.com/chart?chs=280x280&cht=qr&chl=${encodeURIComponent(payloadPagamento)}`} />
+                  <div className="text-xs text-gray-700">
+                    <p className="mb-2">Escaneie no app <strong>Beauty Banking</strong> ou clique abaixo:</p>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" onClick={()=>navigator.clipboard.writeText(payloadPagamento)}>Copiar Código</Button>
+                      <a href="https://beautybanking.base44.app" target="_blank" rel="noreferrer">
+                        <Button size="sm" className="bg-purple-600 hover:bg-purple-700">Abrir Beauty Banking</Button>
+                      </a>
+                    </div>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
