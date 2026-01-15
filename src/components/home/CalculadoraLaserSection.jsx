@@ -78,6 +78,7 @@ export default function CalculadoraLaserSection() {
   const [mostrarAjuda, setMostrarAjuda] = useState(false);
   const [ocrFile, setOcrFile] = useState(null);
   const [ocrLoading, setOcrLoading] = useState(false);
+  const [webLoading, setWebLoading] = useState(false);
 
   const handleOCR = async () => {
     if (!ocrFile) return;
@@ -105,6 +106,26 @@ export default function CalculadoraLaserSection() {
       }
     } finally {
       setOcrLoading(false);
+    }
+  };
+
+  const handleBuscarWeb = async () => {
+    if (!dados.marcaLaser && !dados.modeloLaser) return;
+    setWebLoading(true);
+    try {
+      const schema = { type: 'object', properties: { marca: {type:'string'}, modelo:{type:'string'}, tipo:{type:'string'} } };
+      const prompt = `Identifique marca, modelo e tipo de laser para estética com base nestes dados. Responda em JSON: {marca, modelo, tipo}. Dados: marca="${dados.marcaLaser}", modelo="${dados.modeloLaser}".`;
+      const res = await base44.integrations.Core.InvokeLLM({ prompt, add_context_from_internet: true, response_json_schema: schema });
+      if (res) {
+        setDados(prev => ({
+          ...prev,
+          marcaLaser: res.marca || prev.marcaLaser,
+          modeloLaser: res.modelo || prev.modeloLaser,
+          tipoLaser: res.tipo || prev.tipoLaser,
+        }));
+      }
+    } finally {
+      setWebLoading(false);
     }
   };
 
@@ -527,7 +548,9 @@ export default function CalculadoraLaserSection() {
                       <Select value={dados.tipoLaser || ""} onValueChange={(v)=> setDados(p=>({...p, tipoLaser:v }))}>
                         <SelectTrigger className="mt-1"><SelectValue placeholder="Selecione"/></SelectTrigger>
                         <SelectContent>
-                          {['Diodo','Alexandrite','Nd:YAG','CO2 Fracionado','Er:YAG','IPL (Luz Pulsada)'].map(t=> (
+                          {[
+                            'Diodo (800-810nm)','Diodo 940nm','Diodo 980nm','Alexandrite (755nm)','Nd:YAG (1064nm)','Nd:YAG Q-Switched','Nd:YAG Pico','CO2','CO2 Fracionado','Er:YAG (2940nm)','Er:Glass (1540nm)','Thulium (1927nm)','Ruby (694nm)','KTP (532nm)','Pulsed Dye Laser (PDL 585/595nm)','Excimer (308nm)','IPL (Luz Pulsada)','PicoSure/PicoWay','StarWalker','Fraxx','HIFU (não-laser)','LED (não-laser)'
+                          ].map(t=> (
                             <SelectItem key={t} value={t}>{t}</SelectItem>
                           ))}
                         </SelectContent>
@@ -562,6 +585,18 @@ export default function CalculadoraLaserSection() {
                     </div>
                   </div>
 
+                  {/* Campo livre do tipo */}
+                  <div>
+                    <Label className="text-sm font-medium">Tipo do Laser (livre)</Label>
+                    <Input
+                      type="text"
+                      placeholder="Ex: Nd:YAG 1064, Pico, CO2 fracionado..."
+                      value={dados.tipoLaser || ''}
+                      onChange={(e)=> setDados(p=>({...p, tipoLaser: e.target.value }))}
+                      className="mt-1"
+                    />
+                  </div>
+
                   {/* Identificação por Foto (OCR) */}
                   <div className="p-3 rounded-lg bg-blue-50 border-2 border-blue-200">
                     <Label className="text-sm font-medium">Identificar pela Foto (OCR)</Label>
@@ -569,6 +604,9 @@ export default function CalculadoraLaserSection() {
                       <input type="file" accept="image/*" onChange={(e)=> setOcrFile(e.target.files?.[0]||null)} />
                       <Button size="sm" onClick={handleOCR} disabled={!ocrFile || ocrLoading} className="bg-blue-600 hover:bg-blue-700">
                         {ocrLoading ? 'Analisando...' : 'Identificar'}
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={handleBuscarWeb} disabled={webLoading} className="border-blue-300 text-blue-700">
+                        {webLoading ? 'Buscando...' : 'Buscar na Web'}
                       </Button>
                       <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/edec9f039_image.png" alt="Exemplo de foto" className="h-16 rounded-lg border" />
                     </div>

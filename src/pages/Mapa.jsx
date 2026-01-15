@@ -216,6 +216,7 @@ export default function Mapa() {
   const [buscandoLocalizacao, setBuscandoLocalizacao] = useState(false);
   const [centralizarEm, setCentralizarEm] = useState(null);
   const [abaSelecionada, setAbaSelecionada] = useState("mapa");
+  const [isProfissional, setIsProfissional] = useState(false);
   const [mostrarSeletorProcedimentos, setMostrarSeletorProcedimentos] = useState(false);
   
   // Filtros para Anúncios
@@ -255,6 +256,22 @@ export default function Mapa() {
       );
     },
   });
+
+  useEffect(()=>{
+    (async ()=>{
+      try {
+        const u = await base44.auth.me();
+        setIsProfissional(u?.tipo_usuario === 'profissional' || u?.tipo_usuario === 'patrocinador');
+      } catch {}
+      const p = new URLSearchParams(window.location.search);
+      const cat = p.get('categoria');
+      const cid = p.get('cidade');
+      const aba = p.get('aba');
+      if (cat) setCategoria(cat);
+      if (cid) setBuscaCidade(cid);
+      if (aba) setAbaSelecionada(aba);
+    })();
+  },[]);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -329,6 +346,9 @@ export default function Mapa() {
     const matchTempoFormacao = !tempoFormacao || tempoFormacao === "999999" || 
       (anuncio.tempo_formacao_anos && anuncio.tempo_formacao_anos <= parseInt(tempoFormacao));
     
+    // Público-alvo
+    const matchPublico = !anuncio.exibir_para || anuncio.exibir_para === 'todos' || (isProfissional ? anuncio.exibir_para !== 'visitantes' : anuncio.exibir_para !== 'profissionais');
+
     // Filtro de distância
     let matchDistancia = true;
     if (distancia !== "999999" && localizacaoUsuario && anuncio.latitude && anuncio.longitude) {
@@ -343,7 +363,7 @@ export default function Mapa() {
     
     return matchBusca && matchCategoria && matchProcedimento && matchCidade && matchEstado && 
            matchPreco && matchVerificados && matchTipoAnuncio && matchTipoEstabelecimento && 
-           matchTempoFormacao && matchDistancia;
+           matchTempoFormacao && matchDistancia && matchPublico;
   });
 
   // Calcular distâncias para estabelecimentos

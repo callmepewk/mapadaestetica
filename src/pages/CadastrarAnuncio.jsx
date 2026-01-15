@@ -251,6 +251,7 @@ export default function CadastrarAnuncio() {
      subcategoria: "",
      faixa_preco: "",
      forma_cobranca: "dinheiro",
+     exibir_para: "todos",
      ocultar_apos_venda: false,
      status_funcionamento: "",
      tipo_estabelecimento: "",
@@ -1134,6 +1135,20 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
                       {tiposAnuncio.map(tipo => (
                         <SelectItem key={tipo.valor} value={tipo.valor} className="text-sm">{tipo.label}</SelectItem>
                       ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label className="text-sm">Quem pode ver</Label>
+                  <Select value={formData.exibir_para} onValueChange={(v)=> handleInputChange('exibir_para', v)}>
+                    <SelectTrigger className="mt-1 h-10 sm:h-11 text-sm">
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todos" className="text-sm">Todos</SelectItem>
+                      <SelectItem value="visitantes" className="text-sm">Somente Visitantes</SelectItem>
+                      <SelectItem value="profissionais" className="text-sm">Somente Profissionais</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

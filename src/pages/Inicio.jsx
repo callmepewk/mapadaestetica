@@ -90,6 +90,7 @@ export default function Inicio() {
   const [visaoAtual, setVisaoAtual] = useState(null); // Para controlar a visão do admin
   const [geoInfo, setGeoInfo] = useState({ cidade: "", estado: "", pais: "", lat: null, lon: null });
   const [geoLoading, setGeoLoading] = useState(false);
+  const [agora, setAgora] = useState(new Date());
 
   const navigate = useNavigate();
 
@@ -115,6 +116,11 @@ export default function Inicio() {
       } catch (e) { /* noop */ }
     })();
   }, [user]);
+
+  useEffect(()=>{
+    const i = setInterval(()=> setAgora(new Date()), 1000);
+    return ()=> clearInterval(i);
+  },[]);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -255,7 +261,10 @@ export default function Inicio() {
         longitude: geoInfo.lon || null
       });
     } catch {}
-    window.location.href = createPageUrl("Anuncios") + (params.toString() ? `?${params.toString()}` : '');
+    const base = createPageUrl("Mapa");
+    const query = new URLSearchParams(params);
+    query.set('aba','mapa');
+    window.location.href = `${base}?${query.toString()}`;
   };
 
   const handleAcessarDrBeleza = () => {
@@ -335,6 +344,18 @@ export default function Inicio() {
       {/* VISÃO PACIENTE OU NÃO LOGADO */}
       {isPaciente && (
         <>
+          {/* Calendário / Relógio */}
+          <div className="bg-white/90 backdrop-blur sticky top-[60px] z-30 border-b">
+            <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between text-sm text-gray-700">
+              <div className="font-semibold">
+                {agora.toLocaleDateString('pt-BR', { weekday:'long', day:'2-digit', month:'long', year:'numeric' })}
+                {' • '}
+                {agora.toLocaleTimeString('pt-BR')}
+              </div>
+              <div className="text-pink-600 font-medium">Cuide de você hoje. O melhor momento é agora ✨</div>
+            </div>
+          </div>
+
           {/* Hero Section - MOBILE OPTIMIZED */}
           <section
             className="relative text-white py-8 sm:py-12 md:py-16 lg:py-20 xl:py-32 overflow-hidden"
