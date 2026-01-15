@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { createPageUrl } from "@/utils";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -116,7 +117,7 @@ export default function AdicionarProduto() {
       await base44.entities.Produto.create(produto);
 
       alert("✅ Produto/Serviço criado com sucesso!");
-      navigate("/Produtos");
+      navigate(createPageUrl("Produtos"));
     } catch (error) {
       console.error("Erro ao criar produto:", error);
       alert("Erro ao criar produto. Verifique o console.");
@@ -169,7 +170,7 @@ export default function AdicionarProduto() {
       <div className="max-w-4xl mx-auto px-4">
         <Button
           variant="ghost"
-          onClick={() => navigate("/Produtos")}
+          onClick={() => navigate(createPageUrl("Produtos"))}
           className="mb-6"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -532,7 +533,7 @@ export default function AdicionarProduto() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => navigate("/Produtos")}
+                  onClick={() => navigate(createPageUrl("Produtos"))}
                   className="flex-1"
                 >
                   Cancelar
