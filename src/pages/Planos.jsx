@@ -22,6 +22,8 @@ const planos = [
     destaque: false,
     linkPagamento: null,
     limites: {
+      radar_frequencia: 1,
+      relatorios: 1,
       especialidades: 1,
       anuncios: 1,
       tags: 1,
@@ -56,16 +58,18 @@ const planos = [
     destaque: false,
     linkPagamento: "https://wa.me/5531972595643?text=Quero%20assinar%20o%20plano%20LITE%20(R$9,90)%20do%20Mapa%20da%20Est%C3%A9tica",
     limites: {
+      radar_frequencia: 1,
+      relatorios: 1,
       especialidades: 1,
-      anuncios: 3,
-      tags: 2,
+      anuncios: 4,
+      tags: 4,
       dias_exposicao: 30
     },
     beneficios: [
       "✅ Acesso ao WhatsApp dos profissionais",
       "1 Especialidade cadastrada",
-      "Até 3 anúncios ativos",
-      "2 Tags/palavras-chave",
+      "Até 4 anúncios ativos",
+      "4 Tags/palavras-chave",
       "30 dias de exposição por anúncio",
       "Perfil com leve destaque",
       "Estatísticas essenciais"
@@ -86,16 +90,18 @@ const planos = [
     destaque: false,
     linkPagamento: "https://payfast.greenn.com.br/146196",
     limites: {
+      radar_frequencia: 1,
+      relatorios: 1,
       especialidades: 1,
-      anuncios: 10,
-      tags: 5,
-      dias_exposicao: 30
+      anuncios: 8,
+      tags: 8,
+      dias_exposicao: 45
     },
     beneficios: [
       "✅ Acesso ao WhatsApp dos profissionais",
       "1 Especialidade cadastrada",
-      "10 Anúncios ativos",
-      "5 Tags/palavras-chave do Google Negócio",
+      "8 Anúncios ativos",
+      "8 Tags/palavras-chave do Google Negócio",
       "30 dias de exposição por anúncio",
       "Perfil destacado",
       "Suporte prioritário",
@@ -122,16 +128,18 @@ const planos = [
     destaque: true,
     linkPagamento: "https://payfast.greenn.com.br/146197",
     limites: {
-      especialidades: 2,
+      radar_frequencia: 2,
+      relatorios: 4,
+      especialidades: 1,
       anuncios: 20,
-      tags: 10,
-      dias_exposicao: 30
+      tags: 20,
+      dias_exposicao: 60
     },
     beneficios: [
       "✅ Acesso ao WhatsApp dos profissionais",
-      "2 Especialidades cadastradas",
+      "1 Especialidade cadastrada",
       "20 Anúncios ativos",
-      "10 Tags/palavras-chave premium",
+      "20 Tags/palavras-chave premium",
       "30 dias de exposição por anúncio",
       "Prioridade alta nas buscas",
       "Perfil premium com destaque dourado",
@@ -198,16 +206,18 @@ const planos = [
     destaque: false,
     linkPagamento: null,
     limites: {
-      especialidades: "Ilimitadas",
-      anuncios: "Ilimitados",
-      tags: 100,
-      dias_exposicao: 30
+      radar_frequencia: 4,
+      relatorios: 10,
+      especialidades: "2 ou+",
+      anuncios: 20,
+      tags: 20,
+      dias_exposicao: 90
     },
     beneficios: [
       "✅ Acesso ao WhatsApp dos profissionais",
-      "Especialidades ILIMITADAS",
-      "Anúncios ILIMITADOS",
-      "100 Tags/palavras-chave premium",
+      "2 ou+ Especialidades",
+      "Até 20 anúncios",
+      "20 Tags/palavras-chave premium",
       "30 dias de exposição por anúncio",
       "Smart Clinic R$ 298 + R$ 399 (e Cloud IA) - Incluídos",
       "Cloud.IA sem integração de sistemas internos (sob consulta)",
@@ -880,6 +890,14 @@ export default function Planos() {
                         <div className="mb-6 p-4 bg-gradient-to-br from-gray-50 to-white rounded-lg border-2 border-gray-200">
                           <h4 className="font-bold mb-3 text-center">Limites</h4>
                           <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">R.F (Radar de Frequência):</span>
+                              <span className="font-bold">{plano.limites.radar_frequencia}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Relatórios:</span>
+                              <span className="font-bold">{plano.limites.relatorios}</span>
+                            </div>
                             <div className="flex justify-between">
                               <span className="text-gray-600">Especialidades:</span>
                               <span className="font-bold">{plano.limites.especialidades}</span>

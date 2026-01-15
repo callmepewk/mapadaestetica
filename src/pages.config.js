@@ -21,13 +21,13 @@ import LojaPontos from './pages/LojaPontos';
 import Mapa from './pages/Mapa';
 import MeuPlano from './pages/MeuPlano';
 import Novidades from './pages/Novidades';
+import PainelProfissional from './pages/PainelProfissional';
 import Perfil from './pages/Perfil';
 import PesquisaEspecializada from './pages/PesquisaEspecializada';
 import Planos from './pages/Planos';
 import Produtos from './pages/Produtos';
 import RelatorioPrecoMedio from './pages/RelatorioPrecoMedio';
 import SobreNos from './pages/SobreNos';
-import PainelProfissional from './pages/PainelProfissional';
 import __Layout from './Layout.jsx';
 
 
@@ -55,13 +55,13 @@ export const PAGES = {
     "Mapa": Mapa,
     "MeuPlano": MeuPlano,
     "Novidades": Novidades,
+    "PainelProfissional": PainelProfissional,
     "Perfil": Perfil,
     "PesquisaEspecializada": PesquisaEspecializada,
     "Planos": Planos,
     "Produtos": Produtos,
     "RelatorioPrecoMedio": RelatorioPrecoMedio,
     "SobreNos": SobreNos,
-    "PainelProfissional": PainelProfissional,
 }
 
 export const pagesConfig = {

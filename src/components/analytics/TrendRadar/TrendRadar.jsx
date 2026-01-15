@@ -77,6 +77,20 @@ export default function TrendRadar() {
   const [selectedRegion, setSelectedRegion] = useState(null);
   const [openRegionModal, setOpenRegionModal] = useState(false);
 
+  // Limites por plano para o Radar de Tendências
+  const isAdmin = user?.role === 'admin';
+  const planTipo = user?.plano_ativo || 'cobre';
+  const planLimits = {
+    cobre: { rf: 1, reports: 1 },
+    lite: { rf: 1, reports: 1 },
+    prata: { rf: 1, reports: 1 },
+    ouro: { rf: 2, reports: 4 },
+    diamante: { rf: 4, reports: 10 },
+    platina: { rf: 4, reports: 10 },
+  };
+  const rfLimit = planLimits[planTipo]?.rf ?? 1;
+  const reportsLimit = planLimits[planTipo]?.reports ?? 1;
+
   useEffect(() => {
     (async () => {
       try { const u = await base44.auth.me(); setUser(u); } catch {}
@@ -376,7 +390,7 @@ export default function TrendRadar() {
             <div className="flex items-center gap-2 mb-2 text-gray-800 font-semibold">
               <Sparkles className="w-4 h-4" /> Nuvem de Oportunidades
             </div>
-            <TrendWordCloud items={cloudData.slice(0,5)} onSelect={setSelected} selected={selected} />
+            <TrendWordCloud items={cloudData.slice(0, isAdmin ? 30 : rfLimit)} onSelect={setSelected} selected={selected} />
             <div className="mt-2">
               <Button variant="outline" onClick={() => setOpenAll(true)}>Ver todas</Button>
             </div>
@@ -418,7 +432,7 @@ export default function TrendRadar() {
           </div>
         </CardContent>
       </Card>
-      <TrendListModal open={openAll} onOpenChange={setOpenAll} items={cloudData} />
+      <TrendListModal open={openAll} onOpenChange={setOpenAll} items={isAdmin ? cloudData : cloudData.slice(0, reportsLimit)} />
       <TrendListModal open={openRegionModal} onOpenChange={setOpenRegionModal} items={selectedRegion ? regionItems(selectedRegion) : []} />
     </div>
   );
