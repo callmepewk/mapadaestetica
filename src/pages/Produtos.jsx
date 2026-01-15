@@ -806,7 +806,7 @@ export default function Produtos() {
                           <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-300">
                             {produto.categoria}
                           </Badge>
-                          {produto.mostrar_tag_clube && (
+                          {produto.mostrar_tag_clube || produto?.mostrar_tag_clube && (
                             <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
                               <Crown className="w-3 h-3 mr-1" /> Parceiro Clube+
                             </Badge>

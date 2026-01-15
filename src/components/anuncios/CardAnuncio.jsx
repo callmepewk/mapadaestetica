@@ -79,7 +79,7 @@ export default function CardAnuncio({ anuncio, distancia }) {
         )}
 
         {anuncio.estrelas_estabelecimento && (
-          <div className={`absolute bottom-2 ${anuncio.exibir_selo_clube ? 'left-10' : 'left-2'}`}>
+          <div className={`absolute bottom-2 ${anuncio.exibir_selo_clube ? 'left-9' : 'left-2'}`}>
             <Badge className="bg-gradient-to-r from-yellow-500 to-amber-600 text-white font-bold border-2 border-white shadow-lg flex items-center gap-0.5 text-xs">
               {[...Array(anuncio.estrelas_estabelecimento)].map((_, i) => (
                 <Star key={i} className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-white" />
