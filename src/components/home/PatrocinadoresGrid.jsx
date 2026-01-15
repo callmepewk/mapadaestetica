@@ -21,17 +21,12 @@ export default function PatrocinadoresGrid(){
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-6">
       {banners.map((b) => (
-        <Card key={b.id} className="aspect-square flex items-center justify-center bg-white hover:shadow-xl transition-shadow border-none">
-          <CardContent className="p-4 flex items-center justify-center w-full h-full">
-            {b.logo_empresa || b.imagem_banner ? (
-              <img src={b.logo_empresa || b.imagem_banner} alt={b.nome_empresa || b.titulo} className="max-h-full max-w-full object-contain" />
-            ) : (
-              <div className="text-center">
-                <div className="text-2xl mb-1">🏢</div>
-                <p className="text-xs text-gray-500">{b.nome_empresa || b.titulo}</p>
-              </div>
-            )}
-          </CardContent>
+        <Card key={b.id} className="relative aspect-square overflow-hidden bg-white hover:shadow-2xl transition-all border">
+          <img src={b.imagem_banner || b.logo_empresa} alt={b.nome_empresa || b.titulo} className="w-full h-full object-cover" />
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 text-white">
+            <p className="text-xs font-semibold truncate">{b.nome_empresa || b.titulo}</p>
+            {b.descricao && <p className="text-[10px] opacity-90 line-clamp-2">{b.descricao}</p>}
+          </div>
         </Card>
       ))}
     </div>

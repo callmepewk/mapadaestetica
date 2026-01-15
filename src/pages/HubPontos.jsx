@@ -143,6 +143,7 @@ export default function HubPontos() {
             <p className="text-gray-600">Registre atendimentos dos tratamentos abaixo. O cliente usa pontos e você recebe o equivalente em saldo.</p>
           </div>
           <div className="flex items-center gap-3 bg-white border rounded-lg p-3">
+            <Button size="sm" onClick={()=>window.location.href=createPageUrl('Planos')} className="bg-amber-500 hover:bg-amber-600 text-white">Quero aumentar meus pontos por atendimento</Button>
             <Star className="w-4 h-4 text-amber-500"/>
             <div className="text-sm">Pontos por atendimento no seu plano: <span className="font-bold">+{pontosPorAtendimento}</span></div>
           </div>

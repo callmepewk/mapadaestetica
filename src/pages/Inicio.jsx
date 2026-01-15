@@ -712,17 +712,26 @@ export default function Inicio() {
           <div className="text-center mb-8 sm:mb-12">
             <div className="flex items-center justify-center gap-2 mb-2">
               <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-pink-600" />
-              <span className="text-xs sm:text-sm font-semibold text-pink-600 uppercase tracking-wide">
-                Fique por dentro
-              </span>
+              <span className="text-xs sm:text-sm font-semibold text-pink-600 uppercase tracking-wide">Fique por dentro</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 px-2">
-              Do Universo da Estética
-            </h2>
-            <p className="text-gray-600 text-base sm:text-lg max-w-2xl mx-auto mb-6 sm:mb-8 px-4">
-              Acompanhe as últimas tendências, novidades e dicas do mundo da estética e beleza
-            </p>
-            <Link to={createPageUrl("Blog")}>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 px-2">Do Universo da Estética</h2>
+            <p className="text-gray-600 text-base sm:text-lg max-w-2xl mx-auto mb-6 sm:mb-8 px-4">Veja 3 notícias em destaque e leia mais no nosso blog.</p>
+            <div className="grid sm:grid-cols-3 gap-4 max-w-5xl mx-auto mb-6">
+              {[
+                {t:'Novas técnicas de skinbooster ganham espaço no Brasil',img:'https://images.unsplash.com/photo-1615220368126-29e7d9a3c2e4?w=800&q=80'},
+                {t:'Depilação a laser cresce entre o público masculino',img:'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800&q=80'},
+                {t:'Dermatologistas alertam sobre uso de ácidos no verão',img:'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=800&q=80'}
+              ].map((n,i)=> (
+                <a key={i} href={createPageUrl('Blog')} className="group block overflow-hidden rounded-xl border bg-white hover:shadow-lg">
+                  <img src={n.img} alt={n.t} className="h-40 w-full object-cover group-hover:scale-105 transition-transform"/>
+                  <div className="p-3 text-left">
+                    <p className="text-sm font-semibold text-gray-900 line-clamp-2 group-hover:text-pink-600">{n.t}</p>
+                    <p className="text-xs text-gray-500 mt-1">Leia no nosso Blog</p>
+                  </div>
+                </a>
+              ))}
+            </div>
+            <Link to={createPageUrl('Blog')}>
               <Button size="lg" className="w-full sm:w-auto bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white">
                 Acessar Blog
                 <ArrowRight className="w-4 h-4 ml-2" />

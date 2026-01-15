@@ -83,6 +83,12 @@ export default function LojaPontos() {
     : produtos.filter(p => p.categoria === categoriaSelecionada);
 
   // Ordenar: produtos especiais primeiro (Beauty Box), depois por pontos
+  const efetivoPontos = (p) => {
+    if (typeof p.pontos_necessarios === 'number' && p.pontos_necessarios > 0) return p.pontos_necessarios;
+    if (typeof p.preco === 'number' && p.preco > 0) return Math.max(1, Math.round(p.preco));
+    return 100; // fallback
+  };
+
   const produtosOrdenados = [...produtosFiltrados].sort((a, b) => {
     // Beauty Box sempre primeiro
     if (a.nome && a.nome.includes("Beauty Box") && b.nome && !b.nome.includes("Beauty Box")) return -1;
@@ -97,7 +103,7 @@ export default function LojaPontos() {
   const handleResgatarProduto = async (produto, quantidade = 1) => {
     if (!user) return;
 
-    const custo = (produto.pontos_necessarios || 0) * quantidade;
+    const custo = efetivoPontos(produto) * quantidade;
     if (user.pontos_acumulados < custo) {
       alert(`Você precisa de ${produto.pontos_necessarios} pontos para resgatar este produto. Você tem apenas ${user.pontos_acumulados} pontos.`);
       return;
@@ -153,7 +159,7 @@ export default function LojaPontos() {
         produto_id: produto.id,
         produto_nome: produto.nome,
         tipo: 'produto',
-        quantidade: 1,
+        quantidade,
         valor_total: 0,
         status_pedido: 'processando'
       });
@@ -223,6 +229,10 @@ export default function LojaPontos() {
 
         {/* Header */}
         <div className="mb-8">
+          <div className="mb-4 p-3 bg-purple-50 border border-purple-200 rounded-lg flex flex-wrap items-center justify-between gap-2">
+            <span className="text-sm text-purple-800">Quer ganhar bônus de pontos nas compras da loja?</span>
+            <Button size="sm" onClick={()=>navigate(createPageUrl('Planos'))} className="bg-purple-600 hover:bg-purple-700">Quero meu bônus</Button>
+          </div>
           {mostraAviso && (
             <div className="mb-4 p-3 bg-pink-50 border border-pink-200 rounded-lg text-pink-800 text-sm">
               Após solicitar um resgate, um estabelecimento parceiro aceitará seu pedido em até 48 horas. Tudo é acompanhado por chat dentro do site.
@@ -620,7 +630,7 @@ export default function LojaPontos() {
                       {(() => {
                         const step = produto.tipo_oferta === 'lote' ? Math.max(1, produto.lote_minimo || 1) : 1;
                         const q = quantidades[produto.id] || step;
-                        const custo = (produto.pontos_necessarios||0) * q;
+                        const custo = efetivoPontos(produto) * q;
                         if (!user) return 'Entrar para Resgatar';
                         if (produto.estoque <= 0 || q > produto.estoque) return 'Esgotado';
                         if ((user.pontos_acumulados||0) < custo) return `Faltam ${custo - (user.pontos_acumulados||0)} pontos`;

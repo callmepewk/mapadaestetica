@@ -16,7 +16,9 @@ import DetalhesAnuncio from './pages/DetalhesAnuncio';
 import EditarAnuncio from './pages/EditarAnuncio';
 import FaleConosco from './pages/FaleConosco';
 import Home from './pages/Home';
+import HubPontos from './pages/HubPontos';
 import Inicio from './pages/Inicio';
+import InstitutosAdmin from './pages/InstitutosAdmin';
 import LojaPontos from './pages/LojaPontos';
 import Mapa from './pages/Mapa';
 import MeuPlano from './pages/MeuPlano';
@@ -26,11 +28,9 @@ import Perfil from './pages/Perfil';
 import PesquisaEspecializada from './pages/PesquisaEspecializada';
 import Planos from './pages/Planos';
 import Produtos from './pages/Produtos';
+import Radares from './pages/Radares';
 import RelatorioPrecoMedio from './pages/RelatorioPrecoMedio';
 import SobreNos from './pages/SobreNos';
-import HubPontos from './pages/HubPontos';
-import InstitutosAdmin from './pages/InstitutosAdmin';
-import Radares from './pages/Radares';
 import __Layout from './Layout.jsx';
 
 
@@ -53,7 +53,9 @@ export const PAGES = {
     "EditarAnuncio": EditarAnuncio,
     "FaleConosco": FaleConosco,
     "Home": Home,
+    "HubPontos": HubPontos,
     "Inicio": Inicio,
+    "InstitutosAdmin": InstitutosAdmin,
     "LojaPontos": LojaPontos,
     "Mapa": Mapa,
     "MeuPlano": MeuPlano,
@@ -63,11 +65,9 @@ export const PAGES = {
     "PesquisaEspecializada": PesquisaEspecializada,
     "Planos": Planos,
     "Produtos": Produtos,
+    "Radares": Radares,
     "RelatorioPrecoMedio": RelatorioPrecoMedio,
     "SobreNos": SobreNos,
-    "HubPontos": HubPontos,
-    "InstitutosAdmin": InstitutosAdmin,
-    "Radares": Radares,
 }
 
 export const pagesConfig = {
