@@ -162,7 +162,7 @@ export default function HubPontos() {
           {CATALOGO.map(item => (
             <Card key={item.id} className="border shadow-md hover:shadow-lg transition-all">
               <div className="h-40 rounded-t-xl overflow-hidden bg-gray-100">
-                <img src={item.img} alt={item.nome} className="w-full h-full object-cover"/>
+                <img src={item.img} alt={item.nome} className="w-full h-full object-cover" onError={(e)=>{ e.currentTarget.onerror=null; e.currentTarget.src='https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1200&auto=format&fit=crop'; }} />
               </div>
               <CardContent className="p-4">
                 <h3 className="font-semibold text-gray-900 mb-1">{item.nome}</h3>
