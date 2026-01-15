@@ -133,7 +133,7 @@ export default function HubPontos() {
         <div className="flex items-center gap-3 mb-6">
           <Shield className="w-4 h-4 text-pink-600"/>
           <span className="text-sm">Selo do Clube nas minhas postagens</span>
-          <Button variant={mostrarSelo ? 'default' : 'outline'} size="sm" disabled={bulkAtualizando} onClick={() => handleToggleSelo(!mostrarSelo)}>
+          <Button size="sm" disabled={bulkAtualizando} onClick={() => handleToggleSelo(!mostrarSelo)} className={`${mostrarSelo ? 'bg-pink-600 text-white hover:bg-pink-700' : 'bg-white text-pink-600 border border-pink-600 hover:bg-pink-50'}`}>
             {bulkAtualizando ? <Loader2 className="w-4 h-4 mr-2 animate-spin"/> : null}
             {mostrarSelo ? 'Ativo' : 'Desativado'}
           </Button>
@@ -149,7 +149,7 @@ export default function HubPontos() {
                 <h3 className="font-semibold text-gray-900 mb-1">{item.nome}</h3>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1 text-amber-600 font-bold text-sm"><Star className="w-4 h-4"/> {item.pontos} pts</div>
-                  <Button size="sm" onClick={() => { setSelecionado(item.id); setModalOpen(true); }}>Receber</Button>
+                  <Button size="sm" className="bg-pink-600 hover:bg-pink-700 text-white" onClick={() => { setSelecionado(item.id); setModalOpen(true); }}>Receber</Button>
                 </div>
               </CardContent>
             </Card>

@@ -88,7 +88,8 @@ export default function TrendRadar() {
     diamante: { rf: 4, reports: 10 },
     platina: { rf: 4, reports: 10 },
   };
-  const rfLimit = planLimits[planTipo]?.rf ?? 1;
+  const rfLimit = planLimits[planTipo]?.rf ?? 1;  // visual limit per view
+
   const reportsLimit = planLimits[planTipo]?.reports ?? 1;
 
   useEffect(() => {
