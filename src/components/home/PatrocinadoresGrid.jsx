@@ -23,9 +23,6 @@ export default function PatrocinadoresGrid(){
     return <p className="text-gray-600 text-center py-6">Sem patrocinadores ativos no momento.</p>;
   }
 
-  const [selected, setSelected] = useState(null);
-  const [open, setOpen] = useState(false);
-
   return (
     <>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-6">
