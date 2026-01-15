@@ -22,6 +22,7 @@ import {
   Award
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createPageUrl } from "@/utils";
 import {
   Dialog,
@@ -43,21 +44,21 @@ export default function CalculadoraLaserSection() {
   const [mostrarResultados, setMostrarResultados] = useState(false);
   const [abaAtual, setAbaAtual] = useState("investimento");
   const [dados, setDados] = useState({
-    modeloLaser: "Ex: CO2 Fracionado",
-    marcaLaser: "Ex: Ibramed",
-    custoAquisicao: 150000,
-    custosAdicionais: 5000,
-    custoAluguel: 4000,
-    manutencaoAnual: 12000,
-    vidaUtil: 5,
-    custoVariavel: 50,
-    custoFixoClinica: 20000, // This fixed cost is not explicitly used in calculations, consider if it should be.
-    precoMedio: 800,
-    descontoMedio: 15,
-    sessoesHora: 2,
-    diasMes: 20,
-    horasDia: 6,
-    taxaSelic: 10
+    modeloLaser: "",
+    marcaLaser: "",
+    custoAquisicao: 0,
+    custosAdicionais: 0,
+    custoAluguel: 0,
+    manutencaoAnual: 0,
+    vidaUtil: 0,
+    custoVariavel: 0,
+    custoFixoClinica: 0,
+    precoMedio: 0,
+    descontoMedio: 0,
+    sessoesHora: 0,
+    diasMes: 0,
+    horasDia: 0,
+    taxaSelic: 0
   });
 
   const [resultados, setResultados] = useState({
@@ -75,6 +76,37 @@ export default function CalculadoraLaserSection() {
   });
 
   const [mostrarAjuda, setMostrarAjuda] = useState(false);
+  const [ocrFile, setOcrFile] = useState(null);
+  const [ocrLoading, setOcrLoading] = useState(false);
+
+  const handleOCR = async () => {
+    if (!ocrFile) return;
+    setOcrLoading(true);
+    try {
+      const up = await base44.integrations.Core.UploadFile({ file: ocrFile });
+      const json_schema = {
+        type: 'object',
+        properties: {
+          marca: { type: 'string' },
+          modelo: { type: 'string' },
+          tipo: { type: 'string' }
+        },
+        required: []
+      };
+      const res = await base44.integrations.Core.ExtractDataFromUploadedFile({ file_url: up.file_url, json_schema });
+      if (res.status === 'success' && res.output) {
+        const out = Array.isArray(res.output) ? res.output[0] : res.output;
+        setDados(prev => ({
+          ...prev,
+          marcaLaser: out?.marca || prev.marcaLaser,
+          modeloLaser: out?.modelo || prev.modeloLaser,
+          tipoLaser: out?.tipo || prev.tipoLaser
+        }));
+      }
+    } finally {
+      setOcrLoading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -207,6 +239,8 @@ export default function CalculadoraLaserSection() {
   const handleChange = (campo, valor) => {
     setDados(prev => ({ ...prev, [campo]: parseFloat(valor) || 0 }));
   };
+
+  const showNum = (v) => (v === 0 || Number.isNaN(v) ? "" : v);
 
   const handleChangeTexto = (campo, valor) => {
     setDados(prev => ({ ...prev, [campo]: valor }));
@@ -486,10 +520,65 @@ export default function CalculadoraLaserSection() {
                 </TabsList>
 
                 <TabsContent value="investimento" className="space-y-4">
+                  {/* Catálogo de Lasers */}
+                  <div className="grid md:grid-cols-3 gap-3 p-3 rounded-lg bg-gray-50 border">
+                    <div>
+                      <Label className="text-sm font-medium">Tipo de Laser</Label>
+                      <Select value={dados.tipoLaser || ""} onValueChange={(v)=> setDados(p=>({...p, tipoLaser:v }))}>
+                        <SelectTrigger className="mt-1"><SelectValue placeholder="Selecione"/></SelectTrigger>
+                        <SelectContent>
+                          {['Diodo','Alexandrite','Nd:YAG','CO2 Fracionado','Er:YAG','IPL (Luz Pulsada)'].map(t=> (
+                            <SelectItem key={t} value={t}>{t}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Marca</Label>
+                      <Select value={dados.marcaLaser || ""} onValueChange={(v)=> setDados(p=>({...p, marcaLaser:v }))}>
+                        <SelectTrigger className="mt-1"><SelectValue placeholder="Ex: Ibramed, Lumenis, Fotona"/></SelectTrigger>
+                        <SelectContent>
+                          {['Ibramed','Lumenis','Fotona','Cynosure','Alma','Deka','Lutronic','Quanta System'].map(m=> (
+                            <SelectItem key={m} value={m}>{m}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Modelo</Label>
+                      <Select value={dados.modeloLaser || ""} onValueChange={(v)=> setDados(p=>({...p, modeloLaser:v }))}>
+                        <SelectTrigger className="mt-1"><SelectValue placeholder="Selecione o modelo"/></SelectTrigger>
+                        <SelectContent>
+                          {[
+                            'Harmony XL Pro','Soprano Ice','Elite+','GentleLase','StarWalker','LightSheer','Milesman','Etherea MX','Spectra','M22','Acupulse','SmartXide','Synchro Replay','Clarity II'
+                          ].map(md=> (
+                            <SelectItem key={md} value={md}>{md}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="md:col-span-3 text-xs text-gray-600">
+                      Dica: Você pode selecionar nas listas acima ou preencher manualmente nos campos abaixo.
+                    </div>
+                  </div>
+
+                  {/* Identificação por Foto (OCR) */}
+                  <div className="p-3 rounded-lg bg-blue-50 border-2 border-blue-200">
+                    <Label className="text-sm font-medium">Identificar pela Foto (OCR)</Label>
+                    <div className="flex flex-col md:flex-row gap-3 mt-2 items-start">
+                      <input type="file" accept="image/*" onChange={(e)=> setOcrFile(e.target.files?.[0]||null)} />
+                      <Button size="sm" onClick={handleOCR} disabled={!ocrFile || ocrLoading} className="bg-blue-600 hover:bg-blue-700">
+                        {ocrLoading ? 'Analisando...' : 'Identificar'}
+                      </Button>
+                      <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/edec9f039_image.png" alt="Exemplo de foto" className="h-16 rounded-lg border" />
+                    </div>
+                    <p className="text-xs text-blue-900 mt-2">Instruções: foque na etiqueta/placa do equipamento (marca e modelo), boa iluminação, foto nítida e frontal.</p>
+                  </div>
                   <div>
                     <Label className="text-sm font-medium">Modelo do Laser</Label>
                     <Input
                       type="text"
+                      placeholder="Ex: CO2 Fracionado / Soprano Ice"
                       value={dados.modeloLaser}
                       onChange={(e) => handleChangeTexto('modeloLaser', e.target.value)}
                       className="mt-1"
@@ -509,7 +598,8 @@ export default function CalculadoraLaserSection() {
                     <Label className="text-sm font-medium">Custo de Aquisição (Compra)</Label>
                     <Input
                       type="number"
-                      value={dados.custoAquisicao}
+                      placeholder="Ex: 150000"
+                      value={showNum(dados.custoAquisicao)}
                       onChange={(e) => handleChange('custoAquisicao', e.target.value)}
                       className="mt-1"
                     />
@@ -518,7 +608,8 @@ export default function CalculadoraLaserSection() {
                     <Label className="text-sm font-medium">Custos Adicionais (Frete, Instalação)</Label>
                     <Input
                       type="number"
-                      value={dados.custosAdicionais}
+                      placeholder="Ex: 5000"
+                      value={showNum(dados.custosAdicionais)}
                       onChange={(e) => handleChange('custosAdicionais', e.target.value)}
                       className="mt-1"
                     />
@@ -527,7 +618,8 @@ export default function CalculadoraLaserSection() {
                     <Label className="text-sm font-medium">Custo de Aluguel/Leasing Mensal</Label>
                     <Input
                       type="number"
-                      value={dados.custoAluguel}
+                      placeholder="Ex: 4000"
+                      value={showNum(dados.custoAluguel)}
                       onChange={(e) => handleChange('custoAluguel', e.target.value)}
                       className="mt-1"
                     />
@@ -536,7 +628,8 @@ export default function CalculadoraLaserSection() {
                     <Label className="text-sm font-medium">Custo de Manutenção Anual</Label>
                     <Input
                       type="number"
-                      value={dados.manutencaoAnual}
+                      placeholder="Ex: 12000"
+                      value={showNum(dados.manutencaoAnual)}
                       onChange={(e) => handleChange('manutencaoAnual', e.target.value)}
                       className="mt-1"
                     />
@@ -545,7 +638,8 @@ export default function CalculadoraLaserSection() {
                     <Label className="text-sm font-medium">Vida Útil Estimada (anos)</Label>
                     <Input
                       type="number"
-                      value={dados.vidaUtil}
+                      placeholder="Ex: 5"
+                      value={showNum(dados.vidaUtil)}
                       onChange={(e) => handleChange('vidaUtil', e.target.value)}
                       className="mt-1"
                     />
@@ -554,7 +648,8 @@ export default function CalculadoraLaserSection() {
                     <Label className="text-sm font-medium">Taxa Renda Fixa (Selic/CDI Anual %)</Label>
                     <Input
                       type="number"
-                      value={dados.taxaSelic}
+                      placeholder="Ex: 10"
+                      value={showNum(dados.taxaSelic)}
                       onChange={(e) => handleChange('taxaSelic', e.target.value)}
                       className="mt-1"
                     />
@@ -573,7 +668,8 @@ export default function CalculadoraLaserSection() {
                     <Label className="text-sm font-medium">Custo Variável por Procedimento</Label>
                     <Input
                       type="number"
-                      value={dados.custoVariavel}
+                      placeholder="Ex: 50"
+                      value={showNum(dados.custoVariavel)}
                       onChange={(e) => handleChange('custoVariavel', e.target.value)}
                       className="mt-1"
                     />
@@ -582,7 +678,8 @@ export default function CalculadoraLaserSection() {
                     <Label className="text-sm font-medium">Custos Fixos Atuais da Clínica (Mensal)</Label>
                     <Input
                       type="number"
-                      value={dados.custoFixoClinica}
+                      placeholder="Ex: 20000"
+                      value={showNum(dados.custoFixoClinica)}
                       onChange={(e) => handleChange('custoFixoClinica', e.target.value)}
                       className="mt-1"
                     />
@@ -591,7 +688,8 @@ export default function CalculadoraLaserSection() {
                     <Label className="text-sm font-medium">Sessões por Hora (Produtividade)</Label>
                     <Input
                       type="number"
-                      value={dados.sessoesHora}
+                      placeholder="Ex: 2"
+                      value={showNum(dados.sessoesHora)}
                       onChange={(e) => handleChange('sessoesHora', e.target.value)}
                       className="mt-1"
                     />
@@ -600,7 +698,8 @@ export default function CalculadoraLaserSection() {
                     <Label className="text-sm font-medium">Dias/Mês Dedicados ao Laser</Label>
                     <Input
                       type="number"
-                      value={dados.diasMes}
+                      placeholder="Ex: 20"
+                      value={showNum(dados.diasMes)}
                       onChange={(e) => handleChange('diasMes', e.target.value)}
                       className="mt-1"
                     />
@@ -609,7 +708,8 @@ export default function CalculadoraLaserSection() {
                     <Label className="text-sm font-medium">Horas/Dia Dedicadas ao Laser</Label>
                     <Input
                       type="number"
-                      value={dados.horasDia}
+                      placeholder="Ex: 6"
+                      value={showNum(dados.horasDia)}
                       onChange={(e) => handleChange('horasDia', e.target.value)}
                       className="mt-1"
                     />
@@ -628,7 +728,8 @@ export default function CalculadoraLaserSection() {
                     <Label className="text-sm font-medium">Preço Médio por Sessão (Tabela)</Label>
                     <Input
                       type="number"
-                      value={dados.precoMedio}
+                      placeholder="Ex: 800"
+                      value={showNum(dados.precoMedio)}
                       onChange={(e) => handleChange('precoMedio', e.target.value)}
                       className="mt-1"
                     />
@@ -637,7 +738,8 @@ export default function CalculadoraLaserSection() {
                     <Label className="text-sm font-medium">Desconto Médio em Pacotes (%)</Label>
                     <Input
                       type="number"
-                      value={dados.descontoMedio}
+                      placeholder="Ex: 15"
+                      value={showNum(dados.descontoMedio)}
                       onChange={(e) => handleChange('descontoMedio', e.target.value)}
                       className="mt-1"
                     />
