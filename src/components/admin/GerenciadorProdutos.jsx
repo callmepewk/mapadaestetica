@@ -25,6 +25,8 @@ export default function GerenciadorProdutos() {
   const [busca, setBusca] = useState('');
   const [produtoEditando, setProdutoEditando] = useState(null);
   const [mostrarModalEdicao, setMostrarModalEdicao] = useState(false);
+  const [produtoPreview, setProdutoPreview] = useState(null);
+  const [mostrarModalPreview, setMostrarModalPreview] = useState(false);
 
   const { data: produtos = [], isLoading } = useQuery({
     queryKey: ['admin-produtos'],
@@ -135,17 +137,18 @@ export default function GerenciadorProdutos() {
                             </Badge>
                           </TableCell>
                           <TableCell className="text-right">
-                            <div className="flex gap-2 justify-end">
-                              {p.status === 'pendente' && (
-                                <>
-                                  <Button size="sm" variant="success" onClick={() => handleStatusChange(p.id, 'ativo')}><CheckCircle className="w-4 h-4 mr-1"/> Aprovar</Button>
-                                  <Button size="sm" variant="destructive" onClick={() => handleStatusChange(p.id, 'rejeitado')}><XCircle className="w-4 h-4 mr-1"/> Rejeitar</Button>
-                                </>
-                              )}
-                              <Button size="sm" variant="outline" onClick={() => handleEdit(p)}><Edit className="w-4 h-4 mr-1"/> Editar</Button>
-                              <Button size="sm" variant="ghost" onClick={() => handleDelete(p.id)}><Trash2 className="w-4 h-4 text-red-500"/></Button>
-                            </div>
-                          </TableCell>
+                             <div className="flex gap-2 justify-end">
+                               <Button size="sm" variant="outline" onClick={() => { setProdutoPreview(p); setMostrarModalPreview(true); }}>Ver</Button>
+                               {p.status === 'pendente' && (
+                                 <>
+                                   <Button size="sm" variant="success" onClick={() => handleStatusChange(p.id, 'ativo')}><CheckCircle className="w-4 h-4 mr-1"/> Aprovar</Button>
+                                   <Button size="sm" variant="destructive" onClick={() => handleStatusChange(p.id, 'rejeitado')}><XCircle className="w-4 h-4 mr-1"/> Rejeitar</Button>
+                                 </>
+                               )}
+                               <Button size="sm" variant="outline" onClick={() => handleEdit(p)}><Edit className="w-4 h-4 mr-1"/> Editar</Button>
+                               <Button size="sm" variant="ghost" onClick={() => handleDelete(p.id)}><Trash2 className="w-4 h-4 text-red-500"/></Button>
+                             </div>
+                           </TableCell>
                         </TableRow>
                       );
                     })
@@ -197,5 +200,40 @@ export default function GerenciadorProdutos() {
         )}
       </CardContent>
     </Card>
+
+    {produtoPreview && (
+      <Dialog open={mostrarModalPreview} onOpenChange={setMostrarModalPreview}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Prévia: {produtoPreview.nome}</DialogTitle>
+            <DialogDescription>Visualização completa do produto/serviço.</DialogDescription>
+          </DialogHeader>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="rounded overflow-hidden bg-gray-100">
+              {produtoPreview.imagens && produtoPreview.imagens.length > 0 ? (
+                <img
+                  src={produtoPreview.imagens[0]}
+                  alt={produtoPreview.nome}
+                  className="w-full h-64 object-cover"
+                  onError={(e)=>{ e.currentTarget.onerror=null; e.currentTarget.src='https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1200&auto=format&fit=crop'; }}
+                />
+              ) : (
+                <div className="w-full h-64 flex items-center justify-center text-5xl text-gray-400">📦</div>
+              )}
+            </div>
+            <div>
+              <p className="text-sm text-gray-600 mb-2"><Badge variant="outline">{produtoPreview.categoria || 'Sem categoria'}</Badge></p>
+              <p className="text-sm text-gray-700 whitespace-pre-line mb-3">{produtoPreview.descricao || 'Sem descrição'}</p>
+              <div className="space-y-2 text-sm">
+                {typeof produtoPreview.preco === 'number' && <p><strong>Preço:</strong> R$ {produtoPreview.preco.toFixed(2)}</p>}
+                {typeof produtoPreview.pontos_necessarios === 'number' && <p><strong>Pontos necessários:</strong> {produtoPreview.pontos_necessarios}</p>}
+                {typeof produtoPreview.estoque === 'number' && <p><strong>Estoque:</strong> {produtoPreview.estoque}</p>}
+                {produtoPreview.marca && <p><strong>Marca:</strong> {produtoPreview.marca}</p>}
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    )}
   );
 }
