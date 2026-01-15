@@ -65,9 +65,9 @@ export default function BoostProfile() {
         </div>
         <Progress value={percent} />
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
-          <Button onClick={shareNative} className="w-full">Compartilhar (nativo)</Button>
+          <Button onClick={shareNative} className="w-full bg-pink-600 hover:bg-pink-700 text-white">Compartilhar (nativo)</Button>
           <Button onClick={shareWhatsApp} className="w-full bg-green-600 hover:bg-green-700 text-white"><MessageCircle className="w-4 h-4 mr-2"/> WhatsApp</Button>
-          <Button onClick={shareInstagram} variant="outline" className="w-full"><Instagram className="w-4 h-4 mr-2"/> Instagram Direct</Button>
+          <Button onClick={shareInstagram} variant="outline" className="w-full text-gray-800 border-gray-300 hover:bg-gray-50"><Instagram className="w-4 h-4 mr-2"/> Instagram Direct</Button>
         </div>
         <p className="text-xs text-gray-500 mt-3">O link do seu perfil será compartilhado. No Instagram, a mensagem é copiada para você colar no Direct.</p>
       </CardContent>
