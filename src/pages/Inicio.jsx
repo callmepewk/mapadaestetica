@@ -588,6 +588,17 @@ export default function Inicio() {
       {/* VISÃO PROFISSIONAL/PATROCINADOR */}
       {isProfissional && (
         <>
+          {/* Barra Calendário/Mensagem - Profissional/Patrocinador */}
+          <div className="bg-white/90 backdrop-blur sticky top-[60px] z-30 border-b">
+            <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between text-sm text-gray-700">
+              <div className="font-semibold">
+                {agora.toLocaleDateString('pt-BR', { weekday:'long', day:'2-digit', month:'long', year:'numeric' })}
+                {' • '}
+                {agora.toLocaleTimeString('pt-BR')}
+              </div>
+              <div className="text-pink-600 font-medium">Seu trabalho transforma vidas — bora crescer hoje ✨</div>
+            </div>
+          </div>
           {/* Hero imagem saúde/bem-estar */}
           <section className="relative py-10 md:py-14 bg-white">
             <div className="max-w-7xl mx-auto px-4">
