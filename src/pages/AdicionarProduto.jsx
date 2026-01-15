@@ -110,6 +110,11 @@ export default function AdicionarProduto() {
         return;
       }
       // Se não tem preço, precisa ter preco_texto
+      if (produto.preco < 0 || produto.preco_promocional < 0 || produto.estoque < 0) {
+        alert("Valores não podem ser negativos.");
+        setLoading(false);
+        return;
+      }
       if (produto.preco === 0 && !produto.preco_texto && produto.pontos_necessarios === 0) {
         const confirma = window.confirm(
           "Este produto não tem preço definido. Deseja continuar?"
@@ -221,7 +226,7 @@ export default function AdicionarProduto() {
                 <Label htmlFor="tipo">Tipo *</Label>
                 <Select
                   value={produto.tipo}
-                  onValueChange={(value) => setProduto({ ...produto, tipo: value })}
+                  onValueChange={(value) => setProduto({ ...produto, tipo: value, ...(value === 'servico' ? { estoque: 0 } : {}) })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione..." />
