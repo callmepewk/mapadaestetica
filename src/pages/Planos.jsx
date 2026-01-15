@@ -102,7 +102,7 @@ const planos = [
       "1 Especialidade cadastrada",
       "8 Anúncios ativos",
       "8 Tags/palavras-chave do Google Negócio",
-      "30 dias de exposição por anúncio",
+      "45 dias de exposição por anúncio",
       "Perfil destacado",
       "Suporte prioritário",
       "Estatísticas avançadas",
@@ -167,6 +167,8 @@ const planos = [
     destaque: false,
     linkPagamento: "https://payfast.greenn.com.br/146195",
     limites: {
+      radar_frequencia: 4,
+      relatorios: 10,
       especialidades: 3,
       anuncios: 25,
       tags: 20,
