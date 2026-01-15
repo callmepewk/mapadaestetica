@@ -77,7 +77,7 @@ export default function GerenciadorProdutos() {
   }, [produtos, aba, busca]);
 
   return (
-    <>
+    <div>
       <Card>
       <CardHeader>
         <CardTitle>Gerenciamento de Produtos e Serviços</CardTitle>
