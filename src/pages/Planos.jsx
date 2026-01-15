@@ -220,7 +220,7 @@ const planos = [
       "2 ou+ Especialidades",
       "Até 20 anúncios",
       "20 Tags/palavras-chave premium",
-      "30 dias de exposição por anúncio",
+      "90 dias de exposição por anúncio",
       "Smart Clinic R$ 298 + R$ 399 (e Cloud IA) - Incluídos",
       "Cloud.IA sem integração de sistemas internos (sob consulta)",
       "Integração completa WhatsApp Business API",
