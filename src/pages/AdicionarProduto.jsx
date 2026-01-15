@@ -42,13 +42,14 @@ export default function AdicionarProduto() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [gerandoIA, setGerandoIA] = useState(false);
   const [gerandoImagem, setGerandoImagem] = useState(false);
+  const [aiSugerindo, setAiSugerindo] = useState(false);
   // Opções sugeridas (extensíveis)
   const [marcaOptions, setMarcaOptions] = useState([
     "Lumenis","Candela","Cynosure","Alma","Lutronic","Fotona","DEKA","Asclepion","Syneron","Sciton","Cutera","Quanta System","Venus Concept","Zimmer","InMode","BTL","Quanta","Milesman","Primelase","Elysion","Asclepion Thunder","Motus","Clarity","LightSheer","Soprano","Icon","PicoSure","PicoWay","Discovery Pico","StarWalker","Nordlys","M22"
   ]);
-  const [tipoLaserOptions] = useState([
-    "Alexandrite","Nd:YAG","Diodo","CO2","Er:YAG","IPL (Luz Pulsada)","PDL (Pulsed Dye)","Thulium","Holmium","Q-Switched","Pico (Picosegundo)","Er:Glass","CO2 Fracionado"
-  ]);
+  const [tipoLaserOptions, setTipoLaserOptions] = useState([
+      "Alexandrite","Nd:YAG","Diodo","CO2","Er:YAG","IPL (Luz Pulsada)","PDL (Pulsed Dye)","Thulium","Holmium","Q-Switched","Pico (Picosegundo)","Er:Glass","CO2 Fracionado"
+    ]);
   const [modeloOptions, setModeloOptions] = useState([
     "GentleMax Pro","GentleLase","GentleYAG","Soprano ICE","Soprano Titanium","LightSheer Duet","LightSheer Desire","Elite+","Elite iQ","Icon","PicoSure","PicoWay","PicoPlus","Discovery Pico","StarWalker","QX Max","Thunder MT","Motus AX","Motus AY","Clarity","Clarity II","Excel V","Xeo","Genesis","Harmony XL Pro","Quanta Q-Plus","Primelase HR","Milesman Blauman","SP Dynamis","CO2RE","SmartXide Touch","Nordlys","M22"
   ]);
@@ -191,6 +192,39 @@ export default function AdicionarProduto() {
     }
   };
 
+  // Escrita assistida por IA (sugestões de equipamentos)
+  React.useEffect(() => {
+    if (produto.categoria !== 'Equipamentos') return;
+    const query = `${produto.marca || ''} ${produto.modelo || ''} ${produto.tipo_laser || ''}`.trim();
+    if (query.length < 2) return;
+    const t = setTimeout(async () => {
+      setAiSugerindo(true);
+      try {
+        const schema = {
+          type: 'object',
+          properties: {
+            modelos: { type: 'array', items: { type: 'string' } },
+            marcas: { type: 'array', items: { type: 'string' } },
+            tipos: { type: 'array', items: { type: 'string' } },
+          },
+        };
+        const res = await base44.integrations.Core.InvokeLLM({
+          prompt: `Liste sugestões curtas e comerciais de equipamentos de estética (laser e afins) relacionados a: "${query}". Retorne até 12 modelos, 12 marcas e 12 tipos (exatos e reais do segmento).`,
+          response_json_schema: schema,
+        });
+        const modelos = Array.isArray(res?.modelos) ? res.modelos : [];
+        const marcas = Array.isArray(res?.marcas) ? res.marcas : [];
+        const tipos = Array.isArray(res?.tipos) ? res.tipos : [];
+        if (modelos.length) setModeloOptions((prev) => Array.from(new Set([...modelos, ...prev])).slice(0, 50));
+        if (marcas.length) setMarcaOptions((prev) => Array.from(new Set([...marcas, ...prev])).slice(0, 50));
+        if (tipos.length) setTipoLaserOptions((prev) => Array.from(new Set([...tipos, ...prev])).slice(0, 50));
+      } finally {
+        setAiSugerindo(false);
+      }
+    }, 500);
+    return () => clearTimeout(t);
+  }, [produto.categoria, produto.marca, produto.modelo, produto.tipo_laser]);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
       <div className="max-w-4xl mx-auto px-4">
@@ -321,6 +355,7 @@ export default function AdicionarProduto() {
                         options={tipoLaserOptions}
                         placeholder="Selecione ou digite o tipo (ex: Alexandrite)"
                       />
+                      <p className="text-xs text-gray-500 mt-1">Sugestões automáticas de tipos conhecidos de equipamentos.</p>
                     </div>
                     <div>
                       <Label htmlFor="modelo">Modelo</Label>
@@ -332,6 +367,7 @@ export default function AdicionarProduto() {
                         onCreateOption={(v)=> setModeloOptions((prev)=> [v, ...prev])}
                         placeholder="Selecione ou digite o modelo"
                       />
+                      <p className="text-xs text-gray-500 mt-1">Escrita assistida por IA: comece a digitar e sugerimos modelos reais ({aiSugerindo ? 'gerando…' : 'sugestões ativas'}).</p>
                     </div>
                   </div>
                 )}
