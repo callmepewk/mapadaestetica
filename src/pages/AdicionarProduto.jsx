@@ -54,7 +54,14 @@ export default function AdicionarProduto() {
     status: "ativo",
     link_pagamento: "", // Novo campo
     requer_assinatura: false, // Para produtos exclusivos do clube
-    mostrar_tag_clube: false
+    mostrar_tag_clube: false,
+    // Novos campos para fornecedores/oferta
+    fornecedor_nome: "",
+    fornecedor_tipo: "fornecedor", // fornecedor | distribuidor | fabricante | revenda
+    tipo_oferta: "unidade", // unidade | lote | sob_demanda
+    lote_minimo: 1,
+    aceitar_chat: true,
+    aceitar_orcamento: false
   });
 
   const handleUploadImage = async (e) => {
@@ -272,6 +279,51 @@ export default function AdicionarProduto() {
                     onChange={(e) => setProduto({ ...produto, marca: e.target.value })}
                     placeholder="Nome da marca"
                   />
+                </div>
+              </div>
+
+              {/* Fornecedor e Oferta */}
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="fornecedor_nome">Nome do Fornecedor</Label>
+                  <Input id="fornecedor_nome" value={produto.fornecedor_nome} onChange={(e)=>setProduto({ ...produto, fornecedor_nome: e.target.value })} placeholder="Ex: Distribuidora ABC" />
+                </div>
+                <div>
+                  <Label htmlFor="fornecedor_tipo">Classificação</Label>
+                  <Select value={produto.fornecedor_tipo} onValueChange={(v)=>setProduto({ ...produto, fornecedor_tipo: v })}>
+                    <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="fornecedor">Fornecedor</SelectItem>
+                      <SelectItem value="distribuidor">Distribuidor</SelectItem>
+                      <SelectItem value="fabricante">Fabricante</SelectItem>
+                      <SelectItem value="revenda">Revenda</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="tipo_oferta">Tipo de Oferta</Label>
+                  <Select value={produto.tipo_oferta} onValueChange={(v)=>setProduto({ ...produto, tipo_oferta: v })}>
+                    <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="unidade">Unidade</SelectItem>
+                      <SelectItem value="lote">Lote</SelectItem>
+                      <SelectItem value="sob_demanda">Sob demanda (orçamento)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {produto.tipo_oferta === 'lote' && (
+                  <div>
+                    <Label htmlFor="lote_minimo">Lote mínimo</Label>
+                    <Input id="lote_minimo" type="number" value={produto.lote_minimo} onChange={(e)=>setProduto({ ...produto, lote_minimo: parseInt(e.target.value)||1 })} />
+                  </div>
+                )}
+                <div className="flex items-center gap-2">
+                  <Checkbox id="aceitar_chat" checked={produto.aceitar_chat} onCheckedChange={(c)=>setProduto({ ...produto, aceitar_chat: c })} />
+                  <Label htmlFor="aceitar_chat" className="cursor-pointer">Aceitar chat para este item</Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Checkbox id="aceitar_orcamento" checked={produto.aceitar_orcamento} onCheckedChange={(c)=>setProduto({ ...produto, aceitar_orcamento: c })} />
+                  <Label htmlFor="aceitar_orcamento" className="cursor-pointer">Permitir solicitar orçamento (sob demanda)</Label>
                 </div>
               </div>
 

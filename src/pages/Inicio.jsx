@@ -54,8 +54,7 @@ import PatrocinadoresGrid from "../components/home/PatrocinadoresGrid";
 import SecaoTutoriais from "../components/home/SecaoTutoriais";
 import SeletorTipoUsuario from "../components/home/SeletorTipoUsuario";
 import HomeRealtimeStats from "../components/analytics/HomeRealtimeStats";
-import TrendRadar from "../components/analytics/TrendRadar/TrendRadar";
-import AestheticRadar from "../components/analytics/AestheticRadar";
+
 
 const categorias = [
   { nome: "Depilação", cor: "from-pink-500 to-rose-500", icon: "✨" },
