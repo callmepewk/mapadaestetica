@@ -236,6 +236,6 @@ export default function GerenciadorProdutos() {
         </DialogContent>
       </Dialog>
     )}
-    </>
+    </div>
   );
 }
