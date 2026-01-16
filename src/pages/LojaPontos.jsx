@@ -79,9 +79,10 @@ export default function LojaPontos() {
 
   const categorias = ["Todos", "Cuidados com a Pele", "Cabelos", "Maquiagem", "Outros"];
 
-  // Aplicar visibilidade por plano também na Loja de Pontos
+  // Visibilidade por plano (Mapa da Estética) + Beauty Club
   const ordemPlanos = ['free','lite','basico','pro','prime','premium'];
-  const produtosVisiveisPlano = produtos.filter(p => {
+  const ordemBC = ['none','basic','pro','exclusive'];
+  const produtosVisiveisPlano = produtos.filter((p) => {
     // Gating por plano Mapa da Estética (profissionais)
     const min = p.plano_minimo || 'free';
     const ordemPlanos = ['free','lite','basico','pro','prime','premium'];
