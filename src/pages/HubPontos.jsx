@@ -43,6 +43,24 @@ export default function HubPontos() {
   const [modalidade, setModalidade] = useState("entrega");
   const [localSelecionado, setLocalSelecionado] = useState("");
   const [publicoPlano, setPublicoPlano] = useState("free");
+
+  // Filtragem do catálogo (sempre declarar hooks antes de qualquer return)
+  const catalogoFiltrado = React.useMemo(() => {
+    return CATALOGO.filter(item => {
+      const nome = (item.nome || '').toLowerCase();
+      const tipoCalc = /massagem|spa|consulta|sessão|reflexologia|shiatsu/i.test(nome)
+        ? 'servicos'
+        : /curso|workshop|convenção|evento/i.test(nome)
+        ? 'eventos'
+        : /dermafellow/i.test(nome)
+        ? 'dermafellow'
+        : 'produtos';
+      const matchBusca = !pesquisa || nome.includes(pesquisa.toLowerCase());
+      const matchTipo = filtroTipo === 'todos' || filtroTipo === tipoCalc;
+      const matchPontos = item.pontos >= pontosRange[0] && item.pontos <= pontosRange[1];
+      return matchBusca && matchTipo && matchPontos;
+    });
+  }, [pesquisa, filtroTipo, pontosRange]);
   const [bulkAtualizando, setBulkAtualizando] = useState(false);
   const [pedidos, setPedidos] = useState([]);
   const [produtosMeus, setProdutosMeus] = useState([]);
@@ -101,23 +119,6 @@ export default function HubPontos() {
 
   const plan = user?.plano_ativo || 'cobre';
   const pontosPorAtendimento = PLAN_POINTS[plan] ?? 5;
-
-  const catalogoFiltrado = React.useMemo(() => {
-    return CATALOGO.filter(item => {
-      const nome = (item.nome || '').toLowerCase();
-      const tipoCalc = /massagem|spa|consulta|sessão|reflexologia|shiatsu/i.test(nome)
-        ? 'servicos'
-        : /curso|workshop|convenção|evento/i.test(nome)
-        ? 'eventos'
-        : /dermafellow/i.test(nome)
-        ? 'dermafellow'
-        : 'produtos';
-      const matchBusca = !pesquisa || nome.includes(pesquisa.toLowerCase());
-      const matchTipo = filtroTipo === 'todos' || filtroTipo === tipoCalc;
-      const matchPontos = item.pontos >= pontosRange[0] && item.pontos <= pontosRange[1];
-      return matchBusca && matchTipo && matchPontos;
-    });
-  }, [pesquisa, filtroTipo, pontosRange]);
 
   const handleRegistrar = async () => {
     if (!clienteEmail || !clienteNome) { alert('Informe nome e email do cliente.'); return; }
