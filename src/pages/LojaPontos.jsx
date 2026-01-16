@@ -363,7 +363,7 @@ export default function LojaPontos() {
                           <p className="text-sm text-gray-600">Beauty Coin(s)</p>
                         </div>
                         <Button
-                          onClick={() => setQuantidadeBeautyCoins(quantidadeBeautyCoins + 1)
+                          onClick={() => setQuantidadeBeautyCoins(quantidadeBeautyCoins + 1)}
                           variant="outline"
                           size="sm"
                           className="border-2"
