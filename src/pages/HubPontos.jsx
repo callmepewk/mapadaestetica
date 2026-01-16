@@ -198,10 +198,32 @@ export default function HubPontos() {
            </Select>
          </div>
          <div className="w-full md:w-auto md:min-w-[280px]">
-           <label className="text-xs text-gray-600">Faixa de pontos (0 a 50.000)</label>
-           <div className="px-2">
-             <Slider value={pontosRange} onValueChange={setPontosRange} min={0} max={50000} step={100} className="mt-2"/>
-           </div>
+           <label className="text-xs text-gray-600">Faixa de pontos</label>
+           <Select onValueChange={(v)=>{
+             const mapa={
+               '0-100':[0,100],
+               '100-500':[100,500],
+               '500-1k':[500,1000],
+               '1k-2k':[1000,2000],
+               '2k-5k':[2000,5000],
+               '5k-10k':[5000,10000],
+               '10k-20k':[10000,20000],
+               '20k-50k':[20000,50000]
+             };
+             setPontosRange(mapa[v]);
+           }}>
+             <SelectTrigger className="mt-2"><SelectValue placeholder="Selecione"/></SelectTrigger>
+             <SelectContent>
+               <SelectItem value="0-100">0–100</SelectItem>
+               <SelectItem value="100-500">100–500</SelectItem>
+               <SelectItem value="500-1k">500–1.000</SelectItem>
+               <SelectItem value="1k-2k">1.000–2.000</SelectItem>
+               <SelectItem value="2k-5k">2.000–5.000</SelectItem>
+               <SelectItem value="5k-10k">5.000–10.000</SelectItem>
+               <SelectItem value="10k-20k">10.000–20.000</SelectItem>
+               <SelectItem value="20k-50k">20.000–50.000</SelectItem>
+             </SelectContent>
+           </Select>
            <div className="text-xs text-gray-500 mt-1">{pontosRange[0]} pts — {pontosRange[1]} pts</div>
          </div>
           <Shield className="w-4 h-4 text-pink-600"/>
