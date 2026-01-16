@@ -938,6 +938,9 @@ export default function Produtos() {
                           {produto.programa_12_meses && (
                             <Badge className="bg-amber-100 text-amber-800">Programa 12 meses</Badge>
                           )}
+                          {produto.tipo_oferta === 'dropshipping' && (
+                            <Badge className="bg-teal-100 text-teal-800">Dropshipping</Badge>
+                          )}
                           {produto.mostrar_tag_clube || produto?.mostrar_tag_clube && (
                             <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
                               <Crown className="w-3 h-3 mr-1" /> Parceiro Clube+

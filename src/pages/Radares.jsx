@@ -4,11 +4,21 @@ import RadarSection from "../components/analytics/RadarSection";
 import HomeRealtimeStats from "../components/analytics/HomeRealtimeStats";
 import ProgramasInsights from "../components/analytics/ProgramasInsights";
 import RealtimeStats from "../components/pro/RealtimeStats";
+import { useQueryClient } from "@tanstack/react-query";
+import ProgramasInsights from "../components/analytics/ProgramasInsights";
 
 export default function Radares() {
   const [user, setUser] = useState(null);
   useEffect(() => { (async () => { try { setUser(await base44.auth.me()); } catch {} })(); }, []);
-  const isProf = user?.tipo_usuario === 'profissional' || user?.role === 'admin';
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    const unsubs = [
+      base44.entities.Produto.subscribe(()=> queryClient.invalidateQueries()),
+      base44.entities.AtendimentoPontos.subscribe(()=> queryClient.invalidateQueries()),
+      base44.entities.SearchEvent.subscribe(()=> queryClient.invalidateQueries())
+    ];
+    return () => unsubs.forEach(u=>{ try { u(); } catch {} });
+  }, [queryClient]);
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
       <div className="max-w-7xl mx-auto px-4 space-y-8">

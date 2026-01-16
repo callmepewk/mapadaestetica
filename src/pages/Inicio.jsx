@@ -459,6 +459,24 @@ export default function Inicio() {
           {/* Banner Rotativo Topo */}
           <BannerRotativo posicao="home_topo" />
 
+          {/* Marketplace + Dados Analíticos */}
+          <section className="py-8">
+            <div className="max-w-7xl mx-auto px-4">
+              <div className="bg-white border-2 border-yellow-200 rounded-2xl p-6 shadow">
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Mapa da Estética: marketplace com dados analíticos</h2>
+                <p className="text-gray-700 mb-3">
+                  Somos um marketplace especializado em estética, com inteligência e dados analíticos para profissionais: acompanhe tendências, buscas e desempenho, e conecte-se a pacientes e parceiros.
+                </p>
+                <p className="text-gray-700 mb-3">
+                  Profissionais podem anunciar <strong>equipamentos e produtos</strong> no Mapa da Estética: publique na página <strong>Produtos</strong> ou venda via <strong>Hub/Loja de Pontos</strong> e alcance mais clientes.
+                </p>
+                <p className="text-gray-700">
+                  Oferecemos também um formato de <strong>dropshipping</strong>: o fornecedor envia direto ao cliente e nosso site atua como <em>intermediário</em>, simplificando operação e ampliando repertório de itens.
+                </p>
+              </div>
+            </div>
+          </section>
+
 
 
           {/* Categorias */}

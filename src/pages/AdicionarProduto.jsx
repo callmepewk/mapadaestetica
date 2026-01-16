@@ -94,8 +94,17 @@ export default function AdicionarProduto() {
     longitude: undefined,
     // Programa 12 meses
     programa_12_meses: false,
+    programa_tipo: "",
+    finalidade: "",
+    valor_programa: 0,
+    quantidade_sessoes: 0,
+    tempo_dias: 0,
+    tempo_meses: 0,
     tratamentos_inclusos_ids: [],
-    tratamentos_inclusos_nomes: []
+    tratamentos_inclusos_nomes: [],
+    // Dropshipping
+    dropshipping_prazo_envio_dias: undefined,
+    dropshipping_margem_intermediario: 0
     });
 
   const handleUploadImage = async (e) => {
@@ -453,7 +462,44 @@ export default function AdicionarProduto() {
                   </Label>
                 </div>
                 {produto.programa_12_meses && (
-                  <div className="space-y-2">
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <div>
+                      <Label>Tipo de Programa</Label>
+                      <Select value={produto.programa_tipo || ""} onValueChange={(v)=> setProduto({ ...produto, programa_tipo: v })}>
+                        <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="spa_da_pele">Spa da Pele</SelectItem>
+                          <SelectItem value="beauty_pass">Beauty Pass</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Qtd. de Sessões</Label>
+                      <Input type="number" value={produto.quantidade_sessoes || 0} onChange={(e)=> setProduto({ ...produto, quantidade_sessoes: parseInt(e.target.value)||0 })} />
+                    </div>
+                    <div>
+                      <Label>Valor do Programa (R$)</Label>
+                      <Input type="number" step="0.01" value={produto.valor_programa || 0} onChange={(e)=> setProduto({ ...produto, valor_programa: parseFloat(e.target.value)||0 })} />
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <Label>Tempo de realização (dias)</Label>
+                      <Input type="number" value={produto.tempo_dias || 0} onChange={(e)=> setProduto({ ...produto, tempo_dias: parseInt(e.target.value)||0 })} />
+                    </div>
+                    <div>
+                      <Label>Tempo de realização (meses)</Label>
+                      <Input type="number" value={produto.tempo_meses || 0} onChange={(e)=> setProduto({ ...produto, tempo_meses: parseInt(e.target.value)||0 })} />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 mt-2">
+                    <Label>Finalidade (objetivo clínico)</Label>
+                    <Textarea rows={3} placeholder="Ex: Redução de manchas, rejuvenescimento, melhora da textura..." value={produto.finalidade} onChange={(e)=> setProduto({ ...produto, finalidade: e.target.value })} />
+                  </div>
+
+                  <div className="space-y-2 mt-4">
                     <Label>Adicionar Tratamentos do Banco de Dados</Label>
                     <Input
                       placeholder="Buscar tratamentos (nome técnico)"
@@ -527,6 +573,7 @@ export default function AdicionarProduto() {
                       <SelectItem value="unidade">Unidade</SelectItem>
                       <SelectItem value="lote">Lote</SelectItem>
                       <SelectItem value="sob_demanda">Sob demanda (orçamento)</SelectItem>
+                      <SelectItem value="dropshipping">Dropshipping</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -536,7 +583,19 @@ export default function AdicionarProduto() {
                     <Input id="lote_minimo" type="number" value={produto.lote_minimo} onChange={(e)=>setProduto({ ...produto, lote_minimo: parseInt(e.target.value)||1 })} />
                   </div>
                 )}
-                <div className="flex items-center gap-2">
+                {produto.tipo_oferta === 'dropshipping' && (
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="prazo_envio">Prazo de envio (dias)</Label>
+                      <Input id="prazo_envio" type="number" value={produto.dropshipping_prazo_envio_dias || ''} onChange={(e)=> setProduto({ ...produto, dropshipping_prazo_envio_dias: parseInt(e.target.value)||0 })} />
+                    </div>
+                    <div>
+                      <Label htmlFor="margem">Margem do intermediário</Label>
+                      <Input id="margem" type="number" step="0.01" value={produto.dropshipping_margem_intermediario || 0} onChange={(e)=> setProduto({ ...produto, dropshipping_margem_intermediario: parseFloat(e.target.value)||0 })} />
+                    </div>
+                  </div>
+                )}
+                  <div className="flex items-center gap-2">
                   <Checkbox id="aceitar_chat" checked={produto.aceitar_chat} onCheckedChange={(c)=>setProduto({ ...produto, aceitar_chat: c })} />
                   <Label htmlFor="aceitar_chat" className="cursor-pointer">Aceitar chat para este item</Label>
                 </div>

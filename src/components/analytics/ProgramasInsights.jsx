@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, Activity, DollarSign, Search } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 function groupCount(list, keyFn) {
   const map = new Map();
@@ -18,6 +19,10 @@ function groupCount(list, keyFn) {
 }
 
 export default function ProgramasInsights() {
+  const [user, setUser] = React.useState(null);
+  React.useEffect(()=>{ (async()=>{ try { setUser(await base44.auth.me()); } catch {} })(); },[]);
+  const plan = user?.plano_ativo || 'free';
+
   const { data: programas = [] } = useQuery({
     queryKey: ["programas-12m-radar"],
     queryFn: async () => await base44.entities.Produto.filter({ programa_12_meses: true, status: "ativo" }),
@@ -58,16 +63,28 @@ export default function ProgramasInsights() {
   });
 
   const marcasOrdenadas = groupCount(produtosAtivos, (p) => (p.marca || "").trim()).filter((m) => m.key && m.key.length > 0);
-  const marcasAlta = marcasOrdenadas.slice(0, 5);
-  const marcasBaixa = marcasOrdenadas.slice(-5).reverse();
+  const limit = plan === 'free' ? 3 : 5;
+  const marcasAlta = marcasOrdenadas.slice(0, limit);
+  const marcasBaixa = marcasOrdenadas.slice(-limit).reverse();
 
   // Tratamentos mais procurados a partir de buscas
-  const topBuscas = groupCount(buscas, (b) => (b.query || "").toLowerCase()).slice(0, 5);
+  const topBuscas = groupCount(buscas, (b) => (b.query || "").toLowerCase()).slice(0, limit);
 
   // Custo por sessão médio nacional (com base em atendimentos)
   const custoNacional = ticketMedioSessao;
   // Internacional: sem fonte confiável no momento
   const custoInternacional = null;
+
+  // Assinaturas para tempo real
+  const queryClient = useQueryClient();
+  React.useEffect(() => {
+    const unsubs = [
+      base44.entities.Produto.subscribe(()=> queryClient.invalidateQueries()),
+      base44.entities.AtendimentoPontos.subscribe(()=> queryClient.invalidateQueries()),
+      base44.entities.SearchEvent.subscribe(()=> queryClient.invalidateQueries())
+    ];
+    return () => unsubs.forEach(u=> { try { u(); } catch {} });
+  }, [queryClient]);
 
   return (
     <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -150,6 +167,9 @@ export default function ProgramasInsights() {
               <Badge className="bg-amber-100 text-amber-800">{b.count}</Badge>
             </div>
           ))}
+          {plan === 'free' && (
+            <p className="text-[11px] text-amber-600 mt-2">Plano Free: exibindo amostra. Faça upgrade para ver tudo.</p>
+          )}
         </CardContent>
       </Card>
     </div>
