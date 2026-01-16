@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Save, Upload, Loader2, Wand2, Image, Sparkles } from "lucide-react";
+import { ArrowLeft, Save, Upload, Loader2, Wand2, Image as ImageIcon, Sparkles } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const categorias = [
@@ -269,7 +269,7 @@ export default function AdicionarProduto() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
-      <div className="max-w-4xl mx-auto px-4">
+      <div className="max-w-5xl mx-auto px-6 md:px-8">
         <Button
           variant="ghost"
           onClick={() => navigate(createPageUrl("Produtos"))}
@@ -305,7 +305,7 @@ export default function AdicionarProduto() {
                   disabled={gerandoImagem}
                   className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
                 >
-                  {gerandoImagem ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Image className="w-4 h-4 mr-2" />}
+                  {gerandoImagem ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <ImageIcon className="w-4 h-4 mr-2" />}
                   Gerar Imagem IA
                 </Button>
               </div>
@@ -862,7 +862,7 @@ export default function AdicionarProduto() {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                  className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
                 >
                   {loading ? (
                     <>
