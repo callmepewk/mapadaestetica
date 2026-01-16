@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { createPageUrl } from "@/utils";
+import ImageWithLoader from "../common/ImageWithLoader";
 import 'leaflet/dist/leaflet.css';
 
 // Componente para ajustar o centro do mapa quando a localização mudar
@@ -129,7 +130,7 @@ export default function MapaEstetica({ anuncios, minhaLocalizacao, cidadeFiltro,
             <Popup maxWidth={320} className="custom-popup">
               <div className="space-y-3 p-2">
                 {anuncio.imagem_principal && (
-                  <img
+                  <ImageWithLoader
                     src={anuncio.imagem_principal}
                     alt={anuncio.profissional}
                     className="w-full h-40 object-cover rounded-lg shadow-md"

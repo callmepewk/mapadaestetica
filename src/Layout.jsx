@@ -42,6 +42,7 @@ import SeletorVisaoAdmin from "./components/layout/SeletorVisaoAdmin";
 import LanguageSelector from "./components/layout/LanguageSelector";
 import { I18nProvider } from "./components/i18n/I18nProvider";
 import FloatingQuickbar from "./components/layout/FloatingQuickbar";
+import ImageWithLoader from "./components/common/ImageWithLoader";
 
 export default function Layout({ children }) {
   const location = useLocation();
@@ -340,14 +341,12 @@ export default function Layout({ children }) {
           <div className="flex items-center justify-between gap-1 sm:gap-2 md:gap-4">
             {/* Logo - REDUZIDO */}
             <Link to={createPageUrl("Inicio")} className="flex items-center gap-1 sm:gap-2 group flex-shrink-0">
-              <img
+              <ImageWithLoader
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/fd230be55_mapaimg.jpg"
                 alt="Mapa da Estética"
                 className="h-10 sm:h-12 md:h-14 lg:h-16 w-auto object-contain transform group-hover:scale-105 transition-transform"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe2/2274d89a4_logo_v1.png';
-                }}
+                fallbackUrl="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe2/2274d89a4_logo_v1.png"
+                eager
               />
             </Link>
 
@@ -738,14 +737,12 @@ export default function Layout({ children }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
             <div>
               {/* Logo do Mapa da Estética */}
-              <img
+              <ImageWithLoader
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/fd230be55_mapaimg.jpg"
                 alt="Mapa da Estética"
                 className="h-16 w-auto object-contain mb-4 brightness-0 invert"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe2/2274d89a4_logo_v1.png';
-                }}
+                fallbackUrl="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe2/2274d89a4_logo_v1.png"
+                eager
               />
               <p className="text-gray-400 text-sm mb-2">
                 A maior plataforma de profissionais de estética do Brasil.
@@ -762,14 +759,12 @@ export default function Layout({ children }) {
                   rel="noopener noreferrer"
                   className="block hover:opacity-80 transition-opacity"
                 >
-                  <img
+                  <ImageWithLoader
                     src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/652cd0312_clubeimg.jpeg"
                     alt="Clube da Beleza"
                     className="h-20 w-auto object-contain"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/b53be18d1_clubeimg.jpeg';
-                    }}
+                    fallbackUrl="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/b53be18d1_clubeimg.jpeg"
+                    eager
                   />
                 </a>
                 <p className="text-gray-400 text-xs mt-2">

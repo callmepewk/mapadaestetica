@@ -587,7 +587,7 @@ export default function AdicionarProduto() {
                   <div className="mt-4 grid grid-cols-3 gap-4">
                     {produto.imagens.map((img, index) => (
                       <div key={index} className="relative group">
-                        <img
+                        <ImageWithLoader
                           src={img}
                           alt={`Imagem ${index + 1}`}
                           className="w-full h-32 object-cover rounded-lg"

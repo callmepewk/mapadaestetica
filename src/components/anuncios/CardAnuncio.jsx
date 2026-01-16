@@ -21,7 +21,7 @@ export default function CardAnuncio({ anuncio, distancia }) {
     >
       <div className="relative h-40 sm:h-48 md:h-56 overflow-hidden bg-gray-100">
         {anuncio.imagem_principal ? (
-          <img
+          <ImageWithLoader
             src={anuncio.imagem_principal}
             alt={anuncio.titulo}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
@@ -71,10 +71,11 @@ export default function CardAnuncio({ anuncio, distancia }) {
         {/* Selo Clube da Beleza */}
         {anuncio.exibir_selo_clube && (
           <div className="absolute bottom-2 left-2">
-            <img
+            <ImageWithLoader
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/652cd0312_clubeimg.jpeg"
               alt="Clube da Beleza"
               className="w-6 h-6 rounded shadow border border-white"
+              fallbackUrl="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/b53be18d1_clubeimg.jpeg"
             />
           </div>
         )}
