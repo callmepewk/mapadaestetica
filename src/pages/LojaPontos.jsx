@@ -20,6 +20,7 @@ import {
   Check,      // New import
 } from "lucide-react";
 import { motion } from "framer-motion";
+import ImageWithLoader from "../components/common/ImageWithLoader";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from '@tanstack/react-query';
 import { createPageUrl } from "@/utils";
@@ -652,8 +653,8 @@ export default function LojaPontos() {
             >
               <div className="relative h-48 bg-gray-100 overflow-x-auto">
                 {produto.imagens && produto.imagens.length > 0 ? (
-                  <img
-                    src={produto.imagens[0]}
+                  <ImageWithLoader
+                    src={produto.imagens?.[0]}
                     alt={produto.nome}
                     className="max-w-none h-full w-auto object-contain"
                   />

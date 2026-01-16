@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import ImageWithLoader from "../components/common/ImageWithLoader";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -857,10 +858,11 @@ export default function Produtos() {
                       <div className="relative h-48 bg-gray-100 overflow-x-auto">
                         {/* Imagens focadas em bem-estar */}
                         {produto.imagens && produto.imagens.length > 0 ? (
-                          <img
+                          <ImageWithLoader
                             src={produto.imagens[0]}
                             alt={produto.nome}
                             className="w-full h-full object-cover"
+                            eager={false}
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-6xl text-gray-400">
@@ -1089,8 +1091,8 @@ export default function Produtos() {
                             >
                               <div className="w-16 h-16 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
                                 {item.imagens && item.imagens.length > 0 ? (
-                                  <img
-                                    src={item.imagens[0]}
+                                  <ImageWithLoader
+                                    src={item.imagens?.[0]}
                                     alt={item.nome}
                                     className="max-w-none h-full w-auto object-contain"
                                   />
