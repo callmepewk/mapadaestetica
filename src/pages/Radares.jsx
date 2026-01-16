@@ -5,7 +5,6 @@ import HomeRealtimeStats from "../components/analytics/HomeRealtimeStats";
 import ProgramasInsights from "../components/analytics/ProgramasInsights";
 import RealtimeStats from "../components/pro/RealtimeStats";
 import { useQueryClient } from "@tanstack/react-query";
-import ProgramasInsights from "../components/analytics/ProgramasInsights";
 
 export default function Radares() {
   const [user, setUser] = useState(null);
@@ -36,12 +35,14 @@ export default function Radares() {
           <h2 className="text-xl font-bold text-gray-900 mb-4">Data Science • Programas (12 meses)</h2>
           <ProgramasInsights />
         </section>
-        {isProf && (
-          <section>
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Suas métricas em tempo real</h2>
+        <section>
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Suas métricas em tempo real</h2>
+          {user ? (
             <RealtimeStats user={user} subtitle="Acompanhe visualizações, cliques e eventos ao vivo" />
-          </section>
-        )}
+          ) : (
+            <p className="text-sm text-gray-600">Entre para ver suas métricas pessoais em tempo real.</p>
+          )}
+        </section>
       </div>
     </div>
   );
