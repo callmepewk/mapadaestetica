@@ -20,6 +20,7 @@ import {
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from '@tanstack/react-query';
+import { createPageUrl } from "@/utils";
 
 const pontosPorFaixaPreco = {
   '$': 1,
