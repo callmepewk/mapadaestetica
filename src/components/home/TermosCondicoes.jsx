@@ -74,7 +74,7 @@ export default function TermosCondicoes() {
                   Aceitar
                 </Button>
                 <Button
-                  onClick={() => setMostrarBarra(false)}
+                  onClick={handleAceitarRapido}
                   size="sm"
                   variant="ghost"
                   className="text-white hover:bg-white/10"
