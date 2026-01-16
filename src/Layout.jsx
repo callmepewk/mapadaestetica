@@ -445,9 +445,15 @@ export default function Layout({ children }) {
                           </AvatarFallback>
                         </Avatar>
                         {/* Ícone de Edição - PRETO COM FUNDO BRANCO */}
-                        <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-white rounded-full flex items-center justify-center shadow-md border border-gray-200 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                          <User className="w-2.5 h-2.5 text-black" />
-                        </div>
+                        <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-white rounded-full flex items-center justify-center shadow-md border border-gray-200 z-10">
+                                                        {isPatrocinador ? (
+                                                          <Crown className="w-2.5 h-2.5 text-black" />
+                                                        ) : isProfissional ? (
+                                                          <Briefcase className="w-2.5 h-2.5 text-black" />
+                                                        ) : (
+                                                          <User className="w-2.5 h-2.5 text-black" />
+                                                        )}
+                                                      </div>
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56">
