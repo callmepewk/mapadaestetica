@@ -338,7 +338,7 @@ export default function AdicionarProduto() {
         <Card className="border-2 border-[#F7D426]/50 shadow-2xl rounded-2xl bg-white/90 backdrop-blur">
           <CardContent className="p-8 space-y-2">
             <div className="mb-6">
-              <h1 className="text-3xl font-bold text-gray-900 mb-1">
+              <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-1">
                 Adicionar Produto/Serviço
               </h1>
               <p className="text-gray-600">
