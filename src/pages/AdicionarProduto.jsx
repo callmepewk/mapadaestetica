@@ -43,6 +43,7 @@ export default function AdicionarProduto() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [gerandoIA, setGerandoIA] = useState(false);
   const [gerandoImagem, setGerandoImagem] = useState(false);
+  const [user, setUser] = useState(null);
   const [aiSugerindo, setAiSugerindo] = useState(false);
   // Opções sugeridas (extensíveis)
   const [marcaOptions, setMarcaOptions] = useState([
@@ -179,6 +180,8 @@ export default function AdicionarProduto() {
       setLoading(false);
     }
   };
+
+  React.useEffect(() => { (async()=>{ try { setUser(await base44.auth.me()); } catch {} })(); }, []);
 
   // IA: preencher dados a partir do nome
   const handlePreencherComIA = async () => {
@@ -449,6 +452,7 @@ export default function AdicionarProduto() {
                 )}
               </div>
 
+              {user?.role === 'admin' && (
               {/* Programa 12 meses */}
               <div className="p-4 rounded-lg border-2 border-amber-200 bg-amber-50 space-y-3">
                 <div className="flex items-center gap-2">
@@ -546,6 +550,8 @@ export default function AdicionarProduto() {
                   </div>
                 )}
               </div>
+
+              )}
 
               {/* Fornecedor e Oferta */}
               <div className="grid md:grid-cols-2 gap-4">
