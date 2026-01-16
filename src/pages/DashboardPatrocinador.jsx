@@ -46,6 +46,7 @@ import { ptBR } from "date-fns/locale";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input as InputUI } from "@/components/ui/input";
+import { Input } from "@/components/ui/input"; // keep alias and default for clarity
 import { Label } from "@/components/ui/label";
 
 
