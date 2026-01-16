@@ -346,6 +346,9 @@ export default function Produtos() {
   const [mostrarLoginPrompt, setMostrarLoginPrompt] = useState(false);
   const [carrinho, setCarrinho] = useState([]);
   const [faixaPontosFiltro, setFaixaPontosFiltro] = useState('todas');
+  // Agendamento
+  const [agendarOpen, setAgendarOpen] = useState(false);
+  const [produtoAgendar, setProdutoAgendar] = useState(null);
 
   // Carregar carrinho do localStorage
   useEffect(() => {
@@ -535,15 +538,20 @@ export default function Produtos() {
       setMostrarLoginPrompt(true);
       return;
     }
-    
-    // Para serviços exclusivos do clube, redirecionar para SobreNos
     if (servico.preco === 0 || !servico.preco || servico.requer_assinatura) {
       navigate(createPageUrl("SobreNos"));
       return;
     }
-
-    // Para outros serviços, adicionar ao carrinho
     handleAdicionarAoCarrinho(servico);
+  };
+
+  const handleAgendar = (item) => {
+    if (!user) {
+      setMostrarLoginPrompt(true);
+      return;
+    }
+    setProdutoAgendar(item);
+    setAgendarOpen(true);
   };
 
   // Redirecionar menções de pontos para a loja
@@ -949,8 +957,8 @@ export default function Produtos() {
                             onClick={() => {
                               if (isExclusivoClube) {
                                 navigate(createPageUrl("SobreNos"));
-                              } else if (produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" || produto.categoria === "Produtos para Pacientes") {
-                                handleContratar(produto);
+                              } else if (produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes") {
+                               handleAgendar(produto);
                               } else {
                                 handleAdicionarAoCarrinho(produto);
                               }
@@ -1176,6 +1184,17 @@ export default function Produtos() {
         open={mostrarLoginPrompt}
         onClose={() => setMostrarLoginPrompt(false)}
         pageName="produtos"
+      />
+
+      {/* Modal de Agendamento */}
+      <AgendamentoModal
+        open={agendarOpen}
+        onClose={(ok) => {
+          setAgendarOpen(false);
+          setProdutoAgendar(null);
+          if (ok) alert('Agendamento confirmado!');
+        }}
+        produto={produtoAgendar}
       />
     </div>
   );
