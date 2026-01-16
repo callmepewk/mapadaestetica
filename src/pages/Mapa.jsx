@@ -247,6 +247,28 @@ export default function Mapa() {
     },
   });
 
+  // Query eventos
+  const { data: eventosAll = [], isLoading: isLoadingEventos } = useQuery({
+    queryKey: ['eventos-ativos'],
+    queryFn: async () => await base44.entities.Evento.filter({ status: 'ativo' }, '-data_hora', 200),
+  });
+
+  // Eventos visíveis por público e futuros
+  const agoraISO = new Date().toISOString();
+  const eventosVisiveis = (eventosAll || []).filter(ev => {
+    const publicoOk = !ev.publico_alvo || ev.publico_alvo === 'todos' || (isProfissional ? ev.publico_alvo === 'profissionais' : ev.publico_alvo === 'pacientes');
+    const futuro = ev.data_hora && ev.data_hora >= agoraISO;
+    return publicoOk && futuro;
+  });
+
+  // Ícone de evento
+  const criarIconeEvento = () => L.divIcon({
+    html: `<div style="font-size:22px;">🎟️</div>`,
+    className: 'custom-marker',
+    iconSize: [24,24],
+    iconAnchor: [12,24]
+  });
+
   // Query anúncios
   const { data: anuncios = [], isLoading: isLoadingAnuncios } = useQuery({
     queryKey: ['anuncios-mapa'],
@@ -1050,7 +1072,22 @@ export default function Mapa() {
                     ) : null
                   ))}
 
-                  {centralizarEm && <CentralizarMapa center={centralizarEm} />}
+                  {eventosVisiveis.map((ev) => (
+                    ev.latitude && ev.longitude ? (
+                      <Marker key={`evento-${ev.id}`} position={[ev.latitude, ev.longitude]} icon={criarIconeEvento()}>
+                        <Popup>
+                          <div className="p-2 min-w-[220px]">
+                            <p className="font-bold text-gray-900">{ev.titulo}</p>
+                            {ev.cidade && (<p className="text-xs text-gray-600">{ev.cidade} - {ev.estado}</p>)}
+                            {ev.data_hora && (<p className="text-xs text-gray-600 mt-1">🗓 {new Date(ev.data_hora).toLocaleString('pt-BR')}</p>)}
+                            <p className="text-xs font-semibold mt-1">{ev.preco_tipo === 'pago' ? `R$ ${Number(ev.preco_valor||0).toFixed(2)}` : 'Grátis'}</p>
+                          </div>
+                        </Popup>
+                      </Marker>
+                    ) : null
+                  ))}
+
+                   {centralizarEm && <CentralizarMapa center={centralizarEm} />}
                 </MapContainer>
 
                 {/* Badge de Info no Mapa */}

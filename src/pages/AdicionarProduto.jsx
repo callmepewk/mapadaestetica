@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import Autocomplete from "@/components/inputs/Autocomplete";
+import NovoEventoDialog from "../components/eventos/NovoEventoDialog";
 import {
   Select,
   SelectContent,
@@ -16,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Save, Upload, Loader2, Wand2, Image as ImageIcon, Sparkles, LogIn } from "lucide-react";
+import { ArrowLeft, Save, Upload, Loader2, Wand2, Image as ImageIcon, Sparkles, LogIn, CalendarPlus } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const categorias = [
@@ -46,6 +47,7 @@ export default function AdicionarProduto() {
   const [user, setUser] = useState(null);
   const [aiSugerindo, setAiSugerindo] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
+  const [novoEventoOpen, setNovoEventoOpen] = useState(false);
   // Opções sugeridas (extensíveis)
   const [marcaOptions, setMarcaOptions] = useState([
     "Lumenis","Candela","Cynosure","Alma","Lutronic","Fotona","DEKA","Asclepion","Syneron","Sciton","Cutera","Quanta System","Venus Concept","Zimmer","InMode","BTL","Quanta","Milesman","Primelase","Elysion","Asclepion Thunder","Motus","Clarity","LightSheer","Soprano","Icon","PicoSure","PicoWay","Discovery Pico","StarWalker","Nordlys","M22"
@@ -345,6 +347,15 @@ export default function AdicionarProduto() {
                 Complemente com marca, tipo e modelo (quando for Equipamentos) para melhorar a busca.
               </p>
               <div className="mt-4 flex flex-wrap gap-3">
+                <Button
+                  type="button"
+                  onClick={()=>setNovoEventoOpen(true)}
+                  variant="outline"
+                  className="border-2"
+                >
+                  <CalendarPlus className="w-4 h-4 mr-2" />
+                  Adicionar Evento
+                </Button>
                 <Button
                   type="button"
                   onClick={handlePreencherComIA}
@@ -938,5 +949,7 @@ export default function AdicionarProduto() {
         </Card>
       </div>
     </div>
+
+    <NovoEventoDialog open={novoEventoOpen} onClose={()=>setNovoEventoOpen(false)} user={user} />
   );
 }

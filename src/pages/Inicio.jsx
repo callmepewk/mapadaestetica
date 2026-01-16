@@ -24,6 +24,9 @@ import {
   Crown,
   ShieldCheck,
   Phone,
+  Calendar,
+  DollarSign,
+  Ticket
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -242,6 +245,20 @@ export default function Inicio() {
     },
     initialData: [],
   });
+
+  // Eventos próximos
+  const { data: eventosHome = [] } = useQuery({
+    queryKey: ['eventos-home', visaoAtual],
+    queryFn: async () => await base44.entities.Evento.filter({ status: 'ativo' }, '-data_hora', 50),
+    initialData: [],
+    enabled: !!visaoAtual,
+  });
+  const agoraISO = new Date().toISOString();
+  const eventosVisiveisHome = (eventosHome || [])
+    .filter(ev => ev.data_hora && ev.data_hora >= agoraISO)
+    .filter(ev => !ev.publico_alvo || ev.publico_alvo === 'todos' || (visaoAtual === 'profissional' || visaoAtual === 'patrocinador' ? ev.publico_alvo === 'profissionais' : ev.publico_alvo === 'pacientes'))
+    .sort((a,b)=> (a.data_hora> b.data_hora?1:-1))
+    .slice(0,6);
 
   const handleBuscar = async () => {
     if (!user) {
@@ -495,6 +512,36 @@ export default function Inicio() {
 
           {/* Banner Rotativo Topo */}
           <BannerRotativo posicao="home_topo" />
+
+          {/* Eventos Próximos (Paciente) */}
+          {eventosVisiveisHome.length > 0 && (
+            <section className="py-8">
+              <div className="max-w-7xl mx-auto px-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                    <Calendar className="w-5 h-5"/> Eventos Próximos
+                  </h2>
+                  <a href={createPageUrl('Mapa')} className="text-sm text-pink-600 font-semibold">Ver no mapa →</a>
+                </div>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {eventosVisiveisHome.map(ev => (
+                    <div key={ev.id} className="border rounded-xl p-4 bg-white shadow-sm hover:shadow-md transition-all">
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Calendar className="w-4 h-4"/>
+                        <span>{new Date(ev.data_hora).toLocaleString('pt-BR')}</span>
+                      </div>
+                      <h3 className="font-bold text-lg mt-2 line-clamp-2">{ev.titulo}</h3>
+                      <p className="text-sm text-gray-600 line-clamp-2 mt-1">{ev.descricao}</p>
+                      <div className="flex items-center justify-between mt-3 text-sm">
+                        <span className="flex items-center gap-1 text-gray-600"><MapPin className="w-4 h-4"/>{ev.cidade}{ev.estado?`, ${ev.estado}`:''}</span>
+                        <span className="font-semibold">{ev.preco_tipo === 'pago' ? `R$ ${Number(ev.preco_valor||0).toFixed(2)}` : 'Grátis'}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
 
           {/* Beauty Safe - Proteção Civil para Profissionais */}
           <section className="py-8">
@@ -765,6 +812,36 @@ export default function Inicio() {
               </div>
             </div>
           </section>
+          {/* Eventos Próximos (Profissional) */}
+          {eventosVisiveisHome.length > 0 && (
+            <section className="py-8 bg-white">
+              <div className="max-w-7xl mx-auto px-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                    <Calendar className="w-5 h-5"/> Eventos Próximos
+                  </h2>
+                  <a href={createPageUrl('Mapa')} className="text-sm text-pink-600 font-semibold">Ver no mapa →</a>
+                </div>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {eventosVisiveisHome.map(ev => (
+                    <div key={ev.id} className="border rounded-xl p-4 bg-white shadow-sm hover:shadow-md transition-all">
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Calendar className="w-4 h-4"/>
+                        <span>{new Date(ev.data_hora).toLocaleString('pt-BR')}</span>
+                      </div>
+                      <h3 className="font-bold text-lg mt-2 line-clamp-2">{ev.titulo}</h3>
+                      <p className="text-sm text-gray-600 line-clamp-2 mt-1">{ev.descricao}</p>
+                      <div className="flex items-center justify-between mt-3 text-sm">
+                        <span className="flex items-center gap-1 text-gray-600"><MapPin className="w-4 h-4"/>{ev.cidade}{ev.estado?`, ${ev.estado}`:''}</span>
+                        <span className="font-semibold">{ev.preco_tipo === 'pago' ? `R$ ${Number(ev.preco_valor||0).toFixed(2)}` : 'Grátis'}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+
           {/* Resumo dos Anúncios */}
           {resumoAnuncios.length > 0 && (
             <section className="py-8 bg-white">
