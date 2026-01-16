@@ -552,6 +552,7 @@ export default function AdicionarProduto() {
                 )}
               </div>
 
+              </>
               )}
 
               {/* Fornecedor e Oferta */}
