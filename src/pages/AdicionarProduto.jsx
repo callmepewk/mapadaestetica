@@ -952,5 +952,6 @@ export default function AdicionarProduto() {
     </div>
 
     <NovoEventoDialog open={novoEventoOpen} onClose={()=>setNovoEventoOpen(false)} user={user} />
-  );
+    </>
+    );
 }
