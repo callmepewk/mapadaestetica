@@ -339,20 +339,20 @@ export default function ModalEditarUsuario({
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="editPlanoClubeBeleza">👑 Clube da Beleza</Label>
+                    <Label htmlFor="editBeautyClub">💎 Beauty Club (Nível)</Label>
                     <Select
-                      value={dadosEdicaoUsuario.plano_clube_beleza}
-                      onValueChange={(value) => setDadosEdicaoUsuario({ ...dadosEdicaoUsuario, plano_clube_beleza: value })}
+                      value={dadosEdicaoUsuario.beauty_club_plano || 'none'}
+                      onValueChange={(value) => setDadosEdicaoUsuario({ ...dadosEdicaoUsuario, beauty_club_plano: value })}
                       disabled={isPending}
                     >
                       <SelectTrigger className="bg-white">
-                        <SelectValue placeholder="Status do Clube" />
+                        <SelectValue placeholder="Selecione o nível" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="nenhum">Nenhum</SelectItem>
-                        <SelectItem value="light">LIGHT</SelectItem>
-                        <SelectItem value="gold">GOLD</SelectItem>
-                        <SelectItem value="vip">VIP</SelectItem>
+                        <SelectItem value="none">Nenhum</SelectItem>
+                        <SelectItem value="basic">Beauty Club Basic</SelectItem>
+                        <SelectItem value="pro">Beauty Club Pro</SelectItem>
+                        <SelectItem value="exclusive">Beauty Club Exclusive (VIP)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

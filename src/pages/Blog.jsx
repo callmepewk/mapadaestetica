@@ -876,9 +876,9 @@ Perfect for blog header.`;
 
           {artigoSelecionado && (
             <>
-              <div className="h-48 md:h-96 bg-gradient-to-br from-pink-100 to-rose-100 flex items-center justify-center text-6xl md:text-8xl">
+              <div className="bg-gradient-to-br from-pink-100 to-rose-100 flex items-center justify-center text-6xl md:text-8xl overflow-x-auto">
                 {artigoSelecionado.imagem_capa ? (
-                  <img src={artigoSelecionado.imagem_capa} alt={artigoSelecionado.titulo} className="w-full h-full object-cover" />
+                  <img src={artigoSelecionado.imagem_capa} alt={artigoSelecionado.titulo} className="max-w-none h-72 md:h-[60vh] w-auto object-contain mx-auto" />
                 ) : (
                   "✨"
                 )}

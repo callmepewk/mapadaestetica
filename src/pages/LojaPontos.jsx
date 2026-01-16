@@ -81,6 +81,23 @@ export default function LojaPontos() {
   // Aplicar visibilidade por plano também na Loja de Pontos
   const ordemPlanos = ['free','lite','basico','pro','prime','premium'];
   const produtosVisiveisPlano = produtos.filter(p => {
+    // Gating por plano Mapa da Estética (profissionais)
+    const min = p.plano_minimo || 'free';
+    const ordemPlanos = ['free','lite','basico','pro','prime','premium'];
+    const idxUser = ordemPlanos.indexOf((user?.plano_ativo)||'free');
+    const idxMin = ordemPlanos.indexOf(min);
+    if (idxUser < idxMin) return false;
+
+    // Gating por Beauty Club quando aplicável
+    if (p.beauty_club_minimo || p.beauty_club_exclusivo || p.mostrar_tag_clube) {
+      const ordemBC = ['none','basic','pro','exclusive'];
+      const userBC = user?.beauty_club_plano || 'none';
+      const req = p.beauty_club_minimo || (p.mostrar_tag_clube ? 'basic' : undefined);
+      if (req && ordemBC.indexOf(userBC) < ordemBC.indexOf(req)) return false;
+      if (!req && p.beauty_club_exclusivo && userBC === 'none') return false;
+    }
+    return true;
+  });
     const min = p.plano_minimo || 'free';
     const idxUser = ordemPlanos.indexOf((user?.plano_ativo)||'free');
     const idxMin = ordemPlanos.indexOf(min);
@@ -259,6 +276,46 @@ export default function LojaPontos() {
           </p>
         </div>
 
+        {/* Check-in Diário */}
+        <Card className="mb-8 border-2 border-green-300 bg-gradient-to-br from-green-50 to-white">
+          <CardContent className="p-6 flex items-center justify-between gap-4 flex-wrap">
+            <div>
+              <h2 className="text-xl font-bold text-green-900">Check-in diário</h2>
+              <p className="text-sm text-green-800">Ganhe pontos ao entrar diariamente. Sequência: 1, 2, 3, 4, 5, 7, 10 pts.</p>
+            </div>
+            {(() => {
+              const hoje = new Date();
+              const isoHoje = hoje.toISOString().split('T')[0];
+              const last = user?.last_checkin_date || '';
+              const ontem = new Date(); ontem.setDate(ontem.getDate()-1);
+              const isoOntem = ontem.toISOString().split('T')[0];
+              let nextStreak = 1;
+              if (last === isoHoje) {
+                return <Badge className="bg-green-600 text-white">Você já fez check-in hoje</Badge>;
+              }
+              if (last === isoOntem) nextStreak = Math.min(7, (user?.checkin_streak||0)+1);
+              const tabela = [0,1,2,3,4,5,7,10];
+              const premio = tabela[nextStreak];
+              return (
+                <Button
+                  onClick={async ()=>{
+                    await base44.auth.updateMe({
+                      last_checkin_date: isoHoje,
+                      checkin_streak: nextStreak,
+                      pontos_acumulados: (user?.pontos_acumulados||0) + premio
+                    });
+                    alert(`✅ Check-in realizado! Você ganhou +${premio} pontos.`);
+                    window.location.reload();
+                  }}
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                >
+                  Fazer check-in (+{premio} pts)
+                </Button>
+              );
+            })()}
+          </CardContent>
+        </Card>
+
         {/* NOVO: Card de Troca de Beauty Coins */}
         <Card className="mb-8 border-2 border-[#F7D426] bg-gradient-to-br from-[#FFF9E6] to-white shadow-xl">
           <CardContent className="p-6">
@@ -292,7 +349,7 @@ export default function LojaPontos() {
                   <div className="bg-white p-6 rounded-xl border-2 border-gray-200">
                     <h3 className="font-bold mb-4 text-gray-900">Quantos Beauty Coins deseja?</h3>
                     <div className="space-y-4">
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-4 flex-wrap">
                         <Button
                           onClick={() => setQuantidadeBeautyCoins(Math.max(1, quantidadeBeautyCoins - 1))}
                           variant="outline"
@@ -301,18 +358,29 @@ export default function LojaPontos() {
                         >
                           -
                         </Button>
-                        <div className="flex-1 text-center">
+                        <div className="flex-1 text-center min-w-[140px]">
                           <p className="text-4xl font-bold text-[#F7D426]">{quantidadeBeautyCoins}</p>
                           <p className="text-sm text-gray-600">Beauty Coin(s)</p>
                         </div>
                         <Button
-                          onClick={() => setQuantidadeBeautyCoins(quantidadeBeautyCoins + 1)}
+                          onClick={() => setQuantidadeBeautyCoins(quantidadeBeautyCoins + 1)
                           variant="outline"
                           size="sm"
                           className="border-2"
                         >
                           +
                         </Button>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-600">Ou digite:</span>
+                        <input
+                          type="number"
+                          min={1}
+                          value={quantidadeBeautyCoins}
+                          onChange={(e)=> setQuantidadeBeautyCoins(Math.max(1, parseInt(e.target.value)||1))}
+                          className="w-24 border rounded px-2 py-1"
+                        />
                       </div>
 
                       <div className="bg-gray-50 p-4 rounded-lg">

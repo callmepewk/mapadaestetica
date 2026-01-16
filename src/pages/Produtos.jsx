@@ -337,6 +337,7 @@ export default function Produtos() {
   const [busca, setBusca] = useState("");
   const [categoriaFiltro, setCategoriaFiltro] = useState("Todas");
   const [ordenacao, setOrdenacao] = useState("relevancia");
+  const [visibilidadeFiltro, setVisibilidadeFiltro] = useState("todos");
   const [user, setUser] = useState(null);
   const [tipoBusca, setTipoBusca] = useState('produtos');
   const [mostrarLoginPrompt, setMostrarLoginPrompt] = useState(false);
@@ -411,6 +412,17 @@ export default function Produtos() {
   ];
 
   const produtosFiltrados = todosProdutos.filter(produto => {
+    const isExclusivo = !!(produto.requer_assinatura || produto.mostrar_tag_clube || produto.beauty_club_exclusivo);
+
+    // Gating por Beauty Club quando aplicável
+    if (isExclusivo && produto.beauty_club_minimo) {
+      const ordemBC = ['none','basic','pro','exclusive'];
+      const userBC = user?.beauty_club_plano || 'none';
+      if (ordemBC.indexOf(userBC) < ordemBC.indexOf(produto.beauty_club_minimo)) return false;
+    }
+
+    // Respeitar plano mínimo (para profissionais) (já existente abaixo)
+
     // Respeitar plano mínimo (para profissionais)
     if (produto.plano_minimo && isProfissional) {
       const ordem = ['free','lite','basico','pro','prime','premium'];
@@ -419,6 +431,7 @@ export default function Produtos() {
       if (idxUser < idxMin) return false;
     }
     const matchCategoria = categoriaFiltro === "Todas" || produto.categoria === categoriaFiltro;
+    const matchVis = visibilidadeFiltro === 'todos' || (visibilidadeFiltro === 'exclusivo' ? isExclusivo : !isExclusivo);
     const matchBusca = !busca ||
       produto.nome?.toLowerCase().includes(busca.toLowerCase()) ||
       produto.descricao?.toLowerCase().includes(busca.toLowerCase()) ||
@@ -436,7 +449,7 @@ export default function Produtos() {
                   produto.categoria !== "Produtos para Pacientes";
     }
 
-    return matchCategoria && matchBusca && matchTipo;
+    return matchCategoria && matchBusca && matchTipo && matchVis;
   });
 
   // Define available categories for the filter based on tipoBusca and user type
@@ -635,7 +648,7 @@ export default function Produtos() {
 
             {/* Filters */}
             <Card className="p-6 mb-8 shadow-lg border-none">
-              <div className="grid md:grid-cols-3 gap-4">
+              <div className="grid md:grid-cols-4 gap-4">
                 <Input
                   placeholder="Buscar produtos..."
                   value={busca}
@@ -665,7 +678,18 @@ export default function Produtos() {
                     <SelectItem value="novidades">Novidades</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
+
+                <Select value={visibilidadeFiltro} onValueChange={setVisibilidadeFiltro}>
+                 <SelectTrigger className="border-2">
+                   <SelectValue placeholder="Visibilidade" />
+                 </SelectTrigger>
+                 <SelectContent>
+                   <SelectItem value="todos">Todos</SelectItem>
+                   <SelectItem value="normal">Conteúdo Normal</SelectItem>
+                   <SelectItem value="exclusivo">Exclusivo (Clube/Beauty Club)</SelectItem>
+                 </SelectContent>
+                </Select>
+                </div>
 
               {/* Debug info para admin */}
               {isAdmin && (
@@ -804,6 +828,9 @@ export default function Produtos() {
                             <Crown className="w-3 h-3 mr-1" />
                             EXCLUSIVO
                           </Badge>
+                        )}
+                        {(produto.beauty_club_exclusivo || produto.beauty_club_minimo === 'exclusive') && (
+                          <Badge className="absolute top-2 left-28 bg-yellow-300 text-black font-bold">VIP</Badge>
                         )}
                       </div>
 

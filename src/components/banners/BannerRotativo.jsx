@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -220,15 +219,13 @@ export default function BannerRotativo({ posicao = "home_topo" }) {
             onClick={() => handleClique(bannerAtual)}
             className="cursor-pointer relative overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200"
           >
-            <img
-              src={bannerAtual.imagem_banner}
-              alt={bannerAtual.titulo}
-              className="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-105"
-              style={{
-                maxHeight: '400px',
-                objectFit: 'contain'
-              }}
-            />
+            <div className="overflow-x-auto">
+              <img
+                src={bannerAtual.imagem_banner}
+                alt={bannerAtual.titulo}
+                className="max-w-none h-[260px] sm:h-[300px] md:h-[360px] w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+              />
+            </div>
             
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3 sm:p-4 md:p-6">
               <div className="text-white w-full">
