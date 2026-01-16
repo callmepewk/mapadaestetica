@@ -138,6 +138,8 @@ export default function ControleAdmin() {
   const [processando, setProcessando] = useState(false);
   const [buscaProfissional, setBuscaProfissional] = useState("");
   const [selecionadosProfissionais, setSelecionadosProfissionais] = useState([]);
+  const [planoClubeBulk, setPlanoClubeBulk] = useState('light');
+  const [atualizandoClube, setAtualizandoClube] = useState(false);
   const [enviandoWhatsApp, setEnviandoWhatsApp] = useState(false);
   const [planoSelecionadoUsuario, setPlanoSelecionadoUsuario] = useState(null);
   const [mostrarModalTrocarPlano, setMostrarModalTrocarPlano] = useState(false);
@@ -3095,6 +3097,28 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                     </div>
                   </CardHeader>
                   <CardContent>
+                    {selecionadosProfissionais.length > 0 && (
+                      <div className="mb-4 p-3 bg-yellow-50 border-2 border-yellow-200 rounded-lg flex flex-wrap items-center gap-3">
+                        <span className="text-sm text-yellow-900 font-semibold">{selecionadosProfissionais.length} selecionado(s)</span>
+                        <div className="flex items-center gap-2">
+                          <label className="text-sm">Clube da Beleza:</label>
+                          <Select value={planoClubeBulk} onValueChange={setPlanoClubeBulk}>
+                            <SelectTrigger className="w-32 h-8"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="light">LIGHT</SelectItem>
+                              <SelectItem value="gold">GOLD</SelectItem>
+                              <SelectItem value="vip">VIP</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <Button size="sm" onClick={handleBulkClubeAplicar} disabled={atualizandoClube} className="bg-purple-600 hover:bg-purple-700">
+                            Aplicar Clube + Selo
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={handleBulkClubeRemover} disabled={atualizandoClube} className="border-red-300 text-red-700">
+                            Remover Clube/Selo
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                     {loadingUsuarios ? (
                       <div className="flex justify-center py-12">
                         <Loader2 className="w-8 h-8 animate-spin text-pink-600" />

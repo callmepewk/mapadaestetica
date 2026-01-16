@@ -55,6 +55,7 @@ export default function LojaPontos() {
   const [mostraAviso, setMostraAviso] = useState(true);
   const [modalNovoItem, setModalNovoItem] = useState(false);
   const [novoItem, setNovoItem] = useState({ tipo: 'produto', nome: '', descricao: '', categoria: 'Outros', pontos_necessarios: 100, estoque: 1, tipo_oferta: 'unidade' });
+  const [faixaPontos, setFaixaPontos] = useState('todas');
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -70,6 +71,15 @@ export default function LojaPontos() {
     };
     fetchUser();
   }, []);
+
+  // Sincronizar pontos/coins em tempo real
+  useEffect(() => {
+    if (!user) return;
+    const unsub = base44.entities.User.subscribe((e) => {
+      if (e?.data?.email === user.email || e?.id === user.id) setUser(e.data);
+    });
+    return unsub;
+  }, [user?.id]);
 
   // Buscar produtos
   const { data: produtos = [], isLoading: loadingProdutos } = useQuery({
@@ -105,9 +115,16 @@ export default function LojaPontos() {
   });
 
 
-  const produtosFiltrados = categoriaSelecionada === "Todos"
+  const baseProdutos = categoriaSelecionada === "Todos"
     ? produtosVisiveisPlano
     : produtosVisiveisPlano.filter(p => p.categoria === categoriaSelecionada);
+
+  const produtosFiltrados = baseProdutos.filter((p) => {
+    if (faixaPontos === 'todas') return true;
+    const [min, max] = faixaPontos.split('-').map((n) => parseInt(n, 10));
+    const pts = efetivoPontos(p);
+    return pts >= min && pts <= max;
+  });
 
   // Ordenar: produtos especiais primeiro (Beauty Box), depois por pontos
   const efetivoPontos = (p) => {
@@ -597,6 +614,28 @@ export default function LojaPontos() {
                 {cat}
               </Button>
             ))}
+          </div>
+        </div>
+
+        {/* Filtro: Faixa de pontos */}
+        <div className="mb-6">
+          <div className="inline-flex items-center gap-3 bg-white border rounded-lg p-3 shadow-sm">
+            <span className="text-sm text-gray-700 font-medium">Faixa de pontos</span>
+            <select
+              className="border rounded-md px-2 py-1 text-sm"
+              value={faixaPontos}
+              onChange={(e)=> setFaixaPontos(e.target.value)}
+            >
+              <option value="todas">Todas</option>
+              <option value="0-100">0–100</option>
+              <option value="100-500">100–500</option>
+              <option value="500-1000">500–1.000</option>
+              <option value="1000-2000">1.000–2.000</option>
+              <option value="2000-5000">2.000–5.000</option>
+              <option value="5000-10000">5.000–10.000</option>
+              <option value="10000-20000">10.000–20.000</option>
+              <option value="20000-50000">20.000–50.000</option>
+            </select>
           </div>
         </div>
 

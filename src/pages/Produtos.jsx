@@ -343,6 +343,7 @@ export default function Produtos() {
   const [tipoBusca, setTipoBusca] = useState('produtos');
   const [mostrarLoginPrompt, setMostrarLoginPrompt] = useState(false);
   const [carrinho, setCarrinho] = useState([]);
+  const [faixaPontosFiltro, setFaixaPontosFiltro] = useState('todas');
 
   // Carregar carrinho do localStorage
   useEffect(() => {
@@ -439,6 +440,18 @@ export default function Produtos() {
       produto.descricao?.toLowerCase().includes(busca.toLowerCase()) ||
       produto.marca?.toLowerCase().includes(busca.toLowerCase());
 
+    // Faixa de pontos (considera apenas produtos com pontos_necessarios definidos)
+    let matchFaixaPontos = true;
+    if (faixaPontosFiltro !== 'todas') {
+      const [min, max] = faixaPontosFiltro.split('-').map((n)=>parseInt(n,10));
+      const pts = typeof produto.pontos_necessarios === 'number' ? produto.pontos_necessarios : null;
+      if (pts === null) {
+        matchFaixaPontos = false;
+      } else {
+        matchFaixaPontos = pts >= min && pts <= max;
+      }
+    }
+
     // Filtrar por tipo de busca
     let matchTipo = true;
     if (tipoBusca === 'servicos') {
@@ -451,7 +464,7 @@ export default function Produtos() {
                   produto.categoria !== "Produtos para Pacientes";
     }
 
-    return matchCategoria && matchBusca && matchTipo && matchVis && matchPlanoFiltro;
+    return matchCategoria && matchBusca && matchTipo && matchVis && matchPlanoFiltro && matchFaixaPontos;
   });
 
   // Define available categories for the filter based on tipoBusca and user type
@@ -708,7 +721,27 @@ export default function Produtos() {
                 </Select>
                 </div>
 
-              {/* Debug info para admin */}
+                {/* Faixa de pontos */}
+                <div className="mt-4">
+                  <Select value={faixaPontosFiltro} onValueChange={setFaixaPontosFiltro}>
+                    <SelectTrigger className="border-2">
+                      <SelectValue placeholder="Faixa de pontos" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todas">Todas</SelectItem>
+                      <SelectItem value="0-100">0–100</SelectItem>
+                      <SelectItem value="100-500">100–500</SelectItem>
+                      <SelectItem value="500-1000">500–1.000</SelectItem>
+                      <SelectItem value="1000-2000">1.000–2.000</SelectItem>
+                      <SelectItem value="2000-5000">2.000–5.000</SelectItem>
+                      <SelectItem value="5000-10000">5.000–10.000</SelectItem>
+                      <SelectItem value="10000-20000">10.000–20.000</SelectItem>
+                      <SelectItem value="20000-50000">20.000–50.000</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Debug info para admin */}
               {isAdmin && (
                 <div className="mt-4 p-3 bg-purple-50 border-2 border-purple-200 rounded-lg">
                   <p className="text-sm font-semibold text-purple-900">

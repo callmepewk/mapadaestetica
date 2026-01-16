@@ -1045,8 +1045,25 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
         formData.bairro
       ].filter(Boolean).join(', ');
 
+      // Garantir geolocalização para aparecer no mapa
+      let lat = formData.latitude;
+      let lon = formData.longitude;
+      if ((!lat || !lon) && formData.cidade) {
+        try {
+          const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&city=${encodeURIComponent(formData.cidade)}&state=${encodeURIComponent(formData.estado || '')}&country=Brasil`;
+          const resp = await fetch(url);
+          const data = await resp.json();
+          if (Array.isArray(data) && data[0]) {
+            lat = parseFloat(data[0].lat);
+            lon = parseFloat(data[0].lon);
+          }
+        } catch {}
+      }
+
       const anuncioData = {
         ...formData,
+        latitude: lat || formData.latitude,
+        longitude: lon || formData.longitude,
         endereco: enderecoCompleto || formData.endereco, // Usar endereço montado ou o campo legado
         status: "ativo",
         plano: user?.plano_ativo || "cobre",
