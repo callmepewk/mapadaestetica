@@ -326,6 +326,7 @@ export default function AdicionarProduto() {
   }
 
   return (
+    <>
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
       <div className="max-w-5xl mx-auto px-6 md:px-8">
         <Button
