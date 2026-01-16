@@ -217,15 +217,21 @@ export default function Layout({ children }) {
   const cadastroIncompleto = isAuthenticated && user && !user.cadastro_completo;
 
   const navigationItems = [
-            { title: "Início", url: createPageUrl("Inicio"), icon: Home },
-            { title: "Mapa", url: createPageUrl("Mapa"), icon: Search },
-            { title: "Blog", url: createPageUrl("Blog"), icon: Newspaper },
-            { title: "Produtos", url: createPageUrl("Produtos"), icon: ShoppingCart },
-            ...(isProfissional ? [{ title: "Hub Pontos", url: createPageUrl("HubPontos"), icon: Star }, { title: "Radares", url: createPageUrl("Radares"), icon: TrendingUp }] : []),
-            ...(!isPaciente ? [{ title: "Planos", url: createPageUrl("Planos"), icon: CreditCard }] : []),
-            { title: "Suporte", url: createPageUrl("FaleConosco"), icon: MessageCircle },
-            { title: "Sobre Nós", url: createPageUrl("SobreNos"), icon: Info },
-          ];
+                    { title: "Início", url: createPageUrl("Inicio"), icon: Home },
+                    { title: "Mapa", url: createPageUrl("Mapa"), icon: Search },
+                    { title: "Blog", url: createPageUrl("Blog"), icon: Newspaper },
+                    { title: "Produtos", url: createPageUrl("Produtos"), icon: ShoppingCart },
+                    ...(isProfissional ? [
+                      { title: "Meus Produtos", url: createPageUrl("MeusProdutos"), icon: ShoppingCart },
+                      { title: "Meus Serviços", url: createPageUrl("MeusServicos"), icon: Briefcase },
+                      { title: "Meus Tratamentos", url: createPageUrl("MeusTratamentos"), icon: Star },
+                      { title: "Hub Pontos", url: createPageUrl("HubPontos"), icon: Star },
+                      { title: "Radares", url: createPageUrl("Radares"), icon: TrendingUp },
+                    ] : []),
+                    ...(!isPaciente ? [{ title: "Planos", url: createPageUrl("Planos"), icon: CreditCard }] : []),
+                    { title: "Suporte", url: createPageUrl("FaleConosco"), icon: MessageCircle },
+                    { title: "Sobre Nós", url: createPageUrl("SobreNos"), icon: Info },
+                  ];
 
   return (
     <I18nProvider>
@@ -439,7 +445,7 @@ export default function Layout({ children }) {
                           </AvatarFallback>
                         </Avatar>
                         {/* Ícone de Edição - PRETO COM FUNDO BRANCO */}
-                        <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-white rounded-full flex items-center justify-center shadow-md border border-gray-200 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-white rounded-full flex items-center justify-center shadow-md border border-gray-200 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                           <User className="w-2.5 h-2.5 text-black" />
                         </div>
                       </button>
