@@ -24,9 +24,7 @@ import {
   Crown,
   ShieldCheck,
   Phone,
-  Calendar,
-  DollarSign,
-  Ticket
+  Calendar
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
