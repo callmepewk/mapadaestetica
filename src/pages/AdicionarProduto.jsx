@@ -341,7 +341,7 @@ export default function AdicionarProduto() {
               <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-1">
                 Adicionar Produto/Serviço
               </h1>
-              <p className="text-gray-600">
+              <p className="text-gray-600 max-w-2xl">
                 Complemente com marca, tipo e modelo (quando for Equipamentos) para melhorar a busca.
               </p>
               <div className="mt-4 flex flex-wrap gap-3">
