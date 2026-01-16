@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Star, Check, ArrowRight, Shield, Upload, Loader2, MessageCircle } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
 import ChatPedido from "../components/chat/ChatPedido";
 
 const CATALOGO = [
@@ -35,6 +36,13 @@ export default function HubPontos() {
   const [salvando, setSalvando] = useState(false);
 
   const [mostrarSelo, setMostrarSelo] = useState(false);
+  const [pesquisa, setPesquisa] = useState("");
+  const [filtroTipo, setFiltroTipo] = useState("todos");
+  const [pontosRange, setPontosRange] = useState([0, 50000]);
+  const [locais, setLocais] = useState([]);
+  const [modalidade, setModalidade] = useState("entrega");
+  const [localSelecionado, setLocalSelecionado] = useState("");
+  const [publicoPlano, setPublicoPlano] = useState("free");
   const [bulkAtualizando, setBulkAtualizando] = useState(false);
   const [pedidos, setPedidos] = useState([]);
   const [produtosMeus, setProdutosMeus] = useState([]);
@@ -63,6 +71,12 @@ export default function HubPontos() {
       setProdutosMeus(meus);
       const all = await base44.entities.PedidoProduto.list('-created_date', 200);
       setPedidos(all);
+      // Locais do profissional a partir dos anúncios cadastrados
+      try {
+        const anuncios = await base44.entities.Anuncio.filter({ created_by: user.email }, '-created_date', 200);
+        const locaisUnicos = Array.from(new Set(anuncios.map(a => [a.cidade, a.estado].filter(Boolean).join(' - ')).filter(Boolean)));
+        setLocais(locaisUnicos);
+      } catch {}
     })();
     const unsub = base44.entities.PedidoProduto.subscribe((e) => {
       setPedidos(prev => [e.data, ...prev].slice(0,200));
@@ -88,22 +102,40 @@ export default function HubPontos() {
   const plan = user?.plano_ativo || 'cobre';
   const pontosPorAtendimento = PLAN_POINTS[plan] ?? 5;
 
+  const catalogoFiltrado = React.useMemo(() => {
+    return CATALOGO.filter(item => {
+      const nome = (item.nome || '').toLowerCase();
+      const tipoCalc = /massagem|spa|consulta|sessão|reflexologia|shiatsu/i.test(nome)
+        ? 'servicos'
+        : /curso|workshop|convenção|evento/i.test(nome)
+        ? 'eventos'
+        : /dermafellow/i.test(nome)
+        ? 'dermafellow'
+        : 'produtos';
+      const matchBusca = !pesquisa || nome.includes(pesquisa.toLowerCase());
+      const matchTipo = filtroTipo === 'todos' || filtroTipo === tipoCalc;
+      const matchPontos = item.pontos >= pontosRange[0] && item.pontos <= pontosRange[1];
+      return matchBusca && matchTipo && matchPontos;
+    });
+  }, [pesquisa, filtroTipo, pontosRange]);
+
   const handleRegistrar = async () => {
     if (!clienteEmail || !clienteNome) { alert('Informe nome e email do cliente.'); return; }
     setSalvando(true);
     try {
       // 1) grava atendimento
       await base44.entities.AtendimentoPontos.create({
-        profissional_email: user.email,
-        cliente_nome: clienteNome,
-        cliente_email: clienteEmail,
-        origem: 'beautybanking',
-        tratamento_id: itemSelecionado.id,
-        tratamento_nome: itemSelecionado.nome,
-        pontos_cobrados: itemSelecionado.pontos,
-        valor_equivalente: valorEq || 0,
-        status: 'concluido',
-        data_atendimento: new Date().toISOString(),
+       profissional_email: user.email,
+       cliente_nome: clienteNome,
+       cliente_email: clienteEmail,
+       origem: 'beautybanking',
+       tratamento_id: itemSelecionado.id,
+       tratamento_nome: itemSelecionado.nome,
+       pontos_cobrados: itemSelecionado.pontos,
+       valor_equivalente: valorEq || 0,
+       status: 'concluido',
+       data_atendimento: new Date().toISOString(),
+       observacoes: `modalidade=${modalidade}; local=${localSelecionado||'n/d'}; publico=${publicoPlano}`,
       });
       // 2) credita pontos do plano ao profissional
       const novoTotal = (user.pontos_acumulados || 0) + pontosPorAtendimento;
@@ -152,17 +184,24 @@ export default function HubPontos() {
 
         <div className="flex items-center gap-3 mb-6">
          <div className="grid md:grid-cols-2 gap-3 w-full">
-           <Input placeholder="Pesquisar no catálogo..." />
-           <Select defaultValue="todos">
+           <Input placeholder="Pesquisar no catálogo..." value={pesquisa} onChange={(e)=>setPesquisa(e.target.value)} />
+           <Select value={filtroTipo} onValueChange={setFiltroTipo}>
              <SelectTrigger><SelectValue placeholder="Filtrar" /></SelectTrigger>
              <SelectContent>
-               <SelectItem value="todos">Todos</SelectItem>
-               <SelectItem value="servicos">Serviços</SelectItem>
-               <SelectItem value="produtos">Produtos</SelectItem>
-               <SelectItem value="eventos">Eventos/Convenções</SelectItem>
-               <SelectItem value="dermafellow">Dermafellow</SelectItem>
+               <SelectItem value="todos">todos</SelectItem>
+               <SelectItem value="servicos">serviços</SelectItem>
+               <SelectItem value="produtos">produtos</SelectItem>
+               <SelectItem value="eventos">eventos/convenções</SelectItem>
+               <SelectItem value="dermafellow">dermafellow</SelectItem>
              </SelectContent>
            </Select>
+         </div>
+         <div className="w-full md:w-auto md:min-w-[280px]">
+           <label className="text-xs text-gray-600">Faixa de pontos (0 a 50.000)</label>
+           <div className="px-2">
+             <Slider value={pontosRange} onValueChange={setPontosRange} min={0} max={50000} step={100} className="mt-2"/>
+           </div>
+           <div className="text-xs text-gray-500 mt-1">{pontosRange[0]} pts — {pontosRange[1]} pts</div>
          </div>
           <Shield className="w-4 h-4 text-pink-600"/>
           <span className="text-sm">Selo do Clube nas minhas postagens</span>
@@ -174,7 +213,7 @@ export default function HubPontos() {
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
          {/* TODO: aplicar filtro acima no catálogo ao conectar categorias */}
-          {CATALOGO.map(item => (
+          {catalogoFiltrado.map(item => (
             <Card key={item.id} className="border shadow-md hover:shadow-lg transition-all">
               <div className="h-40 rounded-t-xl overflow-hidden bg-gray-100">
                 <img src={item.img} alt={item.nome} className="w-full h-full object-cover" onError={(e)=>{ e.currentTarget.onerror=null; e.currentTarget.src='https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1200&auto=format&fit=crop'; }} />
