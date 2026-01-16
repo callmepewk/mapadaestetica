@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Save, Upload, Loader2, Wand2, Image as ImageIcon, Sparkles } from "lucide-react";
+import { ArrowLeft, Save, Upload, Loader2, Wand2, Image as ImageIcon, Sparkles, LogIn } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const categorias = [
@@ -45,6 +45,7 @@ export default function AdicionarProduto() {
   const [gerandoImagem, setGerandoImagem] = useState(false);
   const [user, setUser] = useState(null);
   const [aiSugerindo, setAiSugerindo] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
   // Opções sugeridas (extensíveis)
   const [marcaOptions, setMarcaOptions] = useState([
     "Lumenis","Candela","Cynosure","Alma","Lutronic","Fotona","DEKA","Asclepion","Syneron","Sciton","Cutera","Quanta System","Venus Concept","Zimmer","InMode","BTL","Quanta","Milesman","Primelase","Elysion","Asclepion Thunder","Motus","Clarity","LightSheer","Soprano","Icon","PicoSure","PicoWay","Discovery Pico","StarWalker","Nordlys","M22"
@@ -181,9 +182,14 @@ export default function AdicionarProduto() {
     }
   };
 
-  React.useEffect(() => { (async()=>{ try { setUser(await base44.auth.me()); } catch {} })(); }, []);
+  React.useEffect(() => { (async()=>{ try { const u = await base44.auth.me(); setUser(u); } catch {} finally { setAuthChecked(true); } })(); }, []);
 
-  // IA: preencher dados a partir do nome
+  const handleLogin = () => {
+  const currentPath = window.location.pathname + window.location.search;
+  base44.auth.redirectToLogin(currentPath);
+};
+
+// IA: preencher dados a partir do nome
   const handlePreencherComIA = async () => {
     if (!produto.nome) { alert('Informe o nome do produto/serviço antes.'); return; }
     setGerandoIA(true);
