@@ -98,11 +98,7 @@ export default function LojaPontos() {
     }
     return true;
   });
-    const min = p.plano_minimo || 'free';
-    const idxUser = ordemPlanos.indexOf((user?.plano_ativo)||'free');
-    const idxMin = ordemPlanos.indexOf(min);
-    return idxUser >= idxMin;
-  });
+
 
   const produtosFiltrados = categoriaSelecionada === "Todos"
     ? produtosVisiveisPlano
