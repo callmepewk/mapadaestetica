@@ -64,6 +64,37 @@ const categorias = [
 ];
 
 const servicosContrataveis = [
+  // PROGRAMAS EM EXPOSIÇÃO (pacientes)
+  {
+    id: "checkup-360",
+    nome: "Checkup 360",
+    descricao: "Avaliação completa e plano personalizado de 12 meses com acompanhamento.",
+    categoria: "Serviços para Pacientes",
+    tipo_publico: "paciente",
+    preco: 0,
+    preco_texto: "Consultar",
+    imagens: ["https://images.unsplash.com/photo-1556157382-97eda2d62296?w=800&q=80"],
+    programa_12_meses: true,
+    tratamentos_inclusos_nomes: [],
+    em_destaque: true,
+    status: 'ativo',
+    requer_assinatura: false
+  },
+  {
+    id: "checkup-da-pele",
+    nome: "Checkup da Pele",
+    descricao: "Checkup dermatológico com protocolos do Spa da Pele (12 meses).",
+    categoria: "Serviços para Pacientes",
+    tipo_publico: "paciente",
+    preco: 0,
+    preco_texto: "Consultar",
+    imagens: ["https://images.unsplash.com/photo-1556229010-aa3f7ff66b42?w=800&q=80"],
+    programa_12_meses: true,
+    tratamentos_inclusos_nomes: [],
+    em_destaque: true,
+    status: 'ativo',
+    requer_assinatura: false
+  },
   // SERVIÇOS PARA PROFISSIONAIS
   {
     id: "google-negocios",
@@ -898,8 +929,11 @@ export default function Produtos() {
                       <CardContent className="p-4">
                         <div className="flex items-center gap-2 mb-2">
                           <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-300">
-                            {produto.categoria}
+                             {produto.categoria}
                           </Badge>
+                          {produto.programa_12_meses && (
+                            <Badge className="bg-amber-100 text-amber-800">Programa 12 meses</Badge>
+                          )}
                           {produto.mostrar_tag_clube || produto?.mostrar_tag_clube && (
                             <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
                               <Crown className="w-3 h-3 mr-1" /> Parceiro Clube+
@@ -919,6 +953,17 @@ export default function Produtos() {
                           <p className="text-xs text-gray-500 mb-3">
                             Marca: {produto.marca}
                           </p>
+                        )}
+
+                        {produto.programa_12_meses && produto.tratamentos_inclusos_nomes && produto.tratamentos_inclusos_nomes.length > 0 && (
+                          <div className="mb-3 space-y-1">
+                            {produto.tratamentos_inclusos_nomes.slice(0,3).map((t,i)=>(
+                              <div key={i} className="flex items-start gap-2 text-xs text-gray-600">
+                                <span className="text-green-600">\u2713</span>
+                                <span>{t}</span>
+                              </div>
+                            ))}
+                          </div>
                         )}
 
                         {produto.beneficios && (

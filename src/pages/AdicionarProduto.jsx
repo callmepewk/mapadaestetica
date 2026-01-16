@@ -54,6 +54,8 @@ export default function AdicionarProduto() {
   const [modeloOptions, setModeloOptions] = useState([
     "GentleMax Pro","GentleLase","GentleYAG","Soprano ICE","Soprano Titanium","LightSheer Duet","LightSheer Desire","Elite+","Elite iQ","Icon","PicoSure","PicoWay","PicoPlus","Discovery Pico","StarWalker","QX Max","Thunder MT","Motus AX","Motus AY","Clarity","Clarity II","Excel V","Xeo","Genesis","Harmony XL Pro","Quanta Q-Plus","Primelase HR","Milesman Blauman","SP Dynamis","CO2RE","SmartXide Touch","Nordlys","M22"
   ]);
+  const [procedimentos, setProcedimentos] = useState([]);
+  const [buscaProc, setBuscaProc] = useState("");
   const [produto, setProduto] = useState({
     tipo: "produto", // produto ou servico
     nome: "",
@@ -89,8 +91,12 @@ export default function AdicionarProduto() {
     estado: "",
     cep: "",
     latitude: undefined,
-    longitude: undefined
-  });
+    longitude: undefined,
+    // Programa 12 meses
+    programa_12_meses: false,
+    tratamentos_inclusos_ids: [],
+    tratamentos_inclusos_nomes: []
+    });
 
   const handleUploadImage = async (e) => {
     const file = e.target.files[0];
@@ -236,6 +242,18 @@ export default function AdicionarProduto() {
     }, 500);
     return () => clearTimeout(t);
   }, [produto.categoria, produto.marca, produto.modelo, produto.tipo_laser]);
+
+  // Carregar tratamentos (ProcedimentoMestre) para compor programas de 12 meses
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const lista = await base44.entities.ProcedimentoMestre.list();
+        setProcedimentos(Array.isArray(lista) ? lista : []);
+      } catch {
+        setProcedimentos([]);
+      }
+    })();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
@@ -418,6 +436,67 @@ export default function AdicionarProduto() {
                       />
                       <p className="text-xs text-gray-500 mt-1">Escrita assistida por IA: comece a digitar e sugerimos modelos reais ({aiSugerindo ? 'gerando…' : 'sugestões ativas'}).</p>
                     </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Programa 12 meses */}
+              <div className="p-4 rounded-lg border-2 border-amber-200 bg-amber-50 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="programa_12_meses"
+                    checked={produto.programa_12_meses}
+                    onCheckedChange={(c)=> setProduto({ ...produto, programa_12_meses: !!c })}
+                  />
+                  <Label htmlFor="programa_12_meses" className="cursor-pointer font-semibold">
+                    Programa contínuo de 12 meses (Spa da Pele)
+                  </Label>
+                </div>
+                {produto.programa_12_meses && (
+                  <div className="space-y-2">
+                    <Label>Adicionar Tratamentos do Banco de Dados</Label>
+                    <Input
+                      placeholder="Buscar tratamentos (nome técnico)"
+                      value={buscaProc}
+                      onChange={(e)=>setBuscaProc(e.target.value)}
+                    />
+                    <div className="max-h-56 overflow-y-auto grid md:grid-cols-2 gap-2 p-2 bg-white rounded border">
+                      {procedimentos
+                        .filter(p => !buscaProc || p.nome_tecnico?.toLowerCase().includes(buscaProc.toLowerCase()))
+                        .slice(0, 50)
+                        .map(p => {
+                          const checked = produto.tratamentos_inclusos_ids.includes(p.id);
+                          return (
+                            <label key={p.id} className="flex items-center gap-2 text-sm cursor-pointer p-1 rounded hover:bg-gray-50">
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                onChange={(e)=>{
+                                  if (e.target.checked) {
+                                    setProduto(prev => ({
+                                      ...prev,
+                                      tratamentos_inclusos_ids: [...prev.tratamentos_inclusos_ids, p.id],
+                                      tratamentos_inclusos_nomes: [...prev.tratamentos_inclusos_nomes, p.nome_tecnico]
+                                    }));
+                                  } else {
+                                    setProduto(prev => ({
+                                      ...prev,
+                                      tratamentos_inclusos_ids: prev.tratamentos_inclusos_ids.filter(id => id !== p.id),
+                                      tratamentos_inclusos_nomes: prev.tratamentos_inclusos_nomes.filter(n => n !== p.nome_tecnico)
+                                    }));
+                                  }
+                                }}
+                              />
+                              <span className="truncate">{p.nome_tecnico}</span>
+                            </label>
+                          );
+                        })}
+                    </div>
+                    {produto.tratamentos_inclusos_nomes.length > 0 && (
+                      <p className="text-xs text-gray-600">
+                        Selecionados: {produto.tratamentos_inclusos_nomes.slice(0,5).join(', ')}{produto.tratamentos_inclusos_nomes.length>5 ? '…' : ''}
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
