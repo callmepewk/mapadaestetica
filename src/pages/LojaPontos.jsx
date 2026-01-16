@@ -3,6 +3,8 @@ import { base44 } from "@/api/base44Client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ChatPedido from "../components/chat/ChatPedido";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -51,6 +53,8 @@ export default function LojaPontos() {
   const [quantidades, setQuantidades] = useState({});
   const [pedidoChatId, setPedidoChatId] = useState(null);
   const [mostraAviso, setMostraAviso] = useState(true);
+  const [modalNovoItem, setModalNovoItem] = useState(false);
+  const [novoItem, setNovoItem] = useState({ tipo: 'produto', nome: '', descricao: '', categoria: 'Outros', pontos_necessarios: 100, estoque: 1, tipo_oferta: 'unidade' });
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -252,6 +256,14 @@ export default function LojaPontos() {
 
         {/* Header */}
         <div className="mb-8">
+          <div className="flex items-center justify-between mb-2">
+            <div />
+            {(user?.role === 'admin' || user?.tipo_usuario === 'profissional') && (
+              <Button size="sm" className="bg-pink-600 hover:bg-pink-700 text-white" onClick={()=>setModalNovoItem(true)}>
+                + Adicionar item à Loja
+              </Button>
+            )}
+          </div>
           <div className="mb-4 p-3 bg-purple-50 border border-purple-200 rounded-lg flex flex-wrap items-center justify-between gap-2">
             <span className="text-sm text-purple-800">Quer ganhar bônus de pontos nas compras da loja?</span>
             <Button size="sm" onClick={()=>navigate(createPageUrl('Planos'))} className="bg-purple-600 hover:bg-purple-700">Quero meu bônus</Button>
@@ -771,6 +783,90 @@ export default function LojaPontos() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Modal: Novo Item Loja */}
+        <Dialog open={modalNovoItem} onOpenChange={setModalNovoItem}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Novo item na Loja de Pontos</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-gray-600">Tipo</label>
+                  <Select value={novoItem.tipo} onValueChange={(v)=>setNovoItem(prev=>({...prev, tipo: v}))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="produto">Produto</SelectItem>
+                      <SelectItem value="servico">Serviço</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-600">Categoria</label>
+                  <Select value={novoItem.categoria} onValueChange={(v)=>setNovoItem(prev=>({...prev, categoria: v}))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Cuidados com a Pele">Cuidados com a Pele</SelectItem>
+                      <SelectItem value="Maquiagem">Maquiagem</SelectItem>
+                      <SelectItem value="Cabelos">Cabelos</SelectItem>
+                      <SelectItem value="Serviços">Serviços</SelectItem>
+                      <SelectItem value="Outros">Outros</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <label className="text-xs text-gray-600">Nome</label>
+                <Input value={novoItem.nome} onChange={(e)=>setNovoItem(prev=>({...prev, nome: e.target.value}))} />
+              </div>
+              <div className="grid gap-2">
+                <label className="text-xs text-gray-600">Descrição</label>
+                <Input value={novoItem.descricao} onChange={(e)=>setNovoItem(prev=>({...prev, descricao: e.target.value}))} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-gray-600">Pontos necessários</label>
+                  <Input type="number" value={novoItem.pontos_necessarios} onChange={(e)=>setNovoItem(prev=>({...prev, pontos_necessarios: parseInt(e.target.value)||0}))} />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-600">Estoque</label>
+                  <Input type="number" value={novoItem.estoque} onChange={(e)=>setNovoItem(prev=>({...prev, estoque: parseInt(e.target.value)||0}))} />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-gray-600">Formato de oferta</label>
+                <Select value={novoItem.tipo_oferta} onValueChange={(v)=>setNovoItem(prev=>({...prev, tipo_oferta: v}))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unidade">Unidade</SelectItem>
+                    <SelectItem value="lote">Lote</SelectItem>
+                    <SelectItem value="sob_demanda">Sob demanda</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex justify-end gap-2 mt-2">
+                <Button variant="outline" onClick={()=>setModalNovoItem(false)}>Cancelar</Button>
+                <Button onClick={async ()=>{
+                  if (!novoItem.nome || !novoItem.descricao) { alert('Preencha nome e descrição'); return; }
+                  await base44.entities.Produto.create({
+                    tipo: novoItem.tipo,
+                    nome: novoItem.nome,
+                    descricao: novoItem.descricao,
+                    categoria: novoItem.categoria,
+                    pontos_necessarios: Number(novoItem.pontos_necessarios)||0,
+                    estoque: Number(novoItem.estoque)||0,
+                    tipo_oferta: novoItem.tipo_oferta,
+                    status: 'ativo'
+                  });
+                  alert('Item criado!');
+                  setModalNovoItem(false);
+                  window.location.reload();
+                }} className="bg-pink-600 hover:bg-pink-700 text-white">Salvar</Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Modal Chat do Pedido */}
         <Dialog open={!!pedidoChatId} onOpenChange={(o)=>!o && setPedidoChatId(null)}>

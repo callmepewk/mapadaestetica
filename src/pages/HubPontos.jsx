@@ -65,6 +65,8 @@ export default function HubPontos() {
   const [pedidos, setPedidos] = useState([]);
   const [produtosMeus, setProdutosMeus] = useState([]);
   const [pedidoChatId, setPedidoChatId] = useState(null);
+  const [modalNovoItem, setModalNovoItem] = useState(false);
+  const [novoItem, setNovoItem] = useState({ tipo: 'servico', nome: '', descricao: '', categoria: 'Serviços', pontos_necessarios: 1000, estoque: 1, tipo_oferta: 'sob_demanda' });
 
   const itemSelecionado = useMemo(() => CATALOGO.find(i => i.id === selecionado) || CATALOGO[0], [selecionado]);
 
@@ -197,6 +199,9 @@ export default function HubPontos() {
              </SelectContent>
            </Select>
          </div>
+         <div className="hidden md:flex items-center gap-2">
+           <Button size="sm" variant="outline" onClick={()=>setModalNovoItem(true)} className="h-9">+ Adicionar item à Loja</Button>
+         </div>
          <div className="w-full md:w-auto md:min-w-[280px]">
            <label className="text-xs text-gray-600">Faixa de pontos</label>
            <Select onValueChange={(v)=>{
@@ -328,6 +333,89 @@ export default function HubPontos() {
             })()}
           </div>
         </div>
+
+        {/* Modal: Novo item Loja */}
+        <Dialog open={modalNovoItem} onOpenChange={setModalNovoItem}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Adicionar item à Loja de Pontos</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-gray-600">Tipo</label>
+                  <Select value={novoItem.tipo} onValueChange={(v)=>setNovoItem(prev=>({...prev, tipo: v}))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="servico">Serviço</SelectItem>
+                      <SelectItem value="produto">Produto</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-600">Categoria</label>
+                  <Select value={novoItem.categoria} onValueChange={(v)=>setNovoItem(prev=>({...prev, categoria: v}))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Serviços">Serviços</SelectItem>
+                      <SelectItem value="Produtos para Pacientes">Produtos para Pacientes</SelectItem>
+                      <SelectItem value="Outros">Outros</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <label className="text-xs text-gray-600">Nome</label>
+                <Input value={novoItem.nome} onChange={(e)=>setNovoItem(prev=>({...prev, nome: e.target.value}))} />
+              </div>
+              <div className="grid gap-2">
+                <label className="text-xs text-gray-600">Descrição</label>
+                <Input value={novoItem.descricao} onChange={(e)=>setNovoItem(prev=>({...prev, descricao: e.target.value}))} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-gray-600">Pontos necessários</label>
+                  <Input type="number" value={novoItem.pontos_necessarios} onChange={(e)=>setNovoItem(prev=>({...prev, pontos_necessarios: parseInt(e.target.value)||0}))} />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-600">Estoque</label>
+                  <Input type="number" value={novoItem.estoque} onChange={(e)=>setNovoItem(prev=>({...prev, estoque: parseInt(e.target.value)||0}))} />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-gray-600">Formato de oferta</label>
+                <Select value={novoItem.tipo_oferta} onValueChange={(v)=>setNovoItem(prev=>({...prev, tipo_oferta: v}))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="sob_demanda">Sob demanda</SelectItem>
+                    <SelectItem value="unidade">Unidade</SelectItem>
+                    <SelectItem value="lote">Lote</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex justify-end gap-2 mt-2">
+                <Button variant="outline" onClick={()=>setModalNovoItem(false)}>Cancelar</Button>
+                <Button onClick={async ()=>{
+                  if (!novoItem.nome || !novoItem.descricao) { alert('Preencha nome e descrição'); return; }
+                  await base44.entities.Produto.create({
+                    tipo: novoItem.tipo,
+                    nome: novoItem.nome,
+                    descricao: novoItem.descricao,
+                    categoria: novoItem.categoria,
+                    pontos_necessarios: Number(novoItem.pontos_necessarios)||0,
+                    estoque: Number(novoItem.estoque)||0,
+                    tipo_oferta: novoItem.tipo_oferta,
+                    aceitar_orcamento: novoItem.tipo_oferta === 'sob_demanda',
+                    status: 'ativo'
+                  });
+                  alert('Item criado!');
+                  setModalNovoItem(false);
+                  window.location.reload();
+                }}>Salvar</Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Chat Modal */}
         <Dialog open={!!pedidoChatId} onOpenChange={(o)=>!o && setPedidoChatId(null)}>

@@ -601,8 +601,8 @@ www.mapadaestetica.com.br
               </div>
               <p className="text-sm text-gray-600 mb-3">Escolha uma imagem, nome de exibição e descrição para aparecer na seção de patrocinadores da página inicial.</p>
               <div className="grid md:grid-cols-3 gap-3">
-                <Input placeholder="Nome de exibição" value={destaqueNome} onChange={e=>setDestaqueNome(e.target.value)} />
-                <Input placeholder="Descrição curta" value={destaqueDesc} onChange={e=>setDestaqueDesc(e.target.value)} />
+                <InputUI placeholder="Nome de exibição" value={destaqueNome} onChange={e=>setDestaqueNome(e.target.value)} />
+                <InputUI placeholder="Descrição curta" value={destaqueDesc} onChange={e=>setDestaqueDesc(e.target.value)} />
                 <input type="file" accept="image/*" onChange={e=> setDestaqueFile(e.target.files?.[0]||null)} />
               </div>
               {destaqueAviso && <p className="text-xs text-gray-500 mt-2">{destaqueAviso}</p>}
