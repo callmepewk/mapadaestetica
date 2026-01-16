@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import RadarSection from "../components/analytics/RadarSection";
 import HomeRealtimeStats from "../components/analytics/HomeRealtimeStats";
+import ProgramasInsights from "../components/analytics/ProgramasInsights";
 import RealtimeStats from "../components/pro/RealtimeStats";
 
 export default function Radares() {
@@ -19,6 +20,11 @@ export default function Radares() {
         <section>
           <h2 className="text-xl font-bold text-gray-900 mb-4">Estatísticas em tempo real da plataforma</h2>
           <HomeRealtimeStats />
+        </section>
+
+        <section>
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Data Science • Programas (12 meses)</h2>
+          <ProgramasInsights />
         </section>
         {isProf && (
           <section>
