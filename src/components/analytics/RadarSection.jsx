@@ -8,6 +8,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Download, Shield, Sparkles } from "lucide-react";
+import TopAnatomicalAreas24h from "./TopAnatomicalAreas24h";
+import ContentTipsForPros from "./ContentTipsForPros";
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip } from "recharts";
 
 const PLAN_LIMITS = { cobre: { views: 1, reports: 1 }, lite: { views: 1, reports: 1 }, prata: { views: 1, reports: 1 }, ouro: { views: 2, reports: 4 }, diamante: { views: 4, reports: 10 }, platina: { views: 4, reports: 10 } };
@@ -167,6 +169,11 @@ export default function RadarSection() {
             </div>
           </div>
         </Tabs>
+
+        <div className="mt-6 grid lg:grid-cols-2 gap-6">
+          <TopAnatomicalAreas24h />
+          <ContentTipsForPros />
+        </div>
       </CardContent>
     </Card>
   );

@@ -224,6 +224,7 @@ export default function Mapa() {
   const [categoria, setCategoria] = useState("");
   const [procedimento, setProcedimento] = useState("");
   const [cidade, setCidade] = useState("");
+  const [bairro, setBairro] = useState("");
   const [estado, setEstado] = useState("");
   const [faixaPreco, setFaixaPreco] = useState("");
   const [verificados, setVerificados] = useState(false);
@@ -234,6 +235,7 @@ export default function Mapa() {
 
   // Filtros para Mapa (Estabelecimentos)
   const [buscaCidade, setBuscaCidade] = useState("");
+  const [bairroMapa, setBairroMapa] = useState("");
   const [filtroCategoria, setFiltroCategoria] = useState("");
   const [filtroPlano, setFiltroPlano] = useState("");
 
@@ -325,10 +327,11 @@ export default function Mapa() {
     const matchCidade = !buscaCidade || 
       est.cidade?.toLowerCase().includes(buscaCidade.toLowerCase()) ||
       est.estado?.toLowerCase().includes(buscaCidade.toLowerCase());
+    const matchBairroMapa = !bairroMapa || (est.bairro && est.bairro.toLowerCase().includes(bairroMapa.toLowerCase())) || (est.endereco && est.endereco.toLowerCase().includes(bairroMapa.toLowerCase()));
     const matchCategoria = !filtroCategoria || est.categoria === filtroCategoria;
     const matchPlano = !filtroPlano || est.plano_desconto === filtroPlano;
     
-    return matchCidade && matchCategoria && matchPlano;
+    return matchCidade && matchBairroMapa && matchCategoria && matchPlano;
   });
 
   // Filtrar anúncios
@@ -341,6 +344,7 @@ export default function Mapa() {
     const matchProcedimento = !procedimento || 
       anuncio.procedimentos_servicos?.some(p => p.toLowerCase().includes(procedimento.toLowerCase()));
     const matchCidade = !cidade || anuncio.cidade?.toLowerCase().includes(cidade.toLowerCase());
+    const matchBairro = !bairro || (anuncio.bairro && anuncio.bairro.toLowerCase().includes(bairro.toLowerCase()));
     const matchEstado = !estado || anuncio.estado === estado;
     const matchPreco = !faixaPreco || anuncio.faixa_preco === faixaPreco;
     const matchVerificados = !verificados || anuncio.profissional_verificado === true;
@@ -364,7 +368,7 @@ export default function Mapa() {
       matchDistancia = dist <= parseInt(distancia);
     }
     
-    return matchBusca && matchCategoria && matchProcedimento && matchCidade && matchEstado && 
+    return matchBusca && matchCategoria && matchProcedimento && matchCidade && matchBairro && matchEstado && 
            matchPreco && matchVerificados && matchTipoAnuncio && matchTipoEstabelecimento && 
            matchTempoFormacao && matchDistancia && matchPublico;
   });
@@ -551,6 +555,16 @@ export default function Mapa() {
                     />
                   </div>
 
+                  {/* Bairro */}
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Bairro</label>
+                    <Input
+                      placeholder="Digite o bairro"
+                      value={bairro}
+                      onChange={(e) => setBairro(e.target.value)}
+                    />
+                  </div>
+
                   {/* Estado */}
                   <div>
                     <label className="text-sm font-medium mb-2 block">Estado</label>
@@ -729,13 +743,23 @@ export default function Mapa() {
           <TabsContent value="mapa">
             {/* Filtros do Mapa */}
             <div className="bg-white border rounded-lg shadow-sm mb-6 p-4">
-              <div className="grid md:grid-cols-4 gap-4">
+              <div className="grid md:grid-cols-5 gap-4">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <Input
                     placeholder="Cidade ou Estado"
                     value={buscaCidade}
                     onChange={(e) => setBuscaCidade(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <Input
+                    placeholder="Bairro"
+                    value={bairroMapa}
+                    onChange={(e) => setBairroMapa(e.target.value)}
                     className="pl-10"
                   />
                 </div>
