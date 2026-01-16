@@ -411,6 +411,13 @@ export default function Produtos() {
   ];
 
   const produtosFiltrados = todosProdutos.filter(produto => {
+    // Respeitar plano mínimo (para profissionais)
+    if (produto.plano_minimo && isProfissional) {
+      const ordem = ['free','lite','basico','pro','prime','premium'];
+      const idxUser = ordem.indexOf(user?.plano_ativo || 'free');
+      const idxMin = ordem.indexOf(produto.plano_minimo || 'free');
+      if (idxUser < idxMin) return false;
+    }
     const matchCategoria = categoriaFiltro === "Todas" || produto.categoria === categoriaFiltro;
     const matchBusca = !busca ||
       produto.nome?.toLowerCase().includes(busca.toLowerCase()) ||
@@ -774,6 +781,7 @@ export default function Produtos() {
                       className="overflow-hidden hover:shadow-xl transition-all duration-300 border-none group"
                     >
                       <div className="relative h-48 bg-gray-100">
+                        {/* Imagens focadas em bem-estar */}
                         {produto.imagens && produto.imagens.length > 0 ? (
                           <img
                             src={produto.imagens[0]}

@@ -274,6 +274,11 @@ export default function HubPontos() {
           <h2 className="text-2xl font-bold mb-2">Pedidos da Loja de Pontos</h2>
           <p className="text-gray-600 mb-4">Aceite pedidos de produtos que você cadastrou e converse com o cliente pelo chat.</p>
           <div className="grid md:grid-cols-2 gap-4">
+           <Alert className="bg-blue-50 border-blue-200 mb-4">
+             <AlertDescription className="text-blue-900 text-sm">
+               Defina modalidade, local e público mínimo. Admins podem cadastrar itens especiais (serviços, produtos, eventos, convenções, dermafellow).
+             </AlertDescription>
+           </Alert>
             {(() => {
               const ids = new Set(produtosMeus.map(p => p.id));
               const mapa = Object.fromEntries(produtosMeus.map(p => [p.id, p]));

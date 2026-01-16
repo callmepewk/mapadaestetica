@@ -78,9 +78,18 @@ export default function LojaPontos() {
 
   const categorias = ["Todos", "Cuidados com a Pele", "Cabelos", "Maquiagem", "Outros"];
 
+  // Aplicar visibilidade por plano também na Loja de Pontos
+  const ordemPlanos = ['free','lite','basico','pro','prime','premium'];
+  const produtosVisiveisPlano = produtos.filter(p => {
+    const min = p.plano_minimo || 'free';
+    const idxUser = ordemPlanos.indexOf((user?.plano_ativo)||'free');
+    const idxMin = ordemPlanos.indexOf(min);
+    return idxUser >= idxMin;
+  });
+
   const produtosFiltrados = categoriaSelecionada === "Todos"
-    ? produtos
-    : produtos.filter(p => p.categoria === categoriaSelecionada);
+    ? produtosVisiveisPlano
+    : produtosVisiveisPlano.filter(p => p.categoria === categoriaSelecionada);
 
   // Ordenar: produtos especiais primeiro (Beauty Box), depois por pontos
   const efetivoPontos = (p) => {
