@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import ImageWithLoader from "../components/common/ImageWithLoader";
+import AgendamentoModal from "../components/produtos/AgendamentoModal";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {

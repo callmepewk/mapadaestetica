@@ -81,7 +81,15 @@ export default function AdicionarProduto() {
     aceitar_orcamento: false,
     plano_minimo: 'free',
     beauty_club_exclusivo: false,
-    beauty_club_minimo: 'basic'
+    beauty_club_minimo: 'basic',
+    // Endereço
+    endereco: "",
+    bairro: "",
+    cidade: "",
+    estado: "",
+    cep: "",
+    latitude: undefined,
+    longitude: undefined
   });
 
   const handleUploadImage = async (e) => {
@@ -456,6 +464,38 @@ export default function AdicionarProduto() {
                 <div className="flex items-center gap-2">
                   <Checkbox id="aceitar_orcamento" checked={produto.aceitar_orcamento} onCheckedChange={(c)=>setProduto({ ...produto, aceitar_orcamento: c })} />
                   <Label htmlFor="aceitar_orcamento" className="cursor-pointer">Permitir solicitar orçamento (sob demanda)</Label>
+                </div>
+              </div>
+
+              {/* Endereço */}
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <Label htmlFor="endereco">Endereço</Label>
+                  <Input id="endereco" value={produto.endereco || ""} onChange={(e)=>setProduto({ ...produto, endereco: e.target.value })} placeholder="Rua, número, complemento" />
+                </div>
+                <div>
+                  <Label htmlFor="bairro">Bairro</Label>
+                  <Input id="bairro" value={produto.bairro || ""} onChange={(e)=>setProduto({ ...produto, bairro: e.target.value })} />
+                </div>
+                <div>
+                  <Label htmlFor="cidade">Cidade</Label>
+                  <Input id="cidade" value={produto.cidade || ""} onChange={(e)=>setProduto({ ...produto, cidade: e.target.value })} />
+                </div>
+                <div>
+                  <Label htmlFor="estado">Estado</Label>
+                  <Input id="estado" value={produto.estado || ""} onChange={(e)=>setProduto({ ...produto, estado: e.target.value })} placeholder="UF" />
+                </div>
+                <div>
+                  <Label htmlFor="cep">CEP</Label>
+                  <Input id="cep" value={produto.cep || ""} onChange={(e)=>setProduto({ ...produto, cep: e.target.value })} />
+                </div>
+                <div>
+                  <Label htmlFor="latitude">Latitude (opcional)</Label>
+                  <Input id="latitude" type="number" value={produto.latitude || ''} onChange={(e)=>setProduto({ ...produto, latitude: parseFloat(e.target.value) || undefined })} />
+                </div>
+                <div>
+                  <Label htmlFor="longitude">Longitude (opcional)</Label>
+                  <Input id="longitude" type="number" value={produto.longitude || ''} onChange={(e)=>setProduto({ ...produto, longitude: parseFloat(e.target.value) || undefined })} />
                 </div>
               </div>
 
