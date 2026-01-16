@@ -77,7 +77,10 @@ export default function AdicionarProduto() {
     tipo_oferta: "unidade", // unidade | lote | sob_demanda
     lote_minimo: 1,
     aceitar_chat: true,
-    aceitar_orcamento: false
+    aceitar_orcamento: false,
+    plano_minimo: 'free',
+    beauty_club_exclusivo: false,
+    beauty_club_minimo: 'basic'
   });
 
   const handleUploadImage = async (e) => {
@@ -267,7 +270,44 @@ export default function AdicionarProduto() {
                   Gerar Imagem IA
                 </Button>
               </div>
-            </div>
+
+              {/* Plano mínimo para profissionais */}
+              <div>
+                <Label htmlFor="plano_minimo">Plano mínimo (profissionais)</Label>
+                <Select value={produto.plano_minimo || 'free'} onValueChange={(v)=>setProduto({ ...produto, plano_minimo: v })}>
+                  <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="free">Free</SelectItem>
+                    <SelectItem value="lite">Lite</SelectItem>
+                    <SelectItem value="basico">Básico</SelectItem>
+                    <SelectItem value="pro">Pro</SelectItem>
+                    <SelectItem value="prime">Prime</SelectItem>
+                    <SelectItem value="premium">Premium</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Beauty Club */}
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="beauty_club_exclusivo"
+                  checked={produto.beauty_club_exclusivo}
+                  onCheckedChange={(checked) => setProduto({ ...produto, beauty_club_exclusivo: checked })}
+                />
+                <Label htmlFor="beauty_club_exclusivo" className="cursor-pointer">Exclusivo Beauty Club</Label>
+              </div>
+              <div>
+                <Label htmlFor="beauty_club_minimo">Nível mínimo (Beauty Club)</Label>
+                <Select value={produto.beauty_club_minimo || 'basic'} onValueChange={(v)=>setProduto({ ...produto, beauty_club_minimo: v })}>
+                  <SelectTrigger className="w-52"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="basic">Beauty Club Basic</SelectItem>
+                    <SelectItem value="pro">Beauty Club Pro</SelectItem>
+                    <SelectItem value="exclusive">Beauty Club Exclusive (VIP)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Tipo: Produto ou Serviço */}
@@ -566,8 +606,8 @@ export default function AdicionarProduto() {
                 )}
               </div>
 
-              {/* Status e Destaque */}
-              <div className="flex items-center gap-6">
+              {/* Status, Destaque e Visibilidade */}
+              <div className="flex items-center gap-6 flex-wrap">
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="em_destaque"

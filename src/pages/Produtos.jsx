@@ -338,6 +338,7 @@ export default function Produtos() {
   const [categoriaFiltro, setCategoriaFiltro] = useState("Todas");
   const [ordenacao, setOrdenacao] = useState("relevancia");
   const [visibilidadeFiltro, setVisibilidadeFiltro] = useState("todos");
+  const [planoFiltro, setPlanoFiltro] = useState("todos");
   const [user, setUser] = useState(null);
   const [tipoBusca, setTipoBusca] = useState('produtos');
   const [mostrarLoginPrompt, setMostrarLoginPrompt] = useState(false);
@@ -413,6 +414,7 @@ export default function Produtos() {
 
   const produtosFiltrados = todosProdutos.filter(produto => {
     const isExclusivo = !!(produto.requer_assinatura || produto.mostrar_tag_clube || produto.beauty_club_exclusivo);
+    const matchPlanoFiltro = planoFiltro === 'todos' || (produto.plano_minimo || 'free') === planoFiltro;
 
     // Gating por Beauty Club quando aplicável
     if (isExclusivo && produto.beauty_club_minimo) {
@@ -449,7 +451,7 @@ export default function Produtos() {
                   produto.categoria !== "Produtos para Pacientes";
     }
 
-    return matchCategoria && matchBusca && matchTipo && matchVis;
+    return matchCategoria && matchBusca && matchTipo && matchVis && matchPlanoFiltro;
   });
 
   // Define available categories for the filter based on tipoBusca and user type
@@ -689,6 +691,21 @@ export default function Produtos() {
                    <SelectItem value="exclusivo">Exclusivo (Clube/Beauty Club)</SelectItem>
                  </SelectContent>
                 </Select>
+
+                <Select value={planoFiltro} onValueChange={setPlanoFiltro}>
+                  <SelectTrigger className="border-2">
+                    <SelectValue placeholder="Plano mínimo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos Planos</SelectItem>
+                    <SelectItem value="free">Free</SelectItem>
+                    <SelectItem value="lite">Lite</SelectItem>
+                    <SelectItem value="basico">Básico</SelectItem>
+                    <SelectItem value="pro">Pro</SelectItem>
+                    <SelectItem value="prime">Prime</SelectItem>
+                    <SelectItem value="premium">Premium</SelectItem>
+                  </SelectContent>
+                </Select>
                 </div>
 
               {/* Debug info para admin */}
@@ -804,7 +821,7 @@ export default function Produtos() {
                       key={produto.id}
                       className="overflow-hidden hover:shadow-xl transition-all duration-300 border-none group"
                     >
-                      <div className="relative h-48 bg-gray-100">
+                      <div className="relative h-48 bg-gray-100 overflow-x-auto">
                         {/* Imagens focadas em bem-estar */}
                         {produto.imagens && produto.imagens.length > 0 ? (
                           <img
@@ -1042,7 +1059,7 @@ export default function Produtos() {
                                   <img
                                     src={item.imagens[0]}
                                     alt={item.nome}
-                                    className="w-full h-full object-cover"
+                                    className="max-w-none h-full w-auto object-contain"
                                   />
                                 ) : (
                                   <div className="w-full h-full flex items-center justify-center text-2xl">

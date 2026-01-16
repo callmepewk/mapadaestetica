@@ -602,12 +602,12 @@ export default function LojaPontos() {
                   : "border-gray-200"
               }`}
             >
-              <div className="relative h-48 bg-gray-100">
+              <div className="relative h-48 bg-gray-100 overflow-x-auto">
                 {produto.imagens && produto.imagens.length > 0 ? (
                   <img
                     src={produto.imagens[0]}
                     alt={produto.nome}
-                    className="w-full h-full object-cover"
+                    className="max-w-none h-full w-auto object-contain"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-6xl text-gray-400">
