@@ -335,7 +335,7 @@ export default function AdicionarProduto() {
           Voltar para Produtos
         </Button>
 
-        <Card className="border-none shadow-2xl">
+        <Card className="border-2 border-[#F7D426]/50 shadow-2xl rounded-2xl bg-white/90 backdrop-blur">
           <CardContent className="p-8 space-y-2">
             <div className="mb-6">
               <h1 className="text-3xl font-bold text-gray-900 mb-1">
