@@ -83,20 +83,19 @@ export default function LojaPontos() {
   const ordemPlanos = ['free','lite','basico','pro','prime','premium'];
   const ordemBC = ['none','basic','pro','exclusive'];
   const produtosVisiveisPlano = produtos.filter((p) => {
-    // Gating por plano Mapa da Estética (profissionais)
+    // Plano mínimo
     const min = p.plano_minimo || 'free';
-    const ordemPlanos = ['free','lite','basico','pro','prime','premium'];
-    const idxUser = ordemPlanos.indexOf((user?.plano_ativo)||'free');
+    const idxUser = ordemPlanos.indexOf(user?.plano_ativo || 'free');
     const idxMin = ordemPlanos.indexOf(min);
     if (idxUser < idxMin) return false;
 
-    // Gating por Beauty Club quando aplicável
+    // Beauty Club
     if (p.beauty_club_minimo || p.beauty_club_exclusivo || p.mostrar_tag_clube) {
-      const ordemBC = ['none','basic','pro','exclusive'];
-      const userBC = user?.beauty_club_plano || 'none';
-      const req = p.beauty_club_minimo || (p.mostrar_tag_clube ? 'basic' : undefined);
-      if (req && ordemBC.indexOf(userBC) < ordemBC.indexOf(req)) return false;
-      if (!req && p.beauty_club_exclusivo && userBC === 'none') return false;
+      const req = p.beauty_club_minimo || (p.mostrar_tag_clube ? 'basic' : 'none');
+      const idxUserBC = ordemBC.indexOf(user?.beauty_club_plano || 'none');
+      const idxReqBC = ordemBC.indexOf(req);
+      if (idxReqBC > -1 && idxUserBC < idxReqBC) return false;
+      if (!p.beauty_club_minimo && p.beauty_club_exclusivo && (user?.beauty_club_plano || 'none') === 'none') return false;
     }
     return true;
   });
