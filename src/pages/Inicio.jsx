@@ -40,6 +40,7 @@ import TermosCondicoes from "../components/home/TermosCondicoes";
 import Tutorial from "../components/home/Tutorial";
 import { CardContent } from "@/components/ui/card";
 import CalculadoraLaserSection from "../components/home/CalculadoraLaserSection";
+import AgendamentoModal from "../components/produtos/AgendamentoModal";
 
 import OnboardingModal from "../components/home/OnboardingModal";
 import LoginPromptModal from "../components/home/LoginPromptModal";
@@ -91,6 +92,8 @@ export default function Inicio() {
   const [geoInfo, setGeoInfo] = useState({ cidade: "", estado: "", pais: "", lat: null, lon: null });
   const [geoLoading, setGeoLoading] = useState(false);
   const [agora, setAgora] = useState(new Date());
+  const [agendarOpen, setAgendarOpen] = useState(false);
+  const [produtoAgendar, setProdutoAgendar] = useState(null);
 
   const navigate = useNavigate();
 
@@ -306,6 +309,23 @@ export default function Inicio() {
     }, () => setGeoLoading(false));
   }
 
+  const handleAgendar = (item) => {
+    if (!user) {
+      setTipoLoginPrompt("agendar");
+      setMostrarLoginPrompt(true);
+      return;
+    }
+    setProdutoAgendar(item);
+    setAgendarOpen(true);
+  };
+
+  const { data: programas12m = [], isLoading: loadingProgramas } = useQuery({
+    queryKey: ['programas-12m', visaoAtual],
+    queryFn: async () => await base44.entities.Produto.filter({ programa_12_meses: true, status: 'ativo' }, '-created_date', 6),
+    enabled: !!visaoAtual && visaoAtual === 'paciente',
+    initialData: [],
+  });
+
   const isAdmin = user?.role === 'admin';
   const isPaciente = visaoAtual === 'paciente';
   const isProfissional = visaoAtual === 'profissional' || visaoAtual === 'patrocinador';
@@ -460,6 +480,56 @@ export default function Inicio() {
               </div>
             </div>
           </section>
+
+          {/* Programas Spa da Pele (12 meses) - visível para pacientes */}
+          {isPaciente && (
+            <section className="py-12 bg-white">
+              <div className="max-w-7xl mx-auto px-4">
+                <div className="text-center mb-8">
+                  <Badge className="mb-3 bg-amber-100 text-amber-800">Programas Spa da Pele</Badge>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Tratamentos Programados por 12 meses</h2>
+                  <p className="text-gray-600">Definidos por profissionais e admins, com agenda por data e horário</p>
+                </div>
+
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {(programas12m.length ? programas12m : [
+                    { id:'checkup-360', nome:'Checkup 360', descricao:'Avaliação completa e plano personalizado de 12 meses.', categoria:'Serviços para Pacientes', imagens:[], programa_12_meses:true },
+                    { id:'checkup-da-pele', nome:'Checkup da Pele', descricao:'Protocolos do Spa da Pele por 12 meses com acompanhamento.', categoria:'Serviços para Pacientes', imagens:[], programa_12_meses:true }
+                  ]).map((p)=> (
+                    <Card key={p.id || p.nome} className="border-none shadow-lg hover:shadow-xl transition-all overflow-hidden">
+                      <div className="h-40 bg-gray-100 flex items-center justify-center overflow-hidden">
+                        {p.imagens && p.imagens.length > 0 ? (
+                          <img src={p.imagens[0]} alt={p.nome} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="text-5xl">🧖‍♀️</div>
+                        )}
+                      </div>
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-300">{p.categoria || 'Serviços para Pacientes'}</Badge>
+                          <Badge className="bg-amber-100 text-amber-800">Programa 12 meses</Badge>
+                        </div>
+                        <h3 className="font-bold text-lg mb-1 line-clamp-2">{p.nome}</h3>
+                        <p className="text-sm text-gray-600 mb-3 line-clamp-3">{p.descricao}</p>
+                        <div className="flex items-center justify-between">
+                          <Button
+                            onClick={() => (p.id ? handleAgendar(p) : (window.location.href = createPageUrl('Produtos')))}
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                            size="sm"
+                          >
+                            Agendar
+                          </Button>
+                          <Link to={createPageUrl('Produtos')}>
+                            <Button variant="outline" size="sm">Ver no catálogo</Button>
+                          </Link>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
 
           {/* Banner Rotativo Meio */}
           <BannerRotativo posicao="home_meio" />
@@ -953,6 +1023,13 @@ export default function Inicio() {
         open={mostrarLoginPrompt}
         onClose={() => setMostrarLoginPrompt(false)}
         pageName={tipoLoginPrompt}
+      />
+
+      {/* Modal de Agendamento */}
+      <AgendamentoModal
+        open={agendarOpen}
+        onClose={(ok) => { setAgendarOpen(false); setProdutoAgendar(null); if (ok) alert('Agendamento confirmado!'); }}
+        produto={produtoAgendar}
       />
 
       {/* Modal de Comparação */}

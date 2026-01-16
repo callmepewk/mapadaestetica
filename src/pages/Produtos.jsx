@@ -443,6 +443,10 @@ export default function Produtos() {
 
   // Filtrar produtos baseado no tipo de usuário
   const todosProdutos = [
+    // Exibir programas 12m do banco para pacientes em primeiro lugar
+    ...produtosDatabase.filter(p => p.programa_12_meses === true && (isPaciente)),
+    // Conteúdo estático de exposição e demais produtos
+
     ...servicosContrataveis.filter(s =>
       isProfissional ? s.tipo_publico === "profissional" : s.tipo_publico === "paciente"
     ),
