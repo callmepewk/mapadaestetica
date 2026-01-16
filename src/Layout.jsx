@@ -517,6 +517,10 @@ export default function Layout({ children }) {
                         <Sparkles className="w-4 h-4 mr-2" />
                         Clube +
                       </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => window.open('https://beautybanking.base44.app', '_blank')}>
+                        <DollarSign className="w-4 h-4 mr-2" />
+                        Beauty Banking
+                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={handleLogout}>
                         <LogOut className="w-4 h-4 mr-2" />
