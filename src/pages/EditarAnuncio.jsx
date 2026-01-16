@@ -91,7 +91,12 @@ const tiposAnuncio = [
   { valor: "ia", label: "IA" },
   { valor: "servicos", label: "Serviços" },
   { valor: "servicos_ia", label: "Serviços de IA" },
-  { valor: "midia_marketing", label: "Mídia e Marketing" }
+  { valor: "midia_marketing", label: "Mídia e Marketing" },
+  { valor: "inauguracao", label: "Inauguração" },
+  { valor: "reinauguracao", label: "Reinauguração" },
+  { valor: "lancamento_produto", label: "Lançamento de Produto" },
+  { valor: "lancamento_servico", label: "Lançamento de Serviço" },
+  { valor: "lancamento_tratamento", label: "Lançamento de Tratamento" }
 ];
 
 const faixasPreco = [
