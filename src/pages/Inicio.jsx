@@ -22,6 +22,8 @@ import {
   Heart,
   Loader2,
   Crown,
+  ShieldCheck,
+  Phone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -288,6 +290,41 @@ export default function Inicio() {
     window.open(whatsappMessage, '_blank');
   };
 
+  const BEAUTY_SAFE_WA = "https://wa.me/5531972595643?text=";
+
+  const logBeautySafe = async (action, details = "") => {
+    try {
+      await base44.entities.BeautySafeClick.create({
+        user_email: user?.email || "",
+        action,
+        page: "Inicio",
+        details
+      });
+    } catch {}
+  };
+
+  const handleBeautySafeWhats = async () => {
+    await logBeautySafe("cta_whatsapp");
+    const msg = encodeURIComponent("Olá! Quero contratar o Beauty Safe junto aos planos do Mapa da Estética.");
+    window.open(`${BEAUTY_SAFE_WA}${msg}`, "_blank");
+  };
+
+  const handleBeautySafeSolicitar = async () => {
+    try {
+      await base44.entities.BeautySafeSolicitacao.create({
+        user_email: user?.email || "",
+        canal: "whatsapp",
+        whatsapp_to: "+5531972595643",
+        mensagem: "Solicitação Beauty Safe via Home",
+        status: "pendente",
+        origem_pagina: "Inicio"
+      });
+    } catch {}
+    await logBeautySafe("solicitar");
+    const msg = encodeURIComponent("Olá! Solicitei o Beauty Safe pelo site, pode me ajudar?");
+    window.open(`${BEAUTY_SAFE_WA}${msg}`, "_blank");
+  };
+
   async function handleUseMyLocation() {
     if (!navigator.geolocation) {
       alert('Geolocalização não suportada neste navegador.');
@@ -458,6 +495,34 @@ export default function Inicio() {
 
           {/* Banner Rotativo Topo */}
           <BannerRotativo posicao="home_topo" />
+
+          {/* Beauty Safe - Proteção Civil para Profissionais */}
+          <section className="py-8">
+            <div className="max-w-7xl mx-auto px-4">
+              <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-2xl p-6 shadow flex flex-col md:flex-row items-center gap-6">
+                <div className="w-20 h-20 rounded-2xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+                  <ShieldCheck className="w-10 h-10 text-blue-700" />
+                </div>
+                <div className="flex-1">
+                  <Badge className="mb-2 bg-blue-100 text-blue-800">Novo • Beauty Safe</Badge>
+                  <h2 className="text-2xl font-bold text-gray-900">Proteção Civil para Profissionais</h2>
+                  <p className="text-gray-700 mt-1">Contrate o Beauty Safe junto aos planos do Mapa da Estética (serviço à parte) e trabalhe com segurança jurídica.</p>
+                  <p className="text-gray-600 text-sm mt-1">Relatórios de cliques e solicitações ficam registrados. Dúvidas e contratação via WhatsApp.</p>
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    <Button onClick={handleBeautySafeWhats} className="bg-green-600 hover:bg-green-700 text-white">
+                      <Phone className="w-4 h-4 mr-2" /> Falar no WhatsApp
+                    </Button>
+                    <Button variant="outline" onClick={handleBeautySafeSolicitar} className="border-2">
+                      Solicitar Beauty Safe
+                    </Button>
+                    <Link to={createPageUrl("PlannerWellness")}>
+                      <Button variant="ghost">Abrir Planner de Wellness</Button>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
 
           {/* Marketplace + Dados Analíticos */}
           <section className="py-8">
