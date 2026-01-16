@@ -273,6 +273,56 @@ export default function AdicionarProduto() {
     })();
   }, []);
 
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-[#F7D426]" />
+      </div>
+    );
+  }
+
+  if (authChecked && !user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#FFF9E6] via-white to-[#F7D426]/20 flex items-center justify-center px-6">
+        <div className="max-w-3xl w-full text-center">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black text-[#F7D426] border-2 border-[#F7D426] mb-4">
+            <Sparkles className="w-4 h-4" />
+            <span className="text-xs font-semibold">Área para Profissionais e Patrocinadores</span>
+          </div>
+          <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900">
+            Entre na sua conta para cadastrar Produtos e Serviços
+          </h1>
+          <p className="text-gray-600 mt-3">
+            Cadastre seus itens, organize seu portfólio e solicite inclusão na Loja e na Loja de Pontos com 1 clique.
+          </p>
+          <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+            <Button onClick={handleLogin} className="bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] border-2 border-[#2C2C2C] font-bold">
+              <LogIn className="w-4 h-4 mr-2" />
+              Entrar na conta
+            </Button>
+            <Button variant="outline" onClick={()=>window.location.href='/'}>
+              Voltar ao início
+            </Button>
+          </div>
+          <div className="mt-8 grid sm:grid-cols-3 gap-4 text-left">
+            <div className="p-4 rounded-lg border bg-white/70">
+              <p className="font-semibold text-gray-900">Cadastro rápido</p>
+              <p className="text-sm text-gray-600">Imagens, preço e detalhes em poucos passos.</p>
+            </div>
+            <div className="p-4 rounded-lg border bg-white/70">
+              <p className="font-semibold text-gray-900">Solicitação aos Admins</p>
+              <p className="text-sm text-gray-600">Peça para publicar na Loja e na Loja de Pontos.</p>
+            </div>
+            <div className="p-4 rounded-lg border bg-white/70">
+              <p className="font-semibold text-gray-900">Conversão automática</p>
+              <p className="text-sm text-gray-600">1 real = 1 ponto na Loja de Pontos.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
       <div className="max-w-5xl mx-auto px-6 md:px-8">
