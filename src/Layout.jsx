@@ -370,7 +370,7 @@ export default function Layout({ children }) {
             </Link>
 
             {/* Desktop Navigation - COMPACTADO */}
-            <nav className="hidden md:flex items-center gap-0.5 mr-auto">
+            <nav className="hidden md:flex items-center gap-0.5 mr-auto ml-2">
               {navigationItems.map((item) => (
                 <Link
                   key={item.title}
@@ -421,23 +421,7 @@ export default function Layout({ children }) {
               {isAuthenticated ? (
                 <>
                   {/* Contadores de Pontos e Beauty Coins */}
-                  <div className="hidden md:flex items-center gap-1">
-                    {/* Contador de Pontos */}
-                    <Link to={createPageUrl("LojaPontos")}>
-                      <Button variant="outline" size="sm" className="flex items-center gap-1 border-[#F7D426] text-[#F7D426] hover:bg-[#FFF9E6] h-8 px-2 text-xs">
-                        <Star className="w-3 h-3" />
-                        <span className="font-bold">{user?.pontos_acumulados || 0}</span>
-                      </Button>
-                    </Link>
 
-                    {/* Contador de Beauty Coins */}
-                    <Link to={createPageUrl("LojaPontos")}>
-                      <Button variant="outline" size="sm" className="flex items-center gap-1 border-purple-500 text-purple-600 hover:bg-purple-50 h-8 px-2 text-xs">
-                        <DollarSign className="w-3 h-3" />
-                        <span className="font-bold">{user?.beauty_coins || 0}</span>
-                      </Button>
-                    </Link>
-                  </div>
 
                   {(isProfissional || isPatrocinador) && (
                     <Link to={createPageUrl("CadastrarAnuncio")} className="hidden lg:block">
@@ -500,10 +484,7 @@ export default function Layout({ children }) {
                           Trocar Tipo de Conta
                         </DropdownMenuItem>
                       )}
-                      <DropdownMenuItem onClick={() => navigate(createPageUrl("LojaPontos"))}>
-                        <Star className="w-4 h-4 mr-2" />
-                        Loja de Pontos ({user?.pontos_acumulados || 0})
-                      </DropdownMenuItem>
+
                       {/* Meu Plano - DISPONÍVEL PARA PACIENTES E PROFISSIONAIS */}
                       {(isProfissional || isPaciente) && (
                         <DropdownMenuItem onClick={() => navigate(createPageUrl("MeuPlano"))}>
@@ -511,7 +492,11 @@ export default function Layout({ children }) {
                           Meu Plano
                         </DropdownMenuItem>
                       )}
-                      {(isProfissional || isAdmin) && (
+                      <DropdownMenuItem onClick={() => navigate(createPageUrl("LojaPontos"))}>
+                        <Star className="w-4 h-4 mr-2" />
+                        Loja de Pontos ({user?.pontos_acumulados || 0})
+                      </DropdownMenuItem>
+                      {isProfissional && (
                         <DropdownMenuItem onClick={() => navigate(createPageUrl("PainelProfissional"))}>
                           <TrendingUp className="w-4 h-4 mr-2" />
                           Painel Profissional
@@ -539,7 +524,7 @@ export default function Layout({ children }) {
                         </>
                       )}
                       {/* NOVO: Dashboard Patrocinador */}
-                      {((user?.plano_patrocinador && user.plano_patrocinador !== 'nenhum') || isPatrocinador || isAdmin) && (
+                      {isPatrocinador && (
                         <DropdownMenuItem onClick={() => navigate(createPageUrl("DashboardPatrocinador"))}>
                           <Crown className="w-4 h-4 mr-2" />
                           Dashboard Patrocinador
@@ -577,27 +562,7 @@ export default function Layout({ children }) {
               ) : (
                 <>
                   {/* Mostrar contadores de pontos e Beauty Coins como incentivo para não autenticados */}
-                  <div className="hidden sm:flex items-center gap-1">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className="flex items-center gap-1 border-[#F7D426] text-[#F7D426] hover:bg-[#FFF9E6] h-8 px-2 text-xs"
-                      onClick={handleLogin}
-                    >
-                      <Star className="w-3 h-3" />
-                      <span className="font-bold">0</span>
-                    </Button>
-                    
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className="flex items-center gap-1 border-purple-500 text-purple-600 hover:bg-purple-50 h-8 px-2 text-xs"
-                      onClick={handleLogin}
-                    >
-                      <DollarSign className="w-3 h-3" />
-                      <span className="font-bold">0</span>
-                    </Button>
-                  </div>
+
                   
                   <Button
                     onClick={handleLogin}
