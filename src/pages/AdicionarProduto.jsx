@@ -48,6 +48,7 @@ export default function AdicionarProduto() {
   const [aiSugerindo, setAiSugerindo] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [novoEventoOpen, setNovoEventoOpen] = useState(false);
+  const [especialidadesInput, setEspecialidadesInput] = useState("");
   // Opções sugeridas (extensíveis)
   const [marcaOptions, setMarcaOptions] = useState([
     "Lumenis","Candela","Cynosure","Alma","Lutronic","Fotona","DEKA","Asclepion","Syneron","Sciton","Cutera","Quanta System","Venus Concept","Zimmer","InMode","BTL","Quanta","Milesman","Primelase","Elysion","Asclepion Thunder","Motus","Clarity","LightSheer","Soprano","Icon","PicoSure","PicoWay","Discovery Pico","StarWalker","Nordlys","M22"
@@ -96,6 +97,10 @@ export default function AdicionarProduto() {
     cep: "",
     latitude: undefined,
     longitude: undefined,
+    // Targeting e descontos
+    descontos_por_plano: { free: 0, lite: 0, basico: 0, pro: 0, prime: 0, premium: 0 },
+    visibilidade_por_plano: [],
+    especialidades_alvo: [],
     // Programa 12 meses
     programa_12_meses: false,
     programa_tipo: "",
@@ -172,7 +177,11 @@ export default function AdicionarProduto() {
         }
       }
 
-      await base44.entities.Produto.create(produto);
+      const payload = { ...produto };
+      if (especialidadesInput?.trim()) {
+        payload.especialidades_alvo = especialidadesInput.split(',').map(s=>s.trim()).filter(Boolean);
+      }
+      await base44.entities.Produto.create(payload);
 
       alert("✅ Produto/Serviço criado com sucesso!");
       navigate(createPageUrl("Produtos"));

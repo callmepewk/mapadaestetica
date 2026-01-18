@@ -43,6 +43,8 @@ import { motion, AnimatePresence } from "framer-motion"; // Added AnimatePresenc
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import LoginPromptModal from "../components/home/LoginPromptModal";
+import DesignChatbot from "../components/design/DesignChatbot";
+import ProdutoDetalhesDialog from "../components/produtos/ProdutoDetalhesDialog";
 
 const categorias = [
   "Todas",
@@ -377,6 +379,9 @@ export default function Produtos() {
   const [mostrarLoginPrompt, setMostrarLoginPrompt] = useState(false);
   const [carrinho, setCarrinho] = useState([]);
   const [faixaPontosFiltro, setFaixaPontosFiltro] = useState('todas');
+  const [designOpen, setDesignOpen] = useState(false);
+  const [detalhesOpen, setDetalhesOpen] = useState(false);
+  const [produtoSelecionado, setProdutoSelecionado] = useState(null);
   // Agendamento
   const [agendarOpen, setAgendarOpen] = useState(false);
   const [produtoAgendar, setProdutoAgendar] = useState(null);
@@ -404,6 +409,17 @@ export default function Produtos() {
     };
     fetchUser();
   }, []);
+
+  // Assinar atualizações em tempo real do usuário (pontos/coins etc.)
+  useEffect(() => {
+    if (!user?.email) return;
+    const unsubscribe = base44.entities.User.subscribe((event) => {
+      if (event?.data?.email === user.email) {
+        setUser(event.data);
+      }
+    });
+    return unsubscribe;
+  }, [user?.email]);
 
   // Função para calcular pontos baseado na faixa de preço
   const calcularPontosPorFaixaPreco = (faixaPreco) => {
@@ -474,6 +490,20 @@ export default function Produtos() {
       if (idxUser < idxMin) return false;
     }
     const matchCategoria = categoriaFiltro === "Todas" || produto.categoria === categoriaFiltro;
+
+    // Visibilidade por plano (profissionais)
+    if (isProfissional && Array.isArray(produto.visibilidade_por_plano) && produto.visibilidade_por_plano.length > 0) {
+      const planoUser = user?.plano_ativo || 'free';
+      if (!produto.visibilidade_por_plano.includes(planoUser)) return false;
+    }
+
+    // Visibilidade por especialidades (se definido)
+    if (Array.isArray(produto.especialidades_alvo) && produto.especialidades_alvo.length > 0) {
+      const minhas = Array.isArray(user?.especialidades) ? user.especialidades.map(s=>String(s).toLowerCase()) : [];
+      if (minhas.length === 0) return false; // se exigir especialidade e o usuário não tiver
+      const alvo = produto.especialidades_alvo.map(s=>String(s).toLowerCase());
+      if (!minhas.some(s=>alvo.includes(s))) return false;
+    }
     const matchVis = visibilidadeFiltro === 'todos' || (visibilidadeFiltro === 'exclusivo' ? isExclusivo : !isExclusivo);
     const matchBusca = !busca ||
       produto.nome?.toLowerCase().includes(busca.toLowerCase()) ||
@@ -660,8 +690,19 @@ export default function Produtos() {
               </div>
             </div>
 
-            {/* Banner Informativo - apenas para produtos (imagens bem-estar) */}
-            {tipoBusca === 'produtos' && (
+            {/* CTA Design Profissional */}
+            <Card className="mb-6 border-2 border-purple-200 bg-purple-50">
+              <CardContent className="p-5 flex flex-col md:flex-row items-center gap-4">
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold">Design Profissional de Imagens</h3>
+                  <p className="text-sm text-gray-600">Fale com nosso engenheiro de prompt e gere imagens incríveis em 2 etapas. Recurso exclusivo para profissionais Prime/Premium e patrocinadores Platina.</p>
+                </div>
+                <Button onClick={()=>setDesignOpen(true)} className="bg-purple-600 hover:bg-purple-700 text-white">Falar com Equipe de Design</Button>
+              </CardContent>
+            </Card>
+
+             {/* Banner Informativo - apenas para produtos (imagens bem-estar) */}
+             {tipoBusca === 'produtos' && (
               <Card className="mb-8 border-none shadow-lg bg-gradient-to-r from-[#F7D426] to-[#FFE066]">
                 <CardContent className="p-6 md:p-8">
                   <div className="flex flex-col md:flex-row items-center gap-6">
@@ -889,7 +930,12 @@ export default function Produtos() {
             ) : (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {produtosFiltrados.map((produto) => {
-                  const precoEfetivo = produto.preco_promocional || produto.preco;
+                  const basePrice = produto.preco_promocional || produto.preco;
+                  let descontoPlano = 0;
+                  if (isProfissional && produto.descontos_por_plano && user?.plano_ativo) {
+                    descontoPlano = produto.descontos_por_plano[user.plano_ativo] || 0;
+                  }
+                  const precoEfetivo = basePrice ? Math.max(0, basePrice * (1 - (descontoPlano/100))) : basePrice;
                   const faixaPreco = determinarFaixaPreco(precoEfetivo);
                   const pontosGanhos = calcularPontosPorFaixaPreco(faixaPreco);
                   const isExclusivoClube = produto.preco === 0 || !produto.preco || produto.requer_assinatura;
@@ -914,11 +960,14 @@ export default function Produtos() {
                           </div>
                         )}
                         {produto.em_destaque && (
-                          <Badge className="absolute top-2 right-2 bg-[#F7D426] text-[#2C2C2C] border-2 border-[#2C2C2C]">
-                            <Star className="w-3 h-3 mr-1 fill-[#2C2C2C]" />
-                            Destaque
-                          </Badge>
-                        )}
+                           <Badge className="absolute top-2 right-2 bg-[#F7D426] text-[#2C2C2C] border-2 border-[#2C2C2C]">
+                             <Star className="w-3 h-3 mr-1 fill-[#2C2C2C]" />
+                             Destaque
+                           </Badge>
+                         )}
+                         {isProfissional && (produto.descontos_por_plano?.[user?.plano_ativo||'']||0) > 0 && (
+                           <Badge className="absolute bottom-2 right-2 bg-green-600 text-white">- {produto.descontos_por_plano[user.plano_ativo]}%</Badge>
+                         )}
                         {isExclusivoClube && (
                           <Badge className="absolute top-2 left-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold">
                             <Crown className="w-3 h-3 mr-1" />
@@ -930,7 +979,7 @@ export default function Produtos() {
                         )}
                       </div>
 
-                      <CardContent className="p-4">
+                      <CardContent className="p-4 cursor-pointer" onClick={()=>{ setProdutoSelecionado(produto); setDetalhesOpen(true); }}>
                         <div className="flex items-center gap-2 mb-2">
                           <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-300">
                              {produto.categoria}
@@ -1237,6 +1286,12 @@ export default function Produtos() {
         onClose={() => setMostrarLoginPrompt(false)}
         pageName="produtos"
       />
+
+      {/* Chatbot de Design */}
+      <DesignChatbot open={designOpen} onClose={()=>setDesignOpen(false)} user={user} />
+
+      {/* Modal de Detalhes do Produto */}
+      <ProdutoDetalhesDialog open={detalhesOpen} onClose={()=>setDetalhesOpen(false)} produto={produtoSelecionado} />
 
       {/* Modal de Agendamento */}
       <AgendamentoModal
