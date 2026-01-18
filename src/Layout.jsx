@@ -140,8 +140,19 @@ export default function Layout({ children }) {
     checkAuth();
     }, [location.pathname]);
 
-            // Notificações de Radares
-            useEffect(() => {
+              // Atualização em tempo real do usuário (pontos/coins/planos)
+              useEffect(() => {
+                if (!user?.email) return;
+                const unsubscribe = base44.entities.User.subscribe((event) => {
+                  if (event?.data?.email === user.email) {
+                    setUser(event.data);
+                  }
+                });
+                return unsubscribe;
+              }, [user?.email]);
+
+               // Notificações de Radares
+               useEffect(() => {
               try {
                 const unsubscribe = base44.entities.RadarUsage.subscribe(() => {
                   setRadarHasNew(true);
