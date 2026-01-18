@@ -140,8 +140,18 @@ export default function Layout({ children }) {
     checkAuth();
     }, [location.pathname]);
 
-    // Tema de campanha global (cor)
-    useEffect(() => {
+            // Notificações de Radares
+            useEffect(() => {
+              try {
+                const unsubscribe = base44.entities.RadarUsage.subscribe(() => {
+                  setRadarHasNew(true);
+                });
+                return unsubscribe;
+              } catch {}
+            }, []);
+
+            // Tema de campanha global (cor)
+            useEffect(() => {
     const loadTheme = async () => {
       try {
         const banners = await base44.entities.Banner.filter({ aplicar_tema_global: true, status: 'ativo' }, '-created_date', 1);
