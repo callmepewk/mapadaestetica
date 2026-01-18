@@ -57,6 +57,7 @@ export default function Layout({ children }) {
   const [mostrarSeletorTipo, setMostrarSeletorTipo] = useState(false);
   const [visaoAdmin, setVisaoAdmin] = useState("profissional");
         const [temaCor, setTemaCor] = useState('#F7D426');
+        const [radarHasNew, setRadarHasNew] = useState(false);
 
   // Carregar carrinho do localStorage
   useEffect(() => {
@@ -203,6 +204,12 @@ export default function Layout({ children }) {
     window.dispatchEvent(new Event('storage'));
   };
 
+  const handleAbrirRadares = () => {
+    try { localStorage.setItem('radares_last_seen', new Date().toISOString()); } catch {}
+    setRadarHasNew(false);
+    navigate(createPageUrl("Radares"));
+  };
+
   // Definir items de navegação baseado no tipo de usuário OU visão do admin
   const isAdmin = user?.role === 'admin';
   const isTester = user?.role === 'tester';
@@ -222,11 +229,7 @@ export default function Layout({ children }) {
                     { title: "Blog", url: createPageUrl("Blog"), icon: Newspaper },
                     { title: "Produtos", url: createPageUrl("Produtos"), icon: ShoppingCart },
                     ...(isProfissional || isPatrocinador ? [
-                                        { title: "Meus Produtos", url: createPageUrl("MeusProdutos"), icon: ShoppingCart },
-                                        { title: "Meus Serviços", url: createPageUrl("MeusServicos"), icon: Briefcase },
-                                        { title: "Meus Tratamentos", url: createPageUrl("MeusTratamentos"), icon: Star },
-                                        { title: "Hub Pontos", url: createPageUrl("HubPontos"), icon: Star },
-                                        { title: "Radares", url: createPageUrl("Radares"), icon: TrendingUp },
+                                        { title: "Hub Pontos", url: createPageUrl("HubPontos"), icon: Star }
                                       ] : []),
                     ...(!isPaciente ? [{ title: "Planos", url: createPageUrl("Planos"), icon: CreditCard }] : []),
                     { title: "Suporte", url: createPageUrl("FaleConosco"), icon: MessageCircle },
@@ -357,7 +360,7 @@ export default function Layout({ children }) {
             </Link>
 
             {/* Desktop Navigation - COMPACTADO */}
-            <nav className="hidden md:flex items-center gap-0.5">
+            <nav className="hidden md:flex items-center gap-0.5 mr-auto">
               {navigationItems.map((item) => (
                 <Link
                   key={item.title}
@@ -503,6 +506,27 @@ export default function Layout({ children }) {
                           <TrendingUp className="w-4 h-4 mr-2" />
                           Painel Profissional
                         </DropdownMenuItem>
+                      )}
+                      {(isProfissional || isPatrocinador) && (
+                        <>
+                          <DropdownMenuItem onClick={() => navigate(createPageUrl("MeusProdutos"))}>
+                            <ShoppingCart className="w-4 h-4 mr-2" />
+                            Meus Produtos
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => navigate(createPageUrl("MeusServicos"))}>
+                            <Briefcase className="w-4 h-4 mr-2" />
+                            Meus Serviços
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => navigate(createPageUrl("MeusTratamentos"))}>
+                            <Star className="w-4 h-4 mr-2" />
+                            Meus Tratamentos
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={handleAbrirRadares}>
+                            <TrendingUp className="w-4 h-4 mr-2" />
+                            Radares
+                            {radarHasNew && <span className="ml-2 inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse" />}
+                          </DropdownMenuItem>
+                        </>
                       )}
                       {/* NOVO: Dashboard Patrocinador */}
                       {((user?.plano_patrocinador && user.plano_patrocinador !== 'nenhum') || isPatrocinador || isAdmin) && (

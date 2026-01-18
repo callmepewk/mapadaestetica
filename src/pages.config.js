@@ -22,6 +22,9 @@ import InstitutosAdmin from './pages/InstitutosAdmin';
 import LojaPontos from './pages/LojaPontos';
 import Mapa from './pages/Mapa';
 import MeuPlano from './pages/MeuPlano';
+import MeusProdutos from './pages/MeusProdutos';
+import MeusServicos from './pages/MeusServicos';
+import MeusTratamentos from './pages/MeusTratamentos';
 import Novidades from './pages/Novidades';
 import PainelProfissional from './pages/PainelProfissional';
 import Perfil from './pages/Perfil';
@@ -32,9 +35,6 @@ import Produtos from './pages/Produtos';
 import Radares from './pages/Radares';
 import RelatorioPrecoMedio from './pages/RelatorioPrecoMedio';
 import SobreNos from './pages/SobreNos';
-import MeusProdutos from './pages/MeusProdutos';
-import MeusServicos from './pages/MeusServicos';
-import MeusTratamentos from './pages/MeusTratamentos';
 import __Layout from './Layout.jsx';
 
 
@@ -63,6 +63,9 @@ export const PAGES = {
     "LojaPontos": LojaPontos,
     "Mapa": Mapa,
     "MeuPlano": MeuPlano,
+    "MeusProdutos": MeusProdutos,
+    "MeusServicos": MeusServicos,
+    "MeusTratamentos": MeusTratamentos,
     "Novidades": Novidades,
     "PainelProfissional": PainelProfissional,
     "Perfil": Perfil,
@@ -73,9 +76,6 @@ export const PAGES = {
     "Radares": Radares,
     "RelatorioPrecoMedio": RelatorioPrecoMedio,
     "SobreNos": SobreNos,
-    "MeusProdutos": MeusProdutos,
-    "MeusServicos": MeusServicos,
-    "MeusTratamentos": MeusTratamentos,
 }
 
 export const pagesConfig = {
