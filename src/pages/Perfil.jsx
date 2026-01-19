@@ -54,7 +54,10 @@ import {
   CreditCard, // New import for Planos Ativos
   Crown, // New import for Clube da Beleza
   Users, // New import for Patrocinador
-  Award, // Adicionado para especialização
+  Award, // Adicionado para especialização,
+  Linkedin,
+  Twitter,
+  Link
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from 'date-fns';
