@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -619,7 +620,7 @@ www.mapadaestetica.com.br
           {/* Main Content Area (left 2/3) */}
           <div className="lg:col-span-2 space-y-6">
             <Tabs defaultValue="informacoes" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
+              <TabsList className="grid w-full grid-cols-3 lg:grid-cols-5">
                 <TabsTrigger value="informacoes">Informações</TabsTrigger>
                 <TabsTrigger value="meus-anuncios">
                   {isProfissional ? 'Meus Anúncios' : 'Anúncios Salvos'}
@@ -630,6 +631,7 @@ www.mapadaestetica.com.br
                   <TabsTrigger value="produtos-servicos">Produtos & Serviços</TabsTrigger>
                 )}
                 <TabsTrigger value="indicacoes">Indicações</TabsTrigger>
+                <TabsTrigger value="integracoes">Integrações</TabsTrigger>
               </TabsList>
 
               {/* TabsContent for "informacoes" */}
@@ -1969,6 +1971,148 @@ www.mapadaestetica.com.br
                       >
                         Ver Meu Código de Indicação
                       </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Tab Integrações */}
+              <TabsContent value="integracoes">
+                <Card className="border-none shadow-lg">
+                  <CardContent className="p-6 space-y-6">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold text-lg">Integrações de Redes Sociais</h3>
+                      <Badge variant="outline">Beta</Badge>
+                    </div>
+                    <Alert className="bg-yellow-50 border-yellow-200">
+                      <AlertCircle className="h-4 w-4 text-yellow-600" />
+                      <AlertDescription className="text-yellow-800 text-sm">
+                        Para autenticar com Instagram/Facebook, LinkedIn, X (Twitter) e WhatsApp Business, é necessário habilitar as Funções de Backend do app e autorizar os conectores. Após habilitar, clique em Conectar.
+                      </AlertDescription>
+                    </Alert>
+
+                    {/* Preferências globais */}
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="p-4 bg-gray-50 rounded-lg border">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium">Publicação automática</p>
+                            <p className="text-xs text-gray-600">Publicar anúncios aprovados automaticamente nas redes conectadas</p>
+                          </div>
+                          <Switch checked={!!user?.auto_publicar} onCheckedChange={async (v)=>{ await base44.auth.updateMe({ auto_publicar: !!v }); const fresh = await base44.auth.me(); setUser(fresh); }} />
+                        </div>
+                      </div>
+                      <div className="p-4 bg-gray-50 rounded-lg border">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium">Otimização por IA</p>
+                            <p className="text-xs text-gray-600">Ajustar copy, hashtags e horários automaticamente</p>
+                          </div>
+                          <Switch checked={!!user?.ia_otimizacao} onCheckedChange={async (v)=>{ await base44.auth.updateMe({ ia_otimizacao: !!v }); const fresh = await base44.auth.me(); setUser(fresh); }} />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Plataformas */}
+                    <div className="grid md:grid-cols-2 gap-6">
+                      {/* Meta (Instagram + Facebook) */}
+                      <div className="p-5 rounded-xl border-2 border-blue-200 bg-white">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <Facebook className="w-5 h-5 text-blue-600" />
+                            <Instagram className="w-5 h-5 text-pink-600" />
+                            <span className="font-semibold">Meta (Instagram + Facebook)</span>
+                          </div>
+                          <Badge className={user?.social_meta_connected ? 'bg-green-600' : 'bg-gray-200 text-gray-700'}>
+                            {user?.social_meta_connected ? 'Conectado' : 'Desconectado'}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-3">Publicar posts, ler métricas e receber webhooks.</p>
+                        <div className="flex flex-wrap gap-2">
+                          <Button variant="outline" onClick={()=>alert('Habilite Backend Functions nas Configurações do app e autorize o conector Meta.')}>
+                            <Link className="w-4 h-4 mr-2" />Conectar
+                          </Button>
+                          <Button size="sm" variant="secondary" onClick={async ()=>{ await base44.auth.updateMe({ social_meta_connected: true }); const u = await base44.auth.me(); setUser(u); }}>Marcar como Conectado</Button>
+                          {user?.social_meta_connected && (
+                            <Button size="sm" variant="ghost" onClick={async ()=>{ await base44.auth.updateMe({ social_meta_connected: false }); const u = await base44.auth.me(); setUser(u); }}>Desconectar</Button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* LinkedIn */}
+                      <div className="p-5 rounded-xl border-2 border-sky-200 bg-white">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <Linkedin className="w-5 h-5 text-sky-700" />
+                            <span className="font-semibold">LinkedIn</span>
+                          </div>
+                          <Badge className={user?.social_linkedin_connected ? 'bg-green-600' : 'bg-gray-200 text-gray-700'}>
+                            {user?.social_linkedin_connected ? 'Conectado' : 'Desconectado'}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-3">Postagem empresarial e analytics.</p>
+                        <div className="flex flex-wrap gap-2">
+                          <Button variant="outline" onClick={()=>alert('Habilite Backend Functions e autorize o conector LinkedIn.')}>
+                            <Link className="w-4 h-4 mr-2" />Conectar
+                          </Button>
+                          <Button size="sm" variant="secondary" onClick={async ()=>{ await base44.auth.updateMe({ social_linkedin_connected: true }); const u = await base44.auth.me(); setUser(u); }}>Marcar como Conectado</Button>
+                          {user?.social_linkedin_connected && (
+                            <Button size="sm" variant="ghost" onClick={async ()=>{ await base44.auth.updateMe({ social_linkedin_connected: false }); const u = await base44.auth.me(); setUser(u); }}>Desconectar</Button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* X (Twitter) */}
+                      <div className="p-5 rounded-xl border-2 border-gray-200 bg-white">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <Twitter className="w-5 h-5 text-black" />
+                            <span className="font-semibold">X (Twitter)</span>
+                          </div>
+                          <Badge className={user?.social_x_connected ? 'bg-green-600' : 'bg-gray-200 text-gray-700'}>
+                            {user?.social_x_connected ? 'Conectado' : 'Desconectado'}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-3">Postar e ler métricas (API paga).</p>
+                        <div className="flex flex-wrap gap-2">
+                          <Button variant="outline" onClick={()=>alert('Habilite Backend Functions e autorize o conector X/Twitter.')}>
+                            <Link className="w-4 h-4 mr-2" />Conectar
+                          </Button>
+                          <Button size="sm" variant="secondary" onClick={async ()=>{ await base44.auth.updateMe({ social_x_connected: true }); const u = await base44.auth.me(); setUser(u); }}>Marcar como Conectado</Button>
+                          {user?.social_x_connected && (
+                            <Button size="sm" variant="ghost" onClick={async ()=>{ await base44.auth.updateMe({ social_x_connected: false }); const u = await base44.auth.me(); setUser(u); }}>Desconectar</Button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* WhatsApp Business */}
+                      <div className="p-5 rounded-xl border-2 border-green-200 bg-white">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <Phone className="w-5 h-5 text-green-600" />
+                            <span className="font-semibold">WhatsApp Business</span>
+                          </div>
+                          <Badge className={user?.social_whatsapp_connected ? 'bg-green-600' : 'bg-gray-200 text-gray-700'}>
+                            {user?.social_whatsapp_connected ? 'Conectado' : 'Desconectado'}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-3">Enviar mensagens via templates aprovados (não publica feed).</p>
+                        <div className="flex flex-wrap gap-2">
+                          <Button variant="outline" onClick={()=>alert('Habilite Backend Functions e autorize o conector WhatsApp Cloud API.')}>
+                            <Link className="w-4 h-4 mr-2" />Conectar
+                          </Button>
+                          <Button size="sm" variant="secondary" onClick={async ()=>{ await base44.auth.updateMe({ social_whatsapp_connected: true }); const u = await base44.auth.me(); setUser(u); }}>Marcar como Conectado</Button>
+                          {user?.social_whatsapp_connected && (
+                            <Button size="sm" variant="ghost" onClick={async ()=>{ await base44.auth.updateMe({ social_whatsapp_connected: false }); const u = await base44.auth.me(); setUser(u); }}>Desconectar</Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Limites por plano (resumo) */}
+                    <div className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg border-2 border-purple-200">
+                      <p className="text-sm font-semibold text-purple-900 mb-1">Limites por plano</p>
+                      <p className="text-xs text-purple-800">Imagens IA: Prime 4/mês • Premium 20/mês • Patrocinador Platina ilimitado. Publicações e coleta de métricas seguem as regras do seu plano atual.</p>
                     </div>
                   </CardContent>
                 </Card>
