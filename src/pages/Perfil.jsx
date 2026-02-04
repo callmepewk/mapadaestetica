@@ -58,7 +58,7 @@ import {
   Linkedin,
   Twitter,
   Link
-, Linkedin, Twitter, Link } from "lucide-react";
+} from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
