@@ -60,6 +60,7 @@ import {
   Link
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Textarea } from "@/components/ui/textarea";
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -634,6 +635,7 @@ www.mapadaestetica.com.br
                   <TabsTrigger value="produtos-servicos">Produtos & Serviços</TabsTrigger>
                 )}
                 <TabsTrigger value="indicacoes">Indicações</TabsTrigger>
+                {isProfissional && <TabsTrigger value="comunicacoes">Comunicações</TabsTrigger>}
                 <TabsTrigger value="integracoes">Integrações</TabsTrigger>
               </TabsList>
 
@@ -1978,6 +1980,94 @@ www.mapadaestetica.com.br
                   </CardContent>
                 </Card>
               </TabsContent>
+
+              {/* Tab Comunicações (Profissional) */}
+              {isProfissional && (
+                <TabsContent value="comunicacoes">
+                  <Card className="border-none shadow-lg">
+                    <CardContent className="p-6 space-y-6">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-semibold text-lg">Comunicações por E-mail</h3>
+                        <Badge variant="outline">IA</Badge>
+                      </div>
+
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <Label>Para (e-mail)</Label>
+                          <Input placeholder="ex: cliente@exemplo.com" id="para" />
+                          <p className="text-xs text-gray-500 mt-1">Separe múltiplos por vírgula</p>
+                        </div>
+                        <div>
+                          <Label>Tom da mensagem</Label>
+                          <Select defaultValue="profissional">
+                            <SelectTrigger>
+                              <SelectValue placeholder="Escolha um tom" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="profissional">Profissional</SelectItem>
+                              <SelectItem value="despojado">Despojado</SelectItem>
+                              <SelectItem value="amigavel">Amigável</SelectItem>
+                              <SelectItem value="alegre">Alegre</SelectItem>
+                              <SelectItem value="incisivo">Incisivo</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <Label>Assunto</Label>
+                          <Input id="assunto" placeholder="Assunto do e-mail" />
+                        </div>
+                        <div>
+                          <Label>Títulos sugeridos</Label>
+                          <div className="flex flex-wrap gap-2 mt-2 text-xs">
+                            {['Dia da Mulher','Carnaval','Outubro Rosa','Black Friday','Volta às Aulas','Aniversário de Cliente'].map((t)=> (
+                              <button key={t} className="px-2 py-1 rounded-full border hover:bg-gray-50" onClick={()=>{ const el = document.getElementById('assunto'); if (el) el.value = t; }}>
+                                {t}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label>Mensagem</Label>
+                        <Textarea id="mensagem" className="mt-1 min-h-40" placeholder="Escreva sua mensagem..." />
+                        <div className="flex gap-2 mt-2">
+                          <Button variant="outline" onClick={async ()=>{
+                            const para = document.getElementById('para')?.value || '';
+                            const tom = document.querySelector('[data-state="open"]') ? 'profissional' : 'profissional';
+                            const assuntoEl = document.getElementById('assunto');
+                            const msgEl = document.getElementById('mensagem');
+                            const prompt = `Gere um email de marketing para estética no tom: ${tom}. Saída com JSON {subject, body}. Público: pacientes interessados em estética. Contexto do profissional: ${user?.full_name || ''}, cidade ${user?.cidade || ''}.`;
+                            const res = await base44.integrations.Core.InvokeLLM({
+                              prompt,
+                              response_json_schema: { type:'object', properties:{ subject:{type:'string'}, body:{type:'string'} } }
+                            });
+                            if (assuntoEl && res?.subject) assuntoEl.value = res.subject;
+                            if (msgEl && res?.body) msgEl.value = res.body;
+                          }}>Gerar com IA</Button>
+                          <Button onClick={async ()=>{
+                            const to = document.getElementById('para')?.value?.trim();
+                            const subject = document.getElementById('assunto')?.value?.trim();
+                            const body = document.getElementById('mensagem')?.value?.trim();
+                            if (!to || !subject || !body) { alert('Preencha Para, Assunto e Mensagem'); return; }
+                            await base44.integrations.Core.SendEmail({ to, subject, body });
+                            alert('E-mail enviado!');
+                          }} className="bg-green-600 hover:bg-green-700 text-white">Enviar agora</Button>
+                        </div>
+                      </div>
+
+                      <Alert className="bg-purple-50 border-purple-200">
+                        <AlertDescription className="text-purple-900 text-sm">
+                          Dica: use os títulos sugeridos para datas comemorativas e personalize a mensagem no tom ideal. Em breve: agendamento e segmentação de lista.
+                        </AlertDescription>
+                      </Alert>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              )}
 
               {/* Tab Integrações */}
               <TabsContent value="integracoes">

@@ -55,6 +55,8 @@ import {
 } from "@/components/ui/dialog";
 import BannerRotativo from "../components/banners/BannerRotativo";
 import PatrocinadoresGrid from "../components/home/PatrocinadoresGrid";
+import FiltrosBuscaPaciente from "../components/home/FiltrosBuscaPaciente";
+import ModalFiltrosAvancados from "../components/home/ModalFiltrosAvancados";
 import CuriosidadesMes from "../components/home/CuriosidadesMes";
 import SecaoTutoriais from "../components/home/SecaoTutoriais";
 import SeletorTipoUsuario from "../components/home/SeletorTipoUsuario";
@@ -97,6 +99,9 @@ export default function Inicio() {
   const [agora, setAgora] = useState(new Date());
   const [agendarOpen, setAgendarOpen] = useState(false);
   const [produtoAgendar, setProdutoAgendar] = useState(null);
+  const [filtros, setFiltros] = useState({ tipo:"", categoria:"", especialidade:"", preco:"", rating:"", distancia:"" });
+  const [filtrosAvancados, setFiltrosAvancados] = useState({ data:"", hora:"", atendimento_domicilio:false, atendimento_local:false, convenios:"" });
+  const [openFiltrosAvancados, setOpenFiltrosAvancados] = useState(false);
 
   const navigate = useNavigate();
 
@@ -268,6 +273,17 @@ export default function Inicio() {
     const params = new URLSearchParams();
     if (buscaCidade) params.append('cidade', buscaCidade);
     if (buscaCategoria) params.append('categoria', buscaCategoria);
+    if (filtros.tipo) params.append('tipo', filtros.tipo);
+    if (filtros.categoria) params.append('categoria_filtro', filtros.categoria);
+    if (filtros.especialidade) params.append('especialidade', filtros.especialidade);
+    if (filtros.preco) { const [min,max] = filtros.preco.split('-'); if (min) params.append('preco_min', min); if (max) params.append('preco_max', max); }
+    if (filtros.rating) params.append('rating_min', filtros.rating);
+    if (filtros.distancia) params.append('distancia_km', filtros.distancia);
+    if (filtrosAvancados.data) params.append('data', filtrosAvancados.data);
+    if (filtrosAvancados.hora) params.append('hora', filtrosAvancados.hora);
+    if (filtrosAvancados.atendimento_domicilio) params.append('at_domicilio', '1');
+    if (filtrosAvancados.atendimento_local) params.append('at_local', '1');
+    if (filtrosAvancados.convenios) params.append('convenios', filtrosAvancados.convenios);
     try {
       await base44.entities.SearchEvent.create({
         query: [buscaCidade, buscaCategoria].filter(Boolean).join(' | '),
@@ -507,6 +523,17 @@ export default function Inicio() {
               </div>
             </div>
           </section>
+
+          {/* Filtros compactos - acima do banner */}
+          <div className="max-w-7xl mx-auto px-4 mt-4">
+            <FiltrosBuscaPaciente
+              categorias={categorias}
+              valores={filtros}
+              onChange={setFiltros}
+              onOpenAdvanced={()=>setOpenFiltrosAvancados(true)}
+              onBuscar={handleBuscar}
+            />
+          </div>
 
           {/* Banner Rotativo Topo */}
           <BannerRotativo posicao="home_topo" />
@@ -1175,6 +1202,15 @@ export default function Inicio() {
           </div>
         </div>
       </section>
+
+      {/* Modal Filtros Avançados */}
+      <ModalFiltrosAvancados
+        open={openFiltrosAvancados}
+        onOpenChange={setOpenFiltrosAvancados}
+        valores={filtrosAvancados}
+        onChange={setFiltrosAvancados}
+        onApply={handleBuscar}
+      />
 
       {/* Modal de Login Prompt */}
       <LoginPromptModal
