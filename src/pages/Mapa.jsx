@@ -289,14 +289,33 @@ export default function Mapa() {
       } catch {}
       const p = new URLSearchParams(window.location.search);
       const cat = p.get('categoria');
+      const catFiltro = p.get('categoria_filtro');
       const cid = p.get('cidade');
       const aba = p.get('aba');
+      const distKm = p.get('distancia_km');
+      const tipo = p.get('tipo');
+      const pmin = p.get('preco_min');
+      const pmax = p.get('preco_max');
+
       if (cat) setCategoria(cat);
+      if (catFiltro) setCategoria(catFiltro);
       if (cid) {
         setCidade(cid);
         setBuscaCidade(cid);
       }
       if (aba) setAbaSelecionada(aba);
+      if (distKm) setDistancia(distKm);
+      if (tipo) setTipoAnuncio(tipo);
+      if (pmin || pmax) {
+        const min = Number(pmin||0), max = Number(pmax||999999);
+        let faixa = "";
+        if (max <= 500) faixa = "$";
+        else if (max <= 1000) faixa = "$$";
+        else if (max <= 2000) faixa = "$$$";
+        else if (max <= 5000) faixa = "$$$$";
+        else faixa = "$$$$$";
+        setFaixaPreco(faixa);
+      }
     })();
   },[]);
 

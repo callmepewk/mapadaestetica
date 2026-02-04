@@ -299,7 +299,7 @@ export default function Inicio() {
     } catch {}
     const base = createPageUrl("Mapa");
     const query = new URLSearchParams(params);
-    query.set('aba','mapa');
+    query.set('aba','anuncios');
     window.location.href = `${base}?${query.toString()}`;
   };
 
