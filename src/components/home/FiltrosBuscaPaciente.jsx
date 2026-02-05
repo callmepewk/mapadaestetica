@@ -35,7 +35,7 @@ export default function FiltrosBuscaPaciente({
   return (
     <div className="w-full bg-white/80 backdrop-blur border rounded-xl p-3 sm:p-4 shadow-sm">
       <div className="grid grid-cols-2 md:grid-cols-6 gap-2 sm:gap-3">
-        <Select value={valores.tipo || ""} onValueChange={(v)=>onChange({ ...valores, tipo: v })}>
+        <Select value={valores.tipo || undefined} onValueChange={(v)=>onChange({ ...valores, tipo: v })}>
           <SelectTrigger className="h-10">
             <SelectValue placeholder="Tipo de serviço" />
           </SelectTrigger>
@@ -46,7 +46,7 @@ export default function FiltrosBuscaPaciente({
           </SelectContent>
         </Select>
 
-        <Select value={valores.categoria || ""} onValueChange={(v)=>onChange({ ...valores, categoria: v })}>
+        <Select value={valores.categoria || undefined} onValueChange={(v)=>onChange({ ...valores, categoria: v })}>
           <SelectTrigger className="h-10">
             <SelectValue placeholder="Categoria" />
           </SelectTrigger>
@@ -64,7 +64,7 @@ export default function FiltrosBuscaPaciente({
           className="h-10 col-span-2 md:col-span-1"
         />
 
-        <Select value={valores.preco || ""} onValueChange={(v)=>onChange({ ...valores, preco: v })}>
+        <Select value={valores.preco || undefined} onValueChange={(v)=>onChange({ ...valores, preco: v })}>
           <SelectTrigger className="h-10">
             <SelectValue placeholder="Preço" />
           </SelectTrigger>
@@ -75,7 +75,7 @@ export default function FiltrosBuscaPaciente({
           </SelectContent>
         </Select>
 
-        <Select value={valores.rating || ""} onValueChange={(v)=>onChange({ ...valores, rating: v })}>
+        <Select value={valores.rating || undefined} onValueChange={(v)=>onChange({ ...valores, rating: v })}>
           <SelectTrigger className="h-10">
             <SelectValue placeholder="Avaliação" />
           </SelectTrigger>
@@ -86,7 +86,7 @@ export default function FiltrosBuscaPaciente({
           </SelectContent>
         </Select>
 
-        <Select value={valores.distancia || ""} onValueChange={(v)=>onChange({ ...valores, distancia: v })}>
+        <Select value={valores.distancia || undefined} onValueChange={(v)=>onChange({ ...valores, distancia: v })}>
           <SelectTrigger className="h-10">
             <SelectValue placeholder="Distância" />
           </SelectTrigger>
