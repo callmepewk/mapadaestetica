@@ -48,6 +48,7 @@ export default function AdicionarProduto() {
   const [aiSugerindo, setAiSugerindo] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [novoEventoOpen, setNovoEventoOpen] = useState(false);
+  const [notice, setNotice] = useState(null);
   const [especialidadesInput, setEspecialidadesInput] = useState("");
   // Opções sugeridas (extensíveis)
   const [marcaOptions, setMarcaOptions] = useState([
@@ -143,6 +144,81 @@ export default function AdicionarProduto() {
     });
   };
 
+  // OCR: extrair nome por foto
+  const handleExtrairNomePorFoto = async (file) => {
+    if (!file) return;
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const schema = { type: 'object', properties: { nome: { type: 'string' }, marca: { type: 'string' }, categoria: { type: 'string' } } };
+      const res = await base44.integrations.Core.ExtractDataFromUploadedFile({ file_url, json_schema: schema });
+      if (res?.status === 'success') {
+        const out = Array.isArray(res.output) ? res.output[0] : res.output;
+        setProduto(p => ({
+          ...p,
+          nome: out?.nome || p.nome,
+          marca: out?.marca || p.marca,
+          categoria: categorias.includes(out?.categoria) ? out.categoria : p.categoria
+        }));
+        setNotice('Dados extraídos pela foto.'); setTimeout(()=>setNotice(null), 10000);
+      } else {
+        setNotice('Não foi possível extrair dados da foto.'); setTimeout(()=>setNotice(null), 10000);
+      }
+    } catch (e) {
+      setNotice('Erro no OCR da foto.'); setTimeout(()=>setNotice(null), 10000);
+    }
+  };
+
+  // IA: descrição pela imagem existente
+  const handleDescricaoPorImagem = async () => {
+    const img = produto.imagens?.[0];
+    if (!img) { setNotice('Envie uma imagem primeiro.'); setTimeout(()=>setNotice(null), 10000); return; }
+    setGerandoIA(true);
+    try {
+      const schema = { type: 'object', properties: { descricao: { type: 'string' }, categoria: { type: 'string' }, marca: { type: 'string' }, fabricante: { type: 'string' } } };
+      const res = await base44.integrations.Core.InvokeLLM({
+        prompt: `Analise a imagem do produto/serviço de estética e gere descricao (até 400 chars), categoria (uma das: ${categorias.join(', ')}), marca e fabricante se possível. Retorne JSON.`,
+        file_urls: [img],
+        response_json_schema: schema,
+        add_context_from_internet: true,
+      });
+      const cat = categorias.includes(res?.categoria) ? res.categoria : (produto.categoria||'');
+      setProduto(p=> ({ ...p, descricao: res?.descricao || p.descricao, categoria: cat, marca: res?.marca || p.marca, fornecedor_nome: p.fornecedor_nome || res?.fabricante || p.fornecedor_nome }));
+      setNotice('Descrição preenchida a partir da imagem.'); setTimeout(()=>setNotice(null), 10000);
+    } finally {
+      setGerandoIA(false);
+    }
+  };
+
+  // IA: sugerir finalidade (programa 12 meses)
+  const handleSugerirFinalidadeIA = async () => {
+    const contexto = `Tratamentos: ${(produto.tratamentos_inclusos_nomes||[]).join(', ')}`;
+    const schema = { type: 'object', properties: { finalidade: { type: 'string' } } };
+    const res = await base44.integrations.Core.InvokeLLM({ prompt: `Gere uma finalidade clínica curta para um programa estético de 12 meses. ${contexto}. Retorne JSON com 'finalidade' (até 200 chars).`, response_json_schema: schema });
+    setProduto(p=> ({ ...p, finalidade: res?.finalidade || p.finalidade }));
+    setNotice('Finalidade sugerida por IA.'); setTimeout(()=>setNotice(null), 10000);
+  };
+
+  // Geolocalização -> endereço completo (via LLM)
+  const handleAutopreencherEndereco = async () => {
+    if (!navigator.geolocation) { setNotice('Geolocalização não suportada.'); setTimeout(()=>setNotice(null), 10000); return; }
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      const { latitude, longitude } = pos.coords;
+      setProduto(p=> ({ ...p, latitude, longitude }));
+      try {
+        const schema = { type: 'object', properties: { endereco:{type:'string'}, bairro:{type:'string'}, cidade:{type:'string'}, estado:{type:'string'}, cep:{type:'string'} } };
+        const res = await base44.integrations.Core.InvokeLLM({
+          prompt: `Faça reverse geocoding no Brasil para as coordenadas ${latitude}, ${longitude}. Retorne JSON com endereco (rua e número), bairro, cidade, estado (UF) e cep.`,
+          add_context_from_internet: true,
+          response_json_schema: schema,
+        });
+        setProduto(p=> ({ ...p, endereco: res?.endereco || p.endereco, bairro: res?.bairro || p.bairro, cidade: res?.cidade || p.cidade, estado: res?.estado || p.estado, cep: res?.cep || p.cep }));
+        setNotice('Endereço preenchido pela localização.'); setTimeout(()=>setNotice(null), 10000);
+      } catch {
+        setNotice('Não foi possível obter endereço completo. Habilite backend para integração dedicada.'); setTimeout(()=>setNotice(null), 10000);
+      }
+    }, () => { setNotice('Permissão de localização negada.'); setTimeout(()=>setNotice(null), 10000); });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -183,17 +259,25 @@ export default function AdicionarProduto() {
       }
       await base44.entities.Produto.create(payload);
 
-      alert("✅ Produto/Serviço criado com sucesso!");
+      setNotice("✅ Produto/Serviço criado com sucesso!"); setTimeout(()=>setNotice(null), 10000);
       navigate(createPageUrl("Produtos"));
     } catch (error) {
       console.error("Erro ao criar produto:", error);
-      alert("Erro ao criar produto. Verifique o console.");
+      setNotice("Erro ao criar produto. Verifique o console."); setTimeout(()=>setNotice(null), 10000);
     } finally {
       setLoading(false);
     }
   };
 
   React.useEffect(() => { (async()=>{ try { const u = await base44.auth.me(); setUser(u); } catch {} finally { setAuthChecked(true); } })(); }, []);
+
+  // Autopreencher fornecedor com nome do usuário se vazio
+  React.useEffect(() => {
+    if (user && !produto.fornecedor_nome) {
+      setProduto(p=> ({ ...p, fornecedor_nome: user.full_name || p.fornecedor_nome }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const handleLogin = () => {
   const currentPath = window.location.pathname + window.location.search;
@@ -337,7 +421,7 @@ export default function AdicionarProduto() {
   return (
     <>
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
-      <div className="max-w-5xl mx-auto px-6 md:px-8">
+      <div className="max-w-5xl mx-auto px-6 md:px-8 pt-2 md:pt-4">
         <Button
           variant="ghost"
           onClick={() => navigate(createPageUrl("Produtos"))}
@@ -580,6 +664,11 @@ export default function AdicionarProduto() {
                   <div className="space-y-2 mt-2">
                     <Label>Finalidade (objetivo clínico)</Label>
                     <Textarea rows={3} placeholder="Ex: Redução de manchas, rejuvenescimento, melhora da textura..." value={produto.finalidade} onChange={(e)=> setProduto({ ...produto, finalidade: e.target.value })} />
+                    <div className="mt-2">
+                      <Button type="button" variant="outline" className="border-2" onClick={handleSugerirFinalidadeIA}>
+                        <Wand2 className="w-4 h-4 mr-2"/> Sugerir com IA
+                      </Button>
+                    </div>
                   </div>
 
                   <div className="space-y-2 mt-4">
@@ -695,7 +784,10 @@ export default function AdicionarProduto() {
               {/* Endereço */}
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
-                  <Label htmlFor="endereco">Endereço</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="endereco">Endereço</Label>
+                    <Button type="button" size="sm" variant="outline" className="border-2" onClick={handleAutopreencherEndereco}>Usar minha localização</Button>
+                  </div>
                   <Input id="endereco" value={produto.endereco || ""} onChange={(e)=>setProduto({ ...produto, endereco: e.target.value })} placeholder="Rua, número, complemento" />
                 </div>
                 <div>
@@ -846,9 +938,20 @@ export default function AdicionarProduto() {
                     onChange={handleUploadImage}
                     disabled={uploadingImage}
                   />
-                </div>
+                  </div>
 
-                {produto.imagens.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-3">
+                  <label>
+                    <input type="file" accept="image/*" className="hidden" onChange={(e)=> e.target.files && handleExtrairNomePorFoto(e.target.files[0])} />
+                    <Button type="button" variant="outline" className="border-2"><ImageIcon className="w-4 h-4 mr-2"/>Capturar nome por foto (OCR)</Button>
+                  </label>
+                  <Button type="button" variant="outline" onClick={handleDescricaoPorImagem} disabled={gerandoIA} className="border-2">
+                    {gerandoIA ? <Loader2 className="w-4 h-4 mr-2 animate-spin"/> : <Wand2 className="w-4 h-4 mr-2"/>}
+                    Gerar descrição pela imagem
+                  </Button>
+                  </div>
+
+                  {produto.imagens.length > 0 && (
                   <div className="mt-4 grid grid-cols-3 gap-4">
                     {produto.imagens.map((img, index) => (
                       <div key={index} className="relative group">
@@ -959,6 +1062,17 @@ export default function AdicionarProduto() {
         </Card>
       </div>
     </div>
+
+    {/* Avisos (auto-fechamento) */}
+    {notice && (
+      <div className="fixed bottom-4 right-4 z-50 max-w-sm bg-white border-2 border-gray-200 shadow-xl rounded-lg p-3">
+        <div className="flex items-start gap-2">
+          <div className="text-xl">✨</div>
+          <div className="flex-1 text-sm text-gray-800">{notice}</div>
+          <button onClick={()=>setNotice(null)} className="text-gray-400 hover:text-gray-600">×</button>
+        </div>
+      </div>
+    )}
 
     <NovoEventoDialog open={novoEventoOpen} onClose={()=>setNovoEventoOpen(false)} user={user} />
     </>

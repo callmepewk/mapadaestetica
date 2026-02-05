@@ -30,6 +30,16 @@ export default function Autocomplete({ id, value, onChange, options = [], placeh
     setQuery("");
   };
 
+  React.useEffect(() => {
+    const onDocClick = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) setOpen(false);
+    };
+    const onKey = (e) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('mousedown', onDocClick);
+    document.addEventListener('keydown', onKey);
+    return () => { document.removeEventListener('mousedown', onDocClick); document.removeEventListener('keydown', onKey); };
+  }, []);
+
   return (
     <div className="relative" ref={containerRef}>
       <div className="flex items-center gap-2">

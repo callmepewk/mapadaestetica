@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent } from "@/components/ui/card";
+import AdicionarTratamentoModal from "../components/tratamentos/AdicionarTratamentoModal";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Star } from "lucide-react";
@@ -9,19 +10,22 @@ import SolicitarInclusaoDialog from "../components/solicitacoes/SolicitarInclusa
 export default function MeusTratamentos() {
   const [user, setUser] = useState(null);
   const [itens, setItens] = useState([]);
+  const [openAdd, setOpenAdd] = useState(false);
   const [loading, setLoading] = useState(true);
   const [selecionado, setSelecionado] = useState(null);
 
   useEffect(() => { (async () => { try { setUser(await base44.auth.me()); } catch {} })(); }, []);
+  const carregar = async (uEmail) => {
+    setLoading(true);
+    const rows = await base44.entities.Produto.filter({ tipo: 'servico', created_by: uEmail }, '-updated_date', 200);
+    const tratamentos = (rows||[]).filter(p => (p.tratamentos_inclusos_nomes && p.tratamentos_inclusos_nomes.length > 0) || (p.categoria && p.categoria.includes('Servi')));
+    setItens(tratamentos);
+    setLoading(false);
+  };
+
   useEffect(() => {
-    if (!user) return;
-    (async () => {
-      setLoading(true);
-      const rows = await base44.entities.Produto.filter({ tipo: 'servico', created_by: user.email }, '-updated_date', 200);
-      const tratamentos = (rows||[]).filter(p => (p.tratamentos_inclusos_nomes && p.tratamentos_inclusos_nomes.length > 0) || (p.categoria && p.categoria.includes('Servi')));
-      setItens(tratamentos);
-      setLoading(false);
-    })();
+    if (!user?.email) return;
+    carregar(user.email);
   }, [user?.email]);
 
   if (!user) return (<div className="min-h-screen flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin" /></div>);
@@ -29,7 +33,10 @@ export default function MeusTratamentos() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
       <div className="max-w-6xl mx-auto px-4">
-        <h1 className="text-2xl font-bold mb-6">Meus Tratamentos</h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold">Meus Tratamentos</h1>
+          <Button onClick={()=>setOpenAdd(true)} className="bg-[#2C2C2C] text-[#F7D426] hover:bg-black">Adicionar Tratamento</Button>
+        </div>
         {loading ? (
           <div className="py-12 text-center text-gray-600"><Loader2 className="w-6 h-6 animate-spin inline mr-2"/>Carregando...</div>
         ) : itens.length === 0 ? (
@@ -58,6 +65,7 @@ export default function MeusTratamentos() {
       </div>
 
       <SolicitarInclusaoDialog open={!!selecionado} onClose={()=>setSelecionado(null)} item={selecionado} user={user} />
+      <AdicionarTratamentoModal open={openAdd} onClose={()=>setOpenAdd(false)} user={user} onAdded={()=>carregar(user.email)} />
     </div>
   );
 }
