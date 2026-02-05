@@ -13,7 +13,6 @@ export default function FiltrosBuscaPaciente({
   onBuscar
 }) {
   const precoRanges = [
-    { v: "", l: "Preço" },
     { v: "0-500", l: "Até R$ 500" },
     { v: "500-1000", l: "R$ 500 - 1.000" },
     { v: "1000-2000", l: "R$ 1.000 - 2.000" },
@@ -21,13 +20,11 @@ export default function FiltrosBuscaPaciente({
     { v: "5000-999999", l: "Acima de R$ 5.000" },
   ];
   const ratingOpts = [
-    { v: "", l: "Avaliação" },
     { v: "3", l: "3★+" },
     { v: "4", l: "4★+" },
     { v: "4.5", l: "4.5★+" },
   ];
   const distanciaOpts = [
-    { v: "", l: "Distância" },
     { v: "5", l: "Até 5 km" },
     { v: "10", l: "Até 10 km" },
     { v: "25", l: "Até 25 km" },
@@ -42,7 +39,6 @@ export default function FiltrosBuscaPaciente({
             <SelectValue placeholder="Tipo de serviço" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={null}>Tipo de serviço</SelectItem>
             <SelectItem value="servico">Serviço</SelectItem>
             <SelectItem value="procedimento">Procedimento</SelectItem>
             <SelectItem value="produto">Produto</SelectItem>
@@ -54,7 +50,6 @@ export default function FiltrosBuscaPaciente({
             <SelectValue placeholder="Categoria" />
           </SelectTrigger>
           <SelectContent className="max-h-64">
-            <SelectItem value={null}>Categoria</SelectItem>
             {categorias.map((c)=> (
               <SelectItem key={c.nome} value={c.nome}>{c.icon} {c.nome}</SelectItem>
             ))}
