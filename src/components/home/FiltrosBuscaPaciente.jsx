@@ -10,7 +10,8 @@ export default function FiltrosBuscaPaciente({
   valores,
   onChange,
   onOpenAdvanced,
-  onBuscar
+  onBuscar,
+  onClear
 }) {
   const precoRanges = [
     { v: "0-500", l: "Até R$ 500" },
@@ -97,6 +98,7 @@ export default function FiltrosBuscaPaciente({
         </Select>
 
         <div className="col-span-2 md:col-span-2 flex gap-2 justify-end">
+          <Button variant="ghost" className="h-10" onClick={onClear}>Limpar</Button>
           <Button variant="outline" className="h-10" onClick={onOpenAdvanced}>
             <SlidersHorizontal className="w-4 h-4 mr-2" /> Mais filtros
           </Button>
