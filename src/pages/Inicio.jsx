@@ -264,26 +264,34 @@ export default function Inicio() {
     .slice(0,6);
 
   const handleBuscar = async () => {
+    const params = new URLSearchParams();
+    if (buscaCidade) params.set('cidade', buscaCidade);
+    if (buscaCategoria) params.set('categoria', buscaCategoria);
+    if (filtros.tipo) params.set('tipo', filtros.tipo);
+    if (filtros.categoria) params.set('categoria_filtro', filtros.categoria);
+    if (filtros.especialidade) params.set('especialidade', filtros.especialidade);
+    if (filtros.preco) { const [min,max] = filtros.preco.split('-'); if (min) params.set('preco_min', min); if (max) params.set('preco_max', max); }
+    if (filtros.rating) params.set('rating_min', filtros.rating);
+    if (filtros.distancia) params.set('distancia_km', filtros.distancia);
+    if (filtrosAvancados.data) params.set('data', filtrosAvancados.data);
+    if (filtrosAvancados.hora) params.set('hora', filtrosAvancados.hora);
+    if (filtrosAvancados.atendimento_domicilio) params.set('at_domicilio', '1');
+    if (filtrosAvancados.atendimento_local) params.set('at_local', '1');
+    if (filtrosAvancados.convenios) params.set('convenios', filtrosAvancados.convenios);
+
+    // Atualiza URL atual com filtros (sem obrigar login)
+    const current = new URL(window.location.href);
+    for (const [k,v] of params.entries()) current.searchParams.set(k,v);
+    current.searchParams.set('aba','anuncios');
+    window.history.replaceState({}, '', current.toString());
+
+    // Se logado, registra SearchEvent e navega pro Mapa
     if (!user) {
-      setTipoLoginPrompt("busca");
-      setMostrarLoginPrompt(true);
+      // Continua permitindo a busca mesmo sem login, apenas não loga SearchEvent
+      const base = createPageUrl("Mapa");
+      window.location.href = `${base}?${params.toString()}&aba=anuncios`;
       return;
     }
-    
-    const params = new URLSearchParams();
-    if (buscaCidade) params.append('cidade', buscaCidade);
-    if (buscaCategoria) params.append('categoria', buscaCategoria);
-    if (filtros.tipo) params.append('tipo', filtros.tipo);
-    if (filtros.categoria) params.append('categoria_filtro', filtros.categoria);
-    if (filtros.especialidade) params.append('especialidade', filtros.especialidade);
-    if (filtros.preco) { const [min,max] = filtros.preco.split('-'); if (min) params.append('preco_min', min); if (max) params.append('preco_max', max); }
-    if (filtros.rating) params.append('rating_min', filtros.rating);
-    if (filtros.distancia) params.append('distancia_km', filtros.distancia);
-    if (filtrosAvancados.data) params.append('data', filtrosAvancados.data);
-    if (filtrosAvancados.hora) params.append('hora', filtrosAvancados.hora);
-    if (filtrosAvancados.atendimento_domicilio) params.append('at_domicilio', '1');
-    if (filtrosAvancados.atendimento_local) params.append('at_local', '1');
-    if (filtrosAvancados.convenios) params.append('convenios', filtrosAvancados.convenios);
     try {
       await base44.entities.SearchEvent.create({
         query: [buscaCidade, buscaCategoria].filter(Boolean).join(' | '),
