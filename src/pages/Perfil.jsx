@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -92,6 +92,11 @@ export default function Perfil() {
   // NOVO: Estado para exportação de relatórios
   const [mostrarExportRelatorio, setMostrarExportRelatorio] = useState(false);
   const [numeroWhatsAppRelatorio, setNumeroWhatsAppRelatorio] = useState("");
+  // Agendamentos de e-mail (local)
+  const [agendarData, setAgendarData] = useState("");
+  const [agendarHora, setAgendarHora] = useState("");
+  const [agendamentos, setAgendamentos] = useState([]);
+  const timersRef = useRef({});
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -128,6 +133,32 @@ export default function Perfil() {
     };
     fetchUser();
   }, [navigate]);
+
+  // Carregar agendamentos locais e programar timeouts simples
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('email_agendados') || '[]';
+      const list = JSON.parse(raw);
+      setAgendamentos(list);
+      list.forEach((item) => {
+        const delay = new Date(item.quando).getTime() - Date.now();
+        if (delay > 0 && !timersRef.current[item.id]) {
+          timersRef.current[item.id] = setTimeout(async () => {
+            try {
+              await base44.integrations.Core.SendEmail({ to: item.to, subject: item.subject, body: item.body });
+            } finally {
+              const current = JSON.parse(localStorage.getItem('email_agendados') || '[]').filter(x => x.id !== item.id);
+              localStorage.setItem('email_agendados', JSON.stringify(current));
+              setAgendamentos(current);
+              delete timersRef.current[item.id];
+              alert(`E-mail agendado enviado: ${item.subject}`);
+            }
+          }, delay);
+        }
+      });
+    } catch {}
+    return () => { Object.values(timersRef.current).forEach((t) => clearTimeout(t)); };
+  }, []);
 
   const isPaciente = user?.tipo_usuario === 'paciente';
   const isProfissional = user?.tipo_usuario === 'profissional';
@@ -567,6 +598,46 @@ www.mapadaestetica.com.br
     window.open(url, '_blank');
     setMostrarExportRelatorio(false);
     setNumeroWhatsAppRelatorio("");
+  };
+
+  // Agendar envio de e-mail
+  const handleAgendarEnvio = async () => {
+    const to = document.getElementById('para')?.value?.trim();
+    const subject = document.getElementById('assunto')?.value?.trim();
+    const body = document.getElementById('mensagem')?.value?.trim();
+    if (!to || !subject || !body) { alert('Preencha Para, Assunto e Mensagem'); return; }
+    if (!agendarData || !agendarHora) { alert('Defina data e hora do agendamento'); return; }
+    const quandoISO = new Date(`${agendarData}T${agendarHora}:00`).toISOString();
+    if (new Date(quandoISO) <= new Date()) { alert('Escolha um horário no futuro'); return; }
+
+    const item = { id: `${Date.now()}-${Math.random().toString(36).slice(2,7)}`, to, subject, body, quando: quandoISO };
+    const current = JSON.parse(localStorage.getItem('email_agendados') || '[]');
+    const updated = [...current, item];
+    localStorage.setItem('email_agendados', JSON.stringify(updated));
+    setAgendamentos(updated);
+
+    const delay = new Date(item.quando).getTime() - Date.now();
+    timersRef.current[item.id] = setTimeout(async () => {
+      try {
+        await base44.integrations.Core.SendEmail({ to: item.to, subject: item.subject, body: item.body });
+      } finally {
+        const after = JSON.parse(localStorage.getItem('email_agendados') || '[]').filter(x => x.id !== item.id);
+        localStorage.setItem('email_agendados', JSON.stringify(after));
+        setAgendamentos(after);
+        delete timersRef.current[item.id];
+        alert(`E-mail agendado enviado: ${item.subject}`);
+      }
+    }, delay);
+
+    alert('E-mail agendado com sucesso!');
+  };
+
+  const cancelarAgendamento = (id) => {
+    const current = JSON.parse(localStorage.getItem('email_agendados') || '[]');
+    const updated = current.filter(x => x.id !== id);
+    localStorage.setItem('email_agendados', JSON.stringify(updated));
+    setAgendamentos(updated);
+    if (timersRef.current[id]) { clearTimeout(timersRef.current[id]); delete timersRef.current[id]; }
   };
 
   if (!user) {
@@ -2058,6 +2129,68 @@ www.mapadaestetica.com.br
                             alert('E-mail enviado!');
                           }} className="bg-green-600 hover:bg-green-700 text-white">Enviar agora</Button>
                         </div>
+
+                        {/* Importar CSV + Agendar */}
+                        <div className="grid md:grid-cols-3 gap-3 mt-4 pt-4 border-t">
+                          <div>
+                            <Label>Importar lista (CSV)</Label>
+                            <Input type="file" accept=".csv" className="mt-1"
+                              onChange={(e)=>{
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                const reader = new FileReader();
+                                reader.onload = () => {
+                                  try {
+                                    const text = String(reader.result || '');
+                                    const lines = text.split(/\r?\n/).filter(Boolean);
+                                    const emails = new Set();
+                                    for (const line of lines) {
+                                      const parts = line.split(/[;,]/).map(s=>s.trim());
+                                      for (const p of parts) {
+                                        if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p)) emails.add(p);
+                                      }
+                                    }
+                                    const el = document.getElementById('para');
+                                    if (el) el.value = Array.from(emails).join(', ');
+                                    alert(`${emails.size} e-mail(s) importado(s)`);
+                                  } catch {
+                                    alert('Falha ao ler CSV');
+                                  }
+                                };
+                                reader.readAsText(file);
+                              }}
+                            />
+                            <p className="text-xs text-gray-500 mt-1">Coluna esperada: email (opcionalmente com nome)</p>
+                          </div>
+                          <div>
+                            <Label>Data de envio</Label>
+                            <Input type="date" className="mt-1" value={agendarData} onChange={(e)=>setAgendarData(e.target.value)} />
+                          </div>
+                          <div>
+                            <Label>Hora</Label>
+                            <Input type="time" className="mt-1" value={agendarHora} onChange={(e)=>setAgendarHora(e.target.value)} />
+                          </div>
+                        </div>
+                        <div className="flex gap-2 mt-2">
+                          <Button onClick={handleAgendarEnvio} className="bg-amber-600 hover:bg-amber-700 text-white">Agendar envio</Button>
+                        </div>
+
+                        {agendamentos.length > 0 && (
+                          <div className="mt-4 pt-4 border-t">
+                            <p className="text-sm font-semibold mb-2">Envios agendados</p>
+                            <div className="space-y-2">
+                              {agendamentos.map((a) => (
+                                <div key={a.id} className="flex items-center justify-between p-2 bg-gray-50 rounded border">
+                                  <div className="text-sm">
+                                    <p className="font-medium">{a.subject}</p>
+                                    <p className="text-xs text-gray-600">Para: {a.to.split(',').length} destinatário(s) • Quando: {new Date(a.quando).toLocaleString('pt-BR')}</p>
+                                  </div>
+                                  <Button size="sm" variant="outline" onClick={()=>cancelarAgendamento(a.id)}>Cancelar</Button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                       <Alert className="bg-purple-50 border-purple-200">
