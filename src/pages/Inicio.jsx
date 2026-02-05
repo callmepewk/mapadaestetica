@@ -532,6 +532,7 @@ export default function Inicio() {
               onChange={setFiltros}
               onOpenAdvanced={()=>setOpenFiltrosAvancados(true)}
               onBuscar={handleBuscar}
+              onClear={() => setFiltros({ tipo:"", categoria:"", especialidade:"", preco:"", rating:"", distancia:"" })}
             />
           </div>
 
