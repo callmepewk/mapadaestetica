@@ -613,7 +613,6 @@ export default function Mapa() {
                         <SelectValue placeholder="UF" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value={null}>Todos</SelectItem>
                         {estados.map((uf) => (
                           <SelectItem key={uf} value={uf}>{uf}</SelectItem>
                         ))}
