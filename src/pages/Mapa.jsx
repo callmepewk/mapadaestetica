@@ -805,7 +805,6 @@ export default function Mapa() {
                     <SelectValue placeholder="Categoria" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={null}>Todas</SelectItem>
                     <SelectItem value="Salão de Beleza">💇 Salão de Beleza</SelectItem>
                     <SelectItem value="Clínica de Estética">💆 Clínica de Estética</SelectItem>
                     <SelectItem value="Spa">🌿 Spa</SelectItem>
