@@ -658,7 +658,6 @@ export default function Mapa() {
                         <SelectValue placeholder="Todos os tipos" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value={null}>Todos os tipos</SelectItem>
                         {tiposEstabelecimento.map((tipo) => (
                           <SelectItem key={tipo.valor} value={tipo.valor}>
                             {tipo.label} ({tipo.estrelas} ⭐)
