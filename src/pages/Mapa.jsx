@@ -643,7 +643,6 @@ export default function Mapa() {
                         <SelectValue placeholder="Todos" />
                       </SelectTrigger>
                       <SelectContent className="max-h-[300px]">
-                        <SelectItem value={null}>Todos</SelectItem>
                         {tiposAnuncio.map((tipo) => (
                           <SelectItem key={tipo.valor} value={tipo.valor}>{tipo.label}</SelectItem>
                         ))}
