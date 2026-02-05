@@ -820,7 +820,6 @@ export default function Mapa() {
                     <SelectValue placeholder="Plano Clube" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={null}>Todos</SelectItem>
                     <SelectItem value="light">💙 LIGHT (10%)</SelectItem>
                     <SelectItem value="gold">💛 GOLD (15%)</SelectItem>
                     <SelectItem value="vip">💜 VIP (25%)</SelectItem>
