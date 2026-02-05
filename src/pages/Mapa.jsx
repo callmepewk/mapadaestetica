@@ -628,7 +628,6 @@ export default function Mapa() {
                         <SelectValue placeholder="Todas" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value={null}>Todas</SelectItem>
                         {faixasPreco.map((preco) => (
                           <SelectItem key={preco} value={preco}>{preco}</SelectItem>
                         ))}
