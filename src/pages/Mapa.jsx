@@ -556,7 +556,6 @@ export default function Mapa() {
                         <SelectValue placeholder="Todas" />
                       </SelectTrigger>
                       <SelectContent className="max-h-[300px]">
-                        <SelectItem value={null}>Todas</SelectItem>
                         {categorias.map((cat) => (
                           <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                         ))}
