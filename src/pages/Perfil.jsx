@@ -97,6 +97,11 @@ export default function Perfil() {
   const [agendarHora, setAgendarHora] = useState("");
   const [agendamentos, setAgendamentos] = useState([]);
   const timersRef = useRef({});
+  const [editAgOpen, setEditAgOpen] = useState(false);
+  const [editAgId, setEditAgId] = useState("");
+  const [editAgTo, setEditAgTo] = useState("");
+  const [editAgSubject, setEditAgSubject] = useState("");
+  const [editAgBody, setEditAgBody] = useState("");
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -143,15 +148,21 @@ export default function Perfil() {
       list.forEach((item) => {
         const delay = new Date(item.quando).getTime() - Date.now();
         if (delay > 0 && !timersRef.current[item.id]) {
-          timersRef.current[item.id] = setTimeout(async () => {
+          const id = item.id;
+          timersRef.current[id] = setTimeout(async () => {
             try {
-              await base44.integrations.Core.SendEmail({ to: item.to, subject: item.subject, body: item.body });
+              const stored = JSON.parse(localStorage.getItem('email_agendados') || '[]');
+              const currentItem = stored.find(x => x.id === id);
+              if (!currentItem) return;
+              const emails = Array.from(new Set((currentItem.to||'').split(/[;,]/).map(s=>s.trim()).filter(e=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e))));
+              for (const addr of emails) {
+                await base44.integrations.Core.SendEmail({ to: addr, subject: currentItem.subject, body: currentItem.body });
+              }
             } finally {
-              const current = JSON.parse(localStorage.getItem('email_agendados') || '[]').filter(x => x.id !== item.id);
+              const current = JSON.parse(localStorage.getItem('email_agendados') || '[]').filter(x => x.id !== id);
               localStorage.setItem('email_agendados', JSON.stringify(current));
               setAgendamentos(current);
-              delete timersRef.current[item.id];
-              alert(`E-mail agendado enviado: ${item.subject}`);
+              delete timersRef.current[id];
             }
           }, delay);
         }
@@ -619,13 +630,18 @@ www.mapadaestetica.com.br
     const delay = new Date(item.quando).getTime() - Date.now();
     timersRef.current[item.id] = setTimeout(async () => {
       try {
-        await base44.integrations.Core.SendEmail({ to: item.to, subject: item.subject, body: item.body });
+        const stored = JSON.parse(localStorage.getItem('email_agendados') || '[]');
+        const currentItem = stored.find(x => x.id === item.id);
+        if (!currentItem) return;
+        const emails = Array.from(new Set((currentItem.to||'').split(/[;,]/).map(s=>s.trim()).filter(e=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e))));
+        for (const addr of emails) {
+          await base44.integrations.Core.SendEmail({ to: addr, subject: currentItem.subject, body: currentItem.body });
+        }
       } finally {
         const after = JSON.parse(localStorage.getItem('email_agendados') || '[]').filter(x => x.id !== item.id);
         localStorage.setItem('email_agendados', JSON.stringify(after));
         setAgendamentos(after);
         delete timersRef.current[item.id];
-        alert(`E-mail agendado enviado: ${item.subject}`);
       }
     }, delay);
 
@@ -638,6 +654,26 @@ www.mapadaestetica.com.br
     localStorage.setItem('email_agendados', JSON.stringify(updated));
     setAgendamentos(updated);
     if (timersRef.current[id]) { clearTimeout(timersRef.current[id]); delete timersRef.current[id]; }
+  };
+
+  const abrirEdicaoAgendamento = (item) => {
+    setEditAgId(item.id);
+    setEditAgTo(item.to || "");
+    setEditAgSubject(item.subject || "");
+    setEditAgBody(item.body || "");
+    setEditAgOpen(true);
+  };
+
+  const salvarEdicaoAgendamento = () => {
+    if (!editAgId) { setEditAgOpen(false); return; }
+    const current = JSON.parse(localStorage.getItem('email_agendados') || '[]');
+    const idx = current.findIndex(x => x.id === editAgId);
+    if (idx >= 0) {
+      current[idx] = { ...current[idx], to: editAgTo, subject: editAgSubject, body: editAgBody };
+      localStorage.setItem('email_agendados', JSON.stringify(current));
+      setAgendamentos(current);
+    }
+    setEditAgOpen(false);
   };
 
   if (!user) {
@@ -2121,12 +2157,16 @@ www.mapadaestetica.com.br
                             if (msgEl && res?.body) msgEl.value = res.body;
                           }}>Gerar com IA</Button>
                           <Button onClick={async ()=>{
-                            const to = document.getElementById('para')?.value?.trim();
+                            const toRaw = document.getElementById('para')?.value?.trim();
                             const subject = document.getElementById('assunto')?.value?.trim();
                             const body = document.getElementById('mensagem')?.value?.trim();
-                            if (!to || !subject || !body) { alert('Preencha Para, Assunto e Mensagem'); return; }
-                            await base44.integrations.Core.SendEmail({ to, subject, body });
-                            alert('E-mail enviado!');
+                            if (!toRaw || !subject || !body) { alert('Preencha Para, Assunto e Mensagem'); return; }
+                            const emails = Array.from(new Set(toRaw.split(/[;,]/).map(s=>s.trim()).filter(e=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e))));
+                            if (emails.length === 0) { alert('Nenhum e-mail válido encontrado'); return; }
+                            for (const addr of emails) {
+                              await base44.integrations.Core.SendEmail({ to: addr, subject, body });
+                            }
+                            alert(`E-mail enviado para ${emails.length} destinatário(s)`);
                           }} className="bg-green-600 hover:bg-green-700 text-white">Enviar agora</Button>
                         </div>
 
@@ -2183,12 +2223,43 @@ www.mapadaestetica.com.br
                                 <div key={a.id} className="flex items-center justify-between p-2 bg-gray-50 rounded border">
                                   <div className="text-sm">
                                     <p className="font-medium">{a.subject}</p>
-                                    <p className="text-xs text-gray-600">Para: {a.to.split(',').length} destinatário(s) • Quando: {new Date(a.quando).toLocaleString('pt-BR')}</p>
+                                    <p className="text-xs text-gray-600">Para: {Array.from(new Set((a.to||'').split(/[;,]/).map(s=>s.trim()).filter(e=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)))).length} destinatário(s) • Quando: {new Date(a.quando).toLocaleString('pt-BR')}</p>
                                   </div>
-                                  <Button size="sm" variant="outline" onClick={()=>cancelarAgendamento(a.id)}>Cancelar</Button>
+                                  <div className="flex gap-2">
+                                    <Button size="sm" variant="outline" onClick={()=>abrirEdicaoAgendamento(a)}>Editar</Button>
+                                    <Button size="sm" variant="outline" onClick={()=>cancelarAgendamento(a.id)}>Cancelar</Button>
+                                  </div>
                                 </div>
                               ))}
                             </div>
+
+                            {/* Modal editar agendamento */}
+                            <Dialog open={editAgOpen} onOpenChange={setEditAgOpen}>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Editar agendamento</DialogTitle>
+                                </DialogHeader>
+                                <div className="space-y-3">
+                                  <div>
+                                    <Label>Destinatários</Label>
+                                    <Input value={editAgTo} onChange={(e)=>setEditAgTo(e.target.value)} placeholder="emails separados por vírgula ou ponto e vírgula" />
+                                    <p className="text-xs text-gray-500 mt-1">Envio individual por contato</p>
+                                  </div>
+                                  <div>
+                                    <Label>Assunto</Label>
+                                    <Input value={editAgSubject} onChange={(e)=>setEditAgSubject(e.target.value)} />
+                                  </div>
+                                  <div>
+                                    <Label>Mensagem</Label>
+                                    <Textarea value={editAgBody} onChange={(e)=>setEditAgBody(e.target.value)} className="min-h-32" />
+                                  </div>
+                                  <div className="flex gap-2 justify-end">
+                                    <Button variant="outline" onClick={()=>setEditAgOpen(false)}>Fechar</Button>
+                                    <Button onClick={salvarEdicaoAgendamento} className="bg-blue-600 hover:bg-blue-700 text-white">Salvar</Button>
+                                  </div>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
                           </div>
                         )}
                       </div>
