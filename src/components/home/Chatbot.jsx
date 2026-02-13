@@ -165,7 +165,7 @@ Responda de forma clara, objetiva e útil.`,
               {/* Botão com Imagem - BEM VISÍVEL NO MOBILE */}
               <button
                 onClick={() => setIsOpen(true)}
-                className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full shadow-2xl border-4 border-[#F7D426] overflow-hidden hover:scale-110 transition-transform duration-300 bg-[#F7D426]"
+                className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full shadow-2xl border-3 border-[#F7D426] overflow-hidden hover:scale-110 transition-transform duration-300 bg-[#F7D426]"
               >
                 <img
                   src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/ec64a4c52_drbeleza.png"
@@ -181,7 +181,7 @@ Responda de forma clara, objetiva e útil.`,
                 </div>
 
                 {/* Bolinha Online */}
-                <div className="absolute bottom-0 right-0 w-5 h-5 sm:w-6 sm:h-6 bg-green-500 rounded-full border-3 border-white shadow-lg">
+                <div className="absolute bottom-0 right-0 w-4 h-4 sm:w-5 sm:h-5 bg-green-500 rounded-full border-3 border-white shadow-lg">
                   <div className="absolute inset-0 bg-green-500 rounded-full animate-ping opacity-75"></div>
                 </div>
 
@@ -207,7 +207,7 @@ Responda de forma clara, objetiva e útil.`,
             initial={{ opacity: 0, y: 100 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 100 }}
-            className="fixed inset-0 sm:inset-auto sm:bottom-6 sm:right-6 z-50 w-full sm:w-[420px] md:w-[520px] sm:max-w-[calc(100vw-3rem)]"
+            className="fixed inset-0 sm:inset-auto sm:bottom-6 sm:right-6 z-50 w-full p-2 sm:p-0 sm:w-[380px] md:w-[460px] sm:max-w-[calc(100vw-3rem)]"
           >
             {/* Overlay para fechar ao clicar fora - MOBILE */}
             <div 
@@ -216,9 +216,9 @@ Responda de forma clara, objetiva e útil.`,
             />
 
             {/* Card do Chat */}
-            <Card className="relative sm:border-none shadow-2xl overflow-hidden rounded-t-2xl sm:rounded-2xl h-[85vh] sm:h-[70vh] md:h-[600px] flex flex-col">
+            <Card className="relative sm:border-none shadow-2xl overflow-hidden rounded-t-2xl sm:rounded-2xl h-[70vh] sm:h-[65vh] md:h-[560px] flex flex-col">
               {/* Header */}
-              <div className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] p-4 flex items-center justify-between border-b-2 border-[#2C2C2C] flex-shrink-0">
+              <div className="sticky top-0 z-10 bg-gradient-to-r from-[#F7D426] to-[#FFE066] p-4 flex items-center justify-between border-b-2 border-[#2C2C2C] flex-shrink-0">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden bg-white flex items-center justify-center border-2 border-[#2C2C2C]">
                     <img 
@@ -333,13 +333,13 @@ Responda de forma clara, objetiva e útil.`,
                     onChange={(e) => setInputMessage(e.target.value)}
                     onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
                     placeholder={user && user.cadastro_completo ? "Digite sua mensagem..." : "Faça login primeiro..."}
-                    className="flex-1 text-sm h-11"
+                    className="flex-1 text-sm h-10"
                     disabled={!user || !user.cadastro_completo}
                   />
                   <Button
                     onClick={() => handleSendMessage()}
                     disabled={loading || !inputMessage.trim() || !user || !user.cadastro_completo}
-                    className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] hover:from-[#E5C215] hover:to-[#F7D426] text-[#2C2C2C] border-2 border-[#2C2C2C] w-11 h-11 p-0"
+                    className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] hover:from-[#E5C215] hover:to-[#F7D426] text-[#2C2C2C] border-2 border-[#2C2C2C] w-10 h-10 p-0"
                     size="icon"
                   >
                     <Send className="w-5 h-5" />

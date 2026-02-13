@@ -42,7 +42,7 @@ import CardCategoria from "../components/home/CardCategoria";
 import TermosCondicoes from "../components/home/TermosCondicoes";
 import Tutorial from "../components/home/Tutorial";
 import { CardContent } from "@/components/ui/card";
-import CalculadoraLaserSection from "../components/home/CalculadoraLaserSection";
+
 import AgendamentoModal from "../components/produtos/AgendamentoModal";
 import { motion } from "framer-motion";
 
@@ -796,7 +796,7 @@ export default function Inicio() {
           <section className="relative py-10 md:py-14 bg-white">
             <div className="max-w-7xl mx-auto px-4">
               <div className="relative overflow-hidden rounded-2xl shadow-xl">
-                <img src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=1600&q=80" alt="Saúde e bem-estar" className="w-full h-56 md:h-72 object-cover" />
+                <img src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=1600&q=80" alt="Saúde e bem-estar" className="w-full h-40 md:h-56 object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent"></div>
                 <div className="absolute left-6 top-6 text-white">
                   <p className="text-xs md:text-sm mb-1">Bem-vindo, profissional</p>
@@ -1062,7 +1062,6 @@ export default function Inicio() {
           </div>
 
           <section id="tutorial"><Tutorial /></section>
-          <CalculadoraLaserSection />
         </>
       )}
 
@@ -1121,7 +1120,7 @@ export default function Inicio() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-12">
+          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto mb-12">
             <Card className="border-2 border-purple-200 hover:border-purple-400 transition-all hover:shadow-xl cursor-pointer">
               <CardContent className="p-6">
                 <div className="flex items-center gap-4 mb-4">
@@ -1170,6 +1169,29 @@ export default function Inicio() {
                 >
                   <Button className="w-full bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white">
                     Acessar Clube +
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </a>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2 border-yellow-200 hover:border-yellow-400 transition-all hover:shadow-xl cursor-pointer">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center overflow-hidden">
+                    <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/ecf42bf00_image.png" alt="DermaHelp" className="w-full h-full object-cover" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">DermaHelp</h3>
+                    <Badge className="mt-1 bg-yellow-100 text-yellow-800">Conteúdo e Dicas</Badge>
+                  </div>
+                </div>
+                <p className="text-gray-600 mb-4">
+                  Conteúdo educativo e apoio para cuidados com a pele e estética.
+                </p>
+                <a href="https://dermahelp.base44.app" target="_blank" rel="noopener noreferrer">
+                  <Button className="w-full bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white">
+                    Acessar DermaHelp
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </a>

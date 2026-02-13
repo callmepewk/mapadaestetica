@@ -21,7 +21,8 @@ import {
   ShoppingCart,
   Crown,
   Briefcase,
-  Sparkles
+  Sparkles,
+  Calculator
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -531,6 +532,10 @@ export default function Layout({ children }) {
                             <TrendingUp className="w-4 h-4 mr-2" />
                             R.A.B.I
                             {radarHasNew && <span className="ml-2 inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse" />}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => navigate(createPageUrl("CalculadoraLaser"))}>
+                            <Calculator className="w-4 h-4 mr-2" />
+                            Calculadora Viabilidade Laser
                           </DropdownMenuItem>
                         </>
                       )}
