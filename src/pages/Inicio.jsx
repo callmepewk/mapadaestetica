@@ -579,7 +579,7 @@ export default function Inicio() {
                   <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
                     <Calendar className="w-5 h-5"/> Eventos Próximos
                   </h2>
-                  <a href={createPageUrl('Mapa')} className="text-sm text-pink-600 font-semibold">Ver no mapa →</a>
+                  <a href={createPageUrl('Mapa')} className="text-sm text-[#2C2C2C] font-semibold hover:text-[#F7D426]">Ver no mapa →</a>
                 </div>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {eventosVisiveisHome.map(ev => (
@@ -813,7 +813,7 @@ export default function Inicio() {
                   <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
                     <Calendar className="w-5 h-5"/> Eventos Próximos
                   </h2>
-                  <a href={createPageUrl('Mapa')} className="text-sm text-pink-600 font-semibold">Ver no mapa →</a>
+                  <a href={createPageUrl('Mapa')} className="text-sm text-[#2C2C2C] font-semibold hover:text-[#F7D426]">Ver no mapa →</a>
                 </div>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {eventosVisiveisHome.map(ev => (
