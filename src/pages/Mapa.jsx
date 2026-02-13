@@ -156,10 +156,11 @@ const criarIconeUsuario = () => {
   });
 };
 
-const criarIconeAnuncio = (verificado) => {
-  const color = verificado ? '#10B981' : '#9CA3AF';
+const criarIconeAnuncio = (verificado, patrocinado) => {
+  const base = verificado ? '#10B981' : '#9CA3AF';
+  const ring = patrocinado ? 'box-shadow: 0 0 0 4px rgba(247, 212, 38, 0.5), 0 0 10px rgba(0,0,0,0.2);' : 'box-shadow:0 0 10px rgba(0,0,0,0.2)';
   return L.divIcon({
-    html: `<div style="background:${color}; width:14px; height:14px; border-radius:50%; border:2px solid white; box-shadow:0 0 10px rgba(0,0,0,0.2)"></div>`,
+    html: `<div style="background:${base}; width:14px; height:14px; border-radius:50%; border:2px solid white; ${ring}"></div>`,
     className: 'custom-marker',
     iconSize: [14, 14]
   });
@@ -232,6 +233,14 @@ export default function Mapa() {
   const [tipoEstabelecimento, setTipoEstabelecimento] = useState("");
   const [distancia, setDistancia] = useState("999999");
   const [tempoFormacao, setTempoFormacao] = useState("999999");
+  // Novos filtros avançados
+  const [profissao, setProfissao] = useState("");
+  const [nivelVerificacao, setNivelVerificacao] = useState(""); // 0-3 docs
+  const [avaliacaoMin, setAvaliacaoMin] = useState(""); // 1-5 estrelas estabelecimento
+  const [modalidade, setModalidade] = useState(""); // online|presencial
+  const [atendimento, setAtendimento] = useState(""); // domicilio|clinica
+  const [atendimentoCobranca, setAtendimentoCobranca] = useState(""); // convenio|particular
+  const [patrocinadoOnly, setPatrocinadoOnly] = useState(false);
 
   // Filtros para Mapa (Estabelecimentos)
   const [buscaCidade, setBuscaCidade] = useState("");
@@ -393,6 +402,38 @@ export default function Mapa() {
     const matchTipoEstabelecimento = !tipoEstabelecimento || anuncio.tipo_estabelecimento === tipoEstabelecimento;
     const matchTempoFormacao = !tempoFormacao || tempoFormacao === "999999" || 
       (anuncio.tempo_formacao_anos && anuncio.tempo_formacao_anos <= parseInt(tempoFormacao));
+
+    // Profissão (heurística via tags)
+    const tagsLower = (anuncio.tags || []).map(t => (t || '').toLowerCase());
+    const matchProfissao = !profissao || tagsLower.includes(profissao.toLowerCase());
+
+    // Nível de verificação (0-3 docs verificados)
+    const va = anuncio.verificacao_autoridade || {};
+    const docsOk = [va.licenca_sanitaria?.verificado, va.alvara_funcionamento?.verificado, va.registro_profissional?.verificado]
+      .filter(Boolean).length;
+    const matchNivelVer = !nivelVerificacao || docsOk >= parseInt(nivelVerificacao);
+
+    // Avaliação mínima (usa estrelas_estabelecimento quando presente)
+    const matchAvaliacao = !avaliacaoMin || (anuncio.estrelas_estabelecimento && anuncio.estrelas_estabelecimento >= parseInt(avaliacaoMin));
+
+    // Modalidade (heurística via tags)
+    const matchModalidade = !modalidade || tagsLower.includes(modalidade);
+
+    // Atendimento (domicílio/clínica) - via tags ou tipo_estabelecimento
+    const matchAtendimento = !atendimento || (
+      atendimento === 'domicilio' ? (tagsLower.includes('domicilio') || tagsLower.includes('home care')) :
+      (anuncio.tipo_estabelecimento && anuncio.tipo_estabelecimento.toLowerCase().includes('clínica')) || tagsLower.includes('clinica')
+    );
+
+    // Cobrança (convênio/particular) - via tags ou forma_cobranca
+    const matchCobranca = !atendimentoCobranca || (
+      atendimentoCobranca === 'convenio' ? (tagsLower.includes('convênio') || tagsLower.includes('convenio')) :
+      (anuncio.forma_cobranca === 'dinheiro' || tagsLower.includes('particular'))
+    );
+
+    // Patrocinado
+    const isSponsored = !!anuncio.em_destaque || !!anuncio.impulsionado || ['ouro','diamante','platina'].includes(anuncio.plano);
+    const matchPatrocinado = !patrocinadoOnly || isSponsored;
     
     // Público-alvo
     const matchPublico = !anuncio.exibir_para || anuncio.exibir_para === 'todos' || (isProfissional ? anuncio.exibir_para !== 'visitantes' : anuncio.exibir_para !== 'profissionais');
@@ -411,7 +452,8 @@ export default function Mapa() {
     
     return matchBusca && matchCategoria && matchProcedimento && matchCidade && matchBairro && matchEstado && 
            matchPreco && matchVerificados && matchTipoAnuncio && matchTipoEstabelecimento && 
-           matchTempoFormacao && matchDistancia && matchPublico;
+           matchTempoFormacao && matchProfissao && matchNivelVer && matchAvaliacao && matchModalidade &&
+           matchAtendimento && matchCobranca && matchPatrocinado && matchDistancia && matchPublico;
   });
 
   // Calcular distâncias para estabelecimentos
@@ -533,7 +575,7 @@ export default function Mapa() {
                   </Button>
                 </div>
 
-                <div className="grid md:grid-cols-3 gap-4">
+                <div className="grid md:grid-cols-4 gap-4">
                   {/* Busca Geral */}
                   <div>
                     <label className="text-sm font-medium mb-2 block">Buscar</label>
@@ -667,6 +709,21 @@ export default function Mapa() {
                     </Select>
                   </div>
 
+                  {/* Profissão */}
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Profissão</label>
+                    <Select value={profissao} onValueChange={setProfissao}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Todas" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[300px]">
+                        {['médico','dentista','biomédico','esteticista','enfermeiro','farmacêutico','fisioterapeuta'].map((p)=>(
+                          <SelectItem key={p} value={p}>{p.charAt(0).toUpperCase()+p.slice(1)}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
                   {/* Distância */}
                   <div>
                     <label className="text-sm font-medium mb-2 block">Distância</label>
@@ -698,6 +755,78 @@ export default function Mapa() {
                     </Select>
                   </div>
 
+                  {/* Nível de Verificação */}
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Nível de Verificação</label>
+                    <Select value={nivelVerificacao} onValueChange={setNivelVerificacao}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Qualquer nível" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[0,1,2,3].map((n)=>(
+                          <SelectItem key={n} value={String(n)}>{n} de 3 docs</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Avaliação mínima */}
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Avaliação mínima</label>
+                    <Select value={avaliacaoMin} onValueChange={setAvaliacaoMin}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Qualquer" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[1,2,3,4,5].map((s)=>(
+                          <SelectItem key={s} value={String(s)}>{s} ⭐</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Modalidade */}
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Modalidade</label>
+                    <Select value={modalidade} onValueChange={setModalidade}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Qualquer" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="online">Online</SelectItem>
+                        <SelectItem value="presencial">Presencial</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Atendimento */}
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Atendimento</label>
+                    <Select value={atendimento} onValueChange={setAtendimento}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Qualquer" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="domicilio">Domiciliar</SelectItem>
+                        <SelectItem value="clinica">Clínica</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Cobrança */}
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Cobrança</label>
+                    <Select value={atendimentoCobranca} onValueChange={setAtendimentoCobranca}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Qualquer" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="convenio">Convênio</SelectItem>
+                        <SelectItem value="particular">Particular</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
                   {/* Verificados */}
                   <div className="flex items-center space-x-2 pt-6">
                     <Checkbox
@@ -711,6 +840,17 @@ export default function Mapa() {
                     >
                       <CheckCircle className="w-4 h-4 inline mr-1 text-blue-600" />
                       Apenas Verificados
+                    </label>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="patrocinados"
+                      checked={patrocinadoOnly}
+                      onCheckedChange={setPatrocinadoOnly}
+                    />
+                    <label htmlFor="patrocinados" className="text-sm font-medium cursor-pointer">
+                      👑 Apenas Patrocinados
                     </label>
                   </div>
                 </div>
@@ -753,8 +893,10 @@ export default function Mapa() {
               </div>
 
               {isLoadingAnuncios ? (
-                <div className="flex justify-center py-12">
-                  <Loader2 className="w-8 h-8 animate-spin text-[#F7D426]" />
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {[...Array(6)].map((_,i)=> (
+                    <div key={i} className="h-64 rounded-xl bg-gray-100 animate-pulse" />
+                  ))}
                 </div>
               ) : anunciosFiltrados.length === 0 ? (
                 <div className="text-center py-12">
@@ -766,10 +908,13 @@ export default function Mapa() {
                   </Button>
                 </div>
               ) : (
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {anunciosFiltrados.map((anuncio) => (
-                    <CardAnuncio key={anuncio.id} anuncio={anuncio} />
-                  ))}
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 transition-opacity duration-300">
+                  {anunciosFiltrados.map((anuncio) => {
+                    const isSponsored = !!anuncio.em_destaque || !!anuncio.impulsionado || ['ouro','diamante','platina'].includes(anuncio.plano);
+                    return (
+                      <CardAnuncio key={anuncio.id} anuncio={anuncio} destaque={isSponsored} />
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -1069,7 +1214,11 @@ export default function Mapa() {
 
                   {anunciosFiltrados.map((a) => (
                     a.latitude && a.longitude ? (
-                      <Marker key={`anuncio-${a.id}`} position={[a.latitude, a.longitude]} icon={criarIconeAnuncio(!!a.profissional_verificado)}>
+                      <Marker
+                        key={`anuncio-${a.id}`}
+                        position={[a.latitude, a.longitude]}
+                        icon={criarIconeAnuncio(!!a.profissional_verificado, (!!a.em_destaque || !!a.impulsionado || ['ouro','diamante','platina'].includes(a.plano)))}
+                      >
                         <Popup>
                           <div className="p-2 min-w-[220px]">
                             <p className="font-bold text-gray-900 mb-1">{a.titulo}</p>
@@ -1124,6 +1273,14 @@ export default function Mapa() {
                     <div className="flex items-center gap-2">
                       <span className="text-xl">🌿</span>
                       <span>Spa</span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-2">
+                      <div className="w-3 h-3 rounded-full border-2 border-white" style={{ background:'#10B981', boxShadow:'0 0 10px rgba(0,0,0,0.2)'}}></div>
+                      <span>Anúncio Verificado</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full border-2 border-white" style={{ background:'#9CA3AF', boxShadow:'0 0 0 4px rgba(247, 212, 38, 0.5), 0 0 10px rgba(0,0,0,0.2)'}}></div>
+                      <span>Anúncio Patrocinado</span>
                     </div>
                   </div>
                 </div>
