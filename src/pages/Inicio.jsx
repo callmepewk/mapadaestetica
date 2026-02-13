@@ -1046,12 +1046,7 @@ export default function Inicio() {
 
           <section className="py-0"></section>
 
-          <section id="curiosidades-mes" className="py-12 bg-white">
-            <div className="max-w-7xl mx-auto px-4">
 
-              <CuriosidadesMes />
-            </div>
-          </section>
 
           {/* Botão de Comparação */}
           <div className="py-8 bg-white">
