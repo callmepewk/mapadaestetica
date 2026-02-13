@@ -881,13 +881,14 @@ export default function Mapa() {
                     )}
                   </Button>
                   
-                  <Select value="recentes" onValueChange={() => {}}>
-                    <SelectTrigger className="w-48">
-                      <SelectValue placeholder="Mais Recentes" />
+                  <Select value={ordenarPor} onValueChange={setOrdenarPor}>
+                    <SelectTrigger className="w-56">
+                      <SelectValue placeholder="Ordenar" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="recentes">Mais Recentes</SelectItem>
                       <SelectItem value="relevancia">Relevância</SelectItem>
+                      <SelectItem value="patrocinados">Patrocinados Primeiro</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
