@@ -6,6 +6,7 @@ import ProgramasInsights from "../components/analytics/ProgramasInsights";
 import RabiHero from "../components/rabi/RabiHero";
 import RabiMicrocopyStrip from "../components/rabi/RabiMicrocopyStrip";
 import RabiExplainer from "../components/rabi/RabiExplainer";
+import RabiTutorial from "../components/rabi/RabiTutorial";
 import RabiSection from "../components/rabi/RabiSection";
 import RabiConsultoriaCTA from "../components/rabi/RabiConsultoriaCTA";
 
@@ -117,6 +118,7 @@ export default function Radares() {
         <RabiHero />
         <RabiMicrocopyStrip />
         <RabiExplainer />
+        <RabiTutorial />
 
         <RabiSection title="Integrações — GA4 e Google Trends" subtitle="Importe CSVs para cruzar dados de tráfego e interesse com leituras internas do R.A.B.I.">
           <div className="space-y-4">

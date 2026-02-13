@@ -83,7 +83,29 @@ const categorias = [
   "Barbearia",
   "Tatuagem e Piercing",
   "Spa e Bem-Estar",
-  "Longevidade e Medicina Integrativa"
+  "Longevidade e Medicina Integrativa",
+  "Clínicas e Consultórios",
+  "Salões de Beleza",
+  "Equipamentos - Venda",
+  "Equipamentos - Locação",
+  "Equipamentos - Seminovos",
+  "Cosméticos e Produtos",
+  "Injetáveis e Preenchedores",
+  "Nutracêuticos e Suplementos",
+  "Móveis e Decoração para Clínicas",
+  "Softwares de Gestão",
+  "Uniformes e Vestuário Profissional",
+  "Roupas de Compressão Pós-Cirúrgica",
+  "Alimentação Saudável e Fitness",
+  "Personal Trainer",
+  "Educação - Cursos e Workshops",
+  "Eventos - Congressos e Feiras",
+  "Consultoria e Assessoria",
+  "Franquias",
+  "Turismo de Saúde",
+  "Seguros e Financiamentos",
+  "Marketing e Design",
+  "Outros"
 ];
 
 const estados = [

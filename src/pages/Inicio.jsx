@@ -24,7 +24,8 @@ import {
   Crown,
   ShieldCheck,
   Phone,
-  Calendar
+  Calendar,
+  BookOpen
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -676,9 +677,6 @@ export default function Inicio() {
                     <Button variant="outline" onClick={handleBeautySafeSolicitar} className="border-2">
                       Solicitar Beauty Safe
                     </Button>
-                    <Link to={createPageUrl("PlannerWellness")}>
-                      <Button variant="ghost">Abrir Planner de Wellness</Button>
-                    </Link>
                   </div>
                 </div>
               </div>
@@ -1209,8 +1207,8 @@ export default function Inicio() {
             <Card className="border-2 border-yellow-200 hover:border-yellow-400 transition-all hover:shadow-xl cursor-pointer">
               <CardContent className="p-6">
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center overflow-hidden">
-                    <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/ecf42bf00_image.png" alt="DermaHelp" className="w-full h-full object-cover" />
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center">
+                    <BookOpen className="w-8 h-8 text-white" />
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-gray-900">DermaHelp</h3>

@@ -22,7 +22,8 @@ import {
   Crown,
   Briefcase,
   Sparkles,
-  Calculator
+  Calculator,
+  Camera
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -504,9 +505,13 @@ export default function Layout({ children }) {
                           Meu Plano
                         </DropdownMenuItem>
                       )}
+                      <DropdownMenuItem onClick={() => navigate(createPageUrl("PlannerWellness"))}>
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        Planner Wellness
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => navigate(createPageUrl("LojaPontos"))}>
                         <Star className="w-4 h-4 mr-2" />
-                        Loja de Pontos ({user?.pontos_acumulados || 0})
+                        Loja de Pontos ({user?.pontos_saldo ?? user?.pontos_acumulados ?? user?.saldo_pontos ?? 0})
                       </DropdownMenuItem>
                       {isProfissional && (
                         <DropdownMenuItem onClick={() => navigate(createPageUrl("PainelProfissional"))}>
@@ -668,7 +673,7 @@ export default function Layout({ children }) {
                     className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[#FFF9E6] text-[#2C2C2C] border-l-4 border-[#F7D426] font-medium"
                   >
                     <Star className="w-5 h-5" />
-                    <span>Pontos: {user?.pontos_acumulados || 0}</span>
+                    <span>Pontos: {user?.pontos_saldo ?? user?.pontos_acumulados ?? user?.saldo_pontos ?? 0}</span>
                   </Link>
                   <Link
                     to={createPageUrl("LojaPontos")}
@@ -676,7 +681,7 @@ export default function Layout({ children }) {
                     className="flex items-center gap-3 px-4 py-3 rounded-lg bg-purple-50 text-purple-800 border-l-4 border-purple-500 font-medium"
                   >
                     <DollarSign className="w-5 h-5" />
-                    <span>Beauty Coins: {user?.beauty_coins || 0}</span>
+                    <span>Beauty Coins: {user?.beauty_coins ?? user?.coins ?? user?.saldo_coins ?? 0}</span>
                   </Link>
                 </div>
               ) : (
@@ -767,7 +772,7 @@ export default function Layout({ children }) {
               <ImageWithLoader
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/fd230be55_mapaimg.jpg"
                 alt="Mapa da Estética"
-                className="h-16 w-auto object-contain mb-4 brightness-0 invert"
+                className="h-16 w-auto object-contain mb-4"
                 fallbackUrl="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe2/2274d89a4_logo_v1.png"
                 eager
               />
