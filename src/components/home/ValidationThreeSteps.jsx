@@ -22,7 +22,7 @@ export default function ValidationThreeSteps() {
   ];
 
   return (
-    <section className="mt-10">
+    <section id="validacao-qualidade" className="mt-10">
       <div className="rounded-2xl border bg-white p-6 md:p-8">
         <motion.h2 initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }} className="text-2xl md:text-3xl font-extrabold text-gray-900">
           Processo de Qualidade Técnica

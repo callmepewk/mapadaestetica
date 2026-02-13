@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { MapPin, ShieldCheck, Sparkles } from "lucide-react";
 import ImageWithLoader from "../common/ImageWithLoader";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 
 export default function HeroPremium() {
   return (
@@ -24,10 +26,16 @@ export default function HeroPremium() {
               Precisão geográfica, inteligência artificial e curadoria técnica rigorosa em uma experiência imersiva. Segurança, qualidade e dados que geram decisões.
             </p>
             <div className="flex flex-wrap gap-3 mt-6">
-              <Button className="bg-[#2C2C2C] text-[#F7D426] border-2 border-[#2C2C2C]">
-                <MapPin className="w-4 h-4 mr-2" /> Explorar no Mapa
-              </Button>
-              <Button variant="outline" className="border-2">
+              <Link to={createPageUrl("Mapa")}>
+                <Button className="bg-[#2C2C2C] text-[#F7D426] border-2 border-[#2C2C2C]">
+                  <MapPin className="w-4 h-4 mr-2" /> Explorar no Mapa
+                </Button>
+              </Link>
+              <Button
+                variant="outline"
+                className="border-2"
+                onClick={() => document.getElementById('validacao-qualidade')?.scrollIntoView({ behavior: 'smooth' })}
+              >
                 <ShieldCheck className="w-4 h-4 mr-2" /> Como validamos profissionais
               </Button>
             </div>

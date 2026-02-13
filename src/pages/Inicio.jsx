@@ -55,6 +55,9 @@ import {
 } from "@/components/ui/dialog";
 import BannerRotativo from "../components/banners/BannerRotativo";
 import PatrocinadoresGrid from "../components/home/PatrocinadoresGrid";
+import HeroPremium from "../components/home/HeroPremium";
+import AuthorityStrip from "../components/home/AuthorityStrip";
+import ValidationThreeSteps from "../components/home/ValidationThreeSteps";
 import FiltrosBuscaPaciente from "../components/home/FiltrosBuscaPaciente";
 import ModalFiltrosAvancados from "../components/home/ModalFiltrosAvancados";
 import CuriosidadesMes from "../components/home/CuriosidadesMes";
@@ -436,6 +439,13 @@ export default function Inicio() {
           👑 ADMIN MODE - Visão Atual: {visaoAtual?.toUpperCase()}
         </div>
       )}
+
+      {/* Netflix Experience - Hero + Autoridade + Validação */}
+      <div className="max-w-7xl mx-auto px-4 mt-6">
+        <HeroPremium />
+        <AuthorityStrip />
+        <ValidationThreeSteps />
+      </div>
 
       {/* VISÃO PACIENTE OU NÃO LOGADO */}
       {isPaciente && (
