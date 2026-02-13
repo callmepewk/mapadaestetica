@@ -8,6 +8,7 @@ import {
   MapPin,
   ArrowRight,
   Sparkles,
+  Instagram,
   Clock,
   Star,
   TrendingUp,
@@ -1281,12 +1282,8 @@ export default function Inicio() {
               className="group"
             >
               <Button size="lg" className="w-full sm:w-auto bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold shadow-xl flex items-center gap-3 border-2 border-white">
-                <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center bg-white">
-                  <img 
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe4/5391f7e6f_image.png" 
-                    alt="Instagram"
-                    className="w-6 h-6"
-                  />
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-white">
+                  <Instagram className="w-4 h-4 text-pink-600" />
                 </div>
                 <span>Seguir no Instagram</span>
               </Button>
