@@ -548,7 +548,7 @@ export default function Inicio() {
                 ))}
               </div>
             </div>
-          </section>
+          </motion.section>
 
           {/* Filtros compactos - acima do banner */}
           <div className="max-w-7xl mx-auto px-4 mt-4">
