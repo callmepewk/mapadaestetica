@@ -604,11 +604,7 @@ export default function Inicio() {
 
 
 
-          <div className="max-w-7xl mx-auto px-4 mt-6">
-            <HeroPremium />
-            <AuthorityStrip />
-            <ValidationThreeSteps />
-          </div>
+
 
           {/* Filtros compactos - acima do banner */}
           <div className="max-w-7xl mx-auto px-4 mt-4">
