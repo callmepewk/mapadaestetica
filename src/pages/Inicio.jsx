@@ -466,7 +466,7 @@ export default function Inicio() {
           </div>
 
           {/* Hero Section - MOBILE OPTIMIZED */}
-          <section
+          <motion.section initial={{opacity:0, y:20}} whileInView={{opacity:1, y:0}} viewport={{once:true}}
             className="relative text-white py-8 sm:py-12 md:py-16 lg:py-20 xl:py-32 overflow-hidden"
             style={{
               backgroundImage: "linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1560750588-73207b1ef5b8?w=1920&q=80')",
