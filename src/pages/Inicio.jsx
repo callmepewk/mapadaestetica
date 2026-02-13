@@ -1243,7 +1243,7 @@ export default function Inicio() {
               </CardContent>
             </Card>
 
-            <Card className="border-2 border-yellow-200 hover:border-yellow-400 transition-all hover:shadow-xl cursor-pointer">
+            {/* DermaHelp duplicado removido */
               <CardContent className="p-6">
                 <div className="flex items-center gap-4 mb-4">
                   <div className="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center overflow-hidden">
