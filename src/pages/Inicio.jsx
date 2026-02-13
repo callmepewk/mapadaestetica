@@ -944,11 +944,6 @@ export default function Inicio() {
             </section>
           )}
 
-          <div className="max-w-7xl mx-auto px-4 space-y-6">
-            <HeroPremium />
-            <AuthorityStrip />
-            <ValidationThreeSteps />
-          </div>
 
           <section className="py-8 bg-white">
             <div className="max-w-7xl mx-auto px-4 text-center">
