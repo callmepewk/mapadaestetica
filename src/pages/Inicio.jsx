@@ -966,7 +966,6 @@ export default function Inicio() {
             <div className="max-w-7xl mx-auto px-4 py-2 overflow-x-auto">
               <div className="flex gap-2 text-xs md:text-sm">
                 {[
-                  {id:'aesthetic-radar',label:'Aesthetic Radar'},
                   {id:'meus-anuncios',label:'Meus Anúncios'},
                   {id:'curiosidades-mes',label:'Curiosidades'},
                   {id:'tutorial',label:'Tutoriais'},
@@ -1193,29 +1192,6 @@ export default function Inicio() {
                 >
                   <Button className="w-full bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white">
                     Acessar Clube +
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </a>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2 border-yellow-200 hover:border-yellow-400 transition-all hover:shadow-xl cursor-pointer">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center overflow-hidden">
-                    <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/ecf42bf00_image.png" alt="DermaHelp" className="w-full h-full object-cover" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-900">DermaHelp</h3>
-                    <Badge className="mt-1 bg-yellow-100 text-yellow-800">Conteúdo e Dicas</Badge>
-                  </div>
-                </div>
-                <p className="text-gray-600 mb-4">
-                  Conteúdo educativo e apoio para cuidados com a pele e estética.
-                </p>
-                <a href="https://dermahelp.base44.app" target="_blank" rel="noopener noreferrer">
-                  <Button className="w-full bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white">
-                    Acessar DermaHelp
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </a>
