@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { createPageUrl } from "@/utils";
@@ -456,6 +456,22 @@ export default function Mapa() {
            matchTempoFormacao && matchProfissao && matchNivelVer && matchAvaliacao && matchModalidade &&
            matchAtendimento && matchCobranca && matchPatrocinado && matchDistancia && matchPublico;
   });
+
+  const anunciosOrdenados = useMemo(() => {
+    const arr = [...anunciosFiltrados];
+    if (ordenarPor === 'patrocinados') {
+      return arr.sort((a, b) => {
+        const aSponsored = (a.em_destaque || a.impulsionado || ['ouro','diamante','platina'].includes(a.plano)) ? 1 : 0;
+        const bSponsored = (b.em_destaque || b.impulsionado || ['ouro','diamante','platina'].includes(b.plano)) ? 1 : 0;
+        if (bSponsored !== aSponsored) return bSponsored - aSponsored;
+        return new Date(b.created_date) - new Date(a.created_date);
+      });
+    }
+    if (ordenarPor === 'relevancia') {
+      return arr.sort((a, b) => (b.visualizacoes || 0) - (a.visualizacoes || 0));
+    }
+    return arr.sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+  }, [anunciosFiltrados, ordenarPor]);
 
   // Calcular distâncias para estabelecimentos
   const estabelecimentosComDistancia = estabelecimentosFiltrados.map(est => {
