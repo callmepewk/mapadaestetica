@@ -449,11 +449,7 @@ export default function Inicio() {
       )}
 
       {/* Netflix Experience - Hero + Autoridade + Validação */}
-      <div className="max-w-7xl mx-auto px-4 mt-6">
-        <HeroPremium />
-        <AuthorityStrip />
-        <ValidationThreeSteps />
-      </div>
+
 
       {/* VISÃO PACIENTE OU NÃO LOGADO */}
       {isPaciente && (
@@ -621,11 +617,7 @@ export default function Inicio() {
             </div>
           </motion.section>
 
-          <div className="max-w-7xl mx-auto px-4 mt-6 space-y-6">
-            <HeroPremium />
-            <AuthorityStrip />
-            <ValidationThreeSteps />
-          </div>
+
 
           <div className="max-w-7xl mx-auto px-4 mt-6">
             <HeroPremium />
@@ -1067,28 +1059,7 @@ export default function Inicio() {
 
 
           {/* Proteção Civil para Profissionais (Beauty Safe) */}
-          <motion.section initial={{opacity:0, y:20}} whileInView={{opacity:1, y:0}} viewport={{once:true}} className="py-8">
-            <div className="max-w-7xl mx-auto px-4">
-              <div className="bg-white border-2 border-blue-200 rounded-2xl p-6 shadow flex flex-col md:flex-row items-center gap-6">
-                <div className="w-20 h-20 rounded-2xl bg-blue-100 flex items-center justify-center flex-shrink-0">
-                  <ShieldCheck className="w-10 h-10 text-blue-700" />
-                </div>
-                <div className="flex-1">
-                  <Badge className="mb-2 bg-blue-100 text-blue-800">Beauty Safe</Badge>
-                  <h2 className="text-2xl font-bold text-gray-900">Proteção Civil para Profissionais</h2>
-                  <p className="text-gray-700 mt-1">Contrate o Beauty Safe junto aos planos do Mapa da Estética (serviço à parte) e trabalhe com segurança jurídica.</p>
-                  <div className="mt-4 flex flex-wrap gap-3">
-                    <Button onClick={handleBeautySafeWhats} className="bg-green-600 hover:bg-green-700 text-white">
-                      <Phone className="w-4 h-4 mr-2" /> Falar no WhatsApp
-                    </Button>
-                    <Button variant="outline" onClick={handleBeautySafeSolicitar} className="border-2">
-                      Solicitar Beauty Safe
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.section>
+
 
           {/* Meus Anúncios (âncora) já existe abaixo */}
 

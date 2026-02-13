@@ -147,7 +147,7 @@ Responda de forma clara, objetiva e útil.`,
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
-            className="fixed bottom-6 right-6 z-50"
+            className="fixed bottom-20 sm:bottom-6 right-6 z-50"
           >
             <div className="relative group">
               {/* Tooltip - ESCONDIDO NO MOBILE */}
@@ -216,7 +216,7 @@ Responda de forma clara, objetiva e útil.`,
             />
 
             {/* Card do Chat */}
-            <Card className="relative sm:border-none shadow-2xl overflow-hidden rounded-t-2xl sm:rounded-2xl h-[70vh] sm:h-[65vh] md:h-[560px] flex flex-col">
+            <Card className="relative sm:border-none shadow-2xl overflow-hidden rounded-t-2xl sm:rounded-2xl h-[60vh] sm:h-[65vh] md:h-[560px] flex flex-col">
               {/* Header */}
               <div className="sticky top-0 z-10 bg-gradient-to-r from-[#F7D426] to-[#FFE066] p-4 flex items-center justify-between border-b-2 border-[#2C2C2C] flex-shrink-0">
                 <div className="flex items-center gap-3">
@@ -350,7 +350,7 @@ Responda de forma clara, objetiva e útil.`,
 
             {/* Overlay para fechar ao clicar fora - DESKTOP */}
             <div 
-              className="hidden sm:block fixed inset-0 -z-10"
+              className="hidden sm:block fixed inset-0 z-40 bg-transparent"
               onClick={() => setIsOpen(false)}
             />
           </motion.div>
