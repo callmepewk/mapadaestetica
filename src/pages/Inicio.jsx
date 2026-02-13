@@ -61,6 +61,7 @@ import ValidationThreeSteps from "../components/home/ValidationThreeSteps";
 import FiltrosBuscaPaciente from "../components/home/FiltrosBuscaPaciente";
 import ModalFiltrosAvancados from "../components/home/ModalFiltrosAvancados";
 import CuriosidadesMes from "../components/home/CuriosidadesMes";
+import RabiHomeTeaser from "../components/rabi/RabiHomeTeaser";
 import SecaoTutoriais from "../components/home/SecaoTutoriais";
 import SeletorTipoUsuario from "../components/home/SeletorTipoUsuario";
 
@@ -620,6 +621,11 @@ export default function Inicio() {
               </div>
             </div>
           </section>
+
+          {/* R.A.B.I Home Teaser */}
+          <div className="max-w-7xl mx-auto px-4">
+            <RabiHomeTeaser />
+          </div>
 
           {/* Marketplace + Dados Analíticos */}
           <section className="py-8">
