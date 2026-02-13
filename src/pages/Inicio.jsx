@@ -422,8 +422,13 @@ export default function Inicio() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className={`min-h-screen ${isProfissional ? 'theme-pro' : 'theme-paciente'}`}>
       <TermosCondicoes />
+      <style>{`
+        .theme-pro, .theme-paciente { background-color: var(--bg); color: var(--text); }
+        .theme-pro { --primary: #F7D426; --text: #2C2C2C; --bg: #ffffff; }
+        .theme-paciente { --primary: #F7D426; --text: #2C2C2C; --bg: #ffffff; }
+      `}</style>
       <OnboardingModal 
         open={mostrarOnboarding} 
         onComplete={handleOnboardingComplete}
