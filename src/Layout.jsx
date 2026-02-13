@@ -438,7 +438,7 @@ export default function Layout({ children }) {
                     <Link to={createPageUrl("CadastrarAnuncio")} className="hidden lg:block">
                       <Button className="bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold shadow-lg hover:shadow-xl transition-all duration-200 h-8 px-3 text-xs border-2 border-[#2C2C2C]">
                         <PlusCircle className="w-3 h-3 mr-1" />
-                        Anúncio
+                        Anunciar
                       </Button>
                     </Link>
                   )}
@@ -464,7 +464,7 @@ export default function Layout({ children }) {
                                                       </div>
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuContent align="end" className="w-56 max-h-80 overflow-y-auto">
                       <div className="px-2 py-2">
                         <p className="text-sm font-medium truncate">{user?.full_name}</p>
                         <p className="text-xs text-gray-500 truncate">{user?.email}</p>

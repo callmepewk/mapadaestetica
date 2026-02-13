@@ -246,6 +246,7 @@ export default function CadastrarAnuncio() {
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState(null);
   const [sucesso, setSucesso] = useState(false);
+  const [meusAnuncios, setMeusAnuncios] = useState([]);
 
   // Estados do formulário
   const [formData, setFormData] = useState({
@@ -1043,6 +1044,16 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
     setErro(null);
 
     try {
+      // Limite por plano (Pro=3, Prime=5)
+      const plano = user?.plano_ativo || '';
+      const limite = plano === 'pro' ? 3 : (plano === 'prime' ? 5 : Infinity);
+      const ativosOuPendentes = (meusAnuncios || []).filter(a => ['ativo','pendente','em_destaque','programado'].includes(a.status || '')); 
+      if (Number.isFinite(limite) && ativosOuPendentes.length >= limite) {
+        setErro(`Limite de anúncios atingido para o seu plano (${plano.toUpperCase()}): ${limite}. Exclua ou finalize algum anúncio para continuar.`);
+        setLoading(false);
+        return;
+      }
+
       // Montar endereço completo a partir dos campos separados
       const enderecoCompleto = [
         formData.rua,

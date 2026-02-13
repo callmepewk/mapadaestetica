@@ -641,9 +641,59 @@ export default function SobreNos() {
                   </a>
                 </CardContent>
               </Card>
-            </div>
 
-            {/* Info sobre os produtos */}
+              {/* DermaHelp */}
+              <Card className="border-2 border-teal-300 shadow-xl hover:shadow-2xl transition-all overflow-hidden">
+                <div className="h-48 bg-gradient-to-br from-teal-100 to-cyan-100 flex items-center justify-center p-6">
+                  <div className="text-center">
+                    <div className="text-6xl mb-2">🩺</div>
+                    <p className="font-bold text-2xl text-teal-900">DermaHelp</p>
+                  </div>
+                </div>
+                <CardContent className="p-6">
+                  <div className="mb-4">
+                    <Badge className="bg-teal-100 text-teal-800 mb-3">Para Pacientes</Badge>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-3">DermaHelp</h3>
+                    <p className="text-gray-600 mb-4">
+                      Central inteligente de dúvidas e orientação dermatológica, com conteúdo confiável e linguagem acessível.
+                    </p>
+                  </div>
+                  <a href="https://dermahelp.base44.app" target="_blank" rel="noopener noreferrer" className="block w-full">
+                    <Button className="w-full bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white">
+                      Acessar DermaHelp
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </a>
+                </CardContent>
+              </Card>
+
+              {/* Clube Mais */}
+              <Card className="border-2 border-rose-300 shadow-xl hover:shadow-2xl transition-all overflow-hidden">
+                <div className="h-48 bg-gradient-to-br from-rose-100 to-pink-100 flex items-center justify-center p-6">
+                  <div className="text-center">
+                    <div className="text-6xl mb-2">✨</div>
+                    <p className="font-bold text-2xl text-rose-900">Clube Mais</p>
+                  </div>
+                </div>
+                <CardContent className="p-6">
+                  <div className="mb-4">
+                    <Badge className="bg-rose-100 text-rose-800 mb-3">Para Profissionais</Badge>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-3">Clube Mais</h3>
+                    <p className="text-gray-600 mb-4">
+                      Plataforma complementar com ferramentas para gestão, relacionamento e crescimento do negócio.
+                    </p>
+                  </div>
+                  <a href="https://clube-mais.base44.app" target="_blank" rel="noopener noreferrer" className="block w-full">
+                    <Button className="w-full bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white">
+                      Acessar Clube Mais
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </a>
+                </CardContent>
+              </Card>
+              </div>
+
+              {/* Info sobre os produtos */}
             <Card className="mt-8 border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50">
               <CardContent className="p-8">
                 <div className="text-center">

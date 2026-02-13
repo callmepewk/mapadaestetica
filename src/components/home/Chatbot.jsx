@@ -207,7 +207,7 @@ Responda de forma clara, objetiva e útil.`,
             initial={{ opacity: 0, y: 100 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 100 }}
-            className="fixed inset-0 sm:inset-auto sm:bottom-6 sm:right-6 z-50 sm:w-[480px] sm:max-w-[calc(100vw-3rem)]"
+            className="fixed inset-0 sm:inset-auto sm:bottom-6 sm:right-6 z-50 w-full sm:w-[420px] md:w-[520px] sm:max-w-[calc(100vw-3rem)]"
           >
             {/* Overlay para fechar ao clicar fora - MOBILE */}
             <div 
@@ -216,7 +216,7 @@ Responda de forma clara, objetiva e útil.`,
             />
 
             {/* Card do Chat */}
-            <Card className="relative sm:border-none shadow-2xl overflow-hidden rounded-t-2xl sm:rounded-2xl h-[90vh] sm:h-[600px] flex flex-col">
+            <Card className="relative sm:border-none shadow-2xl overflow-hidden rounded-t-2xl sm:rounded-2xl h-[85vh] sm:h-[70vh] md:h-[600px] flex flex-col">
               {/* Header */}
               <div className="bg-gradient-to-r from-[#F7D426] to-[#FFE066] p-4 flex items-center justify-between border-b-2 border-[#2C2C2C] flex-shrink-0">
                 <div className="flex items-center gap-3">
