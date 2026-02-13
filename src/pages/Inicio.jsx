@@ -466,7 +466,7 @@ export default function Inicio() {
                 {' • '}
                 {agora.toLocaleTimeString('pt-BR')}
               </div>
-              <div className="text-pink-600 font-medium">Cuide de você hoje. O melhor momento é agora ✨</div>
+              <div className="text-[#F7D426] font-medium">Cuide de você hoje. O melhor momento é agora ✨</div>
             </div>
           </div>
 
@@ -759,7 +759,7 @@ export default function Inicio() {
           <BannerRotativo posicao="home_rodape" />
 
           {/* CTA Profissionais */}
-          <section className="py-12 sm:py-16 md:py-20 bg-gradient-to-r from-pink-600 to-rose-600 text-white">
+          <section className="py-12 sm:py-16 md:py-20 bg-[#2C2C2C] text-white">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
               <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 px-2">
                 Você é um profissional da estética?
@@ -768,7 +768,7 @@ export default function Inicio() {
                 Cadastre-se gratuitamente e comece a receber clientes hoje mesmo!
               </p>
               <Link to={createPageUrl("CadastrarAnuncio")}>
-                <Button size="lg" className="w-full sm:w-auto bg-white text-pink-600 hover:bg-gray-100 font-semibold shadow-xl">
+                <Button size="lg" className="w-full sm:w-auto bg-[#F7D426] text-[#2C2C2C] hover:bg-[#E5C215] font-semibold shadow-xl">
                   Cadastrar Meu Anúncio Grátis
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
@@ -789,7 +789,7 @@ export default function Inicio() {
                 {' • '}
                 {agora.toLocaleTimeString('pt-BR')}
               </div>
-              <div className="text-pink-600 font-medium">Seu trabalho transforma vidas — bora crescer hoje ✨</div>
+              <div className="text-[#F7D426] font-medium">Seu trabalho transforma vidas — bora crescer hoje ✨</div>
             </div>
           </div>
           {/* Hero imagem saúde/bem-estar */}
@@ -932,7 +932,7 @@ export default function Inicio() {
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Radares de Tendências e Frequência</h2>
               <p className="text-gray-600 mb-6">Veja as tendências do mercado e relatórios dos seus anúncios em tempo real.</p>
               <a href={createPageUrl("Radares")}>
-                <Button className="bg-pink-600 hover:bg-pink-700 text-white">Acessar R.A.B.I</Button>
+                <Button className="bg-[#2C2C2C] hover:bg-[#3A3A3A] text-[#F7D426] border-2 border-[#2C2C2C]">Acessar R.A.B.I</Button>
               </a>
             </div>
           </section>
