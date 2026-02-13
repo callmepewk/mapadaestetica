@@ -165,7 +165,7 @@ Responda de forma clara, objetiva e útil.`,
               {/* Botão com Imagem - BEM VISÍVEL NO MOBILE */}
               <button
                 onClick={() => setIsOpen(true)}
-                className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full shadow-2xl border-3 border-[#F7D426] overflow-hidden hover:scale-110 transition-transform duration-300 bg-[#F7D426]"
+                className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-2xl border-3 border-[#F7D426] overflow-hidden hover:scale-110 transition-transform duration-300 bg-[#F7D426]"
               >
                 <img
                   src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/ec64a4c52_drbeleza.png"
@@ -207,7 +207,7 @@ Responda de forma clara, objetiva e útil.`,
             initial={{ opacity: 0, y: 100 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 100 }}
-            className="fixed inset-0 sm:inset-auto sm:bottom-6 sm:right-6 z-50 w-full p-2 sm:p-0 sm:w-[380px] md:w-[460px] sm:max-w-[calc(100vw-3rem)]"
+            className="fixed inset-0 sm:inset-auto sm:bottom-6 sm:right-6 z-50 w-full p-2 sm:p-0 sm:w-[320px] md:w-[380px] sm:max-w-[calc(100vw-3rem)]"
           >
             {/* Overlay para fechar ao clicar fora - MOBILE */}
             <div 
@@ -216,7 +216,7 @@ Responda de forma clara, objetiva e útil.`,
             />
 
             {/* Card do Chat */}
-            <Card className="relative sm:border-none shadow-2xl overflow-hidden rounded-t-2xl sm:rounded-2xl h-[60vh] sm:h-[65vh] md:h-[560px] flex flex-col">
+            <Card className="relative sm:border-none shadow-2xl overflow-hidden rounded-t-2xl sm:rounded-2xl h-[56vh] sm:h-[58vh] md:h-[480px] flex flex-col">
               {/* Header */}
               <div className="sticky top-0 z-10 bg-gradient-to-r from-[#F7D426] to-[#FFE066] p-4 flex items-center justify-between border-b-2 border-[#2C2C2C] flex-shrink-0">
                 <div className="flex items-center gap-3">

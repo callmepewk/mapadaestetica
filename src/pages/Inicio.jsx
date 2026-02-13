@@ -64,6 +64,7 @@ import ValidationThreeSteps from "../components/home/ValidationThreeSteps";
 import FiltrosBuscaPaciente from "../components/home/FiltrosBuscaPaciente";
 import ModalFiltrosAvancados from "../components/home/ModalFiltrosAvancados";
 import CuriosidadesMes from "../components/home/CuriosidadesMes";
+import PlannerWellnessPromo from "../components/home/PlannerWellnessPromo";
 
 import RabiHomeTeaser from "../components/rabi/RabiHomeTeaser";
 import SecaoTutoriais from "../components/home/SecaoTutoriais";
@@ -851,7 +852,7 @@ export default function Inicio() {
           <section className="relative py-10 md:py-14 bg-white">
             <div className="max-w-7xl mx-auto px-4">
               <div className="relative overflow-hidden rounded-2xl shadow-xl">
-                <img src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=1600&q=80" alt="Saúde e bem-estar" className="w-full h-40 md:h-56 object-cover" />
+                <img src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=1600&q=80" alt="Saúde e bem-estar" className="w-full h-32 md:h-44 object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent"></div>
                 <div className="absolute left-6 top-6 text-white">
                   <p className="text-xs md:text-sm mb-1">Bem-vindo, profissional</p>
@@ -1133,9 +1134,11 @@ export default function Inicio() {
             </Link>
           </div>
         </div>
-      </section>
+        </section>
 
-      {/* ECOSSISTEMA - AMBOS */}
+        {isProfissional && (<PlannerWellnessPromo audience="pro" />)}
+
+        {/* ECOSSISTEMA - AMBOS */
       <section className="py-12 sm:py-16 bg-gradient-to-br from-purple-50 via-pink-50 to-yellow-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-8 sm:mb-12">

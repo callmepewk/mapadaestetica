@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Star, Check, ArrowRight, Shield, Upload, Loader2, MessageCircle } from "lucide-react";
+import CheckinCalendario from "../components/hub/CheckinCalendario";
+import JogosPontos from "../components/hub/JogosPontos";
 import { Slider } from "@/components/ui/slider";
 import ChatPedido from "../components/chat/ChatPedido";
 
@@ -122,6 +124,23 @@ export default function HubPontos() {
   const plan = user?.plano_ativo || 'cobre';
   const pontosPorAtendimento = PLAN_POINTS[plan] ?? 5;
 
+  const awardPoints = async (pts) => {
+    const atualSaldo = user?.pontos_saldo ?? user?.pontos_acumulados ?? 0;
+    const atualAcum = user?.pontos_acumulados ?? 0;
+    await base44.auth.updateMe({ pontos_saldo: atualSaldo + pts, pontos_acumulados: atualAcum + pts });
+    try { const me = await base44.auth.me(); setUser(me); } catch {}
+  };
+
+  const handleCheckinHoje = async () => {
+    const hoje = new Date().toISOString().slice(0,10);
+    const lista = Array.isArray(user?.wellness_checkins) ? [...user.wellness_checkins] : [];
+    if (lista.includes(hoje)) return;
+    lista.push(hoje);
+    await base44.auth.updateMe({ wellness_checkins: lista });
+    await awardPoints(5);
+    alert('Check-in realizado! +5 pontos.');
+  };
+
   const handleRegistrar = async () => {
     if (!clienteEmail || !clienteNome) { alert('Informe nome e email do cliente.'); return; }
     setSalvando(true);
@@ -183,6 +202,11 @@ export default function HubPontos() {
             <Star className="w-4 h-4 text-amber-500"/>
             <div className="text-sm">Pontos por atendimento no seu plano: <span className="font-bold">+{pontosPorAtendimento}</span></div>
           </div>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-4 mb-6">
+          <CheckinCalendario user={user} onCheckin={handleCheckinHoje} />
+          <JogosPontos onAward={async (pts)=>{ await awardPoints(pts); alert(`Pontos adicionados: +${pts}`); }} />
         </div>
 
         <div className="flex items-center gap-3 mb-6">

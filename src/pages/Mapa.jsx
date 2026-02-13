@@ -270,6 +270,8 @@ export default function Mapa() {
   const [bairroMapa, setBairroMapa] = useState("");
   const [filtroCategoria, setFiltroCategoria] = useState("");
   const [filtroPlano, setFiltroPlano] = useState("");
+  const [estadoMapa, setEstadoMapa] = useState("");
+  const [distanciaMapa, setDistanciaMapa] = useState("999999");
 
   // Query estabelecimentos
   const { data: estabelecimentos = [], isLoading: isLoadingEstabelecimentos } = useQuery({
@@ -403,8 +405,9 @@ export default function Mapa() {
     const matchBairroMapa = !bairroMapa || (est.bairro && est.bairro.toLowerCase().includes(bairroMapa.toLowerCase())) || (est.endereco && est.endereco.toLowerCase().includes(bairroMapa.toLowerCase()));
     const matchCategoria = !filtroCategoria || est.categoria === filtroCategoria;
     const matchPlano = !filtroPlano || est.plano_desconto === filtroPlano;
+    const matchEstado = !estadoMapa || (est.estado && est.estado.toUpperCase() === estadoMapa.toUpperCase());
     
-    return matchCidade && matchBairroMapa && matchCategoria && matchPlano;
+    return matchCidade && matchBairroMapa && matchCategoria && matchPlano && matchEstado;
   });
 
   // Filtrar anúncios
@@ -509,7 +512,11 @@ export default function Mapa() {
     return { ...est, distancia };
   });
 
-  const estabelecimentosOrdenados = [...estabelecimentosComDistancia].sort((a, b) => {
+  const estabelecimentosFiltradosComDist = estabelecimentosComDistancia.filter(est => {
+    if (distanciaMapa === '999999' || est.distancia === null) return true;
+    return est.distancia <= parseInt(distanciaMapa);
+  });
+  const estabelecimentosOrdenados = [...estabelecimentosFiltradosComDist].sort((a, b) => {
     if (a.distancia === null) return 1;
     if (b.distancia === null) return -1;
     return a.distancia - b.distancia;
@@ -590,7 +597,7 @@ export default function Mapa() {
             </TabsTrigger>
             <TabsTrigger value="mapa" className="flex items-center gap-2">
               <MapPin className="w-4 h-4" />
-              Mapa da Estética ({estabelecimentosFiltrados.length})
+              Mapa da Estética ({estabelecimentosFiltradosComDist.length})
             </TabsTrigger>
           </TabsList>
 
@@ -977,7 +984,7 @@ export default function Mapa() {
           <TabsContent value="mapa">
             {/* Filtros do Mapa */}
             <div className="bg-white border rounded-lg shadow-sm mb-6 p-4">
-              <div className="grid md:grid-cols-5 gap-4">
+              <div className="grid md:grid-cols-6 gap-4">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <Input
@@ -1021,6 +1028,24 @@ export default function Mapa() {
                     <SelectItem value="light">💙 LIGHT (10%)</SelectItem>
                     <SelectItem value="gold">💛 GOLD (15%)</SelectItem>
                     <SelectItem value="vip">💜 VIP (25%)</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select value={estadoMapa} onValueChange={setEstadoMapa}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="UF" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {estados.map((uf)=>(<SelectItem key={uf} value={uf}>{uf}</SelectItem>))}
+                  </SelectContent>
+                </Select>
+
+                <Select value={distanciaMapa} onValueChange={setDistanciaMapa}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Distância" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {faixasDistancia.map((fa)=>(<SelectItem key={fa.valor} value={fa.valor}>{fa.label}</SelectItem>))}
                   </SelectContent>
                 </Select>
 
