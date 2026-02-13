@@ -1004,22 +1004,7 @@ export default function Inicio() {
 
           <section id="curiosidades-mes" className="py-12 bg-white">
             <div className="max-w-7xl mx-auto px-4">
-              <div className="grid md:grid-cols-2 gap-4 mb-6">
-                <div className="overflow-hidden rounded-2xl shadow-lg">
-                  <img
-                    src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=1600&q=80"
-                    alt="Inspiração em estética e bem-estar"
-                    className="w-full h-64 md:h-80 object-cover"
-                  />
-                </div>
-                <div className="overflow-hidden rounded-2xl shadow-lg">
-                  <img
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/edec9f039_image.png"
-                    alt="Mapa da Estética - Destaque"
-                    className="w-full h-64 md:h-80 object-cover"
-                  />
-                </div>
-              </div>
+
               <CuriosidadesMes />
             </div>
           </section>
