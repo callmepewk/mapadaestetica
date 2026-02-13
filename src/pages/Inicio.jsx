@@ -62,7 +62,7 @@ import ValidationThreeSteps from "../components/home/ValidationThreeSteps";
 import FiltrosBuscaPaciente from "../components/home/FiltrosBuscaPaciente";
 import ModalFiltrosAvancados from "../components/home/ModalFiltrosAvancados";
 import CuriosidadesMes from "../components/home/CuriosidadesMes";
-import AestheticRadar from "../components/analytics/AestheticRadar";
+
 import RabiHomeTeaser from "../components/rabi/RabiHomeTeaser";
 import SecaoTutoriais from "../components/home/SecaoTutoriais";
 import SeletorTipoUsuario from "../components/home/SeletorTipoUsuario";
