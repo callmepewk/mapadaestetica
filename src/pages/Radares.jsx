@@ -19,6 +19,9 @@ import { useQueryClient } from "@tanstack/react-query";
 export default function Radares() {
   const [user, setUser] = useState(null);
   const [reportOpen, setReportOpen] = useState(false);
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportSections, setReportSections] = useState([]);
+  const [reportSummary, setReportSummary] = useState('');
   useEffect(() => { (async () => { try { setUser(await base44.auth.me()); } catch {} })(); }, []);
   const queryClient = useQueryClient();
   useEffect(() => {
@@ -29,6 +32,67 @@ export default function Radares() {
     ];
     return () => unsubs.forEach(u=>{ try { u(); } catch {} });
   }, [queryClient]);
+
+  const getPlanTierFromUser = (u) => {
+    const p = (u?.plano || u?.plano_assinatura || u?.assinatura_plano || '').toLowerCase();
+    if (['prime','premium','platina','diamante'].includes(p)) return 'prime';
+    if (['pro','ouro'].includes(p)) return 'pro';
+    return 'free';
+  };
+
+  const handleGenerateReport = async () => {
+    setReportOpen(true);
+    setReportLoading(true);
+    try {
+      const [anunciosAll, searchEvents] = await Promise.all([
+        base44.entities.Anuncio.filter({ status: 'ativo' }, '-created_date', 500),
+        base44.entities.SearchEvent.list('-created_date', 500)
+      ]);
+
+      const now = new Date();
+      const past30 = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      const se30 = (searchEvents || []).filter(ev => ev.created_date ? new Date(ev.created_date) >= past30 : true);
+
+      const qMap = {};
+      se30.forEach(ev => {
+        const q = (ev.query || '').trim().toLowerCase();
+        if (!q) return;
+        qMap[q] = (qMap[q] || 0) + 1;
+      });
+      const trending = Object.entries(qMap).sort((a,b)=>b[1]-a[1]).map(([q,c])=>`${q} (${c})`);
+
+      const catMap = {};
+      (anunciosAll || []).forEach(a => {
+        const c = a.categoria || 'N/D';
+        catMap[c] = (catMap[c] || 0) + 1;
+      });
+      const cats = Object.entries(catMap).sort((a,b)=>b[1]-a[1]).map(([c,n])=>`${c}: ${n}`);
+
+      const cityMap = {};
+      (anunciosAll || []).forEach(a => {
+        const city = a.cidade || 'N/D';
+        cityMap[city] = (cityMap[city] || 0) + 1;
+      });
+      const cities = Object.entries(cityMap).sort((a,b)=>b[1]-a[1]).map(([c,n])=>`${c}: ${n}`);
+
+      const plan = getPlanTierFromUser(user);
+      const limit = plan === 'free' ? 3 : plan === 'pro' ? 5 : 10;
+
+      const sections = [
+        { title: 'Tendências — Consultas (30 dias)', items: trending.slice(0, limit) },
+        { title: 'Adoção por Categoria', items: cats.slice(0, limit) },
+        { title: 'Cidades com Maior Oferta', items: cities.slice(0, limit) }
+      ];
+
+      setReportSections(sections);
+      setReportSummary(`Resumo R.A.B.I: ${trending.slice(0,3).map(s=>s.split(' (')[0]).join(', ')}; categorias líderes: ${cats.slice(0,3).map(s=>s.split(':')[0]).join(', ')}.`);
+    } catch (e) {
+      setReportSections([]);
+      setReportSummary('Não foi possível gerar o relatório agora. Tente novamente em instantes.');
+    } finally {
+      setReportLoading(false);
+    }
+  };
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
       <div className="max-w-7xl mx-auto px-4 space-y-8">
@@ -37,7 +101,7 @@ export default function Radares() {
         <RabiExplainer />
 
         <div className="mt-4 flex flex-wrap gap-3">
-          <Button className="bg-[#2C2C2C] text-[#F7D426] border-2 border-[#2C2C2C]" onClick={() => setReportOpen(true)}>
+          <Button className="bg-[#2C2C2C] text-[#F7D426] border-2 border-[#2C2C2C]" onClick={handleGenerateReport}>
             Gerar Relatório (PDF / E-mail)
           </Button>
         </div>
@@ -87,7 +151,9 @@ export default function Radares() {
         open={reportOpen}
         onClose={() => setReportOpen(false)}
         userEmail={user?.email}
-        summary={"Leitura estratégica (parcial): tendências emergentes por categoria, sazonalidade esperada, padrões de recorrência e sinais de conversão baseados no uso da plataforma. Para diagnóstico completo, solicite nossa consultoria especializada."}
+        summary={reportSummary}
+        sections={reportSections}
+        loading={reportLoading}
       />
       </div>
       </div>
