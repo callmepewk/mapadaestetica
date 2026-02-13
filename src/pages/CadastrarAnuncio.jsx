@@ -374,6 +374,14 @@ export default function CadastrarAnuncio() {
           complemento: userData.complemento || "",
           cep: userData.cep || ""
         }));
+
+        // Carregar anúncios do usuário p/ validar limites por plano
+        try {
+          const lista = await base44.entities.Anuncio.filter({ created_by: userData.email }, '-created_date', 500);
+          setMeusAnuncios(lista || []);
+        } catch (e) {
+          console.error("Erro ao buscar anúncios do usuário:", e);
+        }
       } catch (error) {
         base44.auth.redirectToLogin(window.location.pathname);
       }
