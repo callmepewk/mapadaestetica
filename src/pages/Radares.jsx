@@ -14,6 +14,8 @@ import RealtimeStats from "../components/pro/RealtimeStats";
 import { Button } from "@/components/ui/button";
 import RabiExpandableCard from "../components/rabi/RabiExpandableCard";
 import RabiReportModal from "../components/rabi/RabiReportModal";
+import RabiGAUploader from "../components/rabi/RabiGAUploader";
+import RabiTrendsChart from "../components/rabi/RabiTrendsChart";
 import { useQueryClient } from "@tanstack/react-query";
 
 export default function Radares() {
@@ -22,6 +24,9 @@ export default function Radares() {
   const [reportLoading, setReportLoading] = useState(false);
   const [reportSections, setReportSections] = useState([]);
   const [reportSummary, setReportSummary] = useState('');
+  const [gaTrends, setGaTrends] = useState({ gaMetrics: [], trendsSeries: [] });
+  const [alertsOn, setAlertsOn] = useState(false);
+  const [schedule, setSchedule] = useState('mensal');
   useEffect(() => { (async () => { try { setUser(await base44.auth.me()); } catch {} })(); }, []);
   const queryClient = useQueryClient();
   useEffect(() => {
@@ -93,12 +98,72 @@ export default function Radares() {
       setReportLoading(false);
     }
   };
+
+  const handleExternalData = (res) => {
+    setGaTrends(res || { gaMetrics: [], trendsSeries: [] });
+  };
+
+  const toggleAlerts = async () => {
+    setAlertsOn(prev => !prev);
+    try { if (user) await base44.auth.updateMe({ rabi_alertas: !alertsOn }); } catch {}
+  };
+  const setSchedulePref = async (s) => {
+    setSchedule(s);
+    try { if (user) await base44.auth.updateMe({ rabi_agendamento: s }); } catch {}
+  };
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
       <div className="max-w-7xl mx-auto px-4 space-y-8">
         <RabiHero />
         <RabiMicrocopyStrip />
         <RabiExplainer />
+
+        <RabiSection title="Integrações — GA4 e Google Trends" subtitle="Importe CSVs para cruzar dados de tráfego e interesse com leituras internas do R.A.B.I.">
+          <div className="space-y-4">
+            <RabiGAUploader onData={handleExternalData} />
+            {(gaTrends.gaMetrics.length > 0 || gaTrends.trendsSeries.length > 0) && (
+              <div className="space-y-4">
+                <RabiTrendsChart gaMetrics={gaTrends.gaMetrics} trendsSeries={gaTrends.trendsSeries} />
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="rounded-lg border bg-white p-4">
+                    <h4 className="font-semibold mb-2">Top GA4 (views)</h4>
+                    <ul className="list-disc pl-5 text-sm">
+                      {gaTrends.gaMetrics
+                        .slice()
+                        .sort((a,b)=> (b.views||0)-(a.views||0))
+                        .slice(0,5)
+                        .map((r,i)=> (<li key={i}>{r.date}: {r.views} views</li>))}
+                    </ul>
+                  </div>
+                  <div className="rounded-lg border bg-white p-4">
+                    <h4 className="font-semibold mb-2">Top Trends (interesse)</h4>
+                    <ul className="list-disc pl-5 text-sm">
+                      {gaTrends.trendsSeries
+                        .slice()
+                        .sort((a,b)=> (b.value||0)-(a.value||0))
+                        .slice(0,5)
+                        .map((r,i)=> (<li key={i}>{r.term || 'Termo'} — {r.date}: {r.value}</li>))}
+                    </ul>
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button variant={alertsOn ? 'default' : 'outline'} size="sm" onClick={toggleAlerts}>
+                    {alertsOn ? 'Alertas ativados' : 'Ativar alertas'}
+                  </Button>
+                  <div className="flex items-center gap-1 text-sm">
+                    <span>Agendar:</span>
+                    {['diario','semanal','mensal'].map(s => (
+                      <Button key={s} size="sm" variant={schedule===s? 'default':'outline'} onClick={()=>setSchedulePref(s)}>
+                        {s.charAt(0).toUpperCase()+s.slice(1)}
+                      </Button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-500">Agendamento automático requer backend functions habilitado.</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </RabiSection>
 
         <div className="mt-4 flex flex-wrap gap-3">
           <Button className="bg-[#2C2C2C] text-[#F7D426] border-2 border-[#2C2C2C]" onClick={handleGenerateReport}>

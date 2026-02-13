@@ -241,6 +241,7 @@ export default function Mapa() {
   const [atendimento, setAtendimento] = useState(""); // domicilio|clinica
   const [atendimentoCobranca, setAtendimentoCobranca] = useState(""); // convenio|particular
   const [patrocinadoOnly, setPatrocinadoOnly] = useState(false);
+  const [ordenarPor, setOrdenarPor] = useState('recentes');
 
   // Filtros para Mapa (Estabelecimentos)
   const [buscaCidade, setBuscaCidade] = useState("");
@@ -859,8 +860,8 @@ export default function Mapa() {
 
             {/* Lista de Anúncios */}
             <div className="mb-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
+              <div className="flex items-center justify-between mb-2">
+                 <div className="flex items-center gap-3">
                   <Button
                     onClick={handleUsarMinhaLocalizacao}
                     disabled={buscandoLocalizacao}
@@ -892,6 +893,19 @@ export default function Mapa() {
                 </div>
               </div>
 
+              {/* CTA Destaque */}
+              <Card className="mb-4 border-2 border-amber-200 bg-amber-50">
+                <CardContent className="p-4 flex items-center justify-between gap-3 flex-wrap">
+                  <div>
+                    <p className="font-semibold text-amber-900">Impulsione seu anúncio e apareça no topo</p>
+                    <p className="text-sm text-amber-800">Patrocinados ganham destaque e mais cliques</p>
+                  </div>
+                  <Button onClick={() => window.location.href = isProfissional ? createPageUrl('CadastrarAnuncio') : createPageUrl('Planos')} className="bg-amber-600 hover:bg-amber-700">
+                    {isProfissional ? 'Criar Anúncio' : 'Ver Planos'}
+                  </Button>
+                </CardContent>
+              </Card>
+
               {isLoadingAnuncios ? (
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {[...Array(6)].map((_,i)=> (
@@ -909,7 +923,7 @@ export default function Mapa() {
                 </div>
               ) : (
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 transition-opacity duration-300">
-                  {anunciosFiltrados.map((anuncio) => {
+                  {anunciosOrdenados.map((anuncio) => {
                     const isSponsored = !!anuncio.em_destaque || !!anuncio.impulsionado || ['ouro','diamante','platina'].includes(anuncio.plano);
                     return (
                       <CardAnuncio key={anuncio.id} anuncio={anuncio} destaque={isSponsored} />

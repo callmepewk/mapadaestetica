@@ -56,7 +56,7 @@ export default function RabiGAUploader({ onData }) {
       }
 
       onData && onData(result);
-      alert("Dados processados! Você pode visualizar os gráficos abaixo.");
+      // no alert to keep UX smooth
     } finally {
       setLoading(false);
     }

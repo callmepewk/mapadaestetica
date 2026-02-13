@@ -369,6 +369,23 @@ www.mapadaestetica.com.br
     return mensagem;
   };
 
+  const handleEnviarRelatorioEmail = async () => {
+    try {
+      const to = user?.email;
+      if (!to) { alert('Entre para enviar por e-mail.'); return; }
+      const body = `Relatório de Performance (${periodoRelatorio.toUpperCase()})\n\n` +
+        `Visualizações: ${totalVisualizacoesBanners}\n` +
+        `Cliques: ${totalCliquesBanners}\n` +
+        `CTR: ${totalVisualizacoesBanners>0?((totalCliquesBanners/totalVisualizacoesBanners)*100).toFixed(2):0}%\n` +
+        `Compartilhamentos: ${totalCompartilhamentos}\n` +
+        `Conversões: ${totalConversoes}`;
+      await base44.integrations.Core.SendEmail({ to, subject: 'Relatório de Performance — Mapa da Estética', body });
+      alert('Relatório enviado ao seu e-mail.');
+    } catch (e) {
+      alert('Não foi possível enviar agora.');
+    }
+  };
+
   const handleEnviarWhatsApp = () => {
     if (!numeroWhatsApp) {
       alert("Digite o número do WhatsApp");
@@ -1170,6 +1187,15 @@ www.mapadaestetica.com.br
                     >
                       <Download className="w-3 h-3 mr-1.5" />
                       Exportar PDF
+                    </Button>
+                    <Button
+                      onClick={handleEnviarRelatorioEmail}
+                      variant="outline"
+                      size="sm"
+                      className="w-full sm:w-auto h-9 text-xs sm:text-sm"
+                    >
+                      <Send className="w-3 h-3 mr-1.5" />
+                      Enviar E-mail
                     </Button>
                     <Button
                       onClick={() => setMostrarExportWhatsApp(true)}
