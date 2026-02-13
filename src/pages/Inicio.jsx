@@ -44,6 +44,7 @@ import Tutorial from "../components/home/Tutorial";
 import { CardContent } from "@/components/ui/card";
 import CalculadoraLaserSection from "../components/home/CalculadoraLaserSection";
 import AgendamentoModal from "../components/produtos/AgendamentoModal";
+import { motion } from "framer-motion";
 
 import OnboardingModal from "../components/home/OnboardingModal";
 import LoginPromptModal from "../components/home/LoginPromptModal";
@@ -61,6 +62,7 @@ import ValidationThreeSteps from "../components/home/ValidationThreeSteps";
 import FiltrosBuscaPaciente from "../components/home/FiltrosBuscaPaciente";
 import ModalFiltrosAvancados from "../components/home/ModalFiltrosAvancados";
 import CuriosidadesMes from "../components/home/CuriosidadesMes";
+import AestheticRadar from "../components/analytics/AestheticRadar";
 import RabiHomeTeaser from "../components/rabi/RabiHomeTeaser";
 import SecaoTutoriais from "../components/home/SecaoTutoriais";
 import SeletorTipoUsuario from "../components/home/SeletorTipoUsuario";
@@ -622,28 +624,9 @@ export default function Inicio() {
             </div>
           </section>
 
-          {/* R.A.B.I Home Teaser */}
-          <div className="max-w-7xl mx-auto px-4">
-            <RabiHomeTeaser />
-          </div>
 
-          {/* Marketplace + Dados Analíticos */}
-          <section className="py-8">
-            <div className="max-w-7xl mx-auto px-4">
-              <div className="bg-white border-2 border-yellow-200 rounded-2xl p-6 shadow">
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Mapa da Estética: marketplace com dados analíticos</h2>
-                <p className="text-gray-700 mb-3">
-                  Somos um marketplace especializado em estética, com inteligência e dados analíticos para profissionais: acompanhe tendências, buscas e desempenho, e conecte-se a pacientes e parceiros.
-                </p>
-                <p className="text-gray-700 mb-3">
-                  Profissionais podem anunciar <strong>equipamentos e produtos</strong> no Mapa da Estética: publique na página <strong>Produtos</strong> ou venda via <strong>Hub/Loja de Pontos</strong> e alcance mais clientes.
-                </p>
-                <p className="text-gray-700">
-                  Oferecemos também um formato de <strong>dropshipping</strong>: o fornecedor envia direto ao cliente e nosso site atua como <em>intermediário</em>, simplificando operação e ampliando repertório de itens.
-                </p>
-              </div>
-            </div>
-          </section>
+
+
 
 
 
@@ -720,61 +703,10 @@ export default function Inicio() {
           {/* Banner Rotativo Meio */}
           <BannerRotativo posicao="home_meio" />
 
-          {/* Barra de navegação por seções */}
-          <div className="sticky top-[60px] z-40 bg-white/80 backdrop-blur border-b">
-            <div className="max-w-7xl mx-auto px-4 py-2 overflow-x-auto">
-              <div className="flex gap-2 text-xs md:text-sm">
-                {[
-                          {id:'aesthetic-radar',label:'Aesthetic Radar'},
-                          {id:'meus-anuncios',label:'Meus Anúncios'},
-                          {id:'curiosidades-mes',label:'Curiosidades'},
-                          {id:'tutorial',label:'Tutoriais'},
-                        ].map(i => (
-                          <button key={i.id} onClick={()=>document.getElementById(i.id)?.scrollIntoView({behavior:'smooth'})} className="px-3 py-1 rounded-full border data-[active=true]:bg-pink-600 data-[active=true]:text-white hover:bg-pink-50" data-active={false}>{i.label}</button>
-                        ))}
-              </div>
-            </div>
-          </div>
+
 
           {/* Anúncios em Destaque */}
-          {anunciosDestaque.length > 0 && (
-            <section className="py-12 sm:py-16 bg-white">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6">
-                <div className="text-center mb-8 sm:mb-12">
-                  <Badge className="mb-4 bg-purple-100 text-purple-800">
-                    ⭐ Profissionais em Destaque
-                  </Badge>
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <Star className="w-5 h-5 sm:w-6 sm:h-6 text-[#F7D426]" />
-                    <span className="text-xs sm:text-sm font-semibold text-[#F7D426] uppercase tracking-wide">
-                      Exemplos de Sucesso
-                    </span>
-                  </div>
-                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 px-2">
-                    Veja Como Profissionais Se Destacam
-                  </h2>
-                  <p className="text-gray-600 text-base sm:text-lg px-4">
-                    Conheça profissionais de sucesso que usam nossa plataforma
-                  </p>
-                </div>
 
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                  {anunciosDestaque.slice(0, 6).map((anuncio) => (
-                    <CardAnuncio key={anuncio.id} anuncio={anuncio} destaque={true} />
-                  ))}
-                </div>
-
-                <div className="text-center mt-8">
-                  <Link to={createPageUrl("Anuncios")}>
-                    <Button size="lg" variant="outline" className="border-2 border-pink-600 text-pink-600 hover:bg-pink-50">
-                      Ver Todos os Anúncios
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </section>
-          )}
 
           {/* Dr da Beleza */}
           <section className="py-8 bg-gradient-to-r from-[#F7D426] to-[#FFE066]">
@@ -1000,6 +932,113 @@ export default function Inicio() {
             </div>
           </section>
 
+          {/* Navegação rápida (somente profis) */}
+          <div className="sticky top-[60px] z-40 bg-white/80 backdrop-blur border-b">
+            <div className="max-w-7xl mx-auto px-4 py-2 overflow-x-auto">
+              <div className="flex gap-2 text-xs md:text-sm">
+                {[
+                  {id:'aesthetic-radar',label:'Aesthetic Radar'},
+                  {id:'meus-anuncios',label:'Meus Anúncios'},
+                  {id:'curiosidades-mes',label:'Curiosidades'},
+                  {id:'tutorial',label:'Tutoriais'},
+                ].map(i => (
+                  <button key={i.id} onClick={()=>document.getElementById(i.id)?.scrollIntoView({behavior:'smooth'})} className="px-3 py-1 rounded-full border hover:bg-[#FFF9E6]" data-active={false}>{i.label}</button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Centro de Inteligência Estratégica (R.A.B.I) */}
+          <motion.section initial={{opacity:0, y:20}} whileInView={{opacity:1, y:0}} viewport={{once:true}} className="py-8">
+            <div className="max-w-7xl mx-auto px-4">
+              <div className="bg-white border-2 border-[#F7D426] rounded-2xl p-6 shadow">
+                <RabiHomeTeaser />
+              </div>
+            </div>
+          </motion.section>
+
+          {/* Marketplace com dados analíticos */}
+          <motion.section initial={{opacity:0, y:20}} whileInView={{opacity:1, y:0}} viewport={{once:true}} className="py-8">
+            <div className="max-w-7xl mx-auto px-4">
+              <div className="bg-white border-2 border-[#2C2C2C] rounded-2xl p-6 shadow">
+                <h2 className="text-2xl font-bold text-[#2C2C2C] mb-2">Mapa da Estética: marketplace com dados analíticos</h2>
+                <p className="text-gray-700 mb-3">Somos um marketplace especializado em estética, com inteligência e dados analíticos para profissionais: acompanhe tendências, buscas e desempenho, e conecte-se a pacientes e parceiros.</p>
+                <p className="text-gray-700 mb-3">Profissionais podem anunciar <strong>equipamentos e produtos</strong> no Mapa da Estética: publique na página <strong>Produtos</strong> ou venda via <strong>Hub/Loja de Pontos</strong> e alcance mais clientes.</p>
+                <p className="text-gray-700">Oferecemos também um formato de <strong>dropshipping</strong>: o fornecedor envia direto ao cliente e nosso site atua como <em>intermediário</em>, simplificando operação e ampliando repertório de itens.</p>
+              </div>
+            </div>
+          </motion.section>
+
+          {/* Aesthetic Radar */}
+          <motion.section id="aesthetic-radar" initial={{opacity:0, y:20}} whileInView={{opacity:1, y:0}} viewport={{once:true}} className="py-8 bg-white">
+            <div className="max-w-7xl mx-auto px-4">
+              <AestheticRadar />
+            </div>
+          </motion.section>
+
+          {/* Proteção Civil para Profissionais (Beauty Safe) */}
+          <motion.section initial={{opacity:0, y:20}} whileInView={{opacity:1, y:0}} viewport={{once:true}} className="py-8">
+            <div className="max-w-7xl mx-auto px-4">
+              <div className="bg-white border-2 border-blue-200 rounded-2xl p-6 shadow flex flex-col md:flex-row items-center gap-6">
+                <div className="w-20 h-20 rounded-2xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+                  <ShieldCheck className="w-10 h-10 text-blue-700" />
+                </div>
+                <div className="flex-1">
+                  <Badge className="mb-2 bg-blue-100 text-blue-800">Beauty Safe</Badge>
+                  <h2 className="text-2xl font-bold text-gray-900">Proteção Civil para Profissionais</h2>
+                  <p className="text-gray-700 mt-1">Contrate o Beauty Safe junto aos planos do Mapa da Estética (serviço à parte) e trabalhe com segurança jurídica.</p>
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    <Button onClick={handleBeautySafeWhats} className="bg-green-600 hover:bg-green-700 text-white">
+                      <Phone className="w-4 h-4 mr-2" /> Falar no WhatsApp
+                    </Button>
+                    <Button variant="outline" onClick={handleBeautySafeSolicitar} className="border-2">
+                      Solicitar Beauty Safe
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.section>
+
+          {/* Meus Anúncios (âncora) já existe abaixo */}
+
+          {/* Curiosidades (profissional) */}
+          <motion.section id="curiosidades-mes" initial={{opacity:0, y:20}} whileInView={{opacity:1, y:0}} viewport={{once:true}} className="py-12 bg-white">
+            <div className="max-w-7xl mx-auto px-4">
+              <CuriosidadesMes />
+            </div>
+          </motion.section>
+
+          {/* Anúncios em Destaque para profissionais */}
+          {anunciosDestaque.length > 0 && (
+            <motion.section initial={{opacity:0, y:20}} whileInView={{opacity:1, y:0}} viewport={{once:true}} className="py-12 sm:py-16 bg-white" id="meus-anuncios">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6">
+                <div className="text-center mb-8 sm:mb-12">
+                  <Badge className="mb-4 bg-[#F7D426] text-[#2C2C2C] font-bold">⭐ Profissionais em Destaque</Badge>
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 px-2">
+                    Veja Como Profissionais Se Destacam
+                  </h2>
+                  <p className="text-gray-600 text-base sm:text-lg px-4">
+                    Conheça profissionais de sucesso que usam nossa plataforma
+                  </p>
+                </div>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                  {anunciosDestaque.slice(0, 6).map((anuncio) => (
+                    <CardAnuncio key={anuncio.id} anuncio={anuncio} destaque={true} />
+                  ))}
+                </div>
+                <div className="text-center mt-8">
+                  <Link to={createPageUrl("Anuncios")}>
+                    <Button size="lg" variant="outline" className="border-2 border-[#2C2C2C] text-[#2C2C2C] hover:bg-[#FFF9E6]">
+                      Ver Todos os Anúncios
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </motion.section>
+          )}
+
           <section className="py-0"></section>
 
           <section id="curiosidades-mes" className="py-12 bg-white">
@@ -1027,8 +1066,8 @@ export default function Inicio() {
         </>
       )}
 
-      {/* TUTORIAIS - EXIBIR BASEADO NO TIPO */}
-      {user && visaoAtual && (
+      {/* TUTORIAIS - PROFISSIONAL APENAS */}
+      {isProfissional && (
         <SecaoTutoriais tipoUsuario={visaoAtual} />
       )}
 
