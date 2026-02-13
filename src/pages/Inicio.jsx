@@ -989,7 +989,7 @@ export default function Inicio() {
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Radares de Tendências e Frequência</h2>
               <p className="text-gray-600 mb-6">Veja as tendências do mercado e relatórios dos seus anúncios em tempo real.</p>
               <a href={createPageUrl("Radares")}>
-                <Button className="bg-pink-600 hover:bg-pink-700 text-white">Acessar Radares</Button>
+                <Button className="bg-pink-600 hover:bg-pink-700 text-white">Acessar R.A.B.I</Button>
               </a>
             </div>
           </section>

@@ -529,7 +529,7 @@ export default function Layout({ children }) {
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={handleAbrirRadares}>
                             <TrendingUp className="w-4 h-4 mr-2" />
-                            Radares
+                            R.A.B.I
                             {radarHasNew && <span className="ml-2 inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse" />}
                           </DropdownMenuItem>
                         </>
