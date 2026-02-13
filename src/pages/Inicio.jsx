@@ -975,11 +975,7 @@ export default function Inicio() {
           </motion.section>
 
           {/* Aesthetic Radar */}
-          <motion.section id="aesthetic-radar" initial={{opacity:0, y:20}} whileInView={{opacity:1, y:0}} viewport={{once:true}} className="py-8 bg-white">
-            <div className="max-w-7xl mx-auto px-4">
-              <AestheticRadar />
-            </div>
-          </motion.section>
+
 
           {/* Proteção Civil para Profissionais (Beauty Safe) */}
           <motion.section initial={{opacity:0, y:20}} whileInView={{opacity:1, y:0}} viewport={{once:true}} className="py-8">
@@ -1044,7 +1040,11 @@ export default function Inicio() {
             </motion.section>
           )}
 
-          <section className="py-0"></section>
+          <div className="max-w-7xl mx-auto px-4 space-y-6">
+            <HeroPremium />
+            <AuthorityStrip />
+            <ValidationThreeSteps />
+          </div>
 
 
 
