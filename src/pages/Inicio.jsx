@@ -522,7 +522,7 @@ export default function Inicio() {
                   </Select>
 
                   {/* Filtros integrados ao Explore (mobile) */}
-                  <div className="md:hidden">
+                  <div className="hidden">
                     <FiltrosBuscaPaciente
                       categorias={categorias}
                       valores={filtros}
@@ -558,7 +558,7 @@ export default function Inicio() {
                   </div>
 
                   {/* Filtros integrados ao Explore (mobile) */}
-                  <div className="md:hidden">
+                  <div className="hidden">
                     <FiltrosBuscaPaciente
                       categorias={categorias}
                       valores={filtros}
