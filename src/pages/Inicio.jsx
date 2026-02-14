@@ -540,7 +540,7 @@ export default function Inicio() {
                   </div>
 
                   {/* Filtros integrados ao Explore (desktop) */}
-                  <div className="hidden md:block">
+                  <div className="hidden">
                     <FiltrosBuscaPaciente
                       categorias={categorias}
                       valores={filtros}
