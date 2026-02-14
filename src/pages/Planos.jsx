@@ -58,8 +58,8 @@ const planos = [
     destaque: false,
     linkPagamento: "https://wa.me/5531972595643?text=Quero%20assinar%20o%20plano%20LITE%20(R$9,90)%20do%20Mapa%20da%20Est%C3%A9tica",
     limites: {
-      radar_frequencia: 1,
-      relatorios: 1,
+      radar_frequencia: 0,
+      relatorios: 0,
       especialidades: 1,
       anuncios: 4,
       tags: 4,
@@ -84,14 +84,14 @@ const planos = [
   {
     nome: "BÁSICO",
     tipo: "prata",
-    preco: "R$ 49,90/mês",
+    preco: "R$ 19,90/mês",
     cor: "from-gray-300 to-gray-500",
     icone: Star,
     destaque: false,
     linkPagamento: "https://payfast.greenn.com.br/146196",
     limites: {
       radar_frequencia: 1,
-      relatorios: 1,
+      relatorios: 2,
       especialidades: 1,
       anuncios: 8,
       tags: 8,
@@ -122,7 +122,7 @@ const planos = [
   {
     nome: "PRO",
     tipo: "ouro",
-    preco: "R$ 99,00/mês",
+    preco: "R$ 39,90/mês",
     cor: "from-yellow-400 to-amber-500",
     icone: Crown,
     destaque: true,
@@ -130,7 +130,7 @@ const planos = [
     limites: {
       radar_frequencia: 2,
       relatorios: 4,
-      especialidades: 1,
+      especialidades: 2,
       anuncios: 20,
       tags: 20,
       dias_exposicao: 60
@@ -161,7 +161,7 @@ const planos = [
   {
     nome: "PRIME",
     tipo: "diamante",
-    preco: "R$ 197,00/mês",
+    preco: "R$ 99,90/mês",
     cor: "from-blue-400 to-cyan-500",
     icone: Gem,
     destaque: false,
