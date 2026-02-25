@@ -313,6 +313,25 @@ export default function AdicionarProduto() {
     }
   };
 
+  // Auto-categoria pela descrição (debounce)
+  React.useEffect(() => {
+    const handler = setTimeout(async () => {
+      try {
+        if (!produto.descricao || produto.categoria) return;
+        const schema = { type: 'object', properties: { categoria: { type: 'string' } } };
+        const res = await base44.integrations.Core.InvokeLLM({
+          prompt: `Com base na descrição a seguir, escolha UMA categoria entre: ${categorias.join(', ')}. Apenas o valor exato. Descrição: ${produto.descricao}`,
+          response_json_schema: schema,
+          add_context_from_internet: false
+        });
+        if (res?.categoria && categorias.includes(res.categoria)) {
+          setProduto(p => ({ ...p, categoria: res.categoria }));
+        }
+      } catch {}
+    }, 800);
+    return () => clearTimeout(handler);
+  }, [produto.descricao, produto.categoria]);
+
   // Escrita assistida por IA (sugestões de equipamentos)
   React.useEffect(() => {
     if (produto.categoria !== 'Equipamentos') return;
@@ -550,24 +569,6 @@ export default function AdicionarProduto() {
                 />
               </div>
 
-              {/* Auto-categoria pela descrição */}
-              {React.useEffect(() => {
-                const handler = setTimeout(async () => {
-                  if (!produto.descricao || produto.categoria) return;
-                  try {
-                    const schema = { type: 'object', properties: { categoria: { type: 'string' } } };
-                    const res = await base44.integrations.Core.InvokeLLM({
-                      prompt: `Com base na descrição a seguir, escolha UMA categoria entre: ${categorias.join(', ')}. Apenas o valor exato. Descrição: ${produto.descricao}`,
-                      response_json_schema: schema,
-                      add_context_from_internet: false
-                    });
-                    if (res?.categoria && categorias.includes(res.categoria)) {
-                      setProduto(p => ({ ...p, categoria: res.categoria }));
-                    }
-                  } catch {}
-                }, 800);
-                return () => clearTimeout(handler);
-              }, [produto.descricao, produto.categoria])}
 
               {/* Categoria e Marca */
               <div className="grid md:grid-cols-2 gap-4">
