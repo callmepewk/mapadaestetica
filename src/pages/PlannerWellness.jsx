@@ -11,7 +11,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Trash2, Target, Calendar, Clock, ShieldCheck, Save } from "lucide-react";
 
 const SUGESTOES_METAS = [
-  "Rejuvenescimento", "Redução de manchas", "Melhorar textura da pele", "Reduzir gordura localizada", "Ganhar tônus", "Relaxamento / bem-estar"
+  "Rejuvenescimento", "Redução de manchas", "Melhorar textura da pele", "Reduzir gordura localizada", "Ganhar tônus", "Relaxamento / bem-estar",
+  "Controle da acne", "Uniformizar tom da pele", "Reduzir olheiras", "Hidratação profunda",
+  "Lifting não cirúrgico (HIFU)", "Depilação a laser", "Drenagem linfática", "Modelagem corporal",
+  "Tricologia capilar", "Recuperação pós-procedimento", "Bem‑estar e sono de qualidade"
 ];
 
 const dias = [
@@ -178,7 +181,7 @@ export default function PlannerWellness() {
                 </div>
               ))}
               <div className="flex gap-2">
-                <Button variant="outline" onClick={addSlot}><Plus className="w-4 h-4 mr-2"/>Adicionar faixa</Button>
+                <Button variant="outline" onClick={addSlot}><Plus className="w-4 h-4 mr-2"/>Adicionar faixa de horário</Button>
                 <Button onClick={()=> upsertDisp.mutate()} className="bg-amber-600 hover:bg-amber-700 text-white"><Save className="w-4 h-4 mr-2"/>Salvar disponibilidade</Button>
               </div>
               <p className="text-xs text-gray-600">Observação: ao expor serviços, aceite-os apenas após o agendamento confirmado na agenda.</p>

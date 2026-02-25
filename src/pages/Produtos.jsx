@@ -991,11 +991,7 @@ export default function Produtos() {
                           {produto.descricao}
                         </p>
 
-                        {produto.marca && (
-                          <p className="text-xs text-gray-500 mb-3">
-                            Marca: {produto.marca}
-                          </p>
-                        )}
+
 
                         {produto.programa_12_meses && produto.tratamentos_inclusos_nomes && produto.tratamentos_inclusos_nomes.length > 0 && (
                           <div className="mb-3 space-y-1">
