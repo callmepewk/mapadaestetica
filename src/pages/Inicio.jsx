@@ -670,7 +670,7 @@ export default function Inicio() {
                 <div className="flex-1">
                   <Badge className="mb-2 bg-blue-100 text-blue-800">Novo • Beauty Safe</Badge>
                   <h2 className="text-2xl font-bold text-gray-900">Proteção Civil para Pacientes</h2>
-                  <p className="text-gray-700 mt-1">Proteção e orientação para pacientes: entenda seus direitos, verifique documentos e boas práticas antes de realizar procedimentos e serviços estéticos.</p>
+                  <p className="text-gray-700 mt-1">Proteção e orientação para pacientes: entenda seus direitos, cheque credenciais do profissional, licenças e ambiente clínico, exija consentimento informado e siga recomendações de preparo e pós-procedimento. Nosso time ajuda você a tomar decisões seguras antes de contratar qualquer serviço estético.</p>
                   <p className="text-gray-600 text-sm mt-1">Canal direto para tirar dúvidas e receber recomendações de segurança. Fale conosco pelo WhatsApp.</p>
                   <div className="mt-4 flex flex-wrap gap-3">
                     <Button onClick={handleBeautySafeWhats} className="bg-green-600 hover:bg-green-700 text-white">
