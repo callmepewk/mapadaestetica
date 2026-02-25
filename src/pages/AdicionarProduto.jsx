@@ -301,6 +301,17 @@ export default function AdicionarProduto() {
     }
   };
 
+  const handleSugerirPrecoTextoIA = async () => {
+    setSugerindoPrecoTexto(true);
+    try {
+      const prompt = `Sugira um texto curto e vendedor para o campo "Texto do Preço" considerando: preço atual ${produto.preco||0}, preço promocional ${produto.preco_promocional||0} (se >0 mostrar formato com "de R$ X por R$ Y"), ou, se ambos 0, sugerir "Consultar". Retorne apenas o texto.`;
+      const texto = await base44.integrations.Core.InvokeLLM({ prompt, add_context_from_internet: false });
+      setProduto(p => ({ ...p, preco_texto: String(texto).replace(/^["']|["']$/g,'') }));
+    } finally {
+      setSugerindoPrecoTexto(false);
+    }
+  };
+
   // IA: gerar imagem a partir do nome
   const handleGerarImagemIA = async () => {
     if (!produto.nome) { alert('Informe o nome antes de gerar a imagem.'); return; }
@@ -855,15 +866,26 @@ export default function AdicionarProduto() {
 
                 <div>
                   <Label htmlFor="preco_texto">Texto do Preço</Label>
-                  <Input
-                    id="preco_texto"
-                    value={produto.preco_texto}
-                    onChange={(e) => setProduto({ ...produto, preco_texto: e.target.value })}
-                    placeholder="Ex: Consultar"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Use para "Consultar", "A partir de X", etc
-                  </p>
+                  <div className="flex gap-2">
+                    <Input
+                      id="preco_texto"
+                      value={produto.preco_texto}
+                      onChange={(e) => setProduto({ ...produto, preco_texto: e.target.value })}
+                      placeholder="Ex: Consultar"
+                      className="flex-1"
+                    />
+                    <Button type="button" variant="outline" onClick={handleSugerirPrecoTextoIA} disabled={sugerindoPrecoTexto} className="whitespace-nowrap">
+                      {sugerindoPrecoTexto ? 'Gerando...' : 'Sugerir IA'}
+                    </Button>
+                  </div>
+                  <div className="text-xs text-gray-600 mt-1 p-2 rounded border bg-gray-50">
+                    Preenchimento e visualização:
+                    <ul className="list-disc pl-5 space-y-1 mt-1">
+                      <li>Se houver <strong>Preço</strong> e <strong>Preço Promocional</strong>, a vitrine mostra <em>de R$ X</em> (riscado) <em>por R$ Y</em>.</li>
+                      <li>Se <strong>Preço</strong> for 0, usamos o <strong>Texto do Preço</strong> (ex.: "Consultar", "A partir de R$ 199").</li>
+                      <li>Os <strong>pontos ganhos</strong> são estimados pela faixa de preço exibida.</li>
+                    </ul>
+                  </div>
                 </div>
               </div>
 

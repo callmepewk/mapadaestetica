@@ -13,6 +13,7 @@ import {
 import { Search, Filter, MapPin, Grid, List, Locate, Sparkles, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import CardAnuncio from "../components/anuncios/CardAnuncio";
+import ProductCard from "../components/anuncios/ProductCard";
 import SeletorProcedimentos from "../components/anuncios/SeletorProcedimentos";
 import {
   Pagination,
@@ -313,6 +314,12 @@ export default function Anuncios() {
     refetchOnMount: true,
     refetchOnReconnect: false,
     initialData: [],
+  });
+
+  const { data: produtosAtivos = [] } = useQuery({
+    queryKey: ['produtos-para-anuncios'],
+    queryFn: async () => await base44.entities.Produto.filter({ status: 'ativo' }, '-created_date', 200),
+    staleTime: 5 * 60 * 1000,
   });
 
   const anuncios = useMemo(() => {

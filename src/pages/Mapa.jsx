@@ -321,6 +321,12 @@ export default function Mapa() {
     },
   });
 
+  // Query produtos (para plotar no mapa quando houver lat/lon)
+  const { data: produtosAtivos = [] } = useQuery({
+    queryKey: ['produtos-mapa'],
+    queryFn: async () => await base44.entities.Produto.filter({ status: 'ativo' }, '-created_date', 300),
+  });
+
   useEffect(()=>{
     (async ()=>{
       try {
