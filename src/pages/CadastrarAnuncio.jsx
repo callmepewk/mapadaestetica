@@ -45,6 +45,7 @@ import {
   Plus
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import ExplicadorCadastroAnuncio from "../components/anuncios/ExplicadorCadastroAnuncio";
 import AutoSubcategoriaIA from "../components/anuncios/AutoSubcategoriaIA";
 import AutoTagsIA from "../components/anuncios/AutoTagsIA";
 import { categoriasAgrupadas } from "../components/anuncios/CategoriasData";
@@ -1143,9 +1144,7 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 px-2">
             Crie Seu Anúncio Profissional
           </h1>
-          <p className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto px-4">
-            Preencha as informações abaixo ou use nosso assistente de IA para criar um anúncio otimizado
-          </p>
+          <ExplicadorCadastroAnuncio />
         </div>
 
         {/* Botões de Assistência IA - MOBILE OPTIMIZED */}
