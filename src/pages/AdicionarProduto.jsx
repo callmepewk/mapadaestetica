@@ -21,20 +21,10 @@ import { ArrowLeft, Save, Upload, Loader2, Wand2, Image as ImageIcon, Sparkles, 
 import { Checkbox } from "@/components/ui/checkbox";
 
 const categorias = [
-  "Cuidados com a Pele",
-  "Maquiagem",
-  "Cabelos",
-  "Perfumaria",
-  "Suplementos",
-  "Equipamentos",
-  "Acessórios",
-  "Serviços para Pacientes",
-  "Serviços Contratáveis",
-  "Produtos para Pacientes",
-  "IA",
-  "Serviços",
-  "Serviços de IA",
-  "Mídia e Marketing",
+  "Especialidades Técnicas e Procedimentais (Estética Profissional)",
+  "Técnicas Avançadas",
+  "Especialidades Relacionadas à Saúde / Ciência",
+  "Áreas Complementares / Especializações de Mercado",
   "Outros"
 ];
 
@@ -87,7 +77,7 @@ export default function AdicionarProduto() {
     lote_minimo: 1,
     aceitar_chat: true,
     aceitar_orcamento: false,
-    plano_minimo: 'free',
+    plano_minimo: ['free'],
     beauty_club_exclusivo: false,
     beauty_club_minimo: 'basic',
     // Endereço
@@ -471,24 +461,25 @@ export default function AdicionarProduto() {
                 </Button>
               </div>
 
-              {/* Plano mínimo para profissionais */}
-              <div>
-                <Label htmlFor="plano_minimo">Plano mínimo (profissionais)</Label>
-                <Select value={produto.plano_minimo || 'free'} onValueChange={(v)=>setProduto({ ...produto, plano_minimo: v })}>
-                  <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="free">Free</SelectItem>
-                    <SelectItem value="lite">Lite</SelectItem>
-                    <SelectItem value="basico">Básico</SelectItem>
-                    <SelectItem value="pro">Pro</SelectItem>
-                    <SelectItem value="prime">Prime</SelectItem>
-                    <SelectItem value="premium">Premium</SelectItem>
-                  </SelectContent>
-                </Select>
+              {/* Plano mínimo para profissionais (multi‑seleção) */}
+              <div className="space-y-2">
+                <Label htmlFor="plano_minimo">Plano mínimo (profissionais) <span className="ml-1">{(produto.plano_minimo||[]).length? '✅':'❌'}</span></Label>
+                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                  {['free','lite','basico','pro','prime','premium'].map(p => (
+                    <label key={p} className={`text-xs px-2 py-1 rounded border cursor-pointer ${produto.plano_minimo?.includes(p)?'bg-emerald-50 border-emerald-300':'bg-white border-gray-300'}`}>
+                      <input type="checkbox" className="hidden" checked={produto.plano_minimo?.includes(p)||false} onChange={(e)=>{
+                        const checked = e.target.checked;
+                        setProduto(prev => ({...prev, plano_minimo: checked ? Array.from(new Set([...(prev.plano_minimo||[]), p])) : (prev.plano_minimo||[]).filter(x=>x!==p)}));
+                      }} />
+                      {p.toUpperCase()}
+                    </label>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-600">Profissionais com plano igual ou acima de qualquer opção selecionada verão este item (mais opções = maior alcance).</p>
               </div>
 
               {/* Beauty Club */}
-              <div className="flex items-center space-x-2">
+              <div className="mt-4 flex items-center space-x-2">
                 <Checkbox
                   id="beauty_club_exclusivo"
                   checked={produto.beauty_club_exclusivo}
@@ -496,16 +487,17 @@ export default function AdicionarProduto() {
                 />
                 <Label htmlFor="beauty_club_exclusivo" className="cursor-pointer">Exclusivo Beauty Club</Label>
               </div>
-              <div>
+              <div className="mt-2">
                 <Label htmlFor="beauty_club_minimo">Nível mínimo (Beauty Club)</Label>
                 <Select value={produto.beauty_club_minimo || 'basic'} onValueChange={(v)=>setProduto({ ...produto, beauty_club_minimo: v })}>
-                  <SelectTrigger className="w-52"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="w-60"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="basic">Beauty Club Basic</SelectItem>
                     <SelectItem value="pro">Beauty Club Pro</SelectItem>
                     <SelectItem value="exclusive">Beauty Club Exclusive (VIP)</SelectItem>
                   </SelectContent>
                 </Select>
+                <p className="text-xs text-gray-600 mt-1">Define a partir de qual nível do Beauty Club o item fica acessível (impacta o alcance entre membros).</p>
               </div>
               </div>
 
@@ -529,7 +521,13 @@ export default function AdicionarProduto() {
 
               {/* Nome */}
               <div>
-                <Label htmlFor="nome">Nome do {produto.tipo === 'servico' ? 'Serviço' : 'Produto'} *</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="nome">Nome do {produto.tipo === 'servico' ? 'Serviço' : 'Produto'} * <span className="ml-1">{produto.nome.trim()? '✅':'❌'}</span></Label>
+                  <label>
+                    <input type="file" accept="image/*" className="hidden" onChange={(e)=> e.target.files && handleExtrairNomePorFoto(e.target.files[0])} />
+                    <Button type="button" variant="outline" className="border-2 h-8 px-2 text-xs"><ImageIcon className="w-3 h-3 mr-1"/>Capturar nome por foto</Button>
+                  </label>
+                </div>
                 <Input
                   id="nome"
                   value={produto.nome}
@@ -552,10 +550,29 @@ export default function AdicionarProduto() {
                 />
               </div>
 
-              {/* Categoria e Marca */}
+              {/* Auto-categoria pela descrição */}
+              {React.useEffect(() => {
+                const handler = setTimeout(async () => {
+                  if (!produto.descricao || produto.categoria) return;
+                  try {
+                    const schema = { type: 'object', properties: { categoria: { type: 'string' } } };
+                    const res = await base44.integrations.Core.InvokeLLM({
+                      prompt: `Com base na descrição a seguir, escolha UMA categoria entre: ${categorias.join(', ')}. Apenas o valor exato. Descrição: ${produto.descricao}`,
+                      response_json_schema: schema,
+                      add_context_from_internet: false
+                    });
+                    if (res?.categoria && categorias.includes(res.categoria)) {
+                      setProduto(p => ({ ...p, categoria: res.categoria }));
+                    }
+                  } catch {}
+                }, 800);
+                return () => clearTimeout(handler);
+              }, [produto.descricao, produto.categoria])}
+
+              {/* Categoria e Marca */
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="categoria">Categoria *</Label>
+                  <Label htmlFor="categoria">Categoria * <span className="ml-1">{produto.categoria? '✅':'❌'}</span></Label>
                   <Select
                     value={produto.categoria}
                     onValueChange={(value) => setProduto({ ...produto, categoria: value })}
@@ -726,8 +743,9 @@ export default function AdicionarProduto() {
               {/* Fornecedor e Oferta */}
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="fornecedor_nome">Nome do Fornecedor</Label>
-                  <Input id="fornecedor_nome" value={produto.fornecedor_nome} onChange={(e)=>setProduto({ ...produto, fornecedor_nome: e.target.value })} placeholder="Ex: Distribuidora ABC" />
+                  <Label htmlFor="fornecedor_nome">Nome do Responsável</Label>
+                  <Input id="fornecedor_nome" value={produto.fornecedor_nome} onChange={(e)=>setProduto({ ...produto, fornecedor_nome: e.target.value })} placeholder="Ex: Dra. Maria Souza / Setor Compras" />
+                  <p className="text-xs text-gray-500 mt-1">Pode divergir do fornecedor (ex.: responsável técnico, gestor de compras ou contato comercial).</p>
                 </div>
                 <div>
                   <Label htmlFor="fornecedor_tipo">Classificação</Label>
@@ -806,14 +824,7 @@ export default function AdicionarProduto() {
                   <Label htmlFor="cep">CEP</Label>
                   <Input id="cep" value={produto.cep || ""} onChange={(e)=>setProduto({ ...produto, cep: e.target.value })} />
                 </div>
-                <div>
-                  <Label htmlFor="latitude">Latitude (opcional)</Label>
-                  <Input id="latitude" type="number" value={produto.latitude || ''} onChange={(e)=>setProduto({ ...produto, latitude: parseFloat(e.target.value) || undefined })} />
-                </div>
-                <div>
-                  <Label htmlFor="longitude">Longitude (opcional)</Label>
-                  <Input id="longitude" type="number" value={produto.longitude || ''} onChange={(e)=>setProduto({ ...produto, longitude: parseFloat(e.target.value) || undefined })} />
-                </div>
+                {/* Latitude/Longitude ocultos (preenchidos automaticamente quando usar minha localização) */}
               </div>
 
               {/* Preços */}
@@ -858,16 +869,14 @@ export default function AdicionarProduto() {
 
               {/* Link de Pagamento */}
               <div>
-                <Label htmlFor="link_pagamento">Link de Pagamento (Mercado Pago)</Label>
+                <Label htmlFor="link_pagamento">Link de Pagamento/Checkout</Label>
                 <Input
                   id="link_pagamento"
                   value={produto.link_pagamento}
                   onChange={(e) => setProduto({ ...produto, link_pagamento: e.target.value })}
-                  placeholder="https://mercadopago.com.br/..."
+                  placeholder="https://seu-checkout.com/..., https://mpago.la/... ou outro"
                 />
-                <p className="text-xs text-gray-500 mt-1">
-                  Link do Mercado Pago para pagamento deste produto/serviço
-                </p>
+                <p className="text-xs text-gray-500 mt-1">Qualquer provedor de pagamento ou página de checkout.</p>
               </div>
 
               {/* Estoque (apenas para produtos) */}
@@ -941,14 +950,7 @@ export default function AdicionarProduto() {
                   </div>
 
                   <div className="flex flex-wrap gap-2 mt-3">
-                  <label>
-                    <input type="file" accept="image/*" className="hidden" onChange={(e)=> e.target.files && handleExtrairNomePorFoto(e.target.files[0])} />
-                    <Button type="button" variant="outline" className="border-2"><ImageIcon className="w-4 h-4 mr-2"/>Capturar nome por foto (OCR)</Button>
-                  </label>
-                  <Button type="button" variant="outline" onClick={handleDescricaoPorImagem} disabled={gerandoIA} className="border-2">
-                    {gerandoIA ? <Loader2 className="w-4 h-4 mr-2 animate-spin"/> : <Wand2 className="w-4 h-4 mr-2"/>}
-                    Gerar descrição pela imagem
-                  </Button>
+
                   </div>
 
                   {produto.imagens.length > 0 && (
