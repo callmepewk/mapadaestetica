@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-// Lista oficial agrupada por macro-categorias (parcial por brevidade)
+// Lista oficial agrupada por macro-categorias
 const LISTA_OFICIAL = {
   "ESTÉTICA FACIAL": {
     "Limpeza e Renovação": [
@@ -51,16 +51,14 @@ const LISTA_OFICIAL = {
 };
 
 function filtrarPorCategorias(selectedCategories) {
-  if (!selectedCategories || selectedCategories.length === 0) return null; // sem filtro
+  if (!selectedCategories || selectedCategories.length === 0) return Object.entries(LISTA_OFICIAL);
   const mapa = [];
   const textoCats = selectedCategories.join(" | ").toLowerCase();
   for (const [macro, grupos] of Object.entries(LISTA_OFICIAL)) {
-    // heurística: vincula macro a palavras-chave
-    const chave = macro.toLowerCase().split(" ")[1];
     if (textoCats.includes("facial") && macro.includes("FACIAL")) mapa.push([macro, grupos]);
     else if (textoCats.includes("corporal") && macro.includes("CORPORAL")) mapa.push([macro, grupos]);
     else if (textoCats.includes("capilar") && macro.includes("CAPILAR")) mapa.push([macro, grupos]);
-    else if (textoCats.includes("depila") && macro.includes("DEPILA")) mapa.push([macro, grupos]);
+    else if (textoCats.includes("depila")) { if (macro.includes("DEPILA")) mapa.push([macro, grupos]); }
     else if (textoCats.includes("sobrancel") || textoCats.includes("cílios")) { if (macro.includes("CÍLIOS") ) mapa.push([macro, grupos]); }
     else if (textoCats.includes("mãos") || textoCats.includes("unhas") || textoCats.includes("manicure") || textoCats.includes("pedicure")) { if (macro.includes("MÃOS")) mapa.push([macro, grupos]); }
     else if (textoCats.includes("terapia") || textoCats.includes("integrativa")) { if (macro.includes("TERAPIAS")) mapa.push([macro, grupos]); }
@@ -70,27 +68,13 @@ function filtrarPorCategorias(selectedCategories) {
     else if (textoCats.includes("avançada") || textoCats.includes("médica") || textoCats.includes("injet")) { if (macro.includes("AVANÇADA")) mapa.push([macro, grupos]); }
     else if (textoCats.includes("complementar") || textoCats.includes("consultoria")) { if (macro.includes("COMPLEMENTARES")) mapa.push([macro, grupos]); }
   }
-  return mapa.length ? mapa : null;
+  return mapa.length ? mapa : Object.entries(LISTA_OFICIAL);
 }
-
-const procedimentosComuns = [
-  "Limpeza de Pele Profunda", "Peeling Químico", "Microagulhamento", "Drenagem Linfática",
-  "Massagem Modeladora", "Massagem Relaxante", "Botox", "Preenchimento Facial",
-  "Fios de PDO", "Bioestimuladores de Colágeno", "Depilação a Laser", "Depilação com Cera",
-  "Design de Sobrancelhas", "Micropigmentação de Sobrancelhas", "Alongamento de Cílios",
-  "Manicure", "Pedicure", "Spa dos Pés", "Spa das Mãos", "Hair Skincare", "Corte de Cabelo",
-  "Hidratação Capilar", "Coloração", "Tratamento para Acne", "Rejuvenescimento Facial",
-  "Contorno Corporal", "Criolipólise", "Radiofrequência", "Ultrassom Microfocado",
-  "Enzimas Injetáveis", "Tratamento para Celulite", "Tratamento para Estrias",
-  "Esmaltação em Gel", "Unha de Fibra", "Reflexologia Podal", "Podoprofilaxia",
-  "Tricologia Capilar", "Consultoria de Imagem", "Maquiagem Profissional", "Pós-operatório"
-];
 
 export default function SeletorProcedimentos({ open, onClose, onSelect, selectedCategories = [] }) {
   const [searchTerm, setSearchTerm] = useState("");
-  const mapaFiltrado = filtrarPorCategorias(selectedCategories);
-  const listaAgrupada = mapaFiltrado || Object.entries(LISTA_OFICIAL);
-  const todos = listaAgrupada.flatMap(([macro, grupos]) => Object.values(grupos).flat());
+  const listaAgrupada = filtrarPorCategorias(selectedCategories);
+  const todos = listaAgrupada.flatMap(([_, grupos]) => Object.values(grupos).flat());
   const filteredProcedimentos = todos.filter(proc => proc.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
@@ -138,7 +122,7 @@ export default function SeletorProcedimentos({ open, onClose, onSelect, selected
         </ScrollArea>
         <div className="mt-3 flex items-center gap-2">
           <Input placeholder="Adicionar personalizado (ex.: Procedimento X)" onKeyDown={(e)=>{ if(e.key==='Enter'){ const v=e.currentTarget.value.trim(); if(v){ onSelect(v); e.currentTarget.value=''; } }}} />
-          <Button type="button" variant="outline" onClick={()=>{ /* noop button just to guide user */ }} className="text-xs">Pressione Enter</Button>
+          <Button type="button" variant="outline" className="text-xs">Pressione Enter</Button>
         </div>
 
         <DialogFooter>
