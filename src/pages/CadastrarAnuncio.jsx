@@ -1214,7 +1214,7 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
             <CardContent className="p-4 sm:p-6 space-y-3 sm:space-y-4">
               <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <Label className="text-sm">Tipo de Anúncio *</Label>
+                  <Label className="text-sm">Tipo de Anúncio * <span className="ml-1">{(formData.tipo_anuncio||'').trim()? '✅':'❌'}</span></Label>
                   <Select value={formData.tipo_anuncio} onValueChange={(value) => handleInputChange("tipo_anuncio", value)}>
                     <SelectTrigger className="mt-1 h-10 sm:h-11 text-sm">
                       <SelectValue placeholder="Selecione o tipo" />
@@ -1242,7 +1242,7 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
                 </div>
 
                 <div>
-                  <Label className="text-sm">Categoria *</Label>
+                  <Label className="text-sm">Categoria * <span className="ml-1">{(formData.categoria||'').trim()? '✅':'❌'}</span></Label>
                   <Select value={formData.categoria} onValueChange={(value) => handleInputChange("categoria", value)}>
                     <SelectTrigger className="mt-1 h-10 sm:h-11 text-sm">
                       <SelectValue placeholder="Selecione a categoria" />
@@ -1306,7 +1306,7 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <Label className="text-sm">Título do Anúncio *</Label>
+                  <Label className="text-sm">Título do Anúncio * <span className="ml-1">{/[A-Za-zÀ-ÿ]/.test((formData.titulo||'').trim())? '✅':'❌'}</span></Label>
                   <Button
                     type="button"
                     variant="outline"
@@ -1330,7 +1330,7 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <Label className="text-sm">Descrição *</Label>
+                  <Label className="text-sm">Descrição * <span className="ml-1">{(/[A-Za-zÀ-ÿ]/.test((formData.descricao||'').trim()) && (formData.descricao||'').trim().length>=10)? '✅':'❌'}</span></Label>
                   <Button
                     type="button"
                     variant="outline"
@@ -1394,7 +1394,7 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
                     </SelectContent>
                   </Select>
                   {formData.forma_cobranca !== 'dinheiro' && (
-                    <p className="text-xs text-gray-500 mt-1">A faixa de preço será ignorada.</p>
+                    <p className="text-xs text-gray-500 mt-1">A faixa de preço será ignorada. <button type="button" onClick={()=>{ setSugestaoDescricao('Como funciona a precificação:\n\nFaixa de Preço: exibe $, $$, $$$, $$$$, $$$$$ e o pagamento ocorre diretamente com você.\nPontos: referência 1 ponto ≈ R$1; cliente usa pontos e você recebe o equivalente em reais conforme regras.\nBeauty Coins: moeda promocional para engajamento; defina quantidades pequenas (ex.: 5-10).'); setMostrarAssistenteDescricao(true); }} className="text-blue-600 underline ml-1">Saiba como funcionam as formas de exposição de precificação</button></p>
                   )}
                 </div>
 
@@ -1837,7 +1837,7 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
             <CardContent className="p-4 sm:p-6 space-y-3 sm:space-y-4">
               <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <Label className="text-sm">Profissional *</Label>
+                  <Label className="text-sm">Profissional * <span className="ml-1">{/[A-Za-zÀ-ÿ]/.test((formData.profissional||'').trim())? '✅':'❌'}</span></Label>
                   <Input
                     value={formData.profissional}
                     onChange={(e) => handleInputChange("profissional", e.target.value)}
@@ -1847,7 +1847,7 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
                 </div>
 
                 <div>
-                  <Label className="text-sm">Telefone *</Label>
+                  <Label className="text-sm">Telefone * <span className="ml-1">{((formData.telefone||'').replace(/\D/g,'').length>=10)? '✅':'❌'}</span></Label>
                   <Input
                     value={formData.telefone}
                     onChange={(e) => handleInputChange("telefone", e.target.value)}
@@ -1870,7 +1870,7 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
                 </div>
 
                 <div>
-                  <Label className="text-sm">Email *</Label>
+                  <Label className="text-sm">Email * <span className="ml-1">{/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((formData.email||'').trim())? '✅':'❌'}</span></Label>
                   <Input
                     type="email"
                     value={formData.email}
@@ -2011,7 +2011,7 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
 
               <div className="grid sm:grid-cols-3 gap-3 sm:gap-4">
                 <div>
-                  <Label className="text-sm">Cidade *</Label>
+                  <Label className="text-sm">Cidade * <span className="ml-1">{/[A-Za-zÀ-ÿ]/.test((formData.cidade||'').trim())? '✅':'❌'}</span></Label>
                   <Input
                     value={formData.cidade}
                     onChange={(e) => handleInputChange("cidade", e.target.value)}
@@ -2022,7 +2022,7 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
                 </div>
 
                 <div>
-                  <Label className="text-sm">Estado *</Label>
+                  <Label className="text-sm">Estado * <span className="ml-1">{/^[A-Za-z]{2}$/.test((formData.estado||'').trim())? '✅':'❌'}</span></Label>
                   <Input
                     value={formData.estado}
                     onChange={(e) => handleInputChange("estado", e.target.value)}
