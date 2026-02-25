@@ -157,6 +157,10 @@ export default function MeuPlano() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [trialRestanteMs, setTrialRestanteMs] = useState(0);
+  const planoAtual = user?.plano_ativo || 'cobre';
+  const trialAtivo = !!user?.plano_trial_ativo;
+  const trialFimISO = user?.plano_trial_fim || null;
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -172,6 +176,16 @@ export default function MeuPlano() {
     fetchUser();
   }, []);
 
+  // Trial countdown (ensure hook order stable)
+  useEffect(() => {
+    if (!trialAtivo || !trialFimISO) return;
+    const fim = new Date(trialFimISO).getTime();
+    const tick = () => setTrialRestanteMs(Math.max(0, fim - Date.now()));
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [trialAtivo, trialFimISO]);
+
   if (loading || !user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -183,10 +197,6 @@ export default function MeuPlano() {
     );
   }
 
-  const planoAtual = user.plano_ativo || 'cobre';
-  const trialAtivo = !!user.plano_trial_ativo;
-  const trialFimISO = user.plano_trial_fim || null;
-  const [trialRestanteMs, setTrialRestanteMs] = useState(0);
 
   useEffect(() => {
     if (!trialAtivo || !trialFimISO) return;
