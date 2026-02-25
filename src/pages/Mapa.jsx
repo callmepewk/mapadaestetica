@@ -1406,7 +1406,7 @@ export default function Mapa() {
           setProcedimento(procedimentoSelecionado);
           setMostrarSeletorProcedimentos(false);
         }}
-        procedimentoAtual={procedimento}
+        selectedCategories={[categoria].filter(Boolean)}
       />
     </div>
   );
