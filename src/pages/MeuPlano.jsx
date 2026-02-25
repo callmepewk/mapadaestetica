@@ -198,15 +198,6 @@ export default function MeuPlano() {
   }
 
 
-  useEffect(() => {
-    if (!trialAtivo || !trialFimISO) return;
-    const fim = new Date(trialFimISO).getTime();
-    const tick = () => setTrialRestanteMs(Math.max(0, fim - Date.now()));
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, [trialAtivo, trialFimISO]);
-
   const formatarTempo = (ms) => {
     const totalSec = Math.floor(ms / 1000);
     const dias = Math.floor(totalSec / 86400);
