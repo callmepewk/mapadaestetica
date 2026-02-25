@@ -657,7 +657,6 @@ export default function AdicionarProduto() {
                   </Label>
                 </div>
                 {produto.programa_12_meses && (
-                  <>
                   <div className="grid md:grid-cols-3 gap-4">
                     <div>
                       <Label>Tipo de Programa</Label>
@@ -746,7 +745,6 @@ export default function AdicionarProduto() {
                     )}
                   </div>
                 )}
-              </>
               </div>
 
               )}
