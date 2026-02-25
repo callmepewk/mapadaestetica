@@ -733,7 +733,6 @@ export default function AdicionarProduto() {
                       </p>
                     )}
                   </div>
-                </>
                 )}
               </div>
 
