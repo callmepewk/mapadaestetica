@@ -45,6 +45,8 @@ import {
   Plus
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import AutoSubcategoriaIA from "../components/anuncios/AutoSubcategoriaIA";
+import AutoTagsIA from "../components/anuncios/AutoTagsIA";
 
 const categorias = [
   "Estética Facial", "Estética Corporal", "Estética Capilar e Tricologia",
@@ -1354,15 +1356,7 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
               </div>
 
               <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
-                <div>
-                  <Label className="text-sm">Subcategoria</Label>
-                  <Input
-                    value={formData.subcategoria}
-                    onChange={(e) => handleInputChange("subcategoria", e.target.value)}
-                    placeholder="Ex: Preenchimento Labial"
-                    className="h-10 sm:h-11 text-sm"
-                  />
-                </div>
+                <AutoSubcategoriaIA formData={formData} setFormData={setFormData} />
 
                 <div>
                   <Label className="text-sm">Faixa de Preço *</Label>
@@ -1483,18 +1477,7 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
                 </div>
               </div>
 
-              <div>
-                <Label className="text-sm">Palavras-chave / Hashtags</Label>
-                <p className="text-xs text-gray-500 mb-2">
-                  Adicione palavras-chave para melhorar a busca do seu anúncio (ex: botox, harmonização)
-                </p>
-                <Input
-                  value={formData.tags?.join(", ") || ""}
-                  onChange={(e) => handleInputChange("tags", e.target.value.split(",").map(t => t.trim()).filter(Boolean))}
-                  placeholder="Ex: botox, harmonização, preenchimento"
-                  className="h-10 sm:h-11 text-sm"
-                />
-              </div>
+              <AutoTagsIA formData={formData} setFormData={setFormData} />
 
               {/* NEW: Procedimentos/Serviços */}
               <div>
