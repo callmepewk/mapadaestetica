@@ -577,13 +577,28 @@ export default function Inicio() {
 
 
 
+                                     <FiltrosBuscaPaciente
+                                     categorias={categorias}
+                                     valores={filtros}
+                                     onChange={setFiltros}
+                                     onOpenAdvanced={()=>setOpenFiltrosAvancados(true)}
+                                     onBuscar={handleBuscar}
+                                     onClear={() => { 
+                                     setFiltros({ tipo:"", categoria:"", especialidade:"", preco:"", rating:"", distancia:"" });
+                                     setFiltrosAvancados({ data:"", hora:"", atendimento_domicilio:false, atendimento_local:false, convenios:"" });
+                                     const url = new URL(window.location.href);
+                                     ['cidade','categoria','tipo','categoria_filtro','especialidade','preco_min','preco_max','rating_min','distancia_km','data','hora','at_domicilio','at_local','convenios','aba'].forEach(k=>url.searchParams.delete(k));
+                                     window.history.replaceState({}, '', url.toString());
+                                     } }
+                                     />
+
                                      <Button
-                    onClick={handleBuscar}
-                    className="h-10 sm:h-11 md:h-12 bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold shadow-lg hover:shadow-xl transition-all text-sm sm:text-base border-2 border-[#2C2C2C]"
-                  >
-                    <Search className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                    Buscar
-                  </Button>
+                                     onClick={handleBuscar}
+                                     className="h-10 sm:h-11 md:h-12 bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold shadow-lg hover:shadow-xl transition-all text-sm sm:text-base border-2 border-[#2C2C2C]"
+                                     >
+                                     <Search className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                                     Buscar
+                                     </Button>
                 </div>
               </div>
 
