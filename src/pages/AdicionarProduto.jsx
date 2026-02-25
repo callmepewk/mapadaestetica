@@ -570,7 +570,7 @@ export default function AdicionarProduto() {
               </div>
 
 
-              {/* Categoria e Marca */
+              {/* Categoria e Marca */}
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="categoria">Categoria * <span className="ml-1">{produto.categoria? '✅':'❌'}</span></Label>
