@@ -47,17 +47,9 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import AutoSubcategoriaIA from "../components/anuncios/AutoSubcategoriaIA";
 import AutoTagsIA from "../components/anuncios/AutoTagsIA";
+import { categoriasAgrupadas } from "../components/anuncios/CategoriasData";
 
-const categorias = [
-  "Estética Facial", "Estética Corporal", "Estética Capilar e Tricologia",
-  "Estética de Mãos e Pés", "Micropigmentação e Design", "Depilação",
-  "Massoterapia e Drenagem", "Harmonização Facial", "Medicina Estética",
-  "Dermatologia", "Cirurgia Plástica", "Fisioterapia Dermato Funcional",
-  "Nutrição Estética", "Psicologia da Imagem", "Pilates e Fitness",
-  "Acupuntura Estética", "Terapias Integrativas", "Podologia",
-  "Manicure e Pedicure", "Barbearia", "Tatuagem e Piercing",
-  "Spa e Bem-Estar", "Longevidade", "Outros"
-];
+// Categorias movidas para components/anuncios/CategoriasData.js (categoriasAgrupadas)
 
 const tiposAnuncio = [
   { valor: "servico", label: "Serviço" },
@@ -1241,6 +1233,9 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
                       <SelectItem value="profissionais" className="text-sm">Somente Profissionais</SelectItem>
                     </SelectContent>
                   </Select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    • Todos: máximo alcance. • Somente Visitantes: foco em clientes finais. • Somente Profissionais: ofertas/parcerias B2B.
+                  </p>
                 </div>
 
                 <div>
@@ -1249,9 +1244,14 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
                     <SelectTrigger className="mt-1 h-10 sm:h-11 text-sm">
                       <SelectValue placeholder="Selecione a categoria" />
                     </SelectTrigger>
-                    <SelectContent className="max-h-[200px] sm:max-h-[300px]">
-                      {categorias.map(cat => (
-                        <SelectItem key={cat} value={cat} className="text-sm">{cat}</SelectItem>
+                    <SelectContent className="max-h-[250px] sm:max-h-[350px]">
+                      {categoriasAgrupadas.map((group) => (
+                        <SelectGroup key={group.label}>
+                          <SelectLabel className="text-xs text-gray-500">{group.label}</SelectLabel>
+                          {group.items.map((cat) => (
+                            <SelectItem key={cat} value={cat} className="text-sm">{cat}</SelectItem>
+                          ))}
+                        </SelectGroup>
                       ))}
                     </SelectContent>
                   </Select>
