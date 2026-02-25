@@ -86,7 +86,7 @@ const procedimentosComuns = [
   "Tricologia Capilar", "Consultoria de Imagem", "Maquiagem Profissional", "Pós-operatório"
 ];
 
-export default function SeletorProcedimentos({ open, onClose, onSelect }) {
+export default function SeletorProcedimentos({ open, onClose, onSelect, selectedCategories = [] }) {
   const [searchTerm, setSearchTerm] = useState("");
   const mapaFiltrado = filtrarPorCategorias(selectedCategories);
   const listaAgrupada = mapaFiltrado || Object.entries(LISTA_OFICIAL);
