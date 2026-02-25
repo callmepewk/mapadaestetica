@@ -521,6 +521,21 @@ export default function Inicio() {
                     </SelectContent>
                   </Select>
 
+                  <FiltrosBuscaPaciente
+                    categorias={categorias}
+                    valores={filtros}
+                    onChange={setFiltros}
+                    onOpenAdvanced={()=>setOpenFiltrosAvancados(true)}
+                    onBuscar={handleBuscar}
+                    onClear={() => { 
+                      setFiltros({ tipo:"", categoria:"", especialidade:"", preco:"", rating:"", distancia:"" });
+                      setFiltrosAvancados({ data:"", hora:"", atendimento_domicilio:false, atendimento_local:false, convenios:"" });
+                      const url = new URL(window.location.href);
+                      ['cidade','categoria','tipo','categoria_filtro','especialidade','preco_min','preco_max','rating_min','distancia_km','data','hora','at_domicilio','at_local','convenios','aba'].forEach(k=>url.searchParams.delete(k));
+                      window.history.replaceState({}, '', url.toString());
+                    } }
+                  />
+
                   {/* Filtros integrados ao Explore (mobile) */}
                   <div className="hidden">
                     <FiltrosBuscaPaciente
