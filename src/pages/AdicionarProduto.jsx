@@ -631,6 +631,7 @@ export default function AdicionarProduto() {
                 )}
               </div>
 
+              {/* Admin Only */}
               {user?.role === 'admin' && (
                 <>
 
