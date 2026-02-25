@@ -669,9 +669,9 @@ export default function Inicio() {
                 </div>
                 <div className="flex-1">
                   <Badge className="mb-2 bg-blue-100 text-blue-800">Novo • Beauty Safe</Badge>
-                  <h2 className="text-2xl font-bold text-gray-900">Proteção Civil para Profissionais</h2>
-                  <p className="text-gray-700 mt-1">Contrate o Beauty Safe junto aos planos do Mapa da Estética (serviço à parte) e trabalhe com segurança jurídica.</p>
-                  <p className="text-gray-600 text-sm mt-1">Relatórios de cliques e solicitações ficam registrados. Dúvidas e contratação via WhatsApp.</p>
+                  <h2 className="text-2xl font-bold text-gray-900">Proteção Civil para Pacientes</h2>
+                  <p className="text-gray-700 mt-1">Proteção e orientação para pacientes: entenda seus direitos, verifique documentos e boas práticas antes de realizar procedimentos e serviços estéticos.</p>
+                  <p className="text-gray-600 text-sm mt-1">Canal direto para tirar dúvidas e receber recomendações de segurança. Fale conosco pelo WhatsApp.</p>
                   <div className="mt-4 flex flex-wrap gap-3">
                     <Button onClick={handleBeautySafeWhats} className="bg-green-600 hover:bg-green-700 text-white">
                       <Phone className="w-4 h-4 mr-2" /> Falar no WhatsApp
@@ -890,6 +890,31 @@ export default function Inicio() {
               </div>
             </section>
           )}
+
+          {/* Proteção Civil - Profissionais */}
+          <section className="py-8 bg-white">
+            <div className="max-w-7xl mx-auto px-4">
+              <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-2xl p-6 shadow flex flex-col md:flex-row items-center gap-6">
+                <div className="w-20 h-20 rounded-2xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+                  <ShieldCheck className="w-10 h-10 text-blue-700" />
+                </div>
+                <div className="flex-1">
+                  <Badge className="mb-2 bg-blue-100 text-blue-800">Novo • Beauty Safe</Badge>
+                  <h2 className="text-2xl font-bold text-gray-900">Proteção Civil para Profissionais</h2>
+                  <p className="text-gray-700 mt-1">Trabalhe com segurança jurídica em procedimentos e serviços estéticos: consentimentos, registros e melhores práticas.</p>
+                  <p className="text-gray-600 text-sm mt-1">Orientação para evitar riscos e resguardar sua atuação. Fale com nossa equipe.</p>
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    <Button onClick={handleBeautySafeWhats} className="bg-green-600 hover:bg-green-700 text-white">
+                      <Phone className="w-4 h-4 mr-2" /> Falar no WhatsApp
+                    </Button>
+                    <Button variant="outline" onClick={handleBeautySafeSolicitar} className="border-2">
+                      Solicitar Beauty Safe
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
 
           {/* Resumo dos Anúncios */}
           {resumoAnuncios.length > 0 && (
