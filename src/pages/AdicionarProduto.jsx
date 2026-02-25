@@ -633,9 +633,7 @@ export default function AdicionarProduto() {
 
               {/* Admin Only */}
               {user?.role === 'admin' && (
-                <>
-
-              <div className="p-4 rounded-lg border-2 border-amber-200 bg-amber-50 space-y-3">
+                <div className="p-4 rounded-lg border-2 border-amber-200 bg-amber-50 space-y-3">
                 <div className="flex items-center gap-2">
                   <Checkbox
                     id="programa_12_meses"
