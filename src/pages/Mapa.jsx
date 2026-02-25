@@ -135,7 +135,12 @@ const tiposAnuncio = [
   { valor: "ia", label: "IA" },
   { valor: "servicos", label: "Serviços" },
   { valor: "servicos_ia", label: "Serviços de IA" },
-  { valor: "midia_marketing", label: "Mídia e Marketing" }
+  { valor: "midia_marketing", label: "Mídia e Marketing" },
+  { valor: "inauguracao", label: "Inauguração" },
+  { valor: "reinauguracao", label: "Reinauguração" },
+  { valor: "lancamento_produto", label: "Lançamento de Produto" },
+  { valor: "lancamento_servico", label: "Lançamento de Serviço" },
+  { valor: "lancamento_tratamento", label: "Lançamento de Tratamento" }
 ];
 
 const statusFuncionamento = [
@@ -257,10 +262,11 @@ export default function Mapa() {
   const [tempoFormacao, setTempoFormacao] = useState("999999");
   // Novos filtros avançados
   const [profissao, setProfissao] = useState("");
+  const [profissaoOutro, setProfissaoOutro] = useState("");
   const [nivelVerificacao, setNivelVerificacao] = useState(""); // 0-3 docs
   const [avaliacaoMin, setAvaliacaoMin] = useState(""); // 1-5 estrelas estabelecimento
-  const [modalidade, setModalidade] = useState(""); // online|presencial
-  const [atendimento, setAtendimento] = useState(""); // domicilio|clinica
+  const [modalidade, setModalidade] = useState(""); // online|presencial|hibrida
+  const [atendimento, setAtendimento] = useState(""); // domicilio|clinica|consultorio|online|hibrida|evento
   const [atendimentoCobranca, setAtendimentoCobranca] = useState(""); // convenio|particular
   const [patrocinadoOnly, setPatrocinadoOnly] = useState(false);
   const [ordenarPor, setOrdenarPor] = useState('recentes');
@@ -431,7 +437,7 @@ export default function Mapa() {
 
     // Profissão (heurística via tags)
     const tagsLower = (anuncio.tags || []).map(t => (t || '').toLowerCase());
-    const matchProfissao = !profissao || tagsLower.includes(profissao.toLowerCase());
+    const matchProfissao = !profissao || (profissao === 'outro' ? (profissaoOutro ? tagsLower.includes(profissaoOutro.toLowerCase()) : true) : tagsLower.includes(profissao.toLowerCase()));
 
     // Nível de verificação (0-3 docs verificados)
     const va = anuncio.verificacao_autoridade || {};
@@ -443,12 +449,16 @@ export default function Mapa() {
     const matchAvaliacao = !avaliacaoMin || (anuncio.estrelas_estabelecimento && anuncio.estrelas_estabelecimento >= parseInt(avaliacaoMin));
 
     // Modalidade (heurística via tags)
-    const matchModalidade = !modalidade || tagsLower.includes(modalidade);
+    const matchModalidade = !modalidade || tagsLower.includes(modalidade) || (modalidade==='hibrida' && (tagsLower.includes('online') && (tagsLower.includes('presencial')||tagsLower.includes('clínica')||tagsLower.includes('clinica'))));
 
     // Atendimento (domicílio/clínica) - via tags ou tipo_estabelecimento
     const matchAtendimento = !atendimento || (
       atendimento === 'domicilio' ? (tagsLower.includes('domicilio') || tagsLower.includes('home care')) :
-      (anuncio.tipo_estabelecimento && anuncio.tipo_estabelecimento.toLowerCase().includes('clínica')) || tagsLower.includes('clinica')
+      atendimento === 'clinica' ? ((anuncio.tipo_estabelecimento && anuncio.tipo_estabelecimento.toLowerCase().includes('clínica')) || tagsLower.includes('clinica')) :
+      atendimento === 'consultorio' ? ((anuncio.tipo_estabelecimento && anuncio.tipo_estabelecimento.toLowerCase().includes('consultório')) || tagsLower.includes('consultorio')) :
+      atendimento === 'online' ? (tagsLower.includes('online') || tagsLower.includes('teleconsulta')) :
+      atendimento === 'hibrida' ? (tagsLower.includes('híbrido') || tagsLower.includes('hibrido')) :
+      atendimento === 'evento' ? (tagsLower.includes('evento') || tagsLower.includes('corporativo')) : true
     );
 
     // Cobrança (convênio/particular) - via tags ou forma_cobranca
@@ -710,7 +720,7 @@ export default function Mapa() {
 
                   {/* Preço */}
                   <div>
-                    <label className="text-sm font-medium mb-2 block">Preço</label>
+                    <label className="text-sm font-medium mb-2 block">Faixa de Preço (exposição)</label>
                     <Select value={faixaPreco} onValueChange={setFaixaPreco}>
                       <SelectTrigger>
                         <SelectValue placeholder="Todas" />
@@ -741,6 +751,7 @@ export default function Mapa() {
                   {/* Tipo Estabelecimento */}
                   <div>
                     <label className="text-sm font-medium mb-2 block">Tipo Estabelecimento</label>
+                    <p className="text-[11px] text-gray-500 -mt-1 mb-1">Ajuda a entender porte/estrutura do local (consultório, clínica, etc.).</p>
                     <Select value={tipoEstabelecimento} onValueChange={setTipoEstabelecimento}>
                       <SelectTrigger>
                         <SelectValue placeholder="Todos os tipos" />
@@ -763,12 +774,27 @@ export default function Mapa() {
                         <SelectValue placeholder="Todas" />
                       </SelectTrigger>
                       <SelectContent className="max-h-[300px]">
-                        {['médico','dentista','biomédico','esteticista','enfermeiro','farmacêutico','fisioterapeuta'].map((p)=>(
-                          <SelectItem key={p} value={p}>{p.charAt(0).toUpperCase()+p.slice(1)}</SelectItem>
+                        {[
+                          // 🇧🇷
+                          'esteticista','tecnólogo em estética','biomédico esteta','fisioterapeuta dermatofuncional','enfermeiro','farmacêutico','médico','dermatologista','cirurgião plástico','dentista (HOF)','nutricionista',
+                          // 🇺🇸
+                          'licensed esthetician','licensed cosmetologist','dermatologist (md)','plastic surgeon (md)','registered nurse (rn)','nurse practitioner (np)','physician assistant (pa)','licensed massage therapist (lmt)',
+                          // 🇪🇺
+                          'aesthetician','cosmetologist','physiotherapist','nurse'
+                        ].map((p)=>(
+                          <SelectItem key={p} value={p}>{p.toUpperCase()}</SelectItem>
                         ))}
+                        <SelectItem value="outro">OUTRO</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
+
+                  {profissao === 'outro' && (
+                    <div className="md:col-span-2">
+                      <label className="text-sm font-medium mb-2 block">Profissão (Outro)</label>
+                      <Input placeholder="Digite a profissão" value={profissaoOutro} onChange={(e)=>setProfissaoOutro(e.target.value)} />
+                    </div>
+                  )}
 
                   {/* Distância */}
                   <div>
@@ -841,7 +867,9 @@ export default function Mapa() {
                       <SelectContent>
                         <SelectItem value="online">Online</SelectItem>
                         <SelectItem value="presencial">Presencial</SelectItem>
+                        <SelectItem value="hibrida">Híbrida</SelectItem>
                       </SelectContent>
+                      <p className="text-[11px] text-gray-500 mt-1">Híbrida combina atendimentos online e presenciais.</p>
                     </Select>
                   </div>
 
@@ -855,7 +883,12 @@ export default function Mapa() {
                       <SelectContent>
                         <SelectItem value="domicilio">Domiciliar</SelectItem>
                         <SelectItem value="clinica">Clínica</SelectItem>
+                        <SelectItem value="consultorio">Consultório</SelectItem>
+                        <SelectItem value="online">Online</SelectItem>
+                        <SelectItem value="hibrida">Híbrido</SelectItem>
+                        <SelectItem value="evento">Evento/Corporativo</SelectItem>
                       </SelectContent>
+                      <p className="text-[11px] text-gray-500 mt-1">Escolha como o serviço é prestado. Em "Evento" inclui atendimentos corporativos.</p>
                     </Select>
                   </div>
 
@@ -875,6 +908,7 @@ export default function Mapa() {
 
                   {/* Verificados */}
                   <div className="flex items-center space-x-2 pt-6">
+                    <p className="text-[11px] text-gray-500 mr-3">Nível de verificação: nossa plataforma valida 3 documentos (licença sanitária, alvará e registro profissional). Selecione o mínimo desejado.</p>
                     <Checkbox
                       id="verificados"
                       checked={verificados}
@@ -1295,14 +1329,18 @@ export default function Mapa() {
                       <Marker
                         key={`anuncio-${a.id}`}
                         position={[a.latitude, a.longitude]}
-                        icon={criarIconeAnuncio(!!a.profissional_verificado, (!!a.em_destaque || !!a.impulsionado || ['ouro','diamante','platina'].includes(a.plano)))}
+                        icon={L.divIcon({ html: `<div style='font-size:24px'>${a.icone_mapa || '✨'}</div>`, className:'custom-marker', iconSize:[24,24], iconAnchor:[12,24] })}
                       >
                         <Popup>
-                          <div className="p-2 min-w-[220px]">
-                            <p className="font-bold text-gray-900 mb-1">{a.titulo}</p>
-                            {a.profissional && (<p className="text-xs text-gray-600 mb-1">{a.profissional}</p>)}
-                            {a.cidade && (<p className="text-xs text-gray-600 mb-2">{a.cidade} - {a.estado}</p>)}
-                            <button className="text-xs text-pink-600 font-semibold hover:underline" onClick={()=>window.location.href=`${createPageUrl("DetalhesAnuncio")}?id=${a.id}`}>
+                          <div className="p-2 min-w-[230px]">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-2xl">{a.icone_mapa || '✨'}</span>
+                              <p className="font-bold text-gray-900">{a.titulo}</p>
+                            </div>
+                            {a.profissional && (<p className="text-xs text-gray-600">{a.profissional}</p>)}
+                            {a.cidade && (<p className="text-xs text-gray-600">{a.cidade} - {a.estado}</p>)}
+                            <p className="text-[11px] text-gray-500 mt-1">Ícone escolhido para representar este anúncio no mapa. Categoria(s): {[a.categoria, ...(a.categorias_extra||[])].filter(Boolean).join(', ')}</p>
+                            <button className="mt-2 text-xs text-pink-600 font-semibold hover:underline" onClick={()=>window.location.href=`${createPageUrl("DetalhesAnuncio")}?id=${a.id}`}>
                               Ver anúncio
                             </button>
                           </div>
@@ -1329,39 +1367,7 @@ export default function Mapa() {
                    {centralizarEm && <CentralizarMapa center={centralizarEm} />}
                 </MapContainer>
 
-                {/* Badge de Info no Mapa */}
-                <div className="absolute top-4 right-4 z-[1000] bg-white rounded-lg shadow-lg p-3 border-2 border-[#F7D426]">
-                  <div className="flex items-center gap-2 mb-2">
-                    <MapPin className="w-5 h-5 text-[#F7D426]" />
-                    <span className="font-bold text-gray-900">Legenda:</span>
-                  </div>
-                  <div className="space-y-1 text-sm">
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 bg-blue-500 rounded-full border-2 border-white"></div>
-                      <span>Você</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl">💇</span>
-                      <span>Salão de Beleza</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl">💆</span>
-                      <span>Clínica de Estética</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl">🌿</span>
-                      <span>Spa</span>
-                    </div>
-                    <div className="flex items-center gap-2 mt-2">
-                      <div className="w-3 h-3 rounded-full border-2 border-white" style={{ background:'#10B981', boxShadow:'0 0 10px rgba(0,0,0,0.2)'}}></div>
-                      <span>Anúncio Verificado</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full border-2 border-white" style={{ background:'#9CA3AF', boxShadow:'0 0 0 4px rgba(247, 212, 38, 0.5), 0 0 10px rgba(0,0,0,0.2)'}}></div>
-                      <span>Anúncio Patrocinado</span>
-                    </div>
-                  </div>
-                </div>
+                {/* Legenda removida por solicitação: os emojis são autoexplicativos; detalhes no popup do anúncio */}
               </div>
             </div>
           </TabsContent>
