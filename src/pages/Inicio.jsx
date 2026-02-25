@@ -660,7 +660,7 @@ export default function Inicio() {
             </section>
           )}
 
-          {/* Beauty Safe - Proteção Civil para Profissionais */}
+          {/* Beauty Safe - Proteção Civil para Pacientes */}
           <section className="py-8">
             <div className="max-w-7xl mx-auto px-4">
               <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-2xl p-6 shadow flex flex-col md:flex-row items-center gap-6">
