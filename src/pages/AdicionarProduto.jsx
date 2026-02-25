@@ -34,6 +34,7 @@ export default function AdicionarProduto() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [gerandoIA, setGerandoIA] = useState(false);
   const [gerandoImagem, setGerandoImagem] = useState(false);
+  const [sugerindoPrecoTexto, setSugerindoPrecoTexto] = useState(false);
   const [user, setUser] = useState(null);
   const [aiSugerindo, setAiSugerindo] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
