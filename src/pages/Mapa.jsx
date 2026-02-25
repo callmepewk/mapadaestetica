@@ -855,6 +855,7 @@ export default function Mapa() {
                         ))}
                       </SelectContent>
                     </Select>
+                    <p className="text-[11px] text-gray-500 mt-1">Filtra por estrelas informadas pelo estabelecimento (quando disponível).</p>
                   </div>
 
                   {/* Modalidade */}

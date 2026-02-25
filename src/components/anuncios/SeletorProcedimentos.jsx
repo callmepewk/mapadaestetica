@@ -91,7 +91,7 @@ export default function SeletorProcedimentos({ open, onClose, onSelect }) {
   const mapaFiltrado = filtrarPorCategorias(selectedCategories);
   const listaAgrupada = mapaFiltrado || Object.entries(LISTA_OFICIAL);
   const todos = listaAgrupada.flatMap(([macro, grupos]) => Object.values(grupos).flat());
-  const filteredProcedimentos = (searchTerm ? todos : todos).filter(proc => proc.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredProcedimentos = todos.filter(proc => proc.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
