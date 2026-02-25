@@ -23,7 +23,7 @@ export default function CuriosidadesMes(){
       <div className="max-w-7xl mx-auto px-4">
         <div className="grid lg:grid-cols-2 gap-6 items-center">
           <img
-            src="https://images.unsplash.com/photo-1519823551278-64ac92734fb1?w=1200&q=80"
+            src="https://images.unsplash.com/photo-1526256262350-7da7584cf5eb?w=1200&q=80"
             alt="Tendências em Estética"
             className="rounded-2xl shadow-xl w-full object-cover"
           />

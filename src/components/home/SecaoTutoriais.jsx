@@ -40,6 +40,12 @@ export default function SecaoTutoriais({ tipoUsuario }) {
 
   const tutoriais = tipoUsuario === 'profissional' ? tutoriaisProfissionais : tutoriaisPacientes;
 
+  const covers = [
+    'https://images.unsplash.com/photo-1507537297725-24a1c029d3ca?w=800&q=80',
+    'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/26448ae19_image.png',
+    'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/06f5af43c_image.png',
+  ];
+
   return (
     <section className="py-12 sm:py-16 bg-gradient-to-br from-purple-50 to-pink-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -74,7 +80,7 @@ export default function SecaoTutoriais({ tipoUsuario }) {
                   {/* Thumbnail com imagem de capa */}
                   <div className="relative h-48 overflow-hidden">
                     <img
-                      src={`https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?w=800&q=60&sig=${index}`}
+                      src={covers[index % covers.length]}
                       alt={tutorial.titulo}
                       className="w-full h-full object-cover"
                     />

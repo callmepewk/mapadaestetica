@@ -1400,7 +1400,7 @@ export default function Inicio() {
 
       {/* Modal de Comparação */}
       <Dialog open={mostrarComparacao} onOpenChange={setMostrarComparacao}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
               📊 Comparação: Mapa da Estética vs Concorrentes
