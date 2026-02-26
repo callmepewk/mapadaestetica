@@ -671,7 +671,7 @@ export default function Produtos() {
                   }
                 </p>
 
-                
+
                 <div className="flex gap-3 justify-center flex-wrap">
                   <Button
                     onClick={() => setTipoBusca('produtos')}
