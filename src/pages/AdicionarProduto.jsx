@@ -21,10 +21,20 @@ import { ArrowLeft, Save, Upload, Loader2, Wand2, Image as ImageIcon, Sparkles, 
 import { Checkbox } from "@/components/ui/checkbox";
 
 const categorias = [
-  "Especialidades Técnicas e Procedimentais (Estética Profissional)",
-  "Técnicas Avançadas",
-  "Especialidades Relacionadas à Saúde / Ciência",
-  "Áreas Complementares / Especializações de Mercado",
+  "Cuidados com a Pele",
+  "Maquiagem",
+  "Cabelos",
+  "Perfumaria",
+  "Suplementos",
+  "Equipamentos",
+  "Acessórios",
+  "Serviços para Pacientes",
+  "Serviços Contratáveis",
+  "Produtos para Pacientes",
+  "IA",
+  "Serviços",
+  "Serviços de IA",
+  "Mídia e Marketing",
   "Outros"
 ];
 
@@ -34,7 +44,6 @@ export default function AdicionarProduto() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [gerandoIA, setGerandoIA] = useState(false);
   const [gerandoImagem, setGerandoImagem] = useState(false);
-  const [sugerindoPrecoTexto, setSugerindoPrecoTexto] = useState(false);
   const [user, setUser] = useState(null);
   const [aiSugerindo, setAiSugerindo] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
@@ -78,7 +87,7 @@ export default function AdicionarProduto() {
     lote_minimo: 1,
     aceitar_chat: true,
     aceitar_orcamento: false,
-    plano_minimo: ['free'],
+    plano_minimo: 'free',
     beauty_club_exclusivo: false,
     beauty_club_minimo: 'basic',
     // Endereço
@@ -301,17 +310,6 @@ export default function AdicionarProduto() {
     }
   };
 
-  const handleSugerirPrecoTextoIA = async () => {
-    setSugerindoPrecoTexto(true);
-    try {
-      const prompt = `Sugira um texto curto e vendedor para o campo "Texto do Preço" considerando: preço atual ${produto.preco||0}, preço promocional ${produto.preco_promocional||0} (se >0 mostrar formato com "de R$ X por R$ Y"), ou, se ambos 0, sugerir "Consultar". Retorne apenas o texto.`;
-      const texto = await base44.integrations.Core.InvokeLLM({ prompt, add_context_from_internet: false });
-      setProduto(p => ({ ...p, preco_texto: String(texto).replace(/^["']|["']$/g,'') }));
-    } finally {
-      setSugerindoPrecoTexto(false);
-    }
-  };
-
   // IA: gerar imagem a partir do nome
   const handleGerarImagemIA = async () => {
     if (!produto.nome) { alert('Informe o nome antes de gerar a imagem.'); return; }
@@ -324,25 +322,6 @@ export default function AdicionarProduto() {
       setGerandoImagem(false);
     }
   };
-
-  // Auto-categoria pela descrição (debounce)
-  React.useEffect(() => {
-    const handler = setTimeout(async () => {
-      try {
-        if (!produto.descricao || produto.categoria) return;
-        const schema = { type: 'object', properties: { categoria: { type: 'string' } } };
-        const res = await base44.integrations.Core.InvokeLLM({
-          prompt: `Com base na descrição a seguir, escolha UMA categoria entre: ${categorias.join(', ')}. Apenas o valor exato. Descrição: ${produto.descricao}`,
-          response_json_schema: schema,
-          add_context_from_internet: false
-        });
-        if (res?.categoria && categorias.includes(res.categoria)) {
-          setProduto(p => ({ ...p, categoria: res.categoria }));
-        }
-      } catch {}
-    }, 800);
-    return () => clearTimeout(handler);
-  }, [produto.descricao, produto.categoria]);
 
   // Escrita assistida por IA (sugestões de equipamentos)
   React.useEffect(() => {
@@ -492,25 +471,24 @@ export default function AdicionarProduto() {
                 </Button>
               </div>
 
-              {/* Plano mínimo para profissionais (multi‑seleção) */}
-              <div className="space-y-2">
-                <Label htmlFor="plano_minimo">Plano mínimo (profissionais) <span className="ml-1">{(produto.plano_minimo||[]).length? '✅':'❌'}</span></Label>
-                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-                  {['free','lite','basico','pro','prime','premium'].map(p => (
-                    <label key={p} className={`text-xs px-2 py-1 rounded border cursor-pointer ${produto.plano_minimo?.includes(p)?'bg-emerald-50 border-emerald-300':'bg-white border-gray-300'}`}>
-                      <input type="checkbox" className="hidden" checked={produto.plano_minimo?.includes(p)||false} onChange={(e)=>{
-                        const checked = e.target.checked;
-                        setProduto(prev => ({...prev, plano_minimo: checked ? Array.from(new Set([...(prev.plano_minimo||[]), p])) : (prev.plano_minimo||[]).filter(x=>x!==p)}));
-                      }} />
-                      {p.toUpperCase()}
-                    </label>
-                  ))}
-                </div>
-                <p className="text-xs text-gray-600">Profissionais com plano igual ou acima de qualquer opção selecionada verão este item (mais opções = maior alcance).</p>
+              {/* Plano mínimo para profissionais */}
+              <div>
+                <Label htmlFor="plano_minimo">Plano mínimo (profissionais)</Label>
+                <Select value={produto.plano_minimo || 'free'} onValueChange={(v)=>setProduto({ ...produto, plano_minimo: v })}>
+                  <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="free">Free</SelectItem>
+                    <SelectItem value="lite">Lite</SelectItem>
+                    <SelectItem value="basico">Básico</SelectItem>
+                    <SelectItem value="pro">Pro</SelectItem>
+                    <SelectItem value="prime">Prime</SelectItem>
+                    <SelectItem value="premium">Premium</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Beauty Club */}
-              <div className="mt-4 flex items-center space-x-2">
+              <div className="flex items-center space-x-2">
                 <Checkbox
                   id="beauty_club_exclusivo"
                   checked={produto.beauty_club_exclusivo}
@@ -518,17 +496,16 @@ export default function AdicionarProduto() {
                 />
                 <Label htmlFor="beauty_club_exclusivo" className="cursor-pointer">Exclusivo Beauty Club</Label>
               </div>
-              <div className="mt-2">
+              <div>
                 <Label htmlFor="beauty_club_minimo">Nível mínimo (Beauty Club)</Label>
                 <Select value={produto.beauty_club_minimo || 'basic'} onValueChange={(v)=>setProduto({ ...produto, beauty_club_minimo: v })}>
-                  <SelectTrigger className="w-60"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="w-52"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="basic">Beauty Club Basic</SelectItem>
                     <SelectItem value="pro">Beauty Club Pro</SelectItem>
                     <SelectItem value="exclusive">Beauty Club Exclusive (VIP)</SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-gray-600 mt-1">Define a partir de qual nível do Beauty Club o item fica acessível (impacta o alcance entre membros).</p>
               </div>
               </div>
 
@@ -552,13 +529,7 @@ export default function AdicionarProduto() {
 
               {/* Nome */}
               <div>
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="nome">Nome do {produto.tipo === 'servico' ? 'Serviço' : 'Produto'} * <span className="ml-1">{produto.nome.trim()? '✅':'❌'}</span></Label>
-                  <label>
-                    <input type="file" accept="image/*" className="hidden" onChange={(e)=> e.target.files && handleExtrairNomePorFoto(e.target.files[0])} />
-                    <Button type="button" variant="outline" className="border-2 h-8 px-2 text-xs"><ImageIcon className="w-3 h-3 mr-1"/>Capturar nome por foto</Button>
-                  </label>
-                </div>
+                <Label htmlFor="nome">Nome do {produto.tipo === 'servico' ? 'Serviço' : 'Produto'} *</Label>
                 <Input
                   id="nome"
                   value={produto.nome}
@@ -581,11 +552,10 @@ export default function AdicionarProduto() {
                 />
               </div>
 
-
               {/* Categoria e Marca */}
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="categoria">Categoria * <span className="ml-1">{produto.categoria? '✅':'❌'}</span></Label>
+                  <Label htmlFor="categoria">Categoria *</Label>
                   <Select
                     value={produto.categoria}
                     onValueChange={(value) => setProduto({ ...produto, categoria: value })}
@@ -643,120 +613,121 @@ export default function AdicionarProduto() {
                 )}
               </div>
 
-              {/* Admin Only */}
               {user?.role === 'admin' && (
-                <div className="p-4 rounded-lg border-2 border-amber-200 bg-amber-50 space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      id="programa_12_meses"
-                      checked={produto.programa_12_meses}
-                      onCheckedChange={(c)=> setProduto({ ...produto, programa_12_meses: !!c })}
-                    />
-                    <Label htmlFor="programa_12_meses" className="cursor-pointer font-semibold">
-                      Programa contínuo de 12 meses (Spa da Pele)
-                    </Label>
+                <>
+
+              <div className="p-4 rounded-lg border-2 border-amber-200 bg-amber-50 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="programa_12_meses"
+                    checked={produto.programa_12_meses}
+                    onCheckedChange={(c)=> setProduto({ ...produto, programa_12_meses: !!c })}
+                  />
+                  <Label htmlFor="programa_12_meses" className="cursor-pointer font-semibold">
+                    Programa contínuo de 12 meses (Spa da Pele)
+                  </Label>
+                </div>
+                {produto.programa_12_meses && (
+                  <>
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <div>
+                      <Label>Tipo de Programa</Label>
+                      <Select value={produto.programa_tipo || ""} onValueChange={(v)=> setProduto({ ...produto, programa_tipo: v })}>
+                        <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="spa_da_pele">Spa da Pele</SelectItem>
+                          <SelectItem value="beauty_pass">Beauty Pass</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Qtd. de Sessões</Label>
+                      <Input type="number" value={produto.quantidade_sessoes || 0} onChange={(e)=> setProduto({ ...produto, quantidade_sessoes: parseInt(e.target.value)||0 })} />
+                    </div>
+                    <div>
+                      <Label>Valor do Programa (R$)</Label>
+                      <Input type="number" step="0.01" value={produto.valor_programa || 0} onChange={(e)=> setProduto({ ...produto, valor_programa: parseFloat(e.target.value)||0 })} />
+                    </div>
                   </div>
 
-                  {produto.programa_12_meses && (
-                    <>
-                      <div className="grid md:grid-cols-3 gap-4">
-                        <div>
-                          <Label>Tipo de Programa</Label>
-                          <Select value={produto.programa_tipo || ""} onValueChange={(v)=> setProduto({ ...produto, programa_tipo: v })}>
-                            <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="spa_da_pele">Spa da Pele</SelectItem>
-                              <SelectItem value="beauty_pass">Beauty Pass</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div>
-                          <Label>Qtd. de Sessões</Label>
-                          <Input type="number" value={produto.quantidade_sessoes || 0} onChange={(e)=> setProduto({ ...produto, quantidade_sessoes: parseInt(e.target.value)||0 })} />
-                        </div>
-                        <div>
-                          <Label>Valor do Programa (R$)</Label>
-                          <Input type="number" step="0.01" value={produto.valor_programa || 0} onChange={(e)=> setProduto({ ...produto, valor_programa: parseFloat(e.target.value)||0 })} />
-                        </div>
-                      </div>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <Label>Tempo de realização (dias)</Label>
+                      <Input type="number" value={produto.tempo_dias || 0} onChange={(e)=> setProduto({ ...produto, tempo_dias: parseInt(e.target.value)||0 })} />
+                    </div>
+                    <div>
+                      <Label>Tempo de realização (meses)</Label>
+                      <Input type="number" value={produto.tempo_meses || 0} onChange={(e)=> setProduto({ ...produto, tempo_meses: parseInt(e.target.value)||0 })} />
+                    </div>
+                  </div>
 
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div>
-                          <Label>Tempo de realização (dias)</Label>
-                          <Input type="number" value={produto.tempo_dias || 0} onChange={(e)=> setProduto({ ...produto, tempo_dias: parseInt(e.target.value)||0 })} />
-                        </div>
-                        <div>
-                          <Label>Tempo de realização (meses)</Label>
-                          <Input type="number" value={produto.tempo_meses || 0} onChange={(e)=> setProduto({ ...produto, tempo_meses: parseInt(e.target.value)||0 })} />
-                        </div>
-                      </div>
+                  <div className="space-y-2 mt-2">
+                    <Label>Finalidade (objetivo clínico)</Label>
+                    <Textarea rows={3} placeholder="Ex: Redução de manchas, rejuvenescimento, melhora da textura..." value={produto.finalidade} onChange={(e)=> setProduto({ ...produto, finalidade: e.target.value })} />
+                    <div className="mt-2">
+                      <Button type="button" variant="outline" className="border-2" onClick={handleSugerirFinalidadeIA}>
+                        <Wand2 className="w-4 h-4 mr-2"/> Sugerir com IA
+                      </Button>
+                    </div>
+                  </div>
 
-                      <div className="space-y-2 mt-2">
-                        <Label>Finalidade (objetivo clínico)</Label>
-                        <Textarea rows={3} placeholder="Ex: Redução de manchas, rejuvenescimento, melhora da textura..." value={produto.finalidade} onChange={(e)=> setProduto({ ...produto, finalidade: e.target.value })} />
-                        <div className="mt-2">
-                          <Button type="button" variant="outline" className="border-2" onClick={handleSugerirFinalidadeIA}>
-                            <Wand2 className="w-4 h-4 mr-2"/> Sugerir com IA
-                          </Button>
-                        </div>
-                      </div>
+                  <div className="space-y-2 mt-4">
+                    <Label>Adicionar Tratamentos do Banco de Dados</Label>
+                    <Input
+                      placeholder="Buscar tratamentos (nome técnico)"
+                      value={buscaProc}
+                      onChange={(e)=>setBuscaProc(e.target.value)}
+                    />
+                    <div className="max-h-56 overflow-y-auto grid md:grid-cols-2 gap-2 p-2 bg-white rounded border">
+                      {procedimentos
+                        .filter(p => !buscaProc || p.nome_tecnico?.toLowerCase().includes(buscaProc.toLowerCase()))
+                        .slice(0, 50)
+                        .map(p => {
+                          const checked = produto.tratamentos_inclusos_ids.includes(p.id);
+                          return (
+                            <label key={p.id} className="flex items-center gap-2 text-sm cursor-pointer p-1 rounded hover:bg-gray-50">
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                onChange={(e)=>{
+                                  if (e.target.checked) {
+                                    setProduto(prev => ({
+                                      ...prev,
+                                      tratamentos_inclusos_ids: [...prev.tratamentos_inclusos_ids, p.id],
+                                      tratamentos_inclusos_nomes: [...prev.tratamentos_inclusos_nomes, p.nome_tecnico]
+                                    }));
+                                  } else {
+                                    setProduto(prev => ({
+                                      ...prev,
+                                      tratamentos_inclusos_ids: prev.tratamentos_inclusos_ids.filter(id => id !== p.id),
+                                      tratamentos_inclusos_nomes: prev.tratamentos_inclusos_nomes.filter(n => n !== p.nome_tecnico)
+                                    }));
+                                  }
+                                }}
+                              />
+                              <span className="truncate">{p.nome_tecnico}</span>
+                            </label>
+                          );
+                        })}
+                    </div>
+                    {produto.tratamentos_inclusos_nomes.length > 0 && (
+                      <p className="text-xs text-gray-600">
+                        Selecionados: {produto.tratamentos_inclusos_nomes.slice(0,5).join(', ')}{produto.tratamentos_inclusos_nomes.length>5 ? '…' : ''}
+                      </p>
+                    )}
+                  </div>
+                </>
+                )}
+              </div>
 
-                      <div className="space-y-2 mt-4">
-                        <Label>Adicionar Tratamentos do Banco de Dados</Label>
-                        <Input
-                          placeholder="Buscar tratamentos (nome técnico)"
-                          value={buscaProc}
-                          onChange={(e)=>setBuscaProc(e.target.value)}
-                        />
-                        <div className="max-h-56 overflow-y-auto grid md:grid-cols-2 gap-2 p-2 bg-white rounded border">
-                          {procedimentos
-                            .filter(p => !buscaProc || p.nome_tecnico?.toLowerCase().includes(buscaProc.toLowerCase()))
-                            .slice(0, 50)
-                            .map(p => {
-                              const checked = produto.tratamentos_inclusos_ids.includes(p.id);
-                              return (
-                                <label key={p.id} className="flex items-center gap-2 text-sm cursor-pointer p-1 rounded hover:bg-gray-50">
-                                  <input
-                                    type="checkbox"
-                                    checked={checked}
-                                    onChange={(e)=>{
-                                      if (e.target.checked) {
-                                        setProduto(prev => ({
-                                          ...prev,
-                                          tratamentos_inclusos_ids: [...prev.tratamentos_inclusos_ids, p.id],
-                                          tratamentos_inclusos_nomes: [...prev.tratamentos_inclusos_nomes, p.nome_tecnico]
-                                        }));
-                                      } else {
-                                        setProduto(prev => ({
-                                          ...prev,
-                                          tratamentos_inclusos_ids: prev.tratamentos_inclusos_ids.filter(id => id !== p.id),
-                                          tratamentos_inclusos_nomes: prev.tratamentos_inclusos_nomes.filter(n => n !== p.nome_tecnico)
-                                        }));
-                                      }
-                                    }}
-                                  />
-                                  <span className="truncate">{p.nome_tecnico}</span>
-                                </label>
-                              );
-                            })}
-                        </div>
-                        {produto.tratamentos_inclusos_nomes.length > 0 && (
-                          <p className="text-xs text-gray-600">
-                            Selecionados: {produto.tratamentos_inclusos_nomes.slice(0,5).join(', ')}{produto.tratamentos_inclusos_nomes.length>5 ? '…' : ''}
-                          </p>
-                        )}
-                      </div>
-                    </>
-                  )}
-                </div>
+              </>
               )}
 
               {/* Fornecedor e Oferta */}
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="fornecedor_nome">Nome do Responsável</Label>
-                  <Input id="fornecedor_nome" value={produto.fornecedor_nome} onChange={(e)=>setProduto({ ...produto, fornecedor_nome: e.target.value })} placeholder="Ex: Dra. Maria Souza / Setor Compras" />
-                  <p className="text-xs text-gray-500 mt-1">Pode divergir do fornecedor (ex.: responsável técnico, gestor de compras ou contato comercial).</p>
+                  <Label htmlFor="fornecedor_nome">Nome do Fornecedor</Label>
+                  <Input id="fornecedor_nome" value={produto.fornecedor_nome} onChange={(e)=>setProduto({ ...produto, fornecedor_nome: e.target.value })} placeholder="Ex: Distribuidora ABC" />
                 </div>
                 <div>
                   <Label htmlFor="fornecedor_tipo">Classificação</Label>
@@ -835,7 +806,14 @@ export default function AdicionarProduto() {
                   <Label htmlFor="cep">CEP</Label>
                   <Input id="cep" value={produto.cep || ""} onChange={(e)=>setProduto({ ...produto, cep: e.target.value })} />
                 </div>
-                {/* Latitude/Longitude ocultos (preenchidos automaticamente quando usar minha localização) */}
+                <div>
+                  <Label htmlFor="latitude">Latitude (opcional)</Label>
+                  <Input id="latitude" type="number" value={produto.latitude || ''} onChange={(e)=>setProduto({ ...produto, latitude: parseFloat(e.target.value) || undefined })} />
+                </div>
+                <div>
+                  <Label htmlFor="longitude">Longitude (opcional)</Label>
+                  <Input id="longitude" type="number" value={produto.longitude || ''} onChange={(e)=>setProduto({ ...produto, longitude: parseFloat(e.target.value) || undefined })} />
+                </div>
               </div>
 
               {/* Preços */}
@@ -866,39 +844,30 @@ export default function AdicionarProduto() {
 
                 <div>
                   <Label htmlFor="preco_texto">Texto do Preço</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="preco_texto"
-                      value={produto.preco_texto}
-                      onChange={(e) => setProduto({ ...produto, preco_texto: e.target.value })}
-                      placeholder="Ex: Consultar"
-                      className="flex-1"
-                    />
-                    <Button type="button" variant="outline" onClick={handleSugerirPrecoTextoIA} disabled={sugerindoPrecoTexto} className="whitespace-nowrap">
-                      {sugerindoPrecoTexto ? 'Gerando...' : 'Sugerir IA'}
-                    </Button>
-                  </div>
-                  <div className="text-xs text-gray-600 mt-1 p-2 rounded border bg-gray-50">
-                    Preenchimento e visualização:
-                    <ul className="list-disc pl-5 space-y-1 mt-1">
-                      <li>Se houver <strong>Preço</strong> e <strong>Preço Promocional</strong>, a vitrine mostra <em>de R$ X</em> (riscado) <em>por R$ Y</em>.</li>
-                      <li>Se <strong>Preço</strong> for 0, usamos o <strong>Texto do Preço</strong> (ex.: "Consultar", "A partir de R$ 199").</li>
-                      <li>Os <strong>pontos ganhos</strong> são estimados pela faixa de preço exibida.</li>
-                    </ul>
-                  </div>
+                  <Input
+                    id="preco_texto"
+                    value={produto.preco_texto}
+                    onChange={(e) => setProduto({ ...produto, preco_texto: e.target.value })}
+                    placeholder="Ex: Consultar"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Use para "Consultar", "A partir de X", etc
+                  </p>
                 </div>
               </div>
 
               {/* Link de Pagamento */}
               <div>
-                <Label htmlFor="link_pagamento">Link de Pagamento/Checkout</Label>
+                <Label htmlFor="link_pagamento">Link de Pagamento (Mercado Pago)</Label>
                 <Input
                   id="link_pagamento"
                   value={produto.link_pagamento}
                   onChange={(e) => setProduto({ ...produto, link_pagamento: e.target.value })}
-                  placeholder="https://seu-checkout.com/..., https://mpago.la/... ou outro"
+                  placeholder="https://mercadopago.com.br/..."
                 />
-                <p className="text-xs text-gray-500 mt-1">Qualquer provedor de pagamento ou página de checkout.</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Link do Mercado Pago para pagamento deste produto/serviço
+                </p>
               </div>
 
               {/* Estoque (apenas para produtos) */}
@@ -972,7 +941,14 @@ export default function AdicionarProduto() {
                   </div>
 
                   <div className="flex flex-wrap gap-2 mt-3">
-
+                  <label>
+                    <input type="file" accept="image/*" className="hidden" onChange={(e)=> e.target.files && handleExtrairNomePorFoto(e.target.files[0])} />
+                    <Button type="button" variant="outline" className="border-2"><ImageIcon className="w-4 h-4 mr-2"/>Capturar nome por foto (OCR)</Button>
+                  </label>
+                  <Button type="button" variant="outline" onClick={handleDescricaoPorImagem} disabled={gerandoIA} className="border-2">
+                    {gerandoIA ? <Loader2 className="w-4 h-4 mr-2 animate-spin"/> : <Wand2 className="w-4 h-4 mr-2"/>}
+                    Gerar descrição pela imagem
+                  </Button>
                   </div>
 
                   {produto.imagens.length > 0 && (

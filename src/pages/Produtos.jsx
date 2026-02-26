@@ -48,40 +48,40 @@ import ProdutoDetalhesDialog from "../components/produtos/ProdutoDetalhesDialog"
 
 const categorias = [
   "Todas",
-  "Especialidades Técnicas e Procedimentais (Estética Profissional)",
-  "Técnicas Avançadas",
-  "Especialidades Relacionadas à Saúde / Ciência",
-  "Áreas Complementares / Especializações de Mercado",
-  "Outros"
+  "Cuidados com a Pele",
+  "Cabelos",
+  "Maquiagem",
+  "Perfumaria",
+  "Suplementos",
+  "Equipamentos",
+  "Acessórios",
+  "Outros",
+  "Serviços Contratáveis",
+  "Serviços para Pacientes",
+  "Produtos para Pacientes",
+  "IA",
+  "Serviços",
+  "Serviços de IA",
+  "Mídia e Marketing"
 ];
 
 const servicosContrataveis = [
-  // SERVIÇOS PARA PROFISSIONAIS (contato via WhatsApp)
+  // PROGRAMAS EM EXPOSIÇÃO (pacientes)
   {
-    id: "criacao-webapp",
-    nome: "Criação de Web‑App sob medida",
-    descricao: "Construímos um web‑app completo (painel, cadastro, IA integrada, mapas, pagamentos) para sua clínica/negócio, otimizado para conversão e pronto para escalar.",
-    categoria: "Áreas Complementares / Especializações de Mercado",
-    tipo_publico: "profissional",
-    tipo: "servico",
+    id: "checkup-360",
+    nome: "Checkup 360",
+    descricao: "Avaliação completa e plano personalizado de 12 meses com acompanhamento.",
+    categoria: "Serviços para Pacientes",
+    tipo_publico: "paciente",
     preco: 0,
-    preco_texto: "Fale com a equipe",
-    imagens: [],
-    whatsappNumero: "54991554136"
+    preco_texto: "Consultar",
+    imagens: ["https://images.unsplash.com/photo-1556157382-97eda2d62296?w=800&q=80"],
+    programa_12_meses: true,
+    tratamentos_inclusos_nomes: [],
+    em_destaque: true,
+    status: 'ativo',
+    requer_assinatura: false
   },
-  {
-    id: "site-profissional-contato",
-    nome: "Desenvolvimento de Site Profissional",
-    descricao: "Site institucional moderno, responsivo e veloz, com SEO, páginas de serviços, WhatsApp e agenda integrados.",
-    categoria: "Áreas Complementares / Especializações de Mercado",
-    tipo_publico: "profissional",
-    tipo: "servico",
-    preco: 0,
-    preco_texto: "Fale com a equipe",
-    imagens: [],
-    whatsappNumero: "54991554136"
-  },
-
   {
     id: "checkup-da-pele",
     nome: "Checkup da Pele",
@@ -182,8 +182,7 @@ const servicosContrataveis = [
     status: 'ativo',
     requer_assinatura: true
   },
-  // Removido: Fotografia Profissional (substituído pelos serviços de Web‑App e Site)
-  /* {
+  {
     id: "fotografia-profissional",
     nome: "Sessão de Fotografia Profissional",
     descricao: "Sessão fotográfica profissional para capturar seus trabalhos e criar um portfólio impecável.",
@@ -458,28 +457,21 @@ export default function Produtos() {
   const isProfissional = user?.tipo_usuario === 'profissional';
   const isAdmin = user?.role === 'admin'; // Added isAdmin
 
-  // Placeholders de exemplo (somente 2 cards demonstrativos)
-  const exemplosExposicao = [
-    { id: 'placeholder-produto', tipo: 'produto', nome: 'Exemplo de Card de Produto', descricao: 'Aqui seu produto aparece com título, descrição, preço e selos.', categoria: 'Outros', imagens: [] },
-    { id: 'placeholder-servico', tipo: 'servico', nome: 'Exemplo de Card de Serviço', descricao: 'Aqui seu serviço aparece com descrição, CTA e indicação de pontos.', categoria: 'Outros', imagens: [] }
-  ];
-
-  // Itens disponíveis
+  // Filtrar produtos baseado no tipo de usuário
   const todosProdutos = [
-    ...servicosContrataveis,
+    // Exibir programas 12m do banco para pacientes em primeiro lugar
+    ...produtosDatabase.filter(p => p.programa_12_meses === true && (isPaciente)),
+    // Conteúdo estático de exposição e demais produtos
+
+    ...servicosContrataveis.filter(s =>
+      isProfissional ? s.tipo_publico === "profissional" : s.tipo_publico === "paciente"
+    ),
     ...produtosDatabase
   ];
 
   const produtosFiltrados = todosProdutos.filter(produto => {
     const isExclusivo = !!(produto.requer_assinatura || produto.mostrar_tag_clube || produto.beauty_club_exclusivo);
-
-    // Filtro por plano selecionado (lista compatível com string legado)
-    const matchPlanoFiltro = (() => {
-      if (planoFiltro === 'todos') return true;
-      if (Array.isArray(produto.plano_minimo)) return produto.plano_minimo.includes(planoFiltro);
-      if (typeof produto.plano_minimo === 'string') return produto.plano_minimo === planoFiltro;
-      return true;
-    })();
+    const matchPlanoFiltro = planoFiltro === 'todos' || (produto.plano_minimo || 'free') === planoFiltro;
 
     // Gating por Beauty Club quando aplicável
     if (isExclusivo && produto.beauty_club_minimo) {
@@ -488,19 +480,15 @@ export default function Produtos() {
       if (ordemBC.indexOf(userBC) < ordemBC.indexOf(produto.beauty_club_minimo)) return false;
     }
 
-    // Gating por plano mínimo (profissionais) – aceita lista
-    if (isProfissional && produto.plano_minimo) {
+    // Respeitar plano mínimo (para profissionais) (já existente abaixo)
+
+    // Respeitar plano mínimo (para profissionais)
+    if (produto.plano_minimo && isProfissional) {
       const ordem = ['free','lite','basico','pro','prime','premium'];
       const idxUser = ordem.indexOf(user?.plano_ativo || 'free');
-      if (Array.isArray(produto.plano_minimo) && produto.plano_minimo.length > 0) {
-        const idxs = produto.plano_minimo.map(p=>ordem.indexOf(p)).filter(i=>i>=0);
-        if (idxs.length && idxUser < Math.min(...idxs)) return false;
-      } else if (typeof produto.plano_minimo === 'string') {
-        const idxMin = ordem.indexOf(produto.plano_minimo || 'free');
-        if (idxUser < idxMin) return false;
-      }
+      const idxMin = ordem.indexOf(produto.plano_minimo || 'free');
+      if (idxUser < idxMin) return false;
     }
-
     const matchCategoria = categoriaFiltro === "Todas" || produto.categoria === categoriaFiltro;
 
     // Visibilidade por plano (profissionais)
@@ -512,11 +500,10 @@ export default function Produtos() {
     // Visibilidade por especialidades (se definido)
     if (Array.isArray(produto.especialidades_alvo) && produto.especialidades_alvo.length > 0) {
       const minhas = Array.isArray(user?.especialidades) ? user.especialidades.map(s=>String(s).toLowerCase()) : [];
-      if (minhas.length === 0) return false;
+      if (minhas.length === 0) return false; // se exigir especialidade e o usuário não tiver
       const alvo = produto.especialidades_alvo.map(s=>String(s).toLowerCase());
       if (!minhas.some(s=>alvo.includes(s))) return false;
     }
-
     const matchVis = visibilidadeFiltro === 'todos' || (visibilidadeFiltro === 'exclusivo' ? isExclusivo : !isExclusivo);
     const matchBusca = !busca ||
       produto.nome?.toLowerCase().includes(busca.toLowerCase()) ||
@@ -535,12 +522,16 @@ export default function Produtos() {
       }
     }
 
-    // Filtrar por tipo de busca (baseado em campo tipo)
+    // Filtrar por tipo de busca
     let matchTipo = true;
     if (tipoBusca === 'servicos') {
-      matchTipo = (produto.tipo === 'servico') || produto.id?.toString().startsWith('criacao-webapp') || produto.id?.toString().startsWith('site-profissional');
+      matchTipo = produto.categoria === "Serviços Contratáveis" ||
+                  produto.categoria === "Serviços para Pacientes" ||
+                  produto.categoria === "Produtos para Pacientes";
     } else if (tipoBusca === 'produtos') {
-      matchTipo = produto.tipo !== 'servico';
+      matchTipo = produto.categoria !== "Serviços Contratáveis" &&
+                  produto.categoria !== "Serviços para Pacientes" &&
+                  produto.categoria !== "Produtos para Pacientes";
     }
 
     return matchCategoria && matchBusca && matchTipo && matchVis && matchPlanoFiltro && matchFaixaPontos;
@@ -612,15 +603,6 @@ export default function Produtos() {
       setMostrarLoginPrompt(true);
       return;
     }
-
-    // Serviços com contato direto via WhatsApp
-    if (servico.whatsappNumero) {
-      const nome = user?.full_name || 'profissional';
-      const texto = `Olá! Tenho interesse em ${servico.nome}. Sou ${nome} (${user?.email||''}). Podemos conversar?`;
-      window.open(`https://wa.me/${servico.whatsappNumero}?text=${encodeURIComponent(texto)}`, '_blank');
-      return;
-    }
-
     if (servico.preco === 0 || !servico.preco || servico.requer_assinatura) {
       navigate(createPageUrl("SobreNos"));
       return;
@@ -650,7 +632,9 @@ export default function Produtos() {
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
       <div className="max-w-7xl mx-auto px-4">
         <div className="grid lg:grid-cols-4 gap-6">
+          {/* Coluna Principal - Produtos */}
           <div className="lg:col-span-3">
+            {/* Header com toggle de tipo E botão admin */}
             <div className="mb-6">
               <div className="text-center mb-6">
                 <Badge className="mb-4 bg-[#F7D426] text-[#2C2C2C] font-bold">
@@ -671,7 +655,7 @@ export default function Produtos() {
                   }
                 </p>
 
-
+                {/* Toggle de tipo E Botão Admin */}
                 <div className="flex gap-3 justify-center flex-wrap">
                   <Button
                     onClick={() => setTipoBusca('produtos')}
@@ -692,7 +676,7 @@ export default function Produtos() {
                     💼 Ver Serviços
                   </Button>
 
-                  
+                  {/* BOTÃO ADMIN - Apenas visível para administradores */}
                   {isAdmin && (
                     <Button
                       onClick={() => navigate(createPageUrl("AdicionarProduto"))}
@@ -897,20 +881,52 @@ export default function Produtos() {
 
             {/* Products Grid */}
             {produtosFiltrados.length === 0 ? (
-              <div className="grid md:grid-cols-2 gap-6">
-                {exemplosExposicao.map((ex) => (
-                  <Card key={ex.id} className="overflow-hidden border-dashed border-2 border-gray-300">
-                    <div className="relative h-48 bg-gray-100 flex items-center justify-center">
-                      <span className="text-sm font-semibold text-gray-600">1200 × 900</span>
-                    </div>
-                    <CardContent className="p-4">
-                      <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-300 mb-2">{ex.tipo === 'servico' ? 'Serviço' : 'Produto'}</Badge>
-                      <h3 className="font-bold text-lg mb-2">{ex.nome}</h3>
-                      <p className="text-sm text-gray-600">{ex.descricao}</p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+              <Card className="p-12 text-center">
+                <div className="text-6xl mb-4">
+                  {tipoBusca === 'produtos' ? "🛍️" : "💼"}
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  {tipoBusca === 'produtos' ? "Em Breve!" : "Nenhum serviço encontrado"}
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  {tipoBusca === 'produtos' 
+                    ? "Estamos preparando produtos incríveis para você. Volte em breve!"
+                    : "Não encontramos serviços com os filtros selecionados."
+                  }
+                </p>
+
+                {/* Debug para admin */}
+                {isAdmin && (
+                  <div className="mt-6 p-4 bg-yellow-50 border-2 border-yellow-200 rounded-lg text-left">
+                    <p className="font-bold text-yellow-900 mb-2">Debug Info (Admin):</p>
+                    <p className="text-sm text-yellow-800">Total produtos DB: {produtosDatabase.length}</p>
+                    <p className="text-sm text-yellow-800">Total serviços: {servicosContrataveis.length}</p>
+                    <p className="text-sm text-yellow-800">Filtrados: {produtosFiltrados.length}</p>
+                    <p className="text-sm text-yellow-800">Categoria filtro: {categoriaFiltro}</p>
+                    <p className="text-sm text-yellow-800">Tipo busca: {tipoBusca}</p>
+                  </div>
+                )}
+
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <div className="text-center p-4 bg-gray-50 rounded-lg">
+                    <TrendingUp className="w-8 h-8 mx-auto mb-2 text-[#F7D426]" />
+                    <p className="font-semibold text-sm">Lançamentos em Breve</p>
+                    <p className="text-xs text-gray-500">
+                      {tipoBusca === 'produtos' ? 'Produtos exclusivos' : 'Novos serviços'}
+                    </p>
+                  </div>
+                  <div className="text-center p-4 bg-gray-50 rounded-lg">
+                    <Gift className="w-8 h-8 mx-auto mb-2 text-[#F7D426]" />
+                    <p className="font-semibold text-sm">Programa de Pontos</p>
+                    <p className="text-xs text-gray-500">Acumule e resgate</p>
+                  </div>
+                  <div className="text-center p-4 bg-gray-50 rounded-lg">
+                    <Award className="w-8 h-8 mx-auto mb-2 text-[#F7D426]" />
+                    <p className="font-semibold text-sm">Descontos Exclusivos</p>
+                    <p className="text-xs text-gray-500">Para membros</p>
+                  </div>
+                </div>
+              </Card>
             ) : (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {produtosFiltrados.map((produto) => {
@@ -939,8 +955,8 @@ export default function Produtos() {
                             eager={false}
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-gray-200">
-                            <span className="text-sm font-semibold text-gray-600">1200 × 900</span>
+                          <div className="w-full h-full flex items-center justify-center text-6xl text-gray-400">
+                            {produto.nome && produto.nome.includes("Beauty Box") ? "💝" : "🎁"}
                           </div>
                         )}
                         {produto.em_destaque && (
@@ -989,7 +1005,11 @@ export default function Produtos() {
                           {produto.descricao}
                         </p>
 
-
+                        {produto.marca && (
+                          <p className="text-xs text-gray-500 mb-3">
+                            Marca: {produto.marca}
+                          </p>
+                        )}
 
                         {produto.programa_12_meses && produto.tratamentos_inclusos_nomes && produto.tratamentos_inclusos_nomes.length > 0 && (
                           <div className="mb-3 space-y-1">

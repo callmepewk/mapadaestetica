@@ -42,26 +42,9 @@ export default function Chatbot({ user, onCompletarCadastro }) {
   const [loading, setLoading] = useState(false);
   const [mostrarSugestoes, setMostrarSugestoes] = useState(true);
 
-  // Ajuste pela visão do admin (visaoAdmin salva no localStorage)
-  const adminVisao = (() => { try { return localStorage.getItem('admin_visao_site') || null; } catch { return null; } })();
-  const tipoAtual = (user?.role === 'admin' && adminVisao) ? adminVisao : (user?.tipo_usuario || 'paciente');
-  const tipoPerguntasSugeridas = tipoAtual === 'profissional' ? perguntasSugeridas.profissional : perguntasSugeridas.paciente;
-
-  // Fala (TTS) com voz feminina pt-BR
-  const speak = (text) => {
-    try {
-      const synth = window.speechSynthesis;
-      if (!synth) return;
-      const utter = new SpeechSynthesisUtterance(text);
-      const voices = synth.getVoices();
-      const femalePt = voices.find(v => /pt-BR|Portuguese/i.test(v.lang||'') && /Female|feminina|Google português do Brasil/i.test(v.name||''))
-        || voices.find(v => /pt-BR|Portuguese/i.test(v.lang||''));
-      if (femalePt) utter.voice = femalePt;
-      utter.rate = 1.02;
-      utter.pitch = 1.05;
-      synth.speak(utter);
-    } catch {}
-  };
+  const tipoPerguntasSugeridas = user?.tipo_usuario === 'profissional' 
+    ? perguntasSugeridas.profissional 
+    : perguntasSugeridas.paciente;
 
   const handleSendMessage = async (mensagemTexto) => {
     const messageToSend = mensagemTexto || inputMessage.trim();
@@ -128,7 +111,6 @@ Responda de forma clara, objetiva e útil.`,
       });
 
       setMessages(prev => [...prev, { type: "bot", text: response }]);
-      speak(String(response||''));
     } catch (error) {
       setMessages(prev => [...prev, { 
         type: "bot", 
@@ -155,14 +137,6 @@ Responda de forma clara, objetiva e útil.`,
       }
     }
   };
-
-  // Auto-scroll ao final das mensagens
-  React.useEffect(() => {
-    try {
-      const el = document.getElementById('chat-scroll');
-      if (el) el.scrollTop = el.scrollHeight;
-    } catch {}
-  }, [messages, loading]);
 
   return (
     <>
@@ -273,7 +247,7 @@ Responda de forma clara, objetiva e útil.`,
               </div>
 
               {/* Mensagens - SCROLLABLE */}
-              <div id="chat-scroll" className="flex-1 overflow-y-auto p-4 bg-gray-50 space-y-4 min-h-0">
+              <div className="flex-1 overflow-y-auto p-4 bg-gray-50 space-y-4 min-h-0">
                 {messages.map((message, index) => (
                   <div
                     key={index}
@@ -321,7 +295,7 @@ Responda de forma clara, objetiva e útil.`,
                   <div className="space-y-3">
                     <div className="text-center">
                       <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
-                        Sugestões para você
+                        {user.tipo_usuario === 'profissional' ? '💼 Perguntas para Profissionais' : '💆‍♀️ Perguntas Frequentes'}
                       </Badge>
                     </div>
                     <div className="grid grid-cols-1 gap-2">
