@@ -692,7 +692,7 @@ export default function Produtos() {
                     💼 Ver Serviços
                   </Button>
 
-                  {/* BOTÃO ADMIN - Apenas visível para administradores */}
+                  
                   {isAdmin && (
                     <Button
                       onClick={() => navigate(createPageUrl("AdicionarProduto"))}
