@@ -671,7 +671,7 @@ export default function Produtos() {
                   }
                 </p>
 
-                {/* Toggle de tipo E Botão Admin */}
+                
                 <div className="flex gap-3 justify-center flex-wrap">
                   <Button
                     onClick={() => setTipoBusca('produtos')}
