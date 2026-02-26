@@ -977,7 +977,6 @@ export default function Mapa() {
                       <SelectItem value="patrocinados">Patrocinados Primeiro</SelectItem>
                     </SelectContent>
                   </Select>
-                {}
               </div>
             </div>
 
