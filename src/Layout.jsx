@@ -45,6 +45,7 @@ import LanguageSelector from "./components/layout/LanguageSelector";
 import { I18nProvider } from "./components/i18n/I18nProvider";
 import FloatingQuickbar from "./components/layout/FloatingQuickbar";
 import ImageWithLoader from "./components/common/ImageWithLoader";
+import ErrorBoundary from "./components/common/ErrorBoundary";
 
 export default function Layout({ children }) {
   const location = useLocation();
@@ -794,7 +795,9 @@ export default function Layout({ children }) {
                 </header>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-x-hidden">{children}</main>
+      <ErrorBoundary>
+        <main className="flex-1 overflow-x-hidden">{children}</main>
+      </ErrorBoundary>
 
       {/* Footer */}
       <footer className="bg-[#2C2C2C] text-white mt-12 sm:mt-20">
