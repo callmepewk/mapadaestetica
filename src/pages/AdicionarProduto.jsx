@@ -657,92 +657,10 @@ export default function AdicionarProduto() {
                   </Label>
                 </div>
                 {produto.programa_12_meses && (
-                  <div className="grid md:grid-cols-3 gap-4">
-                    <div>
-                      <Label>Tipo de Programa</Label>
-                      <Select value={produto.programa_tipo || ""} onValueChange={(v)=> setProduto({ ...produto, programa_tipo: v })}>
-                        <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="spa_da_pele">Spa da Pele</SelectItem>
-                          <SelectItem value="beauty_pass">Beauty Pass</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label>Qtd. de Sessões</Label>
-                      <Input type="number" value={produto.quantidade_sessoes || 0} onChange={(e)=> setProduto({ ...produto, quantidade_sessoes: parseInt(e.target.value)||0 })} />
-                    </div>
-                    <div>
-                      <Label>Valor do Programa (R$)</Label>
-                      <Input type="number" step="0.01" value={produto.valor_programa || 0} onChange={(e)=> setProduto({ ...produto, valor_programa: parseFloat(e.target.value)||0 })} />
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <Label>Tempo de realização (dias)</Label>
-                      <Input type="number" value={produto.tempo_dias || 0} onChange={(e)=> setProduto({ ...produto, tempo_dias: parseInt(e.target.value)||0 })} />
-                    </div>
-                    <div>
-                      <Label>Tempo de realização (meses)</Label>
-                      <Input type="number" value={produto.tempo_meses || 0} onChange={(e)=> setProduto({ ...produto, tempo_meses: parseInt(e.target.value)||0 })} />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 mt-2">
-                    <Label>Finalidade (objetivo clínico)</Label>
-                    <Textarea rows={3} placeholder="Ex: Redução de manchas, rejuvenescimento, melhora da textura..." value={produto.finalidade} onChange={(e)=> setProduto({ ...produto, finalidade: e.target.value })} />
-                    <div className="mt-2">
-                      <Button type="button" variant="outline" className="border-2" onClick={handleSugerirFinalidadeIA}>
-                        <Wand2 className="w-4 h-4 mr-2"/> Sugerir com IA
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 mt-4">
-                    <Label>Adicionar Tratamentos do Banco de Dados</Label>
-                    <Input
-                      placeholder="Buscar tratamentos (nome técnico)"
-                      value={buscaProc}
-                      onChange={(e)=>setBuscaProc(e.target.value)}
-                    />
-                    <div className="max-h-56 overflow-y-auto grid md:grid-cols-2 gap-2 p-2 bg-white rounded border">
-                      {procedimentos
-                        .filter(p => !buscaProc || p.nome_tecnico?.toLowerCase().includes(buscaProc.toLowerCase()))
-                        .slice(0, 50)
-                        .map(p => {
-                          const checked = produto.tratamentos_inclusos_ids.includes(p.id);
-                          return (
-                            <label key={p.id} className="flex items-center gap-2 text-sm cursor-pointer p-1 rounded hover:bg-gray-50">
-                              <input
-                                type="checkbox"
-                                checked={checked}
-                                onChange={(e)=>{
-                                  if (e.target.checked) {
-                                    setProduto(prev => ({
-                                      ...prev,
-                                      tratamentos_inclusos_ids: [...prev.tratamentos_inclusos_ids, p.id],
-                                      tratamentos_inclusos_nomes: [...prev.tratamentos_inclusos_nomes, p.nome_tecnico]
-                                    }));
-                                  } else {
-                                    setProduto(prev => ({
-                                      ...prev,
-                                      tratamentos_inclusos_ids: prev.tratamentos_inclusos_ids.filter(id => id !== p.id),
-                                      tratamentos_inclusos_nomes: prev.tratamentos_inclusos_nomes.filter(n => n !== p.nome_tecnico)
-                                    }));
-                                  }
-                                }}
-                              />
-                              <span className="truncate">{p.nome_tecnico}</span>
-                            </label>
-                          );
-                        })}
-                    </div>
-                    {produto.tratamentos_inclusos_nomes.length > 0 && (
-                      <p className="text-xs text-gray-600">
-                        Selecionados: {produto.tratamentos_inclusos_nomes.slice(0,5).join(', ')}{produto.tratamentos_inclusos_nomes.length>5 ? '…' : ''}
-                      </p>
-                    )}
+                  <>
+...
+                  </>
+                )}
                   </div>
                 )}
               </div>
