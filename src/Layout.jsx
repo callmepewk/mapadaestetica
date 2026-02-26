@@ -61,6 +61,38 @@ export default function Layout({ children }) {
         const [temaCor, setTemaCor] = useState('#F7D426');
         const [radarHasNew, setRadarHasNew] = useState(false);
 
+  // Helper: convert hex (#rrggbb) to "H S% L%" for shadcn theme vars
+  const hexToHslTuple = (hex) => {
+    try {
+      const sanitized = hex?.toString().trim();
+      if (!sanitized || !sanitized.startsWith('#')) return '50 93% 56%';
+      const bigint = parseInt(sanitized.slice(1), 16);
+      const r = (bigint >> 16) & 255;
+      const g = (bigint >> 8) & 255;
+      const b = bigint & 255;
+      const rN = r / 255, gN = g / 255, bN = b / 255;
+      const max = Math.max(rN, gN, bN), min = Math.min(rN, gN, bN);
+      let h, s, l = (max + min) / 2;
+      if (max === min) { h = 0; s = 0; }
+      else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+          case rN: h = (gN - bN) / d + (gN < bN ? 6 : 0); break;
+          case gN: h = (bN - rN) / d + 2; break;
+          default: h = (rN - gN) / d + 4;
+        }
+        h /= 6;
+      }
+      const H = Math.round(h * 360);
+      const S = Math.round(s * 100);
+      const L = Math.round(l * 100);
+      return `${H} ${S}% ${L}%`;
+    } catch {
+      return '50 93% 56%';
+    }
+  };
+
   // Carregar carrinho do localStorage
   useEffect(() => {
     const carrinhoSalvo = localStorage.getItem('carrinho_mapa_estetica');
@@ -264,11 +296,12 @@ export default function Layout({ children }) {
       <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col">
       <style>{`
         :root {
-          --primary: ${temaCor};
-          --primary-dark: ${temaCor};
-          --primary-light: ${temaCor}33;
-          --secondary: #2C2C2C;
-          --accent: #FF6B35;
+          --primary: ${hexToHslTuple(temaCor)};
+          --primary-foreground: 0 0% 98%;
+          --secondary: ${hexToHslTuple('#2C2C2C')};
+          --secondary-foreground: 0 0% 98%;
+          --accent: ${hexToHslTuple('#FF6B35')};
+          --accent-foreground: 0 0% 9%;
         }
         
         body, p, span, div, input, textarea, button {
