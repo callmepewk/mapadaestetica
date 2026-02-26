@@ -651,7 +651,6 @@ export default function Produtos() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="grid lg:grid-cols-4 gap-6">
           <div className="lg:col-span-3">
-            {/* Header com toggle de tipo E botão admin */}
             <div className="mb-6">
               <div className="text-center mb-6">
                 <Badge className="mb-4 bg-[#F7D426] text-[#2C2C2C] font-bold">
