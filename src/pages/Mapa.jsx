@@ -977,9 +977,10 @@ export default function Mapa() {
                       <SelectItem value="patrocinados">Patrocinados Primeiro</SelectItem>
                     </SelectContent>
                   </Select>
-                {/* legenda removida fim */}
-              </div>
-            </div>
+                  {/* legenda removida fim */}
+                  </div>
+                  </div>
+                  </div>
 
               {/* CTA Destaque */}
               <Card className="mb-4 border-2 border-amber-200 bg-amber-50">
