@@ -979,6 +979,7 @@ export default function Mapa() {
                   </Select>
                 {/* legenda removida fim */}
               </div>
+            </div>
 
               {/* CTA Destaque */}
               <Card className="mb-4 border-2 border-amber-200 bg-amber-50">

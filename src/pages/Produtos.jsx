@@ -650,7 +650,6 @@ export default function Produtos() {
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
       <div className="max-w-7xl mx-auto px-4">
         <div className="grid lg:grid-cols-4 gap-6">
-          {/* Coluna Principal - Produtos */}
           <div className="lg:col-span-3">
             {/* Header com toggle de tipo E botão admin */}
             <div className="mb-6">
