@@ -28,7 +28,9 @@ export default function Radares() {
   const [gaTrends, setGaTrends] = useState({ gaMetrics: [], trendsSeries: [] });
   const [alertsOn, setAlertsOn] = useState(false);
   const [schedule, setSchedule] = useState('mensal');
-  useEffect(() => { (async () => { try { setUser(await base44.auth.me()); } catch {} })(); }, []);
+  const [rabiOn, setRabiOn] = useState(false);
+  const [planTier, setPlanTier] = useState('free');
+  useEffect(() => { (async () => { try { const u = await base44.auth.me(); setUser(u); setRabiOn(!!u?.rabi_ativado); setPlanTier(getPlanTierFromUser(u)); } catch {} })(); }, []);
   const queryClient = useQueryClient();
   useEffect(() => {
     const unsubs = [
@@ -115,6 +117,17 @@ export default function Radares() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
       <div className="max-w-7xl mx-auto px-4 space-y-8">
+        <div className="flex items-center justify-between gap-2">
+          <div className="text-sm text-gray-700">R.A.B.I em tempo real</div>
+          <Button size="sm" variant={rabiOn ? 'default' : 'outline'} onClick={toggleRabi}>
+            {rabiOn ? 'Desativar R.A.B.I' : 'Ativar R.A.B.I'}
+          </Button>
+        </div>
+        {planTier==='free' && rabiOn && (
+          <div className="mt-2 rounded-lg border bg-yellow-50 text-yellow-900 p-3 text-sm">
+            Experiência completa disponível a partir do plano PRO. <a href="/Planos" className="underline">Ver Planos</a>.
+          </div>
+        )}
         <RabiHero />
         <RabiMicrocopyStrip />
         <RabiExplainer />
