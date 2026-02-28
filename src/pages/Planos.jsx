@@ -172,7 +172,7 @@ const planos = [
       especialidades: 3,
       anuncios: 25,
       tags: 20,
-      dias_exposicao: 30
+      dias_exposicao: 90
     },
     beneficios: [
       "✅ Acesso ao WhatsApp dos profissionais",
