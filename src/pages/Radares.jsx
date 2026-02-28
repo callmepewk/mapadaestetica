@@ -114,6 +114,12 @@ export default function Radares() {
     setSchedule(s);
     try { if (user) await base44.auth.updateMe({ rabi_agendamento: s }); } catch {}
   };
+
+  const toggleRabi = async () => {
+    const next = !rabiOn;
+    setRabiOn(next);
+    try { if (user) await base44.auth.updateMe({ rabi_ativado: next }); } catch {}
+  };
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
       <div className="max-w-7xl mx-auto px-4 space-y-8">
