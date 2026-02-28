@@ -39,6 +39,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CardAnuncio from "../components/anuncios/CardAnuncio";
 import { Checkbox } from "@/components/ui/checkbox";
 import SeletorProcedimentos from "../components/anuncios/SeletorProcedimentos";
+import AgendamentoRapidoModal from "../components/agendamentos/AgendamentoRapidoModal";
 
 // Fix Leaflet default marker icons
 delete L.Icon.Default.prototype._getIconUrl;
@@ -241,6 +242,9 @@ export default function Mapa() {
   const [abaSelecionada, setAbaSelecionada] = useState("mapa");
   const [isProfissional, setIsProfissional] = useState(false);
   const [mostrarSeletorProcedimentos, setMostrarSeletorProcedimentos] = useState(false);
+  const [agendarOpen, setAgendarOpen] = useState(false);
+  const [itemAgendar, setItemAgendar] = useState(null);
+  const [mostrarAnunciosNoMapa, setMostrarAnunciosNoMapa] = useState(true);
   
   // Filtros para Anúncios
   const [busca, setBusca] = useState("");
@@ -670,8 +674,13 @@ export default function Mapa() {
                       >
                         <Search className="w-4 h-4" />
                       </Button>
-                    </div>
-                  </div>
+
+                      <div className="flex items-center gap-2">
+                        <Checkbox id="toggleAnunciosMapa" checked={mostrarAnunciosNoMapa} onCheckedChange={setMostrarAnunciosNoMapa} />
+                        <label htmlFor="toggleAnunciosMapa" className="text-sm">Exibir anúncios no mapa</label>
+                      </div>
+                      </div>
+                      </div>
 
                   {/* Cidade */}
                   <div>
@@ -1295,7 +1304,7 @@ export default function Mapa() {
                     );
                   })}
 
-                  {anunciosFiltrados.map((a) => (
+                  {mostrarAnunciosNoMapa && anunciosFiltrados.map((a) => (
                     a.latitude && a.longitude ? (
                       <Marker
                         key={`anuncio-${a.id}`}
@@ -1307,9 +1316,14 @@ export default function Mapa() {
                             <p className="font-bold text-gray-900 mb-1">{a.titulo}</p>
                             {a.profissional && (<p className="text-xs text-gray-600 mb-1">{a.profissional}</p>)}
                             {a.cidade && (<p className="text-xs text-gray-600 mb-2">{a.cidade} - {a.estado}</p>)}
-                            <button className="text-xs text-pink-600 font-semibold hover:underline" onClick={()=>window.location.href=`${createPageUrl("DetalhesAnuncio")}?id=${a.id}`}>
-                              Ver anúncio
-                            </button>
+                            <div className="flex items-center gap-2 mt-2">
+                              <button className="text-xs text-pink-600 font-semibold hover:underline" onClick={()=>window.location.href=`${createPageUrl("DetalhesAnuncio")}?id=${a.id}`}>
+                                Ver anúncio
+                              </button>
+                              <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => { setItemAgendar(a); setAgendarOpen(true); }}>
+                                Agendar
+                              </Button>
+                            </div>
                           </div>
                         </Popup>
                       </Marker>
@@ -1333,6 +1347,13 @@ export default function Mapa() {
 
                    {centralizarEm && <CentralizarMapa center={centralizarEm} />}
                 </MapContainer>
+
+                {/* Botão flutuante: Minha Localização */}
+                <div className="absolute bottom-4 right-4 z-[1000]">
+                  <Button onClick={handleUsarMinhaLocalizacao} className="shadow-lg bg-white text-[#2C2C2C] hover:bg-gray-100 border-2 border-[#F7D426]">
+                    <Navigation className="w-4 h-4 mr-2 text-[#F7D426]" /> Minha localização
+                  </Button>
+                </div>
 
                 {/* Badge de Info no Mapa */}
                 <div className="absolute top-4 right-4 z-[1000] bg-white rounded-lg shadow-lg p-3 border-2 border-[#F7D426]">
@@ -1384,7 +1405,14 @@ export default function Mapa() {
         </div>
       </div>
 
-      {/* Modal Seletor de Procedimentos */}
+      {/* Modal Agendamento Rápido */}
+      <AgendamentoRapidoModal
+        open={agendarOpen}
+        onClose={(ok) => { setAgendarOpen(false); setItemAgendar(null); if (ok) alert('Agendamento confirmado!'); }}
+        item={itemAgendar}
+      />
+
+       {/* Modal Seletor de Procedimentos */}
       <SeletorProcedimentos
         open={mostrarSeletorProcedimentos}
         onClose={() => setMostrarSeletorProcedimentos(false)}
