@@ -321,12 +321,7 @@ export default function Inicio() {
   };
 
   const handleAcessarDrBeleza = () => {
-    if (!user) {
-      setTipoLoginPrompt("drbeleza");
-      setMostrarLoginPrompt(true);
-      return;
-    }
-    navigate(createPageUrl("PesquisaEspecializada"));
+    window.open("https://dr-beleza-ai.base44.app", "_blank");
   };
 
   const handleContratarPatrocinador = (whatsappMessage) => {

@@ -78,11 +78,7 @@ export default function SobreNos() {
     window.open(`https://wa.me/${whatsapp}?text=${encodeURIComponent(mensagem)}`, '_blank');
   };
 
-  const handleSaberMaisDrSpok = () => {
-    const mensagem = "Olá, gostaria de saber mais sobre o aplicativo Dr. Spok!";
-    const whatsapp = "5531972595643";
-    window.open(`https://wa.me/${whatsapp}?text=${encodeURIComponent(mensagem)}`, '_blank');
-  };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 to-white">
@@ -540,102 +536,31 @@ export default function SobreNos() {
                 </CardContent>
               </Card>
 
-              {/* Dr. Spok */}
-              <Card className="border-2 border-green-300 shadow-xl hover:shadow-2xl transition-all overflow-hidden">
-                <div className="h-48 bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center p-6">
+              {/* Celeiro Digital */}
+              <Card className="border-2 border-lime-300 shadow-xl hover:shadow-2xl transition-all overflow-hidden">
+                <div className="h-48 bg-gradient-to-br from-lime-100 to-green-100 flex items-center justify-center p-6">
                   <div className="text-center">
-                    <div className="text-6xl mb-2">🩺</div>
-                    <p className="font-bold text-2xl text-green-900">Dr. Spok</p>
+                    <div className="text-6xl mb-2">🌱</div>
+                    <p className="font-bold text-2xl text-lime-900">Celeiro Digital</p>
                   </div>
                 </div>
                 <CardContent className="p-6">
                   <div className="mb-4">
-                    <Badge className="bg-green-100 text-green-800 mb-3">Para Profissionais</Badge>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-3">Dr. Spok PD</h3>
+                    <Badge className="bg-lime-100 text-lime-800 mb-3">Para Startups</Badge>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-3">Celeiro Digital</h3>
                     <p className="text-gray-600 mb-4">
-                      Prontuário digital inteligente e completo para podólogos. 
-                      Gerencie pacientes, históricos, fotos e tratamentos de forma profissional e segura.
+                      Incubadora de startups e projetos inovadores na área de tecnologia para estética e saúde.
                     </p>
                   </div>
 
-                  <div className="space-y-2 mb-6 text-sm">
-                    <div className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
-                      <span>Prontuário digital completo e seguro</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
-                      <span>Registro fotográfico de tratamentos</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
-                      <span>Histórico completo de pacientes</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
-                      <span>Gestão de agendamentos e retornos</span>
-                    </div>
-                  </div>
-
                   <a 
-                    href="https://dr-spok-pd.base44.app"
+                    href="https://celeirodigital.base44.app"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="block w-full"
                   >
-                    <Button className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white">
-                      Acessar Dr. Spok PD
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </Button>
-                  </a>
-                </CardContent>
-              </Card>
-
-              {/* Eccellenza */}
-              <Card className="border-2 border-orange-300 shadow-xl hover:shadow-2xl transition-all overflow-hidden">
-                <div className="h-48 bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center p-6">
-                  <div className="text-center">
-                    <div className="text-6xl mb-2">💎</div>
-                    <p className="font-bold text-2xl text-orange-900">Eccellenza</p>
-                  </div>
-                </div>
-                <CardContent className="p-6">
-                  <div className="mb-4">
-                    <Badge className="bg-orange-100 text-orange-800 mb-3">Para Profissionais</Badge>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-3">Eccellenza</h3>
-                    <p className="text-gray-600 mb-4">
-                      Plataforma premium para profissionais de estética que buscam excelência. 
-                      Gestão completa, agendamentos, financeiro e relacionamento com clientes.
-                    </p>
-                  </div>
-
-                  <div className="space-y-2 mb-6 text-sm">
-                    <div className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-orange-600 flex-shrink-0 mt-0.5" />
-                      <span>Gestão completa de agenda e clientes</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-orange-600 flex-shrink-0 mt-0.5" />
-                      <span>Controle financeiro profissional</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-orange-600 flex-shrink-0 mt-0.5" />
-                      <span>Marketing e relacionamento inteligente</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-orange-600 flex-shrink-0 mt-0.5" />
-                      <span>Relatórios e análises detalhadas</span>
-                    </div>
-                  </div>
-
-                  <a 
-                    href="https://eccellenza.base44.app"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block w-full"
-                  >
-                    <Button className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white">
-                      Acessar Eccellenza
+                    <Button className="w-full bg-gradient-to-r from-lime-600 to-green-600 hover:from-lime-700 hover:to-green-700 text-white">
+                      Conhecer o Celeiro
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </Button>
                   </a>
