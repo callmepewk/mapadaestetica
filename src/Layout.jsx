@@ -827,7 +827,7 @@ export default function Layout({ children }) {
             </div>
           </div>
 
-          <div className="border-t border-gray-700 mt-6 sm:mt-8 pt-6 sm:pt-8 text-center text-xs sm:text-sm text-gray-400">
+          <div className="border-t border-gray-700/60 mt-6 sm:mt-8 pt-6 sm:pt-8 text-center text-xs sm:text-sm text-gray-400 bg-gradient-to-t from-black/20 to-transparent rounded-t-xl">
             <p>&copy; 2025 Mapa da Estética - Clube da Beleza. Todos os direitos reservados.</p>
             <p className="mt-1">CNPJ: 46.792.168/0001-88</p>
           </div>

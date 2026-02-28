@@ -264,7 +264,7 @@ export default function Mapa() {
   const [nivelVerificacao, setNivelVerificacao] = useState(""); // 0-3 docs
   const [avaliacaoMin, setAvaliacaoMin] = useState(""); // 1-5 estrelas estabelecimento
   const [modalidade, setModalidade] = useState(""); // online|presencial
-  const [atendimento, setAtendimento] = useState(""); // domicilio|clinica
+  const [atendimento, setAtendimento] = useState(""); // domicilio|clinica|ambulatorial|hospitalar|homecare|corporativo|teleatendimento
   const [atendimentoCobranca, setAtendimentoCobranca] = useState(""); // convenio|particular
   const [patrocinadoOnly, setPatrocinadoOnly] = useState(false);
   const [ordenarPor, setOrdenarPor] = useState('recentes');
@@ -451,8 +451,13 @@ export default function Mapa() {
 
     // Atendimento (domicílio/clínica) - via tags ou tipo_estabelecimento
     const matchAtendimento = !atendimento || (
-      atendimento === 'domicilio' ? (tagsLower.includes('domicilio') || tagsLower.includes('home care')) :
-      (anuncio.tipo_estabelecimento && anuncio.tipo_estabelecimento.toLowerCase().includes('clínica')) || tagsLower.includes('clinica')
+      (atendimento === 'domicilio' && (tagsLower.includes('domicilio') || tagsLower.includes('home care'))) ||
+      (atendimento === 'clinica' && ((anuncio.tipo_estabelecimento && anuncio.tipo_estabelecimento.toLowerCase().includes('clínica')) || tagsLower.includes('clinica'))) ||
+      (atendimento === 'ambulatorial' && tagsLower.includes('ambulatorial')) ||
+      (atendimento === 'hospitalar' && tagsLower.includes('hospitalar')) ||
+      (atendimento === 'homecare' && (tagsLower.includes('homecare') || tagsLower.includes('home care'))) ||
+      (atendimento === 'corporativo' && (tagsLower.includes('in company') || tagsLower.includes('corporativo'))) ||
+      (atendimento === 'teleatendimento' && (tagsLower.includes('telemedicina') || tagsLower.includes('teleatendimento') || tagsLower.includes('online')))
     );
 
     // Cobrança (convênio/particular) - via tags ou forma_cobranca
@@ -867,6 +872,11 @@ export default function Mapa() {
                       <SelectContent>
                         <SelectItem value="domicilio">Domiciliar</SelectItem>
                         <SelectItem value="clinica">Clínica</SelectItem>
+                        <SelectItem value="ambulatorial">Ambulatorial</SelectItem>
+                        <SelectItem value="hospitalar">Hospitalar</SelectItem>
+                        <SelectItem value="homecare">Home Care</SelectItem>
+                        <SelectItem value="corporativo">In Company/Corporativo</SelectItem>
+                        <SelectItem value="teleatendimento">Teleatendimento</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -1033,6 +1043,7 @@ export default function Mapa() {
                     <SelectItem value="Personal Trainer">🏋️ Personal Trainer</SelectItem>
                   </SelectContent>
                 </Select>
+                <p className="text-xs text-gray-500 mt-1">Categorias exibem apenas estabelecimentos, serviços, produtos e eventos que possuem anúncio ativo nesta área.</p>
 
                 <Select value={filtroPlano} onValueChange={setFiltroPlano}>
                   <SelectTrigger>
