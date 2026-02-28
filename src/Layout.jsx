@@ -513,9 +513,7 @@ export default function Layout({ children }) {
                         <Star className="w-4 h-4 mr-2" />
                         Loja de Pontos ({user?.pontos_saldo ?? user?.pontos_acumulados ?? user?.saldo_pontos ?? 0})
                       </DropdownMenuItem>
-                      {isProfissional && (
-                        
-                      )}
+
                       {(isProfissional || isPatrocinador) && (
                         <>
                           <DropdownMenuItem onClick={() => navigate(createPageUrl("MeusProdutos"))}>
