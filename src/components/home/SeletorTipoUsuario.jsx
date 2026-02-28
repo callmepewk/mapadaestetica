@@ -235,6 +235,9 @@ export default function SeletorTipoUsuario({ open, onClose, user, onSuccess }) {
               </Card>
             </div>
 
+            {!tipoSelecionado && (
+              <p className="mt-4 text-sm text-rose-600">Selecione um tipo de conta para continuar.</p>
+            )}
             {tipoSelecionado && (
               <div className="mt-6 flex gap-3">
                 <Button

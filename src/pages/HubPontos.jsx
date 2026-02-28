@@ -150,7 +150,7 @@ export default function HubPontos() {
        profissional_email: user.email,
        cliente_nome: clienteNome,
        cliente_email: clienteEmail,
-       origem: 'beautybanking',
+       origem: 'manual',
        tratamento_id: itemSelecionado.id,
        tratamento_nome: itemSelecionado.nome,
        pontos_cobrados: itemSelecionado.pontos,
@@ -194,7 +194,7 @@ export default function HubPontos() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
           <div>
             <Badge className="bg-pink-600 text-white">Hub de Atendimento por Pontos</Badge>
-            <h1 className="text-3xl font-bold mt-2">Receber clientes do BeautyBanking</h1>
+            <h1 className="text-3xl font-bold mt-2">Hub de Pontos — Receber clientes</h1>
             <p className="text-gray-600">Registre atendimentos dos tratamentos abaixo. O cliente usa pontos e você recebe o equivalente em saldo.</p>
           </div>
           <div className="flex items-center gap-3 bg-white border rounded-lg p-3">
@@ -285,7 +285,7 @@ export default function HubPontos() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Registrar Atendimento</DialogTitle>
-              <DialogDescription>Origem: BeautyBanking • Tratamento: {itemSelecionado.nome} ({itemSelecionado.pontos} pts)</DialogDescription>
+              <DialogDescription>Origem: Loja de Pontos • Tratamento: {itemSelecionado.nome} ({itemSelecionado.pontos} pts)</DialogDescription>
             </DialogHeader>
             <div className="grid gap-3">
               <div className="grid grid-cols-2 gap-3">
