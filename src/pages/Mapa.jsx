@@ -1345,18 +1345,6 @@ export default function Mapa() {
                       <div className="w-4 h-4 bg-blue-500 rounded-full border-2 border-white"></div>
                       <span>Você</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl">💇</span>
-                      <span>Salão de Beleza</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl">💆</span>
-                      <span>Clínica de Estética</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl">🌿</span>
-                      <span>Spa</span>
-                    </div>
                     <div className="flex items-center gap-2 mt-2">
                       <div className="w-3 h-3 rounded-full border-2 border-white" style={{ background:'#10B981', boxShadow:'0 0 10px rgba(0,0,0,0.2)'}}></div>
                       <span>Anúncio Verificado</span>
