@@ -22,21 +22,18 @@ const planos = [
     destaque: false,
     linkPagamento: null,
     limites: {
-      radar_frequencia: 1,
-      relatorios: 1,
-      especialidades: 1,
+      r.a.b.i: 0,
+      relatorios: 0,
+      especialidades: 0,
       anuncios: 1,
-      tags: 1,
+      tags: 0,
       dias_exposicao: 30
     },
     beneficios: [
-      "1 Especialidade cadastrada",
       "1 Anúncio ativo",
-      "1 Tag/palavra-chave do Google Negócio",
       "30 dias de exposição do anúncio",
       "Perfil básico na plataforma",
-      "Suporte por email",
-      "Estatísticas básicas"
+
     ],
     naoInclui: [
       "🔒 Acesso ao WhatsApp dos profissionais",
@@ -58,104 +55,24 @@ const planos = [
     destaque: false,
     linkPagamento: "https://wa.me/5521980343873?text=Quero%20assinar%20o%20plano%20LITE%20(R$9,90)%20do%20Mapa%20da%20Est%C3%A9tica",
     limites: {
-      radar_frequencia: 0,
+      r.a.b.i: 0,
       relatorios: 0,
       especialidades: 1,
       anuncios: 4,
-      tags: 4,
+      tags: 2,
       dias_exposicao: 30
     },
-    beneficios: [
-      "✅ Acesso ao WhatsApp dos profissionais",
-      "1 Especialidade cadastrada",
+    beneficios: [,
       "Até 4 anúncios ativos",
-      "4 Tags/palavras-chave",
+      "2 Tags/palavras-chave",
       "30 dias de exposição por anúncio",
-      "Perfil com leve destaque",
-      "Estatísticas essenciais"
     ],
     naoInclui: [
+      "✅ Integração com Whatsapp",
       "Prioridade nas buscas",
       "Badge de verificação",
       "Suporte prioritário",
       "Relatórios avançados"
-    ]
-  },
-  {
-    nome: "BÁSICO",
-    tipo: "prata",
-    preco: "R$ 19,90/mês",
-    cor: "from-gray-300 to-gray-500",
-    icone: Star,
-    destaque: false,
-    linkPagamento: "https://payfast.greenn.com.br/146196",
-    limites: {
-      radar_frequencia: 1,
-      relatorios: 2,
-      especialidades: 1,
-      anuncios: 8,
-      tags: 8,
-      dias_exposicao: 45
-    },
-    beneficios: [
-      "✅ Acesso ao WhatsApp dos profissionais",
-      "1 Especialidade cadastrada",
-      "8 Anúncios ativos",
-      "8 Tags/palavras-chave do Google Negócio",
-      "45 dias de exposição por anúncio",
-      "Perfil destacado",
-      "Suporte prioritário",
-      "Estatísticas avançadas",
-      "Badge de verificação",
-      "Aparece nas buscas principais"
-    ],
-    naoInclui: [
-      "Prioridade máxima nas buscas",
-      "Perfil premium",
-      "Suporte VIP 24/7",
-      "Gerente de conta dedicado",
-      "Marketing digital incluso",
-      "Integração WhatsApp Business",
-      "30 dias de exposição"
-    ]
-  },
-  {
-    nome: "PRO",
-    tipo: "ouro",
-    preco: "R$ 39,90/mês",
-    cor: "from-yellow-400 to-amber-500",
-    icone: Crown,
-    destaque: true,
-    linkPagamento: "https://payfast.greenn.com.br/146197",
-    limites: {
-      radar_frequencia: 2,
-      relatorios: 4,
-      especialidades: 2,
-      anuncios: 20,
-      tags: 20,
-      dias_exposicao: 60
-    },
-    beneficios: [
-      "✅ Acesso ao WhatsApp dos profissionais",
-      "1 Especialidade cadastrada",
-      "20 Anúncios ativos",
-      "20 Tags/palavras-chave premium",
-      "30 dias de exposição por anúncio",
-      "Prioridade alta nas buscas",
-      "Perfil premium com destaque dourado",
-      "Suporte VIP com chat direto",
-      "Relatórios completos",
-      "Selo de Profissional Verificado PRO",
-      "Aparece em posição privilegiada",
-      "Galeria de fotos ampliada"
-    ],
-    naoInclui: [
-      "Anúncios ilimitados",
-      "Especialidades ilimitadas",
-      "Gerente de conta exclusivo",
-      "Integração WhatsApp Business API",
-      "Assistente IA personalizado",
-      "30 dias de exposição máxima"
     ]
   },
   {
@@ -167,19 +84,19 @@ const planos = [
     destaque: false,
     linkPagamento: "https://payfast.greenn.com.br/146195",
     limites: {
-      radar_frequencia: 4,
+      r.a.b.i: 4,
       relatorios: 10,
-      especialidades: 3,
-      anuncios: 25,
-      tags: 20,
-      dias_exposicao: 90
+      especialidades: ♾️,
+      anuncios: ♾️,
+      tags: 20 ,
+      dias_exposicao: 60
     },
     beneficios: [
       "✅ Acesso ao WhatsApp dos profissionais",
       "3 Especialidades cadastradas",
-      "25 Anúncios ativos",
+      "Sem limites de Anúncios ativos",
       "20 Tags/palavras-chave premium",
-      "30 dias de exposição por anúncio",
+      "60 dias de exposição por anúncio",
       "Até 200 pacientes (Cloud.IA) - R$ 697",
       "Prioridade máxima nas buscas",
       "Perfil PRIME com destaque exclusivo",
@@ -192,11 +109,10 @@ const planos = [
     ],
     observacao: "💎 Condições especiais ao assinar o Cloud IA no plano PRIME - Créditos a mais sob consulta",
     naoInclui: [
-      "Anúncios ilimitados",
       "Gerente de conta exclusivo",
       "Assistente IA personalizado",
       "Marketing digital incluso",
-      "30 dias de exposição"
+      "90 dias de exposição"
     ]
   },
   {
@@ -208,16 +124,16 @@ const planos = [
     destaque: false,
     linkPagamento: null,
     limites: {
-      radar_frequencia: 4,
+      r.a.b.i: 4,
       relatorios: 10,
-      especialidades: "2 ou+",
-      anuncios: 20,
-      tags: 20,
+      especialidades: ♾️,
+      anuncios: ♾️,
+      tags:30,
       dias_exposicao: 90
     },
     beneficios: [
       "✅ Acesso ao WhatsApp dos profissionais",
-      "2 ou+ Especialidades",
+      "♾️ Especialidades",
       "Até 20 anúncios",
       "20 Tags/palavras-chave premium",
       "90 dias de exposição por anúncio",
