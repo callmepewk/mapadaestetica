@@ -71,7 +71,7 @@ export default function SeletorTipoUsuario({ open, onClose, user, onSuccess }) {
 
   const handleContatarSuporte = () => {
     const mensagem = `Olá! Gostaria de alterar o tipo da minha conta antes do prazo de 7 dias.\n\nDados:\nNome: ${user?.full_name}\nEmail: ${user?.email}\nTipo atual: ${user?.tipo_usuario}\nNovo tipo desejado: ${tipoSelecionado}\n\nPor favor, me ajudem com essa alteração.`;
-    window.open(`https://wa.me/5531972595643?text=${encodeURIComponent(mensagem)}`, '_blank');
+    window.open(`https://wa.me/5521980343873?text=${encodeURIComponent(mensagem)}`, '_blank');
   };
 
   return (

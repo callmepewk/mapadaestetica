@@ -182,27 +182,7 @@ const servicosContrataveis = [
     status: 'ativo',
     requer_assinatura: true
   },
-  {
-    id: "fotografia-profissional",
-    nome: "Sessão de Fotografia Profissional",
-    descricao: "Sessão fotográfica profissional para capturar seus trabalhos e criar um portfólio impecável.",
-    categoria: "Serviços Contratáveis",
-    tipo_publico: "profissional",
-    preco: 300,
-    preco_texto: "R$ 300,00",
-    imagens: ["https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=800&q=80"],
-    beneficios: [
-      "Até 50 fotos editadas",
-      "Fotógrafo especializado",
-      "Edição profissional",
-      "Alta resolução",
-      "Entrega em até 7 dias",
-      "Direitos de uso comercial"
-    ],
-    em_destaque: false,
-    status: 'ativo',
-    requer_assinatura: false
-  },
+
   
   // SERVIÇOS PARA PACIENTES
   {
@@ -886,11 +866,11 @@ export default function Produtos() {
                   {tipoBusca === 'produtos' ? "🛍️" : "💼"}
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  {tipoBusca === 'produtos' ? "Em Breve!" : "Nenhum serviço encontrado"}
+                  {tipoBusca === 'produtos' ? "Anuncie seus produtos aqui" : "Nenhum serviço encontrado"}
                 </h3>
                 <p className="text-gray-600 mb-6">
                   {tipoBusca === 'produtos' 
-                    ? "Estamos preparando produtos incríveis para você. Volte em breve!"
+                    ? "Usuários com permissão podem anunciar seus produtos. Dicas: imagem principal 1200x800 (16:9) e até 5 imagens no carrossel."
                     : "Não encontramos serviços com os filtros selecionados."
                   }
                 </p>
