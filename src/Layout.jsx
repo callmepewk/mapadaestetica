@@ -362,7 +362,7 @@ export default function Layout({ children }) {
             <span className="text-center sm:text-left">Bem-vindo ao Mapa da Estética - Os melhores profissionais perto de você</span>
           </div>
           <div className="flex items-center gap-4">
-            <span className="font-semibold">(31) 97259-5643</span>
+            <span className="font-semibold">(21) 98034-3873</span>
           </div>
         </div>
       </div>
@@ -514,10 +514,7 @@ export default function Layout({ children }) {
                         Loja de Pontos ({user?.pontos_saldo ?? user?.pontos_acumulados ?? user?.saldo_pontos ?? 0})
                       </DropdownMenuItem>
                       {isProfissional && (
-                        <DropdownMenuItem onClick={() => navigate(createPageUrl("PainelProfissional"))}>
-                          <TrendingUp className="w-4 h-4 mr-2" />
-                          Painel Profissional
-                        </DropdownMenuItem>
+                        
                       )}
                       {(isProfissional || isPatrocinador) && (
                         <>
@@ -529,10 +526,7 @@ export default function Layout({ children }) {
                             <Briefcase className="w-4 h-4 mr-2" />
                             Meus Serviços
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => navigate(createPageUrl("MeusTratamentos"))}>
-                            <Star className="w-4 h-4 mr-2" />
-                            Meus Tratamentos
-                          </DropdownMenuItem>
+                          
                           <DropdownMenuItem onClick={handleAbrirRadares}>
                             <TrendingUp className="w-4 h-4 mr-2" />
                             R.A.B.I
@@ -568,10 +562,7 @@ export default function Layout({ children }) {
                         <Sparkles className="w-4 h-4 mr-2" />
                         Clube +
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => window.open('https://beautybanking.base44.app', '_blank')}>
-                        <DollarSign className="w-4 h-4 mr-2" />
-                        Beauty Banking
-                      </DropdownMenuItem>
+                      
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={handleLogout}>
                         <LogOut className="w-4 h-4 mr-2" />
@@ -820,11 +811,11 @@ export default function Layout({ children }) {
               <h4 className="font-semibold mb-4 text-[#F7D426]">Contatos</h4>
               <ul className="space-y-2 text-sm text-gray-400">
                 <li className="font-semibold text-white">Central de Vendas:</li>
-                <li><a href="tel:31972595643" className="hover:text-[#F7D426] transition-colors">(31) 97259-5643</a></li>
+                <li><a href="tel:21980343873" className="hover:text-[#F7D426] transition-colors">(21) 98034-3873</a></li>
                 <li className="font-semibold text-white mt-3">Suporte Técnico:</li>
                 <li><a href="tel:54991554136" className="hover:text-[#F7D426] transition-colors">(54) 99155-4136</a></li>
                 <li className="font-semibold text-white mt-3">Business & Partnerships:</li>
-                <li><a href="tel:31972595643" className="hover:text-[#F7D426] transition-colors">(31) 97259-5643</a></li>
+                <li><a href="tel:21980343873" className="hover:text-[#F7D426] transition-colors">(21) 98034-3873</a></li>
               </ul>
             </div>
 
