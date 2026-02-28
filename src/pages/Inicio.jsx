@@ -57,7 +57,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import BannerRotativo from "../components/banners/BannerRotativo";
-import PatrocinadoresGrid from "../components/home/PatrocinadoresGrid";
+import PatrocinadoresCarousel from "../components/home/PatrocinadoresCarousel";
 import HeroPremium from "../components/home/HeroPremium";
 import AuthorityStrip from "../components/home/AuthorityStrip";
 import ValidationThreeSteps from "../components/home/ValidationThreeSteps";
@@ -508,18 +508,7 @@ export default function Inicio() {
                     />
                   </div>
 
-                  <Select value={buscaCategoria || undefined} onValueChange={setBuscaCategoria}>
-                    <SelectTrigger className="h-10 sm:h-11 md:h-12 text-gray-800 text-sm sm:text-base">
-                      <SelectValue placeholder="Selecione uma categoria" />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-[200px] sm:max-h-[300px]">
-                      {categorias.map((cat) => (
-                        <SelectItem key={cat.nome} value={cat.nome} className="text-sm sm:text-base">
-                          {cat.icon} {cat.nome}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+
 
                   <FiltrosBuscaPaciente
                     categorias={categorias}
@@ -625,23 +614,7 @@ export default function Inicio() {
 
 
 
-          {/* Filtros compactos - acima do banner */}
-          <div className="max-w-7xl mx-auto px-4 mt-4">
-            <FiltrosBuscaPaciente
-              categorias={categorias}
-              valores={filtros}
-              onChange={setFiltros}
-              onOpenAdvanced={()=>setOpenFiltrosAvancados(true)}
-              onBuscar={handleBuscar}
-              onClear={() => { 
-                setFiltros({ tipo:"", categoria:"", especialidade:"", preco:"", rating:"", distancia:"" });
-                setFiltrosAvancados({ data:"", hora:"", atendimento_domicilio:false, atendimento_local:false, convenios:"" });
-                const url = new URL(window.location.href);
-                ['cidade','categoria','tipo','categoria_filtro','especialidade','preco_min','preco_max','rating_min','distancia_km','data','hora','at_domicilio','at_local','convenios','aba'].forEach(k=>url.searchParams.delete(k));
-                window.history.replaceState({}, '', url.toString());
-              } }
-            />
-          </div>
+
 
           {/* Banner Rotativo Topo */}
           <BannerRotativo posicao="home_topo" />
@@ -1177,7 +1150,7 @@ export default function Inicio() {
         </div>
         </section>
 
-        {isProfissional && (<PlannerWellnessPromo audience="pro" />)}
+        
 
         {/* ECOSSISTEMA - AMBOS */}
       <section className="py-12 sm:py-16 bg-gradient-to-br from-purple-50 via-pink-50 to-yellow-50">
@@ -1290,7 +1263,7 @@ export default function Inicio() {
             </p>
           </div>
 
-          <PatrocinadoresGrid />
+          <PatrocinadoresCarousel />
 
           <div className="text-center mt-8">
             <p className="text-gray-600 mb-4">

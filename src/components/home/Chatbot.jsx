@@ -147,7 +147,7 @@ Responda de forma clara, objetiva e útil.`,
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
-            className="fixed bottom-20 sm:bottom-6 right-6 z-50"
+            className="fixed bottom-20 sm:bottom-6 right-6 z-[9999]"
           >
             <div className="relative group">
               {/* Tooltip - ESCONDIDO NO MOBILE */}
@@ -207,7 +207,7 @@ Responda de forma clara, objetiva e útil.`,
             initial={{ opacity: 0, y: 100 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 100 }}
-            className="fixed inset-0 sm:inset-auto sm:bottom-6 sm:right-6 z-50 w-full p-2 sm:p-0 sm:w-[320px] md:w-[380px] sm:max-w-[calc(100vw-3rem)]"
+            className="fixed inset-0 sm:inset-auto sm:bottom-6 sm:right-6 z-[9999] w-full p-2 sm:p-0 sm:w-[320px] md:w-[380px] sm:max-w-[calc(100vw-3rem)]"
           >
             {/* Overlay para fechar ao clicar fora - MOBILE */}
             <div 
