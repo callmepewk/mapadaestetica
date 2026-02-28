@@ -248,7 +248,7 @@ export default function SeletorTipoUsuario({ open, onClose, user, onSuccess }) {
                 <Button
                   onClick={handleConfirmar}
                   className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                  disabled={carregando}
+                  disabled={carregando || !tipoSelecionado}
                 >
                   {carregando ? (
                     <>

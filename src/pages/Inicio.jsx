@@ -338,7 +338,7 @@ export default function Inicio() {
     window.open(whatsappMessage, '_blank');
   };
 
-  const BEAUTY_SAFE_WA = "https://wa.me/5531972595643?text=";
+  const BEAUTY_SAFE_WA = "https://wa.me/5521980343873?text=";
 
   const logBeautySafe = async (action, details = "") => {
     try {
@@ -362,7 +362,7 @@ export default function Inicio() {
       await base44.entities.BeautySafeSolicitacao.create({
         user_email: user?.email || "",
         canal: "whatsapp",
-        whatsapp_to: "+5531972595643",
+        whatsapp_to: "+5521980343873",
         mensagem: "Solicitação Beauty Safe via Home",
         status: "pendente",
         origem_pagina: "Inicio"
@@ -1686,7 +1686,7 @@ export default function Inicio() {
                   </Button>
                 </Link>
                 <a
-                  href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Vi a comparação e quero saber mais sobre os planos do Mapa da Estética!")}`}
+                  href={`https://wa.me/5521980343873?text=${encodeURIComponent("Olá! Vi a comparação e quero saber mais sobre os planos do Mapa da Estética!")}`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
