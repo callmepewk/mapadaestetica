@@ -206,7 +206,12 @@ export default function HubPontos() {
 
         <div className="grid md:grid-cols-2 gap-4 mb-6">
           <CheckinCalendario user={user} onCheckin={handleCheckinHoje} />
-          <JogosPontos onAward={async (pts)=>{ await awardPoints(pts); alert(`Pontos adicionados: +${pts}`); }} />
+          <div className="rounded-xl border bg-white p-4">
+            <h3 className="font-semibold mb-2">Como funciona o Hub de Pontos?</h3>
+            <p className="text-sm text-gray-600">
+              Registre atendimentos e conceda recompensas em pontos para seus clientes. O calendário à esquerda permite marcar seu check-in diário e acompanhar sua constância.
+            </p>
+          </div>
         </div>
 
         <div className="flex items-center gap-3 mb-6">
