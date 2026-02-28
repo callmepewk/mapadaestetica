@@ -778,10 +778,45 @@ export default function Mapa() {
                         <SelectValue placeholder="Todas" />
                       </SelectTrigger>
                       <SelectContent className="max-h-[300px]">
-                        {['médico','dentista','biomédico','esteticista','enfermeiro','farmacêutico','fisioterapeuta'].map((p)=>(
-                          <SelectItem key={p} value={p}>{p.charAt(0).toUpperCase()+p.slice(1)}</SelectItem>
-                        ))}
-                      </SelectContent>
+  {[
+    'médico',
+    'dentista',
+    'biomédico',
+    'esteticista',
+    'enfermeiro',
+    'farmacêutico',
+    'fisioterapeuta',
+    'técnico em estética',
+    'nurse practitioner',
+    'physician assistant',
+    'cosmetologist',
+    'aesthetician',
+    'beauty therapist',
+    'laser technician',
+    'podólogo',
+    'manicure',
+    'pedicure',
+    'nail designer',
+    'barbeiro',
+    'cabeleireiro',
+    'tricologista',
+    'maquiador profissional',
+    'designer de sobrancelhas',
+    'lash designer',
+    'micropigmentador',
+    'dermopigmentador',
+    'massoterapeuta',
+    'drenoterapeuta',
+    'terapeuta capilar',
+    'depilador',
+    'eletroterapeuta estético',
+    'técnico em prótese capilar'
+  ].map((p) => (
+    <SelectItem key={p} value={p}>
+      {p.charAt(0).toUpperCase() + p.slice(1)}
+    </SelectItem>
+  ))}
+</SelectContent>
                     </Select>
                   </div>
 
