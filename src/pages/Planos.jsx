@@ -56,7 +56,7 @@ const planos = [
     cor: "from-rose-300 to-pink-500",
     icone: Sparkles,
     destaque: false,
-    linkPagamento: "https://wa.me/5531972595643?text=Quero%20assinar%20o%20plano%20LITE%20(R$9,90)%20do%20Mapa%20da%20Est%C3%A9tica",
+    linkPagamento: "https://wa.me/5521980343873?text=Quero%20assinar%20o%20plano%20LITE%20(R$9,90)%20do%20Mapa%20da%20Est%C3%A9tica",
     limites: {
       radar_frequencia: 0,
       relatorios: 0,
@@ -465,7 +465,7 @@ export default function Planos() {
                 status: 'pagamento_rejeitado_mp', 
                 data_pagamento_mp: new Date().toISOString() 
               };
-              alertMessage = "❌ Seu pagamento foi rejeitado pelo Mercado Pago.\n\nTente novamente ou entre em contato com nosso suporte:\n(31) 97259-5643";
+              alertMessage = "❌ Seu pagamento foi rejeitado pelo Mercado Pago.\n\nTente novamente ou entre em contato com nosso suporte:\n(21) 98034-3873";
             }
 
             if (Object.keys(updateData).length > 0) {
@@ -512,12 +512,12 @@ export default function Planos() {
             } else if (collectionStatus === 'pending') {
               alert("⏳ Seu pagamento está pendente. Aguarde a aprovação do Mercado Pago.");
             } else if (collectionStatus === 'rejected') {
-              alert("❌ Seu pagamento foi rejeitado. Tente novamente ou entre em contato: (31) 97259-5643");
+              alert("❌ Seu pagamento foi rejeitado. Tente novamente ou entre em contato: (21) 98034-3873");
             }
           }
         } catch (error) {
           console.error("Erro ao processar retorno do Mercado Pago:", error);
-          alert("❌ Ocorreu um erro ao processar seu pagamento.\n\nPor favor, entre em contato com o suporte:\n(31) 97259-5643");
+          alert("❌ Ocorreu um erro ao processar seu pagamento.\n\nPor favor, entre em contato com o suporte:\n(21) 98034-3873");
         } finally {
           setVerificandoPagamento(false);
           const cleanUrl = createPageUrl("Planos");
@@ -628,11 +628,11 @@ export default function Planos() {
         
         alert("✅ Sua confirmação foi registrada!\n\nNossa equipe foi notificada e ativará seu plano em até 24 horas.\n\nVocê receberá um e-mail de confirmação.");
       } else {
-        alert("❌ Não encontramos uma solicitação de plano ativa para este tipo.\n\nPor favor, tente novamente ou entre em contato:\n(31) 97259-5643");
+        alert("❌ Não encontramos uma solicitação de plano ativa para este tipo.\n\nPor favor, tente novamente ou entre em contato:\n(21) 98034-3873");
       }
     } catch (error) {
       console.error("Erro ao confirmar pagamento:", error);
-      alert("❌ Erro ao processar sua confirmação.\n\nEntre em contato com o suporte:\n(31) 97259-5643");
+      alert("❌ Erro ao processar sua confirmação.\n\nEntre em contato com o suporte:\n(21) 98034-3873");
     } finally {
       setAguardandoConfirmacao(false);
     }
@@ -705,12 +705,12 @@ export default function Planos() {
 
   const handleConsultarCreditos = () => {
     const mensagem = "Olá! Gostaria de saber sobre créditos adicionais para o Cloud IA no plano PRIME/DELUXE.";
-    window.open(`https://wa.me/5531972595643?text=${encodeURIComponent(mensagem)}`, '_blank');
+    window.open(`https://wa.me/5521980343873?text=${encodeURIComponent(mensagem)}`, '_blank');
   };
 
   const handleConsultarCreditosPatrocinador = () => {
     const mensagem = "Olá! Gostaria de saber sobre créditos adicionais para o Cloud IA no plano DIAMANTE/PLATINA de Patrocinador.";
-    window.open(`https://wa.me/5531972595643?text=${encodeURIComponent(mensagem)}`, '_blank');
+    window.open(`https://wa.me/5521980343873?text=${encodeURIComponent(mensagem)}`, '_blank');
   };
 
   const isAdmin = user?.role === 'admin';
@@ -835,12 +835,12 @@ export default function Planos() {
                     Fale com nossos especialistas e tire todas as suas dúvidas!
                   </p>
                   <a
-                    href="https://wa.me/5531972595643?text=Olá%21%20Gostaria%20de%20informações%20sobre%20os%20planos%20do%20Mapa%20da%20Estética%21%20💆%uFE0F"
+                    href="https://wa.me/5521980343873?text=Olá%21%20Gostaria%20de%20informações%20sobre%20os%20planos%20do%20Mapa%20da%20Estética%21%20💆%uFE0F"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
                     <Button className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700">
-                      WhatsApp: (31) 97259-5643
+                      WhatsApp: (21) 98034-3873
                     </Button>
                   </a>
                 </div>
@@ -970,7 +970,7 @@ export default function Planos() {
                             onClick={() => {
                               if (plano.tipo === 'platina') {
                                 const mensagem = `Olá! Tenho interesse no Plano DELUXE do Mapa da Estética! Gostaria de saber mais detalhes e valores. 💎`;
-                                window.open(`https://wa.me/5531972595643?text=${encodeURIComponent(mensagem)}`, '_blank');
+                                window.open(`https://wa.me/5521980343873?text=${encodeURIComponent(mensagem)}`, '_blank');
                               } else {
                                 handleContratarPlano(plano);
                               }
@@ -1056,7 +1056,7 @@ export default function Planos() {
             <p className="text-gray-600 mb-4 text-lg">Tem dúvidas sobre qual plano escolher?</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
-                href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Gostaria de informações sobre os planos do Mapa da Estética! 💆‍♀️")}`}
+                href={`https://wa.me/5521980343873?text=${encodeURIComponent("Olá! Gostaria de informações sobre os planos do Mapa da Estética! 💆‍♀️")}`}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -1171,7 +1171,7 @@ export default function Planos() {
                           <Button
                             onClick={() => {
                               const mensagem = `Olá! Tenho interesse no Plano de Patrocínio ${plano.nome} do Mapa da Estética! 🤝`;
-                              window.open(`https://wa.me/5531972595643?text=${encodeURIComponent(mensagem)}`, '_blank');
+                              window.open(`https://wa.me/5521980343873?text=${encodeURIComponent(mensagem)}`, '_blank');
                             }}
                             variant="outline"
                             className="w-full text-sm"
@@ -1246,7 +1246,7 @@ export default function Planos() {
             <p className="text-gray-600 mb-4 text-lg">Interessado em patrocinar?</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
-                href={`https://wa.me/5531972595643?text=${encodeURIComponent("Olá! Gostaria de informações sobre patrocínio no Mapa da Estética! 🤝")}`}
+                href={`https://wa.me/5521980343873?text=${encodeURIComponent("Olá! Gostaria de informações sobre patrocínio no Mapa da Estética! 🤝")}`}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -1330,7 +1330,7 @@ export default function Planos() {
               </Button>
 
               <p className="text-xs text-center text-gray-500">
-                Dúvidas? Entre em contato: (31) 97259-5643
+                Dúvidas? Entre em contato: (21) 98034-3873
               </p>
             </div>
           </div>

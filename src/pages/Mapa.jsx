@@ -721,6 +721,7 @@ export default function Mapa() {
                         ))}
                       </SelectContent>
                     </Select>
+                    <p className="text-xs text-gray-500 mt-1">Legenda: $ até R$ 500 • $$ R$ 500–1.000 • $$$ R$ 1.000–2.000 • $$$$ R$ 2.000–5.000 • $$$$$ acima de R$ 5.000</p>
                   </div>
 
                   {/* Tipo de Anúncio */}
@@ -777,7 +778,7 @@ export default function Mapa() {
                       <SelectTrigger>
                         <SelectValue placeholder="Qualquer distância" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="max-h-64 overflow-y-auto z-[2001]">
                         {faixasDistancia.map((faixa) => (
                           <SelectItem key={faixa.valor} value={faixa.valor}>{faixa.label}</SelectItem>
                         ))}
@@ -814,6 +815,7 @@ export default function Mapa() {
                         ))}
                       </SelectContent>
                     </Select>
+                    <p className="text-xs text-gray-500 mt-1">Entenda: verificamos 3 documentos (Licença Sanitária, Alvará e Registro Profissional). Quanto maior o nível (0–3), maior a segurança.</p>
                   </div>
 
                   {/* Avaliação mínima */}
@@ -839,9 +841,10 @@ export default function Mapa() {
                         <SelectValue placeholder="Qualquer" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="online">Online</SelectItem>
-                        <SelectItem value="presencial">Presencial</SelectItem>
-                      </SelectContent>
+                                                <SelectItem value="online">Online</SelectItem>
+                                                <SelectItem value="presencial">Presencial</SelectItem>
+                                                <SelectItem value="hibrida">Híbrida</SelectItem>
+                                              </SelectContent>
                     </Select>
                   </div>
 
@@ -879,6 +882,7 @@ export default function Mapa() {
                       id="verificados"
                       checked={verificados}
                       onCheckedChange={setVerificados}
+                      className="data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600 data-[state=checked]:text-white"
                     />
                     <label
                       htmlFor="verificados"
@@ -894,6 +898,7 @@ export default function Mapa() {
                       id="patrocinados"
                       checked={patrocinadoOnly}
                       onCheckedChange={setPatrocinadoOnly}
+                      className="data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600 data-[state=checked]:text-white"
                     />
                     <label htmlFor="patrocinados" className="text-sm font-medium cursor-pointer">
                       👑 Apenas Patrocinados
@@ -1044,7 +1049,7 @@ export default function Mapa() {
                   <SelectTrigger>
                     <SelectValue placeholder="Distância" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-64 overflow-y-auto z-[2001]">
                     {faixasDistancia.map((fa)=>(<SelectItem key={fa.valor} value={fa.valor}>{fa.label}</SelectItem>))}
                   </SelectContent>
                 </Select>
