@@ -2458,6 +2458,27 @@ www.mapadaestetica.com.br
                 </h3>
 
                 <div className="space-y-4">
+                  {/* Conectar Beauty Banking */}
+                  <div className="p-4 bg-white rounded-lg border-2 border-purple-300">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-sm font-semibold text-gray-700">Beauty Banking</p>
+                      <Badge className={user?.parceiro_oficial_clube ? 'bg-green-600' : 'bg-gray-200 text-gray-700'}>
+                        {user?.parceiro_oficial_clube ? 'Parceiro Oficial' : 'Não Conectado'}
+                      </Badge>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <a href="https://beautybanking.base44.app" target="_blank" rel="noreferrer">
+                        <Button size="sm" className="bg-purple-600 hover:bg-purple-700">Abrir Beauty Banking</Button>
+                      </a>
+                      <Button size="sm" variant="outline" onClick={async ()=>{ await base44.auth.updateMe({ parceiro_oficial_clube: true }); alert('Conectado! Benefícios aplicados.'); }}>
+                        Marcar como Conectado
+                      </Button>
+                    </div>
+                    {user?.parceiro_oficial_clube && (
+                      <p className="text-xs text-gray-600 mt-2">Benefícios: mais exposição nos planos Exclusive/VIP, descontos maiores nas lojas, acesso de Prime/Premium nos radares e mais pontos por atendimento.</p>
+                    )}
+                  </div>
+
                   {/* Plano Mapa da Estética */}
                   <div className="p-4 bg-white rounded-lg border-2 border-pink-200">
                     <div className="flex items-center justify-between mb-2">
