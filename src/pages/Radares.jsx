@@ -144,9 +144,7 @@ export default function Radares() {
         <RabiExplainer />
         <RabiTutorial />
 
-        {/* Integrações removidas da UI conforme solicitado */}
-        {/* <RabiSection title="Integrações — GA4 e Google Trends" subtitle="Importe CSVs para cruzar dados de tráfego e interesse com leituras internas do R.A.B.I."> */}
-          <div className="space-y-4">
+
             <RabiGAUploader onData={handleExternalData} />
             {(gaTrends.gaMetrics.length > 0 || gaTrends.trendsSeries.length > 0) && (
               <div className="space-y-4">
@@ -189,8 +187,7 @@ export default function Radares() {
                 </div>
               </div>
             )}
-          </div>
-        {/* </RabiSection> */}
+
 
         <div className="mt-4 flex flex-wrap gap-3">
           <Button className="bg-[#2C2C2C] text-[#F7D426] border-2 border-[#2C2C2C]" onClick={handleGenerateReport}>
@@ -213,28 +210,7 @@ export default function Radares() {
             </RabiExpandableCard>
           </div>
           <RadarSection />
-        {/* </RabiSection> */}
 
-
-
-
-          <div className="grid md:grid-cols-3 gap-4 mb-4">
-            <RabiExpandableCard title="Recorrência por Categoria" teaser="Ritmo de busca/engajamento por tema.">
-              Identifica onde a atenção se mantém no tempo e onde sofre quedas abruptas — um sinal para ajuste de oferta.
-            </RabiExpandableCard>
-            <RabiExpandableCard title="Ciclo de Retorno do Usuário" teaser="Janela média de reengajamento.">
-              Estimativa da janela de retorno entre interações. Útil para cadência de comunicação e promoções.
-            </RabiExpandableCard>
-            <RabiExpandableCard title="Probabilidade de Conversão" teaser="Sinais que antecedem o agendamento.">
-              Leitura combinada de padrões que antecedem eventos de conversão — sem detalhar o algoritmo.
-            </RabiExpandableCard>
-          </div>
-          {user ? (
-            <RealtimeStats user={user} subtitle="Leituras contínuas das interações — visão pessoal" />
-          ) : (
-            <p className="text-sm text-gray-600">Entre para visualizar leituras preditivas da sua frequência.</p>
-          )}
-        {/* </RabiSection> */}
         <RabiConsultoriaCTA />
       <RabiReportModal
         open={reportOpen}

@@ -5,16 +5,21 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 const procedimentosComuns = [
-  "Limpeza de Pele Profunda", "Peeling Químico", "Microagulhamento", "Drenagem Linfática",
-  "Massagem Modeladora", "Massagem Relaxante", "Botox", "Preenchimento Facial",
-  "Fios de PDO", "Bioestimuladores de Colágeno", "Depilação a Laser", "Depilação com Cera",
+  // Estética facial
+  "limpeza de pele", "peeling químico", "peeling de diamante", "microagulhamento", "hidratação facial", "rejuvenescimento facial",
+  // Estética corporal
+  "drenagem linfática", "massagem modeladora", "massagem relaxante", "criolipólise", "radiofrequência", "ultrassom estético",
+  // Depilação
+  "depilação a laser", "depilação com cera", "depilação egípcia",
+  // Harmonização
+  "botox", "preenchimento facial", "bioestimuladores", "fios de sustentação",
+  // Profissionais da estética
+  "barbeiros", "cabeleireiros", "designers de sobrancelha", "micropigmentadores", "tatuadores estéticos", "nail designers", "podólogos",
+  // Extras comuns da base antiga
   "Design de Sobrancelhas", "Micropigmentação de Sobrancelhas", "Alongamento de Cílios",
-  "Manicure", "Pedicure", "Spa dos Pés", "Spa das Mãos", "Hair Skincare", "Corte de Cabelo",
-  "Hidratação Capilar", "Coloração", "Tratamento para Acne", "Rejuvenescimento Facial",
-  "Contorno Corporal", "Criolipólise", "Radiofrequência", "Ultrassom Microfocado",
-  "Enzimas Injetáveis", "Tratamento para Celulite", "Tratamento para Estrias",
-  "Esmaltação em Gel", "Unha de Fibra", "Reflexologia Podal", "Podoprofilaxia",
-  "Tricologia Capilar", "Consultoria de Imagem", "Maquiagem Profissional", "Pós-operatório"
+  "Manicure", "Pedicure", "Spa dos Pés", "Spa das Mãos", "Tratamento para Acne",
+  "Ultrassom Microfocado", "Enzimas Injetáveis", "Tratamento para Celulite", "Tratamento para Estrias",
+  "Maquiagem Profissional"
 ];
 
 export default function SeletorProcedimentos({ open, onClose, onSelect }) {

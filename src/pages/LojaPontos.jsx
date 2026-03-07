@@ -13,7 +13,6 @@ import {
   ShoppingCart,
   ArrowRight,
   ArrowLeft,
-  Plus,
   Zap,
   ShoppingBag,
   Users,
@@ -58,8 +57,6 @@ export default function LojaPontos() {
   const [modalNovoItem, setModalNovoItem] = useState(false);
   const [novoItem, setNovoItem] = useState({ tipo: 'produto', nome: '', descricao: '', categoria: 'Outros', pontos_necessarios: 100, estoque: 1, tipo_oferta: 'unidade' });
   const [faixaPontos, setFaixaPontos] = useState('todas');
-  const [novoItemImagem, setNovoItemImagem] = useState(null);
-  const [novoItemImagemFile, setNovoItemImagemFile] = useState(null);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -281,10 +278,11 @@ export default function LojaPontos() {
             <div />
             {(user?.role === 'admin' || user?.tipo_usuario === 'profissional') && (
               <Button
+                size="lg"
+                className="bg-pink-600 hover:bg-pink-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 gap-2 px-4 py-6"
                 onClick={()=>setModalNovoItem(true)}
-                className="group h-12 px-5 rounded-full bg-pink-600 hover:bg-pink-700 text-white shadow-md hover:shadow-lg transition-all duration-200"
               >
-                <Plus className="w-5 h-5 mr-2 transition-transform group-hover:scale-110" />
+                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white/20">+</span>
                 Adicionar novo produto ou serviço
               </Button>
             )}
@@ -793,11 +791,11 @@ export default function LojaPontos() {
         {/* Como Ganhar Pontos - Versão Compacta */}
         <Card className="mt-12 border-2 border-[#F7D426] bg-gradient-to-br from-[#FFF9E6] to-white shadow-lg">
           <CardContent className="p-8">
-            <h2 className="text-2xl font-bold text-[#2C2C2C] mb-2 flex items-center justify-center gap-2">
+            <h2 className="text-2xl font-bold text-[#2C2C2C] mb-6 flex items-center justify-center gap-2">
               <Zap className="w-6 h-6 text-[#F7D426]" />
               Mais Formas de Ganhar Pontos
             </h2>
-            <p className="text-center text-xs text-gray-600 mb-6">Os planos referidos são os planos do Clube da Beleza.</p>
+            <p className="text-center text-xs text-gray-600 mb-4">Os planos referidos são os planos do Clube da Beleza.</p>
             <div className="grid md:grid-cols-3 gap-6">
               <div className="text-center">
                 <div className="w-16 h-16 bg-[#F7D426] rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-[#2C2C2C]">
@@ -837,6 +835,7 @@ export default function LojaPontos() {
           <DialogContent className="max-w-lg">
             <DialogHeader>
               <DialogTitle>Novo item na Loja de Pontos</DialogTitle>
+                <p className="text-xs text-gray-500">Os planos referidos são os planos do Clube da Beleza.</p>
             </DialogHeader>
             <div className="grid gap-3">
               <div className="grid grid-cols-2 gap-3">
@@ -872,6 +871,29 @@ export default function LojaPontos() {
                 <label className="text-xs text-gray-600">Descrição</label>
                 <Input value={novoItem.descricao} onChange={(e)=>setNovoItem(prev=>({...prev, descricao: e.target.value}))} />
               </div>
+              <div className="grid gap-2">
+                <label className="text-xs text-gray-600">Imagem (JPG ou PNG)</label>
+                <input
+                  type="file"
+                  accept="image/png, image/jpeg"
+                  onChange={async (e)=>{
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    try {
+                      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+                      setNovoItem(prev=>({ ...prev, imagens: [file_url] }));
+                    } catch (err) {
+                      alert('Falha ao fazer upload da imagem');
+                    }
+                  }}
+                  className="border rounded p-2"
+                />
+                {Array.isArray(novoItem.imagens) && novoItem.imagens[0] && (
+                  <div className="mt-2">
+                    <img src={novoItem.imagens[0]} alt="Prévia" className="w-full h-40 object-cover rounded-lg border" />
+                  </div>
+                )}
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs text-gray-600">Pontos necessários</label>
@@ -896,16 +918,8 @@ export default function LojaPontos() {
               <div className="flex justify-end gap-2 mt-2">
                 <Button variant="outline" onClick={()=>setModalNovoItem(false)}>Cancelar</Button>
                 <Button onClick={async ()=>{
-                  if (!novoItem.nome || !novoItem.descricao || !novoItem.categoria || !novoItem.pontos_necessarios) { alert('Preencha nome, descrição, pontos e categoria'); return; }
-                  if (!novoItemImagemFile) { alert('Envie uma imagem (JPG/PNG)'); return; }
-                  let imageUrl = null;
-                  try {
-                    const { file_url } = await base44.integrations.Core.UploadFile({ file: novoItemImagemFile });
-                    imageUrl = file_url;
-                  } catch (e) {
-                    alert('Erro ao subir a imagem. Tente novamente.');
-                    return;
-                  }
+                  if (!novoItem.nome || !novoItem.descricao) { alert('Preencha nome e descrição'); return; }
+                  if (!novoItem.imagens || !novoItem.imagens[0]) { alert('Adicione uma imagem (JPG ou PNG)'); return; }
                   await base44.entities.Produto.create({
                     tipo: novoItem.tipo,
                     nome: novoItem.nome,
@@ -914,32 +928,13 @@ export default function LojaPontos() {
                     pontos_necessarios: Number(novoItem.pontos_necessarios)||0,
                     estoque: Number(novoItem.estoque)||0,
                     tipo_oferta: novoItem.tipo_oferta,
-                    imagens: imageUrl ? [imageUrl] : [],
+                    imagens: novoItem.imagens,
                     status: 'pendente'
                   });
-                  alert('Item criado e enviado para aprovação.');
+                  alert('Item criado!');
                   setModalNovoItem(false);
                   window.location.reload();
                 }} className="bg-pink-600 hover:bg-pink-700 text-white">Salvar</Button>
-              </div>
-              {/* Upload de Imagem */}
-              <div className="grid gap-2 mt-2">
-                <label className="text-xs text-gray-600">Imagem (JPG/PNG)</label>
-                <input
-                  type="file"
-                  accept="image/png, image/jpeg"
-                  onChange={(e)=>{
-                    const file = e.target.files && e.target.files[0];
-                    if (file) {
-                      setNovoItemImagemFile(file);
-                      try { setNovoItemImagem(URL.createObjectURL(file)); } catch {}
-                    }
-                  }}
-                  className="text-sm"
-                />
-                {novoItemImagem && (
-                  <img src={novoItemImagem} alt="Pré-visualização" className="mt-2 h-32 w-full object-cover rounded-lg border" />
-                )}
               </div>
             </div>
           </DialogContent>
