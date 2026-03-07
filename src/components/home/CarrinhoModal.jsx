@@ -17,9 +17,9 @@ export default function CarrinhoModal({ open, onClose, carrinho, onRemoverItem, 
   const navigate = useNavigate();
 
   const calcularTotal = () => {
-    return carrinho.reduce((total, item) => {
+    return carrinho.reduce((acc, item) => {
       const preco = item.preco_promocional || item.preco || 0;
-      return total + preco;
+      return acc + preco;
     }, 0);
   };
 
