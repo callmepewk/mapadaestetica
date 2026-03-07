@@ -14,6 +14,8 @@ import RabiConsultoriaCTA from "../components/rabi/RabiConsultoriaCTA";
 import { Button } from "@/components/ui/button";
 import RabiExpandableCard from "../components/rabi/RabiExpandableCard";
 import RabiReportModal from "../components/rabi/RabiReportModal";
+import RabiGAUploader from "../components/rabi/RabiGAUploader";
+import RabiTrendsChart from "../components/rabi/RabiTrendsChart";
 
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -23,6 +25,9 @@ export default function Radares() {
   const [reportLoading, setReportLoading] = useState(false);
   const [reportSections, setReportSections] = useState([]);
   const [reportSummary, setReportSummary] = useState('');
+  const [gaTrends, setGaTrends] = useState({ gaMetrics: [], trendsSeries: [] });
+  const [alertsOn, setAlertsOn] = useState(false);
+  const [schedule, setSchedule] = useState('mensal');
 
 
   const [rabiOn, setRabiOn] = useState(false);
@@ -102,6 +107,18 @@ export default function Radares() {
 
 
 
+
+  const handleExternalData = (res) => {
+    setGaTrends(res || { gaMetrics: [], trendsSeries: [] });
+  };
+  const toggleAlerts = async () => {
+    setAlertsOn(prev => !prev);
+    try { if (user) await base44.auth.updateMe({ rabi_alertas: !alertsOn }); } catch {}
+  };
+  const setSchedulePref = async (s) => {
+    setSchedule(s);
+    try { if (user) await base44.auth.updateMe({ rabi_agendamento: s }); } catch {}
+  };
 
   const toggleRabi = async () => {
     const next = !rabiOn;
