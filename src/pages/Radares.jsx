@@ -18,6 +18,7 @@ import RabiReportModal from "../components/rabi/RabiReportModal";
 import { useQueryClient } from "@tanstack/react-query";
 
 export default function Radares() {
+  // Página renomeada visualmente para RABI (mantendo rota existente)
   const [user, setUser] = useState(null);
   const [reportOpen, setReportOpen] = useState(false);
   const [reportLoading, setReportLoading] = useState(false);
@@ -199,7 +200,7 @@ export default function Radares() {
             Gerar Relatório (IA)
           </Button>
         </div>
-        <RabiSection title="R.A.B.I — Tendências" subtitle="Leitura antecipada do mercado, movimentos emergentes e apoio à inovação estratégica.">
+        <RabiSection title="RABI — Tendências" subtitle="Leitura antecipada do mercado, movimentos emergentes e apoio à inovação estratégica.">
           <div className="grid md:grid-cols-3 gap-4 mb-4">
             <RabiExpandableCard title="Movimentos Emergentes" teaser="Sinais fracos ganhando tração.">
               Leitura parcial dos termos e técnicas em ascensão na plataforma. Profissionais com posicionamento antecipado tendem a capturar mais demanda.

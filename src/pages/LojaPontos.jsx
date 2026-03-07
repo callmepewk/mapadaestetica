@@ -277,8 +277,13 @@ export default function LojaPontos() {
           <div className="flex items-center justify-between mb-2">
             <div />
             {(user?.role === 'admin' || user?.tipo_usuario === 'profissional') && (
-              <Button size="sm" className="bg-pink-600 hover:bg-pink-700 text-white" onClick={()=>setModalNovoItem(true)}>
-                + Adicionar item à Loja
+              <Button
+                size="lg"
+                className="bg-pink-600 hover:bg-pink-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 gap-2 px-4 py-6"
+                onClick={()=>setModalNovoItem(true)}
+              >
+                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white/20">+</span>
+                Adicionar novo produto ou serviço
               </Button>
             )}
           </div>
@@ -829,6 +834,7 @@ export default function LojaPontos() {
           <DialogContent className="max-w-lg">
             <DialogHeader>
               <DialogTitle>Novo item na Loja de Pontos</DialogTitle>
+                <p className="text-xs text-gray-500">Os planos referidos são os planos do Clube da Beleza.</p>
             </DialogHeader>
             <div className="grid gap-3">
               <div className="grid grid-cols-2 gap-3">
@@ -863,6 +869,32 @@ export default function LojaPontos() {
               <div className="grid gap-2">
                 <label className="text-xs text-gray-600">Descrição</label>
                 <Input value={novoItem.descricao} onChange={(e)=>setNovoItem(prev=>({...prev, descricao: e.target.value}))} />
+              </div>
+              <div className="grid gap-2">
+                <label className="text-xs text-gray-600">Imagem (JPG ou PNG)</label>
+                <input
+                  type="file"
+                  accept="image/png, image/jpeg"
+                  onChange={async (e)=>{
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    try {
+                      const { url } = await base44.integrations.Core.GenerateImage({ prompt: "", existing_image_urls: [] });
+                    } catch {}
+                    try {
+                      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+                      setNovoItem(prev=>({ ...prev, imagens: [file_url] }));
+                    } catch (err) {
+                      alert('Falha ao fazer upload da imagem');
+                    }
+                  }}
+                  className="border rounded p-2"
+                />
+                {Array.isArray(novoItem.imagens) && novoItem.imagens[0] && (
+                  <div className="mt-2">
+                    <img src={novoItem.imagens[0]} alt="Prévia" className="w-full h-40 object-cover rounded-lg border" />
+                  </div>
+                )}
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
