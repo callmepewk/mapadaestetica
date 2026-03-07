@@ -130,7 +130,7 @@ export default function PlannerWellness() {
           </div>
         </div>
 
-        {/* Métricas rápidas */)
+        {/* Métricas rápidas */}
         <div className="grid sm:grid-cols-2 gap-4">
           <Card className="border-2 border-emerald-200">
             <CardHeader><CardTitle className="flex items-center gap-2 text-emerald-700"><Calendar className="w-5 h-5"/> Meus Agendamentos</CardTitle></CardHeader>
