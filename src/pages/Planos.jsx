@@ -5,7 +5,7 @@ import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Star, Crown } from "lucide-react";
+import { Check, Star, Crown, Medal, Trophy, Gem } from "lucide-react";
 
 export default function Planos() {
   const [user, setUser] = useState(null);
@@ -26,51 +26,6 @@ export default function Planos() {
     })();
   }, []);
 
-  const plans = [
-    {
-      id: "free",
-      name: "Free",
-      price: "R$ 0",
-      period: "/mês",
-      features: [
-        "Acesso básico ao Mapa",
-        "Cadastro de perfil",
-        "Suporte por e-mail",
-      ],
-      cta: "Continuar grátis",
-      highlighted: false,
-      icon: Star,
-    },
-    {
-      id: "pro",
-      name: "Pro",
-      price: "R$ 79",
-      period: "/mês",
-      features: [
-        "Destaque nos resultados",
-        "Relatórios RABI (básico)",
-        "Atendimento prioritário",
-      ],
-      cta: "Assinar Pro",
-      highlighted: true,
-      icon: Crown,
-    },
-    {
-      id: "prime",
-      name: "Prime",
-      price: "R$ 149",
-      period: "/mês",
-      features: [
-        "Impulsionamento avançado",
-        "RABI completo + IA",
-        "Consultoria de posicionamento",
-      ],
-      cta: "Assinar Prime",
-      highlighted: false,
-      icon: Crown,
-    },
-  ];
-
   const userPlan = (user?.plano || user?.plano_assinatura || user?.assinatura_plano || "").toLowerCase();
 
   const handleChoose = (planId) => {
@@ -81,6 +36,170 @@ export default function Planos() {
     }
     navigate(createPageUrl(`Checkout?plan=${planId}`));
   };
+
+  const professionalPlans = [
+    {
+      id: "prime",
+      name: "Prime (Profissional)",
+      price: "R$ 99",
+      period: "/mês",
+      highlighted: true,
+      cta: "Assinar Prime",
+      icon: Crown,
+      features: [
+        "Destaque no Mapa e nos Anúncios",
+        "RABI (Radar) básico + relatórios mensais",
+        "Agendamento e WhatsApp 1‑clique",
+        "Perfil profissional avançado e avaliações",
+        "Impulsionamento mensal incluso",
+        "Suporte prioritário"
+      ]
+    },
+    {
+      id: "premium",
+      name: "Premium (Profissional)",
+      price: "Sob consulta",
+      period: "",
+      highlighted: false,
+      cta: "Falar com consultor",
+      icon: Star,
+      features: [
+        "Tudo do Prime",
+        "RABI completo + IA e insights de mercado",
+        "Consultoria dedicada de posicionamento",
+        "Impulsionamentos avançados e campanhas",
+        "Integrações e relatórios personalizados",
+        "Atendimento VIP / Sucesso do Cliente"
+      ]
+    }
+  ];
+
+  const sponsorPlans = [
+    {
+      id: "cobre",
+      name: "Cobre (Patrocinador)",
+      price: "A partir de R$ 499",
+      period: "/mês",
+      highlighted: false,
+      cta: "Contratar Cobre",
+      icon: Medal,
+      features: [
+        "1 banner rotativo (posições básicas)",
+        "Exibição geográfica ampla",
+        "Métricas essenciais (views e cliques)",
+        "Tempo de exibição conforme plano"
+      ]
+    },
+    {
+      id: "prata",
+      name: "Prata (Patrocinador)",
+      price: "A partir de R$ 999",
+      period: "/mês",
+      highlighted: false,
+      cta: "Contratar Prata",
+      icon: Medal,
+      features: [
+        "2 banners rotativos",
+        "Melhores posições em páginas-chave",
+        "Segmentação por cidade/UF (básica)",
+        "Relatório mensal de performance"
+      ]
+    },
+    {
+      id: "ouro",
+      name: "Ouro (Patrocinador)",
+      price: "A partir de R$ 1.999",
+      period: "/mês",
+      highlighted: true,
+      cta: "Contratar Ouro",
+      icon: Trophy,
+      features: [
+        "3 banners em posições premium",
+        "Segmentação por público e região",
+        "Conteúdos editoriais patrocinados",
+        "Relatórios detalhados e recomendações"
+      ]
+    },
+    {
+      id: "diamante",
+      name: "Diamante (Patrocinador)",
+      price: "Sob consulta",
+      period: "",
+      highlighted: false,
+      cta: "Falar com consultor",
+      icon: Gem,
+      features: [
+        "4–5 banners com prioridade máxima",
+        "Campanhas multi-páginas e formatos",
+        "Segmentação avançada e testes A/B",
+        "Suporte estratégico e co-criação de ações"
+      ]
+    },
+    {
+      id: "platina",
+      name: "Platina (Patrocinador)",
+      price: "Projeto custom",
+      period: "",
+      highlighted: false,
+      cta: "Solicitar proposta",
+      icon: Crown,
+      features: [
+        "Pacotes especiais e takeovers",
+        "Séries de conteúdo e ativações",
+        "Eventos, lançamentos e experiências",
+        "Relatórios executivos e ROI tracking"
+      ]
+    }
+  ];
+
+  const Section = ({ title, subtitle, plans }) => (
+    <section className="mb-12">
+      <div className="mb-6 text-center">
+        <h2 className="text-2xl md:text-3xl font-bold text-gray-900">{title}</h2>
+        {subtitle && <p className="mt-2 text-gray-600">{subtitle}</p>}
+      </div>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {plans.map((p) => {
+          const Icon = p.icon || Star;
+          const isCurrent = userPlan && userPlan.includes(p.id);
+          return (
+            <Card key={p.id} className={`${p.highlighted ? "border-2 border-[#F7D426] shadow-lg" : ""}`}>
+              <CardHeader className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Icon className="w-5 h-5 text-[#F7D426]" />
+                  <CardTitle className="text-xl">{p.name}</CardTitle>
+                  {p.highlighted && (
+                    <Badge className="ml-2 bg-[#F7D426] text-[#2C2C2C] font-bold">Mais Popular</Badge>
+                  )}
+                </div>
+                <div className="text-3xl font-bold">
+                  {p.price} {p.period && <span className="text-base font-medium text-gray-500">{p.period}</span>}
+                </div>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 mb-6">
+                  {p.features.map((f) => (
+                    <li key={f} className="flex items-start gap-2 text-sm text-gray-700">
+                      <Check className="w-4 h-4 text-emerald-600 mt-0.5" />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Button
+                  className={`w-full ${p.highlighted ? "bg-[#2C2C2C] text-[#F7D426] border-2 border-[#2C2C2C]" : ""}`}
+                  variant={p.highlighted ? "default" : "outline"}
+                  onClick={() => handleChoose(p.id)}
+                  disabled={isCurrent}
+                >
+                  {isCurrent ? "Plano atual" : p.cta}
+                </Button>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+    </section>
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-10 px-4">
@@ -95,46 +214,17 @@ export default function Planos() {
           )}
         </div>
 
-        <div className="grid gap-6 md:grid-cols-3">
-          {plans.map((p) => {
-            const Icon = p.icon;
-            const isCurrent = userPlan && userPlan.includes(p.id);
-            return (
-              <Card key={p.id} className={`${p.highlighted ? "border-2 border-[#F7D426] shadow-lg" : ""}`}>
-                <CardHeader className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Icon className="w-5 h-5 text-[#F7D426]" />
-                    <CardTitle className="text-xl">{p.name}</CardTitle>
-                    {p.highlighted && (
-                      <Badge className="ml-2 bg-[#F7D426] text-[#2C2C2C] font-bold">Mais Popular</Badge>
-                    )}
-                  </div>
-                  <div className="text-3xl font-bold">
-                    {p.price} <span className="text-base font-medium text-gray-500">{p.period}</span>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2 mb-6">
-                    {p.features.map((f) => (
-                      <li key={f} className="flex items-start gap-2 text-sm text-gray-700">
-                        <Check className="w-4 h-4 text-emerald-600 mt-0.5" />
-                        <span>{f}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Button
-                    className={`w-full ${p.highlighted ? "bg-[#2C2C2C] text-[#F7D426] border-2 border-[#2C2C2C]" : ""}`}
-                    variant={p.highlighted ? "default" : "outline"}
-                    onClick={() => handleChoose(p.id)}
-                    disabled={isCurrent}
-                  >
-                    {isCurrent ? "Plano atual" : p.cta}
-                  </Button>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+        <Section
+          title="Planos para Profissionais"
+          subtitle="Foque no que importa: seus resultados e seus pacientes."
+          plans={professionalPlans}
+        />
+
+        <Section
+          title="Planos para Patrocinadores"
+          subtitle="Dê escala à sua marca com posições, segmentações e métricas claras."
+          plans={sponsorPlans}
+        />
 
         <div className="mt-10 text-center text-xs text-gray-500">
           Valores promocionais por tempo limitado. Você pode cancelar quando quiser.
