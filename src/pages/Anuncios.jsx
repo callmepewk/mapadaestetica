@@ -646,7 +646,7 @@ export default function Anuncios() {
                   {/* Terceira linha - MOBILE GRID OPTIMIZED */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
                     <div>
-                      <Label className="mb-1.5 block font-semibold text-xs sm:text-sm">Tipo de Anúncio</Label>
+                      
                       <Select
                         value={filtroTipoAnuncio}
                         onValueChange={(value) => {
