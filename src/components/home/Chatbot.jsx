@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,6 +41,8 @@ export default function Chatbot({ user, onCompletarCadastro }) {
   const [inputMessage, setInputMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [mostrarSugestoes, setMostrarSugestoes] = useState(true);
+  const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
 
   const tipoPerguntasSugeridas = user?.tipo_usuario === 'profissional' 
     ? perguntasSugeridas.profissional 
@@ -137,6 +139,15 @@ Responda de forma clara, objetiva e útil.`,
       }
     }
   };
+
+  useEffect(() => {
+    // Auto-scroll em novas mensagens
+    try { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); } catch {}
+    // Foco no input ao abrir
+    if (isOpen && user?.cadastro_completo) {
+      setTimeout(() => inputRef.current?.focus(), 50);
+    }
+  }, [messages, loading, isOpen, user?.cadastro_completo]);
 
   return (
     <>
@@ -323,15 +334,17 @@ Responda de forma clara, objetiva e útil.`,
                     </div>
                   </div>
                 )}
+                <div ref={messagesEndRef} />
               </div>
 
               {/* Input - FIXO NO BOTTOM */}
               <div className="p-4 bg-white border-t flex-shrink-0">
                 <div className="flex gap-2">
                   <Input
+                    ref={inputRef}
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
-                    onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                    onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
                     placeholder={user && user.cadastro_completo ? "Digite sua mensagem..." : "Faça login primeiro..."}
                     className="flex-1 text-sm h-10"
                     disabled={!user || !user.cadastro_completo}

@@ -219,6 +219,88 @@ export default function DetalhesAnuncio() {
     );
   }
 
+  // SEO & Open Graph & Structured Data
+  useEffect(() => {
+    if (!anuncio) return;
+    const slugify = (s) => s
+      .toLowerCase()
+      .normalize('NFD').replace(/\p{Diacritic}/gu, '')
+      .replace(/[^a-z0-9\s-]/g, '')
+      .trim()
+      .replace(/\s+/g, '-');
+
+    const cidade = anuncio.cidade ? slugify(anuncio.cidade) : 'cidade';
+    const categoria = anuncio.categoria ? slugify(anuncio.categoria) : 'categoria';
+    const nome = (anuncio.profissional || anuncio.titulo || 'profissional');
+
+    const title = `${anuncio.categoria || 'Serviço'} em ${anuncio.cidade || ''} | ${nome}`.trim();
+    const description = `${nome} oferece ${anuncio.categoria || 'serviços estéticos'} em ${anuncio.cidade || ''}. ${anuncio.descricao?.slice(0,120) || ''}`.trim();
+
+    document.title = title;
+    const setMeta = (attr, key, val) => {
+      let tag = document.querySelector(`${attr}[${key}="${val.name}"]`);
+      if (!tag) { tag = document.createElement('meta'); tag.setAttribute(key, val.name); document.head.appendChild(tag); }
+      tag.setAttribute('content', val.content);
+    };
+    // Description
+    let metaDesc = document.querySelector('meta[name="description"]');
+    if (!metaDesc) { metaDesc = document.createElement('meta'); metaDesc.setAttribute('name', 'description'); document.head.appendChild(metaDesc); }
+    metaDesc.setAttribute('content', description);
+
+    // Open Graph
+    const origin = window.location.origin;
+    const url = `${origin}/${cidade}/${categoria}/${slugify(nome)}`;
+    const image = anuncio.imagem_principal || anuncio.logo || '';
+    const ogTags = [
+      { name: 'og:title', content: title },
+      { name: 'og:description', content: description },
+      { name: 'og:type', content: 'website' },
+      { name: 'og:url', content: url },
+      { name: 'og:image', content: image },
+      { name: 'twitter:card', content: 'summary_large_image' },
+      { name: 'twitter:title', content: title },
+      { name: 'twitter:description', content: description },
+      { name: 'twitter:image', content: image }
+    ];
+    ogTags.forEach(({ name, content }) => {
+      let tag = document.querySelector(`meta[property="${name}"]`) || document.querySelector(`meta[name="${name}"]`);
+      if (!tag) { tag = document.createElement('meta'); if (name.startsWith('og:')) tag.setAttribute('property', name); else tag.setAttribute('name', name); document.head.appendChild(tag); }
+      tag.setAttribute('content', content || '');
+    });
+
+    // Structured Data (LocalBusiness)
+    const scriptId = 'ld-localbusiness';
+    const old = document.getElementById(scriptId); if (old) old.remove();
+    const ld = {
+      '@context': 'https://schema.org',
+      '@type': 'LocalBusiness',
+      name: nome,
+      image: image ? [image] : undefined,
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: [anuncio.rua, anuncio.numero].filter(Boolean).join(', '),
+        addressLocality: anuncio.cidade,
+        addressRegion: anuncio.estado,
+        postalCode: anuncio.cep,
+        addressCountry: 'BR'
+      },
+      telephone: anuncio.telefone || anuncio.whatsapp || undefined,
+      url,
+      openingHours: anuncio.horario_funcionamento || undefined,
+      aggregateRating: anuncio.media_avaliacao ? {
+        '@type': 'AggregateRating',
+        ratingValue: anuncio.media_avaliacao,
+        reviewCount: anuncio.comentarios?.length || 0
+      } : undefined,
+      makesOffer: (anuncio.servicos_oferecidos || []).map(s => ({ '@type': 'Offer', itemOffered: { '@type': 'Service', name: s.nome } }))
+    };
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.id = scriptId;
+    script.text = JSON.stringify(ld);
+    document.head.appendChild(script);
+  }, [anuncio]);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
       <div className="max-w-6xl mx-auto px-4">
@@ -266,6 +348,16 @@ export default function DetalhesAnuncio() {
                       <Badge variant="outline" className="mb-3 ml-2">{anuncio.subcategoria}</Badge>
                     )}
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">{anuncio.titulo}</h1>
+                    {/* Ranking badge simples */}
+                    {(() => { 
+                       const views = Math.min((anuncio.visualizacoes || 0)/500,1);
+                       const likes = Math.min((anuncio.curtidas || 0)/50,1);
+                       const comments = Math.min((anuncio.comentarios?.length || 0)/20,1);
+                       const profile = (anuncio.profissional_verificado?0.6:0)+(anuncio.profissional_especializado?0.4:0);
+                       const score = Math.round((0.3*comments + 0.25*0 + 0.2*views + 0.15*likes + 0.1*Math.min(profile,1))*100);
+                       const b = score>=80?{t:'🥇 Top Profissional',c:'bg-yellow-100 text-yellow-800'}:score>=60?{t:'⭐ Profissional Destaque',c:'bg-purple-100 text-purple-800'}:score>=40?{t:'📈 Em Crescimento',c:'bg-blue-100 text-blue-800'}:{t:'🆕 Novo Profissional',c:'bg-gray-100 text-gray-800'};
+                       return <Badge className={`${b.c} text-xs`}>{b.t} • Score {score}</Badge>;
+                    })()}
                     <div className="flex items-center gap-2">
                       <Avatar className="w-10 h-10">
                         <AvatarImage src={anuncio.logo} />

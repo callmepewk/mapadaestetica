@@ -1066,6 +1066,9 @@ export default function Inicio() {
                   <p className="text-gray-600 text-base sm:text-lg px-4">
                     Conheça profissionais de sucesso que usam nossa plataforma
                   </p>
+                  <p className="mt-3 text-xs sm:text-sm text-gray-500">
+                    <strong>Exemplos de anúncios</strong> — visualize como seu perfil aparecerá para os usuários.
+                  </p>
                 </div>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                   {anunciosDestaque.slice(0, 6).map((anuncio) => (

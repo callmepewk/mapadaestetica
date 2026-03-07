@@ -29,10 +29,14 @@ const planos = [
       tags: 1,
       dias_exposicao: 30
     },
-    beneficios: [,
+    beneficios: [
+      "1 Especialidade cadastrada",
       "1 Anúncio ativo",
+      "1 Tag/palavra-chave do Google Negócio",
       "30 dias de exposição do anúncio",
       "Perfil básico na plataforma",
+      "Suporte por email",
+      "Estatísticas básicas"
     ],
     naoInclui: [
       "🔒 Acesso ao WhatsApp dos profissionais",
@@ -45,6 +49,47 @@ const planos = [
       "Maior tempo de exposição"
     ]
   },
+
+
+  {
+    nome: "PRO",
+    tipo: "ouro",
+    preco: "R$ 39,90/mês",
+    cor: "from-yellow-400 to-amber-500",
+    icone: Crown,
+    destaque: true,
+    linkPagamento: "https://payfast.greenn.com.br/146197",
+    limites: {
+      radar_frequencia: 2,
+      relatorios: 4,
+      especialidades: 2,
+      anuncios: 20,
+      tags: 20,
+      dias_exposicao: 60
+    },
+    beneficios: [
+      "✅ Acesso ao WhatsApp dos profissionais",
+      "1 Especialidade cadastrada",
+      "20 Anúncios ativos",
+      "20 Tags/palavras-chave premium",
+      "30 dias de exposição por anúncio",
+      "Prioridade alta nas buscas",
+      "Perfil premium com destaque dourado",
+      "Suporte VIP com chat direto",
+      "Relatórios completos",
+      "Selo de Profissional Verificado PRO",
+      "Aparece em posição privilegiada",
+      "Galeria de fotos ampliada"
+    ],
+    naoInclui: [
+      "Anúncios ilimitados",
+      "Especialidades ilimitadas",
+      "Gerente de conta exclusivo",
+      "Integração WhatsApp Business API",
+      "Assistente IA personalizado",
+      "30 dias de exposição máxima"
+    ]
+  },
   {
     nome: "PRIME",
     tipo: "diamante",
@@ -55,7 +100,7 @@ const planos = [
     linkPagamento: "https://payfast.greenn.com.br/146195",
     limites: {
       radar_frequencia: 4,
-      relatorios: 1,
+      relatorios: 10,
       especialidades: 3,
       anuncios: 25,
       tags: 20,

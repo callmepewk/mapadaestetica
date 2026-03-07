@@ -15,10 +15,23 @@ export default function CardAnuncio({ anuncio, distancia, isPreview = false }) {
     navigate(`${createPageUrl("DetalhesAnuncio")}?id=${anuncio.id}`);
   };
 
+  // Ranking score (aproximação com métricas disponíveis)
+  const views = Math.min((anuncio.visualizacoes || 0) / 500, 1);
+  const likes = Math.min((anuncio.curtidas || 0) / 50, 1);
+  const comments = Math.min((anuncio.comentarios?.length || 0) / 20, 1);
+  const profile = (anuncio.profissional_verificado ? 0.6 : 0) + (anuncio.profissional_especializado ? 0.4 : 0);
+  const score = Math.round((0.3 * comments + 0.25 * 0 + 0.2 * views + 0.15 * likes + 0.1 * Math.min(profile, 1)) * 100);
+  const getRankBadge = () => {
+    if (score >= 80) return { text: '🥇 Top Profissional', cls: 'bg-yellow-100 text-yellow-800' };
+    if (score >= 60) return { text: '⭐ Profissional Destaque', cls: 'bg-purple-100 text-purple-800' };
+    if (score >= 40) return { text: '📈 Em Crescimento', cls: 'bg-blue-100 text-blue-800' };
+    return { text: '🆕 Novo Profissional', cls: 'bg-gray-100 text-gray-800' };
+  };
+
   return (
     <Card 
       onClick={handleClick}
-      className="cursor-pointer group hover:shadow-2xl transition-all duration-300 overflow-hidden border-none w-full"
+      className={`group hover:shadow-2xl transition-all duration-300 overflow-hidden border-none w-full ${isPreview ? 'cursor-default' : 'cursor-pointer'}`}
     >
       <div className="relative h-40 sm:h-48 md:h-56 overflow-hidden bg-gray-100">
         {anuncio.imagem_principal ? (
@@ -178,7 +191,14 @@ export default function CardAnuncio({ anuncio, distancia, isPreview = false }) {
           )}
         </div>
 
-        <div className="flex items-center justify-between text-xs sm:text-sm text-gray-500 pt-2 sm:pt-3 border-t">
+        {/* Badge de Ranking */}
+        <div className="mb-2">
+          {(() => { const b = getRankBadge(); return (
+            <Badge className={`${b.cls} text-[10px] sm:text-xs`}>{b.text} • Score {score}</Badge>
+          ); })()}
+        </div>
+
+         <div className="flex items-center justify-between text-xs sm:text-sm text-gray-500 pt-2 sm:pt-3 border-t">
           <div className="flex items-center gap-3 sm:gap-4">
             <span className="flex items-center gap-1">
               <Eye className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
