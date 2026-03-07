@@ -120,7 +120,7 @@ export default function Checkout() {
         <div className="grid lg:grid-cols-3 gap-6">
           <Card className="lg:col-span-2 border-none shadow-lg">
             <CardHeader>
-              <CardTitle>Itens do Pedido</CardTitle>
+              <CardTitle>1. Itens do Pedido</CardTitle>
             </CardHeader>
             <CardContent>
               {carrinho.length === 0 ? (
@@ -158,7 +158,7 @@ export default function Checkout() {
 
           <Card className="border-2 border-pink-200 shadow-xl">
            <CardHeader>
-             <CardTitle>Resumo</CardTitle>
+             <CardTitle>2. Pagamento e Resumo</CardTitle>
            </CardHeader>
            <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
@@ -211,7 +211,7 @@ export default function Checkout() {
         <div className="grid lg:grid-cols-2 gap-6 mt-6">
           <Card className="border-none shadow-lg">
             <CardHeader>
-              <CardTitle>Seus Dados</CardTitle>
+              <CardTitle>3. Informações do Usuário</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <Input placeholder="Nome completo" value={nome} onChange={(e) => setNome(e.target.value)} />
@@ -222,7 +222,7 @@ export default function Checkout() {
 
           <Card className="border-none shadow-lg">
             <CardHeader>
-              <CardTitle>Endereço (opcional)</CardTitle>
+              <CardTitle>4. Endereço (opcional)</CardTitle>
             </CardHeader>
             <CardContent className="grid sm:grid-cols-2 gap-3">
               <Input placeholder="Rua" value={endereco.rua} onChange={(e) => setEndereco({ ...endereco, rua: e.target.value })} />
