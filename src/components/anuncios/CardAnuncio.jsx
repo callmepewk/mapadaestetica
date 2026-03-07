@@ -43,6 +43,11 @@ export default function CardAnuncio({ anuncio, distancia, isPreview = false }) {
           </div>
         )}
 
+        {isPreview && (
+          <div className="absolute top-2 left-2">
+            <Badge className="bg-gray-900 text-white border-2 border-white text-[10px]">Exemplo</Badge>
+          </div>
+        )}
         {/* Badge Profissional Especializado */}
         {anuncio.profissional_especializado && (
           <div className="absolute top-2 left-2">

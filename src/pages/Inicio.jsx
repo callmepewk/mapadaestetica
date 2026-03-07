@@ -1069,7 +1069,7 @@ export default function Inicio() {
                 </div>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                   {anunciosDestaque.slice(0, 6).map((anuncio) => (
-                    <CardAnuncio key={anuncio.id} anuncio={anuncio} destaque={true} />
+                    <CardAnuncio key={anuncio.id} anuncio={anuncio} isPreview />
                   ))}
                 </div>
                 <div className="text-center mt-8">
