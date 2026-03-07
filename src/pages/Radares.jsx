@@ -216,17 +216,7 @@ export default function Radares() {
 
 
 
-          <div className="grid md:grid-cols-3 gap-4 mb-4">
-            <RabiExpandableCard title="Recorrência por Categoria" teaser="Ritmo de busca/engajamento por tema.">
-              Identifica onde a atenção se mantém no tempo e onde sofre quedas abruptas — um sinal para ajuste de oferta.
-            </RabiExpandableCard>
-            <RabiExpandableCard title="Ciclo de Retorno do Usuário" teaser="Janela média de reengajamento.">
-              Estimativa da janela de retorno entre interações. Útil para cadência de comunicação e promoções.
-            </RabiExpandableCard>
-            <RabiExpandableCard title="Probabilidade de Conversão" teaser="Sinais que antecedem o agendamento.">
-              Leitura combinada de padrões que antecedem eventos de conversão — sem detalhar o algoritmo.
-            </RabiExpandableCard>
-          </div>
+
 
 
         <RabiConsultoriaCTA />
