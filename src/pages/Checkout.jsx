@@ -20,6 +20,11 @@ export default function Checkout() {
   const [endereco, setEndereco] = useState({ rua: "", numero: "", complemento: "", bairro: "", cidade: "", estado: "", cep: "" });
   const [linhaCartao, setLinhaCartao] = useState("clube"); // clube | beauty
   const [planoCartao, setPlanoCartao] = useState("basic"); // basic | premium | vip | pro | exclusive
+
+  // MOVIDO PARA CIMA: calcular total antes de usar em payloadPagamento
+  const total = useMemo(() => {
+    return carrinho.reduce((sum, item) => sum + (item.preco_promocional || item.preco || 0), 0);
+  }, [carrinho]);
   const payloadPagamento = useMemo(() => {
     const plano = linhaCartao === 'clube' ? planoCartao : (planoCartao === 'basic' ? 'basic' : planoCartao);
     const texto = `beautybanking://payment?line=${linhaCartao}&plan=${plano}&total=${total.toFixed(2)}`;
