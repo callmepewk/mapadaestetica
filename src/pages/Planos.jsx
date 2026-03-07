@@ -39,6 +39,21 @@ export default function Planos() {
 
   const professionalPlans = [
     {
+      id: "free",
+      name: "Free (Profissional)",
+      price: "R$ 0",
+      period: "/mês",
+      highlighted: false,
+      cta: "Começar grátis",
+      icon: Star,
+      features: [
+        "Presença básica no Mapa",
+        "Publicação de 1 anúncio por mês",
+        "Perfil simples e contato",
+        "Suporte por e‑mail"
+      ]
+    },
+    {
       id: "prime",
       name: "Prime (Profissional)",
       price: "R$ 99",
@@ -48,6 +63,7 @@ export default function Planos() {
       icon: Crown,
       features: [
         "Destaque no Mapa e nos Anúncios",
+        "Até 30 anúncios por mês",
         "RABI (Radar) básico + relatórios mensais",
         "Agendamento e WhatsApp 1‑clique",
         "Perfil profissional avançado e avaliações",
@@ -65,6 +81,7 @@ export default function Planos() {
       icon: Star,
       features: [
         "Tudo do Prime",
+        "Anúncios ilimitados",
         "RABI completo + IA e insights de mercado",
         "Consultoria dedicada de posicionamento",
         "Impulsionamentos avançados e campanhas",
