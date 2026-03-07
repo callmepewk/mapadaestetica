@@ -998,7 +998,7 @@ export default function Inicio() {
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Radares de Tendências e Frequência</h2>
               <p className="text-gray-600 mb-6">Veja as tendências do mercado e relatórios dos seus anúncios em tempo real.</p>
               <a href={createPageUrl("Radares")}>
-                <Button className="bg-[#2C2C2C] hover:bg-[#3A3A3A] text-[#F7D426] border-2 border-[#2C2C2C]">Acessar R.A.B.I</Button>
+                <Button className="bg-[#2C2C2C] hover:bg-[#3A3A3A] text-[#F7D426] border-2 border-[#2C2C2C]">Acessar RABI</Button>
               </a>
             </div>
           </section>
@@ -1018,7 +1018,7 @@ export default function Inicio() {
             </div>
           </div>
 
-          {/* Centro de Inteligência Estratégica (R.A.B.I) */}
+          {/* Centro de Inteligência Estratégica (RABI) */}
           <motion.section initial={{opacity:0, y:20}} whileInView={{opacity:1, y:0}} viewport={{once:true}} className="py-8">
             <div className="max-w-7xl mx-auto px-4">
               <div className="bg-white border-2 border-[#F7D426] rounded-2xl p-6 shadow">
