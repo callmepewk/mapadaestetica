@@ -22,14 +22,14 @@ export default function Checkout() {
   const [planoCartao, setPlanoCartao] = useState("basic"); // basic | premium | vip | pro | exclusive
 
   // MOVIDO PARA CIMA: calcular total antes de usar em payloadPagamento
-  const total = useMemo(() => {
+  const totalPedido = useMemo(() => {
     return carrinho.reduce((sum, item) => sum + (item.preco_promocional || item.preco || 0), 0);
   }, [carrinho]);
   const payloadPagamento = useMemo(() => {
     const plano = linhaCartao === 'clube' ? planoCartao : (planoCartao === 'basic' ? 'basic' : planoCartao);
-    const texto = `beautybanking://payment?line=${linhaCartao}&plan=${plano}&total=${total.toFixed(2)}`;
+    const texto = `beautybanking://payment?line=${linhaCartao}&plan=${plano}&total=${totalPedido.toFixed(2)}`;
     return texto;
-  }, [linhaCartao, planoCartao, total]);
+  }, [linhaCartao, planoCartao, totalPedido]);
 
   useEffect(() => {
     const carregar = async () => {
@@ -86,7 +86,7 @@ export default function Checkout() {
       localStorage.removeItem("carrinho_mapa_estetica");
       setCarrinho([]);
       const ids = (created || []).map((c) => c.id).join(",");
-      navigate(`${createPageUrl("AgradecimentoCompra")}?pedidos=${encodeURIComponent(ids)}&total=${encodeURIComponent(total)}`);
+      navigate(`${createPageUrl("AgradecimentoCompra")}?pedidos=${encodeURIComponent(ids)}&total=${encodeURIComponent(totalPedido)}`);
     },
   });
 
@@ -163,7 +163,7 @@ export default function Checkout() {
            <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-gray-700">Subtotal</span>
-                <span className="font-semibold">{total > 0 ? `R$ ${total.toFixed(2)}` : "A consultar"}</span>
+                <span className="font-semibold">{totalPedido > 0 ? `R$ ${totalPedido.toFixed(2)}` : "A consultar"}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-gray-700">Frete</span>
@@ -171,7 +171,7 @@ export default function Checkout() {
               </div>
               <div className="flex items-center justify-between border-t pt-2">
                 <span className="text-lg font-semibold">Total</span>
-                <span className="text-2xl font-bold text-pink-600">{total > 0 ? `R$ ${total.toFixed(2)}` : "—"}</span>
+                <span className="text-2xl font-bold text-pink-600">{totalPedido > 0 ? `R$ ${totalPedido.toFixed(2)}` : "—"}</span>
               </div>
 
               <div className="pt-2">
