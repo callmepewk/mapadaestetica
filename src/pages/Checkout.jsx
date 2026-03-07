@@ -47,10 +47,6 @@ export default function Checkout() {
     } catch {}
   }, []);
 
-  const total = useMemo(() => {
-    return carrinho.reduce((sum, item) => sum + (item.preco_promocional || item.preco || 0), 0);
-  }, [carrinho]);
-
   const criarPedidosMutation = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("Faça login para continuar");
