@@ -511,14 +511,8 @@ export default function Layout({ children }) {
 
                       {(isProfissional || isPatrocinador) && (
                         <>
-                          <DropdownMenuItem onClick={() => navigate(createPageUrl("MeusProdutos"))}>
-                            <ShoppingCart className="w-4 h-4 mr-2" />
-                            Meus Produtos
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => navigate(createPageUrl("MeusServicos"))}>
-                            <Briefcase className="w-4 h-4 mr-2" />
-                            Meus Serviços
-                          </DropdownMenuItem>
+
+
                           
                           <DropdownMenuItem onClick={handleAbrirRadares}>
                             <TrendingUp className="w-4 h-4 mr-2" />

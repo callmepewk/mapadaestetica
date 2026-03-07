@@ -69,8 +69,6 @@ import Inicio from './pages/Inicio';
 import InstitutosAdmin from './pages/InstitutosAdmin';
 import LojaPontos from './pages/LojaPontos';
 import Mapa from './pages/Mapa';
-import MeusProdutos from './pages/MeusProdutos';
-import MeusServicos from './pages/MeusServicos';
 import Novidades from './pages/Novidades';
 import Perfil from './pages/Perfil';
 import PesquisaEspecializada from './pages/PesquisaEspecializada';
@@ -105,8 +103,6 @@ export const PAGES = {
     "InstitutosAdmin": InstitutosAdmin,
     "LojaPontos": LojaPontos,
     "Mapa": Mapa,
-    "MeusProdutos": MeusProdutos,
-    "MeusServicos": MeusServicos,
     "Novidades": Novidades,
     "Perfil": Perfil,
     "PesquisaEspecializada": PesquisaEspecializada,
