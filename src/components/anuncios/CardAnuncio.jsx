@@ -7,10 +7,11 @@ import ImageWithLoader from "../common/ImageWithLoader";
 import { MapPin, Eye, Heart, CheckCircle, Star, Award } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-export default function CardAnuncio({ anuncio, distancia }) {
+export default function CardAnuncio({ anuncio, distancia, isPreview = false }) {
   const navigate = useNavigate();
 
   const handleClick = () => {
+    if (isPreview) return;
     navigate(`${createPageUrl("DetalhesAnuncio")}?id=${anuncio.id}`);
   };
 
