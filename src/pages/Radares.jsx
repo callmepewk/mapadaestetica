@@ -192,6 +192,7 @@ export default function Radares() {
 
 
 
+        </RabiSection>
         <RabiConsultoriaCTA />
       <RabiReportModal
         open={reportOpen}
