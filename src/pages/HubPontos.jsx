@@ -14,14 +14,18 @@ import JogosPontos from "../components/hub/JogosPontos";
 import { Slider } from "@/components/ui/slider";
 import ChatPedido from "../components/chat/ChatPedido";
 
-const CATALOGO = [
-  { id: "kit-skincare", nome: "Kit Skincare Premium", pontos: 2500, img: "https://images.unsplash.com/photo-1556229010-aa3f7ff66b53?q=80&w=1200&auto=format&fit=crop" },
-  { id: "day-spa", nome: "Day Spa Relaxante", pontos: 5000, img: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?q=80&w=1200&auto=format&fit=crop" },
-  { id: "vale-50", nome: "Vale Desconto R$50", pontos: 1000, img: "https://images.unsplash.com/photo-1556740714-a8395b3bf30f?q=80&w=1200&auto=format&fit=crop" },
-  { id: "massagem", nome: "Massagem Relaxante", pontos: 1500, img: "https://images.unsplash.com/photo-1600334129128-685c5582fd5c?q=80&w=1200&auto=format&fit=crop" },
-  { id: "perfume", nome: "Perfume Exclusivo", pontos: 3500, img: "https://images.unsplash.com/photo-1611930022073-b7a4ba5fcccd?q=80&w=1200&auto=format&fit=crop" },
-  { id: "curso-makeup", nome: "Curso de Automaquiagem", pontos: 2000, img: "https://images.unsplash.com/photo-1605618297881-267bf43bc0dd?q=80&w=1200&auto=format&fit=crop" }
-];
+const CATALOGO = [];
+
+const catalogo = React.useMemo(() => {
+  return (produtosMeus || []).map(p => ({
+    id: p.id,
+    nome: p.nome,
+    pontos: (typeof p.pontos_necessarios === 'number' && p.pontos_necessarios > 0)
+      ? p.pontos_necessarios
+      : (typeof p.preco === 'number' && p.preco > 0 ? Math.max(1, Math.round(p.preco)) : 100),
+    img: Array.isArray(p.imagens) ? p.imagens[0] : undefined
+  }));
+}, [produtosMeus]);
 
 const PLAN_POINTS = { cobre: 5, lite: 10, prata: 20, ouro: 50, diamante: 100, platina: 200 };
 
@@ -31,7 +35,7 @@ export default function HubPontos() {
   const [erro, setErro] = useState(null);
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [selecionado, setSelecionado] = useState(CATALOGO[0].id);
+  const [selecionado, setSelecionado] = useState('');
   const [clienteNome, setClienteNome] = useState("");
   const [clienteEmail, setClienteEmail] = useState("");
   const [valorEq, setValorEq] = useState(0);
@@ -48,7 +52,7 @@ export default function HubPontos() {
 
   // Filtragem do catálogo (sempre declarar hooks antes de qualquer return)
   const catalogoFiltrado = React.useMemo(() => {
-    return CATALOGO.filter(item => {
+    return catalogo.filter(item => {
       const nome = (item.nome || '').toLowerCase();
       const tipoCalc = /massagem|spa|consulta|sessão|reflexologia|shiatsu/i.test(nome)
         ? 'servicos'
@@ -62,7 +66,7 @@ export default function HubPontos() {
       const matchPontos = item.pontos >= pontosRange[0] && item.pontos <= pontosRange[1];
       return matchBusca && matchTipo && matchPontos;
     });
-  }, [pesquisa, filtroTipo, pontosRange]);
+  }, [pesquisa, filtroTipo, pontosRange, catalogo]);
   const [bulkAtualizando, setBulkAtualizando] = useState(false);
   const [pedidos, setPedidos] = useState([]);
   const [produtosMeus, setProdutosMeus] = useState([]);
@@ -70,7 +74,11 @@ export default function HubPontos() {
   const [modalNovoItem, setModalNovoItem] = useState(false);
   const [novoItem, setNovoItem] = useState({ tipo: 'servico', nome: '', descricao: '', categoria: 'Serviços', pontos_necessarios: 1000, estoque: 1, tipo_oferta: 'sob_demanda' });
 
-  const itemSelecionado = useMemo(() => CATALOGO.find(i => i.id === selecionado) || CATALOGO[0], [selecionado]);
+  const itemSelecionado = useMemo(() => {
+  const lista = catalogo;
+  const found = lista.find(i => i.id === selecionado);
+  return found || lista[0] || { id: '', nome: '', pontos: 0 };
+}, [selecionado, catalogo]);
 
   useEffect(() => {
     (async () => {

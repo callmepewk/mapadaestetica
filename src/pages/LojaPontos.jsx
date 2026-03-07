@@ -113,7 +113,7 @@ export default function LojaPontos() {
       if (!p.beauty_club_minimo && p.beauty_club_exclusivo && (user?.beauty_club_plano || 'none') === 'none') return false;
     }
     return true;
-  });
+  }).filter((p)=>!!p.created_by);
 
 
   const baseProdutos = categoriaSelecionada === "Todos"

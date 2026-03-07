@@ -22,7 +22,6 @@ import {
   Crown,
   Briefcase,
   Sparkles,
-  Calculator,
   Camera
 } from "lucide-react";
 import {
@@ -518,10 +517,6 @@ export default function Layout({ children }) {
                             <TrendingUp className="w-4 h-4 mr-2" />
                             RABI
                             {radarHasNew && <span className="ml-2 inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse" />}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => navigate(createPageUrl("CalculadoraLaser"))}>
-                            <Calculator className="w-4 h-4 mr-2" />
-                            Calculadora Viabilidade Laser
                           </DropdownMenuItem>
                         </>
                       )}

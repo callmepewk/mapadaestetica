@@ -7,12 +7,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 const procedimentosComuns = [
   // Estética facial
   "Limpeza de pele", "Peeling químico", "Peeling de diamante", "Microagulhamento",
-  "Hidratação facial", "Rejuvenescimento facial",
+  "Hidratação facial", "Rejuvenescimento facial", "Skinbooster",
   // Estética corporal
   "Drenagem linfática", "Massagem modeladora", "Massagem relaxante", "Criolipólise",
-  "Radiofrequência", "Ultrassom estético",
+  "Radiofrequência", "Ultrassom estético", "Lipocavitação",
   // Depilação
-  "Depilação a laser", "Depilação com cera", "Depilação egípcia",
+  "Depilação a laser", "Depilação com cera", "Depilação egípcia", "Depilação masculina",
   // Harmonização
   "Botox", "Preenchimento facial", "Bioestimuladores", "Fios de sustentação",
   // Profissionais

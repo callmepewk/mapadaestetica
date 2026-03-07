@@ -54,7 +54,6 @@ import Anuncios from './pages/Anuncios';
 import ArtigoBlog from './pages/ArtigoBlog';
 import Blog from './pages/Blog';
 import CadastrarAnuncio from './pages/CadastrarAnuncio';
-import CalculadoraLaser from './pages/CalculadoraLaser';
 import Checkout from './pages/Checkout';
 import ControleAdmin from './pages/ControleAdmin';
 import ControlePlanos from './pages/ControlePlanos';
@@ -89,7 +88,6 @@ export const PAGES = {
     "ArtigoBlog": ArtigoBlog,
     "Blog": Blog,
     "CadastrarAnuncio": CadastrarAnuncio,
-    "CalculadoraLaser": CalculadoraLaser,
     "Checkout": Checkout,
     "ControleAdmin": ControleAdmin,
     "ControlePlanos": ControlePlanos,

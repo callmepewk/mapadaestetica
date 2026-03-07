@@ -111,7 +111,26 @@ export default function PlannerWellness() {
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Planner de Wellness</h1>
         </div>
 
-        {/* Métricas rápidas */}
+        {/* Seção Marketing: Explicação do Planner Wellness */}
+        <div className="rounded-2xl border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50 p-6">
+          <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">Planeje sua jornada de bem-estar com o Planner Wellness</h2>
+          <p className="text-sm md:text-base text-gray-700">
+            O <strong>Planner Wellness</strong> é uma ferramenta inteligente que ajuda você a organizar procedimentos, acompanhar sua evolução estética, descobrir novos tratamentos e receber recomendações personalizadas.
+          </p>
+          <div className="grid sm:grid-cols-2 gap-4 mt-4">
+            <div className="space-y-2 text-sm text-gray-700">
+              <div className="flex items-start gap-2"><Target className="w-4 h-4 text-purple-600 mt-0.5"/> Defina metas e protocolos ao longo do tempo</div>
+              <div className="flex items-start gap-2"><Calendar className="w-4 h-4 text-purple-600 mt-0.5"/> Organize sessões e acompanhe sua evolução</div>
+              <div className="flex items-start gap-2"><Clock className="w-4 h-4 text-purple-600 mt-0.5"/> Receba lembretes e recomendações</div>
+            </div>
+            <div className="space-y-2 text-sm text-gray-700">
+              <div className="flex items-start gap-2"><ShieldCheck className="w-4 h-4 text-purple-600 mt-0.5"/> Profissionais: planejem protocolos e fidelizem clientes</div>
+              <div className="flex items-start gap-2"><Save className="w-4 h-4 text-purple-600 mt-0.5"/> Histórico centralizado de atendimentos e metas</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Métricas rápidas */)
         <div className="grid sm:grid-cols-2 gap-4">
           <Card className="border-2 border-emerald-200">
             <CardHeader><CardTitle className="flex items-center gap-2 text-emerald-700"><Calendar className="w-5 h-5"/> Meus Agendamentos</CardTitle></CardHeader>
