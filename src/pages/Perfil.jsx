@@ -732,18 +732,14 @@ www.mapadaestetica.com.br
           {/* Main Content Area (left 2/3) */}
           <div className="lg:col-span-2 space-y-6">
             <Tabs defaultValue="informacoes" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 lg:grid-cols-5">
+              <TabsList className="grid w-full grid-cols-3 lg:grid-cols-4">
                 <TabsTrigger value="informacoes">Informações</TabsTrigger>
                 <TabsTrigger value="meus-anuncios">
                   {isProfissional ? 'Meus Anúncios' : 'Anúncios Salvos'}
                 </TabsTrigger>
-                {isProfissional ? (
-                  <TabsTrigger value="estatisticas">Estatísticas</TabsTrigger>
-                ) : (
+                {!isProfissional && (
                   <TabsTrigger value="produtos-servicos">Produtos & Serviços</TabsTrigger>
                 )}
-                <TabsTrigger value="indicacoes">Indicações</TabsTrigger>
-                {isProfissional && <TabsTrigger value="comunicacoes">Comunicações</TabsTrigger>}
                 <TabsTrigger value="integracoes">Integrações</TabsTrigger>
               </TabsList>
 
@@ -1725,7 +1721,7 @@ www.mapadaestetica.com.br
               </TabsContent>
 
               {/* Tab Estatísticas (APENAS PROFISSIONAIS) */}
-              {isProfissional && (
+              {false && (
                 <TabsContent value="estatisticas" className="space-y-4">
                   <RealtimeStats
       user={user}

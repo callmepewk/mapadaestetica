@@ -316,7 +316,7 @@ export default function Anuncios() {
   });
 
   const anuncios = useMemo(() => {
-    const planoOrdem = { 'premium': 4, 'avancado': 3, 'intermediario': 2, 'basico': 1 };
+    const planoOrdem = { 'platina': 5, 'diamante': 4, 'ouro': 3, 'prata': 2, 'cobre': 1 };
     
     return fetchedAnuncios
       .filter(anuncio => {
@@ -553,7 +553,7 @@ export default function Anuncios() {
                             setProcedimentoFiltro(e.target.value);
                             setPaginaAtual(1);
                           }}
-                          className="h-9 sm:h-10 md:h-11 text-sm flex-1"
+                          className="h-12 text-base flex-1"
                         />
                         <Button
                           type="button"
@@ -593,7 +593,7 @@ export default function Anuncios() {
                         }}
                       >
                         <SelectTrigger className="h-9 sm:h-10 text-sm">
-                          <SelectValue placeholder="UF" />
+                          <SelectValue placeholder="Estado" />
                         </SelectTrigger>
                         <SelectContent className="max-h-[200px]">
                           <SelectItem value={null} className="text-sm">Todos</SelectItem>

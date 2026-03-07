@@ -499,12 +499,7 @@ export default function Layout({ children }) {
                       )}
 
                       {/* Meu Plano - DISPONÍVEL PARA PACIENTES E PROFISSIONAIS */}
-                      {(isProfissional || isPaciente) && (
-                        <DropdownMenuItem onClick={() => navigate(createPageUrl("MeuPlano"))}>
-                          <CreditCard className="w-4 h-4 mr-2" />
-                          Meu Plano
-                        </DropdownMenuItem>
-                      )}
+
                       <DropdownMenuItem onClick={() => navigate(createPageUrl("PlannerWellness"))}>
                         <Sparkles className="w-4 h-4 mr-2" />
                         Planner Wellness

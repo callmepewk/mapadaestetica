@@ -712,7 +712,7 @@ export default function Mapa() {
                     <label className="text-sm font-medium mb-2 block">Estado</label>
                     <Select value={estado} onValueChange={setEstado}>
                       <SelectTrigger>
-                        <SelectValue placeholder="UF" />
+                       <SelectValue placeholder="Estado" />
                       </SelectTrigger>
                       <SelectContent>
                         {estados.map((uf) => (
