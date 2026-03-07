@@ -18,22 +18,11 @@ import RabiReportModal from "../components/rabi/RabiReportModal";
 import { useQueryClient } from "@tanstack/react-query";
 
 export default function Radares() {
-  // Página renomeada visualmente para RABI (mantendo rota existente)
   const [user, setUser] = useState(null);
   const [reportOpen, setReportOpen] = useState(false);
   const [reportLoading, setReportLoading] = useState(false);
   const [reportSections, setReportSections] = useState([]);
   const [reportSummary, setReportSummary] = useState('');
-  // Placeholders para manter integracoes ocultas sem quebrar build
-  const gaTrends = { gaMetrics: [], trendsSeries: [] };
-  const alertsOn = false;
-  const schedule = 'mensal';
-  const handleExternalData = () => {};
-  const toggleAlerts = () => {};
-  const setSchedulePref = () => {};
-  const RealtimeStats = () => null;
-  const RabiGAUploader = () => null;
-  const RabiTrendsChart = () => null;
 
 
   const [rabiOn, setRabiOn] = useState(false);
@@ -101,7 +90,7 @@ export default function Radares() {
       ];
 
       setReportSections(sections);
-      setReportSummary(`Resumo R.A.B.I: ${trending.slice(0,3).map(s=>s.split(' (')[0]).join(', ')}; categorias líderes: ${cats.slice(0,3).map(s=>s.split(':')[0]).join(', ')}.`);
+      setReportSummary(`Resumo RABI: ${trending.slice(0,3).map(s=>s.split(' (')[0]).join(', ')}; categorias líderes: ${cats.slice(0,3).map(s=>s.split(':')[0]).join(', ')}.`);
     } catch (e) {
       setReportSections([]);
       setReportSummary('Não foi possível gerar o relatório agora. Tente novamente em instantes.');
@@ -140,7 +129,7 @@ export default function Radares() {
       <div className="max-w-7xl mx-auto px-4 space-y-8">
         <div className="flex items-center justify-between gap-2">
           <div className="text-sm text-gray-700">RABI — Radar de Análise de Beleza Inteligente</div>
-          <Button size="sm" variant={rabiOn ? 'default' : 'outline'} onClick={toggleRabi}>
+          <Button size="sm" variant={rabiOn ? 'default' : 'outline'} onClick={() => { const next = !rabiOn; toggleRabi(); if (next) handleGenerateAiReport(); }}>
             {rabiOn ? 'Desativar RABI' : 'Ativar RABI'}
           </Button>
         </div>
@@ -155,48 +144,6 @@ export default function Radares() {
         <RabiTutorial />
 
 
-            <RabiGAUploader onData={handleExternalData} />
-            {(gaTrends.gaMetrics.length > 0 || gaTrends.trendsSeries.length > 0) && (
-              <div className="space-y-4">
-                <RabiTrendsChart gaMetrics={gaTrends.gaMetrics} trendsSeries={gaTrends.trendsSeries} />
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="rounded-lg border bg-white p-4">
-                    <h4 className="font-semibold mb-2">Top GA4 (views)</h4>
-                    <ul className="list-disc pl-5 text-sm">
-                      {gaTrends.gaMetrics
-                        .slice()
-                        .sort((a,b)=> (b.views||0)-(a.views||0))
-                        .slice(0,5)
-                        .map((r,i)=> (<li key={i}>{r.date}: {r.views} views</li>))}
-                    </ul>
-                  </div>
-                  <div className="rounded-lg border bg-white p-4">
-                    <h4 className="font-semibold mb-2">Top Trends (interesse)</h4>
-                    <ul className="list-disc pl-5 text-sm">
-                      {gaTrends.trendsSeries
-                        .slice()
-                        .sort((a,b)=> (b.value||0)-(a.value||0))
-                        .slice(0,5)
-                        .map((r,i)=> (<li key={i}>{r.term || 'Termo'} — {r.date}: {r.value}</li>))}
-                    </ul>
-                  </div>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <Button variant={alertsOn ? 'default' : 'outline'} size="sm" onClick={toggleAlerts}>
-                    {alertsOn ? 'Alertas ativados' : 'Ativar alertas'}
-                  </Button>
-                  <div className="flex items-center gap-1 text-sm">
-                    <span>Agendar:</span>
-                    {['diario','semanal','mensal'].map(s => (
-                      <Button key={s} size="sm" variant={schedule===s? 'default':'outline'} onClick={()=>setSchedulePref(s)}>
-                        {s.charAt(0).toUpperCase()+s.slice(1)}
-                      </Button>
-                    ))}
-                  </div>
-                  <p className="text-xs text-gray-500">Agendamento automático requer backend functions habilitado.</p>
-                </div>
-              </div>
-            )}
 
 
         <div className="mt-4 flex flex-wrap gap-3">
@@ -220,7 +167,13 @@ export default function Radares() {
             </RabiExpandableCard>
           </div>
           <RadarSection />
-        </RabiSection>
+
+
+
+
+
+
+
 
         <RabiConsultoriaCTA />
       <RabiReportModal

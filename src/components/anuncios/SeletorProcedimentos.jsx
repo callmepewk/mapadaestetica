@@ -6,20 +6,27 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 const procedimentosComuns = [
   // Estética facial
-  "limpeza de pele", "peeling químico", "peeling de diamante", "microagulhamento", "hidratação facial", "rejuvenescimento facial",
+  "Limpeza de pele", "Peeling químico", "Peeling de diamante", "Microagulhamento",
+  "Hidratação facial", "Rejuvenescimento facial",
   // Estética corporal
-  "drenagem linfática", "massagem modeladora", "massagem relaxante", "criolipólise", "radiofrequência", "ultrassom estético",
+  "Drenagem linfática", "Massagem modeladora", "Massagem relaxante", "Criolipólise",
+  "Radiofrequência", "Ultrassom estético",
   // Depilação
-  "depilação a laser", "depilação com cera", "depilação egípcia",
+  "Depilação a laser", "Depilação com cera", "Depilação egípcia",
   // Harmonização
-  "botox", "preenchimento facial", "bioestimuladores", "fios de sustentação",
-  // Profissionais da estética
-  "barbeiros", "cabeleireiros", "designers de sobrancelha", "micropigmentadores", "tatuadores estéticos", "nail designers", "podólogos",
-  // Extras comuns da base antiga
-  "Design de Sobrancelhas", "Micropigmentação de Sobrancelhas", "Alongamento de Cílios",
-  "Manicure", "Pedicure", "Spa dos Pés", "Spa das Mãos", "Tratamento para Acne",
-  "Ultrassom Microfocado", "Enzimas Injetáveis", "Tratamento para Celulite", "Tratamento para Estrias",
-  "Maquiagem Profissional"
+  "Botox", "Preenchimento facial", "Bioestimuladores", "Fios de sustentação",
+  // Profissionais
+  "Barbeiros", "Cabeleireiros", "Designers de sobrancelha", "Micropigmentadores",
+  "Tatuadores estéticos", "Nail designers", "Podólogos",
+  // Itens existentes úteis
+  "Fios de PDO", "Bioestimuladores de Colágeno", "Design de Sobrancelhas",
+  "Micropigmentação de Sobrancelhas", "Alongamento de Cílios",
+  "Manicure", "Pedicure", "Spa dos Pés", "Spa das Mãos", "Hair Skincare", "Corte de Cabelo",
+  "Hidratação Capilar", "Coloração", "Tratamento para Acne",
+  "Contorno Corporal", "Ultrassom Microfocado",
+  "Enzimas Injetáveis", "Tratamento para Celulite", "Tratamento para Estrias",
+  "Esmaltação em Gel", "Unha de Fibra", "Reflexologia Podal", "Podoprofilaxia",
+  "Tricologia Capilar", "Consultoria de Imagem", "Maquiagem Profissional", "Pós-operatório"
 ];
 
 export default function SeletorProcedimentos({ open, onClose, onSelect }) {
