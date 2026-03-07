@@ -429,10 +429,10 @@ export default function DetalhesAnuncio() {
                 <div className="space-y-6">
                   {/* Sobre */}
                   <div>
-                    <h3 className="font-semibold text-lg mb-2 flex items-center gap-2">
+                    <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
                       <Award className="w-5 h-5 text-pink-600" />
                       Sobre
-                    </h3>
+                    </h2>
                     <p className="text-gray-600 leading-relaxed">{anuncio.descricao}</p>
                   </div>
 
@@ -477,10 +477,10 @@ export default function DetalhesAnuncio() {
                   {/* Serviços Oferecidos - SEM PREÇO */}
                   {anuncio.servicos_oferecidos && anuncio.servicos_oferecidos.length > 0 && (
                     <div>
-                      <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                      <h2 className="text-2xl font-bold mb-3 flex items-center gap-2">
                         <CheckCircle className="w-5 h-5 text-pink-600" />
                         Serviços Oferecidos
-                      </h3>
+                      </h2>
                       <div className="space-y-2">
                         {anuncio.servicos_oferecidos.map((servico, index) => (
                           <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
@@ -497,7 +497,7 @@ export default function DetalhesAnuncio() {
                   {/* Procedimentos/Serviços */}
                   {anuncio.procedimentos_servicos && anuncio.procedimentos_servicos.length > 0 && (
                     <div>
-                      <h3 className="font-semibold text-lg mb-3">Procedimentos</h3>
+                      <h2 className="text-2xl font-bold mb-3">Procedimentos</h2>
                       <div className="flex flex-wrap gap-2">
                         {anuncio.procedimentos_servicos.map((proc, index) => (
                           <Badge key={index} variant="outline" className="text-sm">
@@ -525,7 +525,7 @@ export default function DetalhesAnuncio() {
                   {/* Amenidades */}
                   {anuncio.amenidades && Object.values(anuncio.amenidades).some(v => v) && (
                     <div>
-                      <h3 className="font-semibold text-lg mb-3">Comodidades</h3>
+                      <h2 className="text-2xl font-bold mb-3">Comodidades</h2>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                         {anuncio.amenidades.estacionamento && (
                           <div className="flex items-center gap-2 text-sm text-gray-700">
@@ -589,6 +589,8 @@ export default function DetalhesAnuncio() {
               </CardContent>
             </Card>
 
+            {/* Avaliações */}
+            <h2 className="text-2xl font-bold">Avaliações</h2>
             {/* Seção de Perguntas e Respostas */}
             <SecaoPerguntas
               anuncio={anuncio}
@@ -618,7 +620,9 @@ export default function DetalhesAnuncio() {
 
             <Card className="border-none shadow-lg sticky top-24">
               <CardContent className="p-6 space-y-4">
-                <h3 className="font-semibold text-lg mb-4">Informações de Contato</h3>
+                <h2 className="text-2xl font-bold mb-2">Agendamento</h2>
+                <p className="text-sm text-gray-600 -mt-1">Entre em contato para agendar seu atendimento.</p>
+                <h2 className="text-2xl font-bold mb-4">Informações de Contato</h2>
                 
                 {anuncio.telefone && (
                   <a href={`tel:${anuncio.telefone}`} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">

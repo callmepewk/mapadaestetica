@@ -7,6 +7,39 @@ export default function PageNotFound({}) {
     const location = useLocation();
     const pageName = location.pathname.substring(1);
 
+    // SEO slugs resolver: /cidade/categoria/nome and guides /guia/:cidade, /categoria/:categoria
+    React.useEffect(() => {
+        const path = location.pathname.replace(/^\/+/, '');
+        const parts = path.split('/').filter(Boolean);
+        const slugify = (s) => (s||'').toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu,'').replace(/[^a-z0-9\s-]/g,'').trim().replace(/\s+/g,'-');
+
+        const goToMapa = (params) => {
+            const qs = new URLSearchParams(params).toString();
+            window.location.replace(`/Mapa?${qs}`);
+        };
+
+        if (parts[0] === 'guia' && parts[1]) {
+            goToMapa({ cidade: decodeURIComponent(parts[1]), aba: 'anuncios' });
+            return;
+        }
+        if (parts[0] === 'categoria' && parts[1]) {
+            goToMapa({ categoria_filtro: decodeURIComponent(parts[1]), aba: 'anuncios' });
+            return;
+        }
+        if (parts.length >= 3) {
+            (async () => {
+                try {
+                    const anuncios = await base44.entities.Anuncio.list();
+                    const [cidade, categoria, nome] = parts;
+                    const match = anuncios.find(a => slugify(a.cidade) === cidade && slugify(a.categoria) === categoria && (slugify(a.profissional||a.titulo) === nome));
+                    if (match) {
+                        window.location.replace(`/DetalhesAnuncio?id=${match.id}`);
+                    }
+                } catch {}
+            })();
+        }
+    }, [location.pathname]);
+
     const { data: authData, isFetched } = useQuery({
         queryKey: ['user'],
         queryFn: async () => {
