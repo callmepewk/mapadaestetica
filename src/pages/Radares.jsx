@@ -18,11 +18,22 @@ import RabiReportModal from "../components/rabi/RabiReportModal";
 import { useQueryClient } from "@tanstack/react-query";
 
 export default function Radares() {
+  // Página renomeada visualmente para RABI (mantendo rota existente)
   const [user, setUser] = useState(null);
   const [reportOpen, setReportOpen] = useState(false);
   const [reportLoading, setReportLoading] = useState(false);
   const [reportSections, setReportSections] = useState([]);
   const [reportSummary, setReportSummary] = useState('');
+  // Placeholders para manter integracoes ocultas sem quebrar build
+  const gaTrends = { gaMetrics: [], trendsSeries: [] };
+  const alertsOn = false;
+  const schedule = 'mensal';
+  const handleExternalData = () => {};
+  const toggleAlerts = () => {};
+  const setSchedulePref = () => {};
+  const RealtimeStats = () => null;
+  const RabiGAUploader = () => null;
+  const RabiTrendsChart = () => null;
 
 
   const [rabiOn, setRabiOn] = useState(false);
@@ -143,8 +154,7 @@ export default function Radares() {
         <RabiExplainer />
         <RabiTutorial />
 
-        {/* Integrações removidas da UI conforme solicitado */}
-          <div className="space-y-4">
+
             <RabiGAUploader onData={handleExternalData} />
             {(gaTrends.gaMetrics.length > 0 || gaTrends.trendsSeries.length > 0) && (
               <div className="space-y-4">
@@ -187,7 +197,6 @@ export default function Radares() {
                 </div>
               </div>
             )}
-          </div>
 
 
         <div className="mt-4 flex flex-wrap gap-3">
@@ -211,13 +220,6 @@ export default function Radares() {
             </RabiExpandableCard>
           </div>
           <RadarSection />
-
-
-
-
-
-
-
 
         <RabiConsultoriaCTA />
       <RabiReportModal
