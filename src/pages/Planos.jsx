@@ -1,0 +1,145 @@
+import React, { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { base44 } from "@/api/base44Client";
+import { createPageUrl } from "@/utils";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Check, Star, Crown } from "lucide-react";
+
+export default function Planos() {
+  const [user, setUser] = useState(null);
+  const [auth, setAuth] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const isAuth = await base44.auth.isAuthenticated();
+        setAuth(isAuth);
+        if (isAuth) {
+          const u = await base44.auth.me();
+          setUser(u);
+        }
+      } catch {}
+    })();
+  }, []);
+
+  const plans = [
+    {
+      id: "free",
+      name: "Free",
+      price: "R$ 0",
+      period: "/mês",
+      features: [
+        "Acesso básico ao Mapa",
+        "Cadastro de perfil",
+        "Suporte por e-mail",
+      ],
+      cta: "Continuar grátis",
+      highlighted: false,
+      icon: Star,
+    },
+    {
+      id: "pro",
+      name: "Pro",
+      price: "R$ 79",
+      period: "/mês",
+      features: [
+        "Destaque nos resultados",
+        "Relatórios RABI (básico)",
+        "Atendimento prioritário",
+      ],
+      cta: "Assinar Pro",
+      highlighted: true,
+      icon: Crown,
+    },
+    {
+      id: "prime",
+      name: "Prime",
+      price: "R$ 149",
+      period: "/mês",
+      features: [
+        "Impulsionamento avançado",
+        "RABI completo + IA",
+        "Consultoria de posicionamento",
+      ],
+      cta: "Assinar Prime",
+      highlighted: false,
+      icon: Crown,
+    },
+  ];
+
+  const userPlan = (user?.plano || user?.plano_assinatura || user?.assinatura_plano || "").toLowerCase();
+
+  const handleChoose = (planId) => {
+    const nextUrl = location.pathname + location.search;
+    if (!auth) {
+      base44.auth.redirectToLogin(nextUrl);
+      return;
+    }
+    navigate(createPageUrl(`Checkout?plan=${planId}`));
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-10 px-4">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-10">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Planos</h1>
+          <p className="mt-2 text-gray-600">Escolha o plano ideal para crescer sua presença e atrair mais pacientes.</p>
+          {userPlan && (
+            <div className="mt-3 text-sm text-gray-700">
+              Seu plano atual: <Badge className="bg-emerald-100 text-emerald-800">{userPlan}</Badge>
+            </div>
+          )}
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-3">
+          {plans.map((p) => {
+            const Icon = p.icon;
+            const isCurrent = userPlan && userPlan.includes(p.id);
+            return (
+              <Card key={p.id} className={`${p.highlighted ? "border-2 border-[#F7D426] shadow-lg" : ""}`}>
+                <CardHeader className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Icon className="w-5 h-5 text-[#F7D426]" />
+                    <CardTitle className="text-xl">{p.name}</CardTitle>
+                    {p.highlighted && (
+                      <Badge className="ml-2 bg-[#F7D426] text-[#2C2C2C] font-bold">Mais Popular</Badge>
+                    )}
+                  </div>
+                  <div className="text-3xl font-bold">
+                    {p.price} <span className="text-base font-medium text-gray-500">{p.period}</span>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2 mb-6">
+                    {p.features.map((f) => (
+                      <li key={f} className="flex items-start gap-2 text-sm text-gray-700">
+                        <Check className="w-4 h-4 text-emerald-600 mt-0.5" />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Button
+                    className={`w-full ${p.highlighted ? "bg-[#2C2C2C] text-[#F7D426] border-2 border-[#2C2C2C]" : ""}`}
+                    variant={p.highlighted ? "default" : "outline"}
+                    onClick={() => handleChoose(p.id)}
+                    disabled={isCurrent}
+                  >
+                    {isCurrent ? "Plano atual" : p.cta}
+                  </Button>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+
+        <div className="mt-10 text-center text-xs text-gray-500">
+          Valores promocionais por tempo limitado. Você pode cancelar quando quiser.
+        </div>
+      </div>
+    </div>
+  );
+}

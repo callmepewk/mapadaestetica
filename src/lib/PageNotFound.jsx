@@ -12,6 +12,9 @@ export default function PageNotFound({}) {
     React.useEffect(() => {
         const path = location.pathname.replace(/^\/+/, '');
         const parts = path.split('/').filter(Boolean);
+
+        // Correção de rota: permitir /planos em minúsculas
+        if (parts[0] === 'planos') { window.location.replace('/Planos'); return; }
         const slugify = (s) => (s||'').toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu,'').replace(/[^a-z0-9\s-]/g,'').trim().replace(/\s+/g,'-');
 
         const goToMapa = (params) => {

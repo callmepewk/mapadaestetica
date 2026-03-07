@@ -77,6 +77,7 @@ import Produtos from './pages/Produtos';
 import Radares from './pages/Radares';
 import RelatorioPrecoMedio from './pages/RelatorioPrecoMedio';
 import SobreNos from './pages/SobreNos';
+import Planos from './pages/Planos';
 import __Layout from './Layout.jsx';
 
 
@@ -111,6 +112,7 @@ export const PAGES = {
     "Radares": Radares,
     "RelatorioPrecoMedio": RelatorioPrecoMedio,
     "SobreNos": SobreNos,
+    "Planos": Planos,
 }
 
 export const pagesConfig = {
