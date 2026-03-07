@@ -18,7 +18,6 @@ import RabiReportModal from "../components/rabi/RabiReportModal";
 import { useQueryClient } from "@tanstack/react-query";
 
 export default function Radares() {
-  // Página renomeada visualmente para RABI (mantendo rota existente)
   const [user, setUser] = useState(null);
   const [reportOpen, setReportOpen] = useState(false);
   const [reportLoading, setReportLoading] = useState(false);
@@ -144,7 +143,8 @@ export default function Radares() {
         <RabiExplainer />
         <RabiTutorial />
 
-
+        {/* Integrações removidas da UI conforme solicitado */}
+          <div className="space-y-4">
             <RabiGAUploader onData={handleExternalData} />
             {(gaTrends.gaMetrics.length > 0 || gaTrends.trendsSeries.length > 0) && (
               <div className="space-y-4">
@@ -187,6 +187,7 @@ export default function Radares() {
                 </div>
               </div>
             )}
+          </div>
 
 
         <div className="mt-4 flex flex-wrap gap-3">
@@ -210,6 +211,23 @@ export default function Radares() {
             </RabiExpandableCard>
           </div>
           <RadarSection />
+
+
+
+
+
+          <div className="grid md:grid-cols-3 gap-4 mb-4">
+            <RabiExpandableCard title="Recorrência por Categoria" teaser="Ritmo de busca/engajamento por tema.">
+              Identifica onde a atenção se mantém no tempo e onde sofre quedas abruptas — um sinal para ajuste de oferta.
+            </RabiExpandableCard>
+            <RabiExpandableCard title="Ciclo de Retorno do Usuário" teaser="Janela média de reengajamento.">
+              Estimativa da janela de retorno entre interações. Útil para cadência de comunicação e promoções.
+            </RabiExpandableCard>
+            <RabiExpandableCard title="Probabilidade de Conversão" teaser="Sinais que antecedem o agendamento.">
+              Leitura combinada de padrões que antecedem eventos de conversão — sem detalhar o algoritmo.
+            </RabiExpandableCard>
+          </div>
+
 
         <RabiConsultoriaCTA />
       <RabiReportModal
