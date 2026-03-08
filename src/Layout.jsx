@@ -45,6 +45,8 @@ import { I18nProvider } from "./components/i18n/I18nProvider";
 import FloatingQuickbar from "./components/layout/FloatingQuickbar";
 import ImageWithLoader from "./components/common/ImageWithLoader";
 
+if (typeof window !== 'undefined') { try { window.produtosMeus = window.produtosMeus || []; } catch {} }
+
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
