@@ -72,11 +72,11 @@ import Novidades from './pages/Novidades';
 import Perfil from './pages/Perfil';
 import PesquisaEspecializada from './pages/PesquisaEspecializada';
 import PlannerWellness from './pages/PlannerWellness';
+import Planos from './pages/Planos';
 import Produtos from './pages/Produtos';
 import Radares from './pages/Radares';
 import RelatorioPrecoMedio from './pages/RelatorioPrecoMedio';
 import SobreNos from './pages/SobreNos';
-import Planos from './pages/Planos';
 import __Layout from './Layout.jsx';
 
 
@@ -106,11 +106,11 @@ export const PAGES = {
     "Perfil": Perfil,
     "PesquisaEspecializada": PesquisaEspecializada,
     "PlannerWellness": PlannerWellness,
+    "Planos": Planos,
     "Produtos": Produtos,
     "Radares": Radares,
     "RelatorioPrecoMedio": RelatorioPrecoMedio,
     "SobreNos": SobreNos,
-    "Planos": Planos,
 }
 
 export const pagesConfig = {
