@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Star, Crown, Medal, Trophy, Gem, MapPin, Users, Camera, TrendingUp, MousePointer, Megaphone, Search, ArrowRight } from "lucide-react";
+import { Check, Star, Crown, Medal, Trophy, Gem } from "lucide-react";
 
 export default function Planos() {
   const [user, setUser] = useState(null);
@@ -29,36 +28,13 @@ export default function Planos() {
 
   const userPlan = (user?.plano || user?.plano_assinatura || user?.assinatura_plano || "").toLowerCase();
 
-  // Métricas para prova social
-  const { data: anunciosAtivos = [] } = useQuery({
-    queryKey: ["anuncios-ativos"],
-    queryFn: async () => await base44.entities.Anuncio.filter({ status: "ativo" }, "-created_date", 10000),
-    initialData: []
-  });
-  const totalAnunciosAtivos = anunciosAtivos.length;
-
-  const pagamentoLinks = {
-    free: null,
-    prime: 'https://wa.me/5521980343873?text=Quero%20assinar%20o%20plano%20Prime%20(R$%2099/mes)',
-    premium: 'https://wa.me/5521980343873?text=Quero%20adquirir%20o%20plano%20premium%20e%20saber%20mais%20sobre%20seus%20beneficios.',
-    cobre: 'https://wa.me/5521980343873?text=Quero%20contratar%20o%20plano%20Cobre%20(patrocinador).',
-    prata: 'https://wa.me/5521980343873?text=Quero%20contratar%20o%20plano%20Prata%20(patrocinador).',
-    ouro: 'https://wa.me/5521980343873?text=Quero%20contratar%20o%20plano%20Ouro%20(patrocinador).',
-    diamante: 'https://wa.me/5521980343873?text=Quero%20contratar%20o%20plano%20Diamante%20(patrocinador).',
-    platina: 'https://wa.me/5521980343873?text=Quero%20solicitar%20uma%20proposta%20para%20o%20plano%20Platina%20(patrocinador).'
-  };
-
   const handleChoose = (planId) => {
-    const url = pagamentoLinks[planId];
-    if (url) {
-      window.open(url, '_blank');
-      return;
-    }
-    // fallback: exigir login apenas para acoes gratuitas
     const nextUrl = location.pathname + location.search;
     if (!auth) {
       base44.auth.redirectToLogin(nextUrl);
+      return;
     }
+    navigate(createPageUrl(`Checkout?plan=${planId}`));
   };
 
   const professionalPlans = [
@@ -193,7 +169,6 @@ export default function Planos() {
     }
   ];
 
-
   const Section = ({ title, subtitle, plans }) => (
     <section className="mb-12">
       <div className="mb-6 text-center">
@@ -228,13 +203,12 @@ export default function Planos() {
                   ))}
                 </ul>
                 <Button
-                  className={`w-full group rounded-lg ${isCurrent ? "bg-gray-200 text-gray-600 cursor-not-allowed" : p.highlighted ? "bg-[#2C2C2C] text-[#F7D426] border-2 border-[#2C2C2C] hover:bg-black shadow-lg" : "bg-gradient-to-r from-emerald-600 to-emerald-700 text-white shadow-md hover:from-emerald-700 hover:to-emerald-800 hover:shadow-lg"}`}
-                  variant="default"
+                  className={`w-full ${p.highlighted ? "bg-[#2C2C2C] text-[#F7D426] border-2 border-[#2C2C2C]" : ""}`}
+                  variant={p.highlighted ? "default" : "outline"}
                   onClick={() => handleChoose(p.id)}
                   disabled={isCurrent}
                 >
                   {isCurrent ? "Plano atual" : p.cta}
-                  {!isCurrent && <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-0.5" />}
                 </Button>
               </CardContent>
             </Card>
@@ -247,115 +221,21 @@ export default function Planos() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-10 px-4">
       <div className="max-w-6xl mx-auto">
-        {/* HERO de marketing */}
-        <section className="relative overflow-hidden rounded-2xl border-2 border-yellow-200 bg-gradient-to-br from-amber-50 via-yellow-50 to-white p-8 md:p-12 mb-12">
-          <div className="max-w-4xl">
-            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight text-gray-900">
-              Destaque seu espaço de estética e atraia mais pacientes todos os dias
-            </h1>
-            <p className="mt-4 text-base md:text-lg text-gray-700 leading-relaxed">
-              Entre para o maior e único mapa da área da estética para impulsionar o seu negócio e sua carreira.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Button
-                onClick={() => base44.auth.redirectToLogin(createPageUrl("Planos"))}
-                className="bg-[#2C2C2C] text-[#F7D426] border-2 border-[#2C2C2C] hover:bg-black shadow-lg"
-              >
-                Começar grátis
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  const el = document.getElementById("secao-planos-explicacao");
-                  if (el) el.scrollIntoView({ behavior: "smooth" });
-                }}
-                className="border-2"
-              >
-                Ver como funciona
-              </Button>
-            </div>
-            <div className="mt-8 grid gap-4 sm:grid-cols-3">
-              <div className="flex items-start gap-3 p-4 rounded-xl bg-white/70 border">
-                <Megaphone className="w-5 h-5 text-amber-600 mt-0.5" />
-                <div className="text-sm text-gray-800">Mais visibilidade para seu negócio</div>
-              </div>
-              <div className="flex items-start gap-3 p-4 rounded-xl bg-white/70 border">
-                <MapPin className="w-5 h-5 text-rose-600 mt-0.5" />
-                <div className="text-sm text-gray-800">Apareça nas buscas de pacientes da sua região</div>
-              </div>
-              <div className="flex items-start gap-3 p-4 rounded-xl bg-white/70 border">
-                <Star className="w-5 h-5 text-emerald-600 mt-0.5" />
-                <div className="text-sm text-gray-800">Destaque seus serviços e procedimentos no mapa</div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Por que anunciar */}
-        <section className="mb-12">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 text-center mb-6">Por que profissionais estão entrando no Mapa da Estética?</h2>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-2xl border p-5 bg-white hover:shadow-md transition">
-              <div className="flex items-center gap-2 mb-2 text-gray-900 font-semibold"><MapPin className="w-5 h-5 text-amber-600"/> Visibilidade local</div>
-              <p className="text-sm text-gray-600">Seu espaço aparece no mapa quando pacientes procuram serviços na sua região.</p>
-            </div>
-            <div className="rounded-2xl border p-5 bg-white hover:shadow-md transition">
-              <div className="flex items-center gap-2 mb-2 text-gray-900 font-semibold"><Users className="w-5 h-5 text-rose-600"/> Mais pacientes</div>
-              <p className="text-sm text-gray-600">Pessoas que já estão procurando estética encontram seu perfil.</p>
-            </div>
-            <div className="rounded-2xl border p-5 bg-white hover:shadow-md transition">
-              <div className="flex items-center gap-2 mb-2 text-gray-900 font-semibold"><Camera className="w-5 h-5 text-purple-600"/> Presença digital profissional</div>
-              <p className="text-sm text-gray-600">Seu perfil funciona como uma vitrine digital com seus procedimentos, fotos e informações.</p>
-            </div>
-            <div className="rounded-2xl border p-5 bg-white hover:shadow-md transition">
-              <div className="flex items-center gap-2 mb-2 text-gray-900 font-semibold"><Crown className="w-5 h-5 text-emerald-600"/> Destaque no mapa</div>
-              <p className="text-sm text-gray-600">Planos premium aparecem primeiro nas buscas.</p>
-            </div>
-          </div>
-        </section>
-
-        {/* Prova social */}
-        <section className="mb-12">
-          <h3 className="text-xl md:text-2xl font-bold text-gray-900 text-center mb-4">A plataforma que conecta beleza, bem-estar e tecnologia</h3>
-          <p className="text-center text-sm md:text-base text-gray-700 max-w-3xl mx-auto mb-6">
-            O Mapa da Estética foi criado para facilitar a conexão entre profissionais da beleza e pessoas que procuram procedimentos estéticos de forma rápida e segura.
-          </p>
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="rounded-2xl border p-5 bg-white text-center">
-              <TrendingUp className="w-6 h-6 text-emerald-600 mx-auto mb-2" />
-              <div className="text-2xl font-extrabold text-gray-900">—</div>
-              <div className="text-xs uppercase tracking-wide text-gray-500 mt-1">Aumento médio de exposição nas buscas</div>
-            </div>
-            <div className="rounded-2xl border p-5 bg-white text-center">
-              <MousePointer className="w-6 h-6 text-amber-600 mx-auto mb-2" />
-              <div className="text-2xl font-extrabold text-gray-900">—</div>
-              <div className="text-xs uppercase tracking-wide text-gray-500 mt-1">Taxa de cliques no perfil</div>
-            </div>
-            <div className="rounded-2xl border p-5 bg-white text-center">
-              <Megaphone className="w-6 h-6 text-rose-600 mx-auto mb-2" />
-              <div className="text-2xl font-extrabold text-gray-900">{totalAnunciosAtivos}</div>
-              <div className="text-xs uppercase tracking-wide text-gray-500 mt-1">Anúncios ativos</div>
-            </div>
-          </div>
-        </section>
-
-        {/* Explicação dos planos */}
-        <section id="secao-planos-explicacao" className="mb-10 text-center">
-          <h3 className="text-2xl md:text-3xl font-bold text-gray-900">Escolha o plano ideal para crescer na plataforma</h3>
-          <p className="mt-2 text-gray-700 max-w-3xl mx-auto">Comece gratuitamente ou escolha um plano premium para ganhar mais destaque, publicar mais anúncios e atrair mais pacientes.</p>
+        <div className="text-center mb-10">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Planos</h1>
+          <p className="mt-2 text-gray-600">Escolha o plano ideal para crescer sua presença e atrair mais pacientes.</p>
           {userPlan && (
             <div className="mt-3 text-sm text-gray-700">
               Seu plano atual: <Badge className="bg-emerald-100 text-emerald-800">{userPlan}</Badge>
             </div>
           )}
-        </section>
+        </div>
 
-         <div id="planos" />
-         <Section
-           title="Planos para Profissionais"
-           subtitle="Foque no que importa: seus resultados e seus pacientes."
-           plans={professionalPlans}
-         />
+        <Section
+          title="Planos para Profissionais"
+          subtitle="Foque no que importa: seus resultados e seus pacientes."
+          plans={professionalPlans}
+        />
 
         <Section
           title="Planos para Patrocinadores"

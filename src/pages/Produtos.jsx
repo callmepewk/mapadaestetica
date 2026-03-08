@@ -438,7 +438,16 @@ export default function Produtos() {
   const isAdmin = user?.role === 'admin'; // Added isAdmin
 
   // Filtrar produtos baseado no tipo de usuário
-  const todosProdutos = produtosDatabase.filter(p => p && p.status === 'ativo' && !!p.created_by);
+  const todosProdutos = [
+    // Exibir programas 12m do banco para pacientes em primeiro lugar
+    ...produtosDatabase.filter(p => p.programa_12_meses === true && (isPaciente)),
+    // Conteúdo estático de exposição e demais produtos
+
+    ...servicosContrataveis.filter(s =>
+      isProfissional ? s.tipo_publico === "profissional" : s.tipo_publico === "paciente"
+    ),
+    ...produtosDatabase
+  ];
 
   const produtosFiltrados = todosProdutos.filter(produto => {
     const isExclusivo = !!(produto.requer_assinatura || produto.mostrar_tag_clube || produto.beauty_club_exclusivo);

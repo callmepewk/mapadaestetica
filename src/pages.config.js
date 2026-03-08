@@ -54,6 +54,7 @@ import Anuncios from './pages/Anuncios';
 import ArtigoBlog from './pages/ArtigoBlog';
 import Blog from './pages/Blog';
 import CadastrarAnuncio from './pages/CadastrarAnuncio';
+import CalculadoraLaser from './pages/CalculadoraLaser';
 import Checkout from './pages/Checkout';
 import ControleAdmin from './pages/ControleAdmin';
 import ControlePlanos from './pages/ControlePlanos';
@@ -72,11 +73,11 @@ import Novidades from './pages/Novidades';
 import Perfil from './pages/Perfil';
 import PesquisaEspecializada from './pages/PesquisaEspecializada';
 import PlannerWellness from './pages/PlannerWellness';
-import Planos from './pages/Planos';
 import Produtos from './pages/Produtos';
 import Radares from './pages/Radares';
 import RelatorioPrecoMedio from './pages/RelatorioPrecoMedio';
 import SobreNos from './pages/SobreNos';
+import Planos from './pages/Planos';
 import __Layout from './Layout.jsx';
 
 
@@ -88,6 +89,7 @@ export const PAGES = {
     "ArtigoBlog": ArtigoBlog,
     "Blog": Blog,
     "CadastrarAnuncio": CadastrarAnuncio,
+    "CalculadoraLaser": CalculadoraLaser,
     "Checkout": Checkout,
     "ControleAdmin": ControleAdmin,
     "ControlePlanos": ControlePlanos,
@@ -106,11 +108,11 @@ export const PAGES = {
     "Perfil": Perfil,
     "PesquisaEspecializada": PesquisaEspecializada,
     "PlannerWellness": PlannerWellness,
-    "Planos": Planos,
     "Produtos": Produtos,
     "Radares": Radares,
     "RelatorioPrecoMedio": RelatorioPrecoMedio,
     "SobreNos": SobreNos,
+    "Planos": Planos,
 }
 
 export const pagesConfig = {

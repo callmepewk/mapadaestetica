@@ -1015,7 +1015,7 @@ export default function Mapa() {
                     placeholder="Cidade ou Estado"
                     value={buscaCidade}
                     onChange={(e) => setBuscaCidade(e.target.value)}
-                    className="pl-10 h-10 text-sm"
+                    className="pl-10"
                   />
                 </div>
 
@@ -1025,14 +1025,14 @@ export default function Mapa() {
                     placeholder="Bairro"
                     value={bairroMapa}
                     onChange={(e) => setBairroMapa(e.target.value)}
-                    className="pl-10 h-10 text-sm"
+                    className="pl-10"
                   />
                 </div>
 
                 <Select value={filtroCategoria} onValueChange={setFiltroCategoria}>
-                  <SelectTrigger className="h-10 text-sm">
-                                        <SelectValue placeholder="Categoria" />
-                                      </SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Categoria" />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Salão de Beleza">💇 Salão de Beleza</SelectItem>
                     <SelectItem value="Clínica de Estética">💆 Clínica de Estética</SelectItem>
@@ -1046,23 +1046,20 @@ export default function Mapa() {
                 <p className="text-xs text-gray-500 mt-1">Categorias exibem apenas estabelecimentos, serviços, produtos e eventos que possuem anúncio ativo nesta área.</p>
 
                 <Select value={filtroPlano} onValueChange={setFiltroPlano}>
-                  <SelectTrigger className="h-10 text-sm">
-                                        <SelectValue placeholder="Plano Clube" />
-                                      </SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Plano Clube" />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="light">💙 LIGHT (10%)</SelectItem>
                     <SelectItem value="gold">💛 GOLD (15%)</SelectItem>
                     <SelectItem value="vip">💜 VIP (25%)</SelectItem>
                   </SelectContent>
                 </Select>
-                { !isProfissional && (
-                  <p className="text-xs text-gray-500 mt-1">Alguns estabelecimentos participam do <strong>Clube da Beleza</strong>, oferecendo benefícios exclusivos para usuários da plataforma, como descontos, prioridade em agendamentos e acesso a promoções especiais.</p>
-                )}
 
                 <Select value={estadoMapa} onValueChange={setEstadoMapa}>
-                  <SelectTrigger className="h-10 text-sm">
-                                        <SelectValue placeholder="UF" />
-                                      </SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue placeholder="UF" />
+                  </SelectTrigger>
                   <SelectContent>
                     {estados.map((uf)=>(<SelectItem key={uf} value={uf}>{uf}</SelectItem>))}
                   </SelectContent>
