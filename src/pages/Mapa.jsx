@@ -162,12 +162,12 @@ const faixasDistancia = [
   { valor: "999999", label: "Qualquer distância" }
 ];
 
-const temposFormacao = [
-  { valor: "1", label: "Até 1 ano" },
-  { valor: "3", label: "Até 3 anos" },
-  { valor: "5", label: "Até 5 anos" },
-  { valor: "10", label: "Até 10 anos" },
-  { valor: "999999", label: "Qualquer tempo" }
+// Listas de filtros de Procedimentos e Tratamentos
+const procedimentosLista = [
+  "botox","preenchimento","bioestimuladores","harmonização facial","fios de sustentação","peeling químico","microagulhamento","laser dermatológico","ultrassom microfocado","criolipólise","lipolíticos","intradermoterapia","prp","prf","micropigmentação","remoção de tatuagem","depilação a laser"
+];
+const tratamentosLista = [
+  "tratamento de acne","tratamento de melasma","tratamento de rosácea","tratamento capilar","rejuvenescimento facial","redução de gordura localizada","tratamento de estrias","tratamento de cicatrizes","clareamento de manchas","melhora de flacidez","tratamento de olheiras","tratamento de poros dilatados","tratamento anti-aging"
 ];
 
 // Custom marker icons
@@ -250,23 +250,19 @@ export default function Mapa() {
   const [busca, setBusca] = useState("");
   const [categoria, setCategoria] = useState("");
   const [procedimento, setProcedimento] = useState("");
+  const [tratamento, setTratamento] = useState("");
   const [cidade, setCidade] = useState("");
-  const [bairro, setBairro] = useState("");
   const [estado, setEstado] = useState("");
   const [faixaPreco, setFaixaPreco] = useState("");
   const [verificados, setVerificados] = useState(false);
   const [tipoAnuncio, setTipoAnuncio] = useState("");
   const [tipoEstabelecimento, setTipoEstabelecimento] = useState("");
   const [distancia, setDistancia] = useState("999999");
-  const [tempoFormacao, setTempoFormacao] = useState("999999");
-  // Novos filtros avançados
-  const [profissao, setProfissao] = useState("");
-  const [nivelVerificacao, setNivelVerificacao] = useState(""); // 0-3 docs
+  // Novos filtros avançados essenciais ao paciente
   const [avaliacaoMin, setAvaliacaoMin] = useState(""); // 1-5 estrelas estabelecimento
   const [modalidade, setModalidade] = useState(""); // online|presencial
   const [atendimento, setAtendimento] = useState(""); // domicilio|clinica|ambulatorial|hospitalar|homecare|corporativo|teleatendimento
   const [atendimentoCobranca, setAtendimentoCobranca] = useState(""); // convenio|particular
-  const [patrocinadoOnly, setPatrocinadoOnly] = useState(false);
   const [ordenarPor, setOrdenarPor] = useState('recentes');
 
   // Filtros para Mapa (Estabelecimentos)
@@ -423,25 +419,20 @@ export default function Mapa() {
     const matchCategoria = !categoria || anuncio.categoria === categoria;
     const matchProcedimento = !procedimento || 
       anuncio.procedimentos_servicos?.some(p => p.toLowerCase().includes(procedimento.toLowerCase()));
+    const tLower = (tratamento || '').toLowerCase();
+    const matchTratamento = !tratamento || (
+      (anuncio.descricao || '').toLowerCase().includes(tLower) ||
+      (anuncio.categoria || '').toLowerCase().includes(tLower) ||
+      (anuncio.tags || []).some(t => (t || '').toLowerCase().includes(tLower))
+    );
     const matchCidade = !cidade || anuncio.cidade?.toLowerCase().includes(cidade.toLowerCase());
-    const matchBairro = !bairro || (anuncio.bairro && anuncio.bairro.toLowerCase().includes(bairro.toLowerCase()));
     const matchEstado = !estado || anuncio.estado === estado;
     const matchPreco = !faixaPreco || anuncio.faixa_preco === faixaPreco;
     const matchVerificados = !verificados || anuncio.profissional_verificado === true;
     const matchTipoAnuncio = !tipoAnuncio || anuncio.tipo_anuncio === tipoAnuncio;
     const matchTipoEstabelecimento = !tipoEstabelecimento || anuncio.tipo_estabelecimento === tipoEstabelecimento;
-    const matchTempoFormacao = !tempoFormacao || tempoFormacao === "999999" || 
-      (anuncio.tempo_formacao_anos && anuncio.tempo_formacao_anos <= parseInt(tempoFormacao));
 
-    // Profissão (heurística via tags)
     const tagsLower = (anuncio.tags || []).map(t => (t || '').toLowerCase());
-    const matchProfissao = !profissao || tagsLower.includes(profissao.toLowerCase());
-
-    // Nível de verificação (0-3 docs verificados)
-    const va = anuncio.verificacao_autoridade || {};
-    const docsOk = [va.licenca_sanitaria?.verificado, va.alvara_funcionamento?.verificado, va.registro_profissional?.verificado]
-      .filter(Boolean).length;
-    const matchNivelVer = !nivelVerificacao || docsOk >= parseInt(nivelVerificacao);
 
     // Avaliação mínima (usa estrelas_estabelecimento quando presente)
     const matchAvaliacao = !avaliacaoMin || (anuncio.estrelas_estabelecimento && anuncio.estrelas_estabelecimento >= parseInt(avaliacaoMin));
@@ -465,10 +456,6 @@ export default function Mapa() {
       atendimentoCobranca === 'convenio' ? (tagsLower.includes('convênio') || tagsLower.includes('convenio')) :
       (anuncio.forma_cobranca === 'dinheiro' || tagsLower.includes('particular'))
     );
-
-    // Patrocinado
-    const isSponsored = !!anuncio.em_destaque || !!anuncio.impulsionado || ['ouro','diamante','platina'].includes(anuncio.plano);
-    const matchPatrocinado = !patrocinadoOnly || isSponsored;
     
     // Público-alvo
     const matchPublico = !anuncio.exibir_para || anuncio.exibir_para === 'todos' || (isProfissional ? anuncio.exibir_para !== 'visitantes' : anuncio.exibir_para !== 'profissionais');
@@ -485,10 +472,9 @@ export default function Mapa() {
       matchDistancia = dist <= parseInt(distancia);
     }
     
-    return matchBusca && matchCategoria && matchProcedimento && matchCidade && matchBairro && matchEstado && 
+    return matchBusca && matchCategoria && matchProcedimento && matchTratamento && matchCidade && matchEstado && 
            matchPreco && matchVerificados && matchTipoAnuncio && matchTipoEstabelecimento && 
-           matchTempoFormacao && matchProfissao && matchNivelVer && matchAvaliacao && matchModalidade &&
-           matchAtendimento && matchCobranca && matchPatrocinado && matchDistancia && matchPublico;
+           matchAvaliacao && matchModalidade && matchAtendimento && matchCobranca && matchDistancia && matchPublico;
   });
 
   const anunciosOrdenados = useMemo(() => {
@@ -560,6 +546,7 @@ export default function Mapa() {
     setBusca("");
     setCategoria("");
     setProcedimento("");
+    setTratamento("");
     setCidade("");
     setEstado("");
     setFaixaPreco("");
@@ -567,7 +554,6 @@ export default function Mapa() {
     setTipoAnuncio("");
     setTipoEstabelecimento("");
     setDistancia("999999");
-    setTempoFormacao("999999");
   };
 
   if (!localizacaoUsuario) {
@@ -660,59 +646,50 @@ export default function Mapa() {
                     </Select>
                   </div>
 
+                  {/* Tratamento */}
+                  <div>
+                    <label className="text-sm font-medium mb-1 block">Tratamento</label>
+                    <Select value={tratamento} onValueChange={setTratamento}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione um tratamento" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-64">
+                        {tratamentosLista.map((t) => (
+                          <SelectItem key={t} value={t}>{t}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-gray-500 mt-1">Abordagem contínua com foco em melhora progressiva</p>
+                  </div>
+
                   {/* Procedimento */}
                   <div>
-                    <label className="text-sm font-medium mb-2 block">Procedimento</label>
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="Ex: Botox..."
-                        value={procedimento}
-                        onChange={(e) => setProcedimento(e.target.value)}
-                        className="flex-1"
-                      />
-                      <Button
-                        type="button"
-                        onClick={() => setMostrarSeletorProcedimentos(true)}
-                        variant="outline"
-                        className="px-3 flex-shrink-0"
-                        title="Selecionar da lista"
-                      >
-                        <Search className="w-4 h-4" />
-                      </Button>
-
-                      <div className="flex items-center gap-2">
-                        <Checkbox id="toggleAnunciosMapa" checked={mostrarAnunciosNoMapa} onCheckedChange={setMostrarAnunciosNoMapa} />
-                        <label htmlFor="toggleAnunciosMapa" className="text-sm">Exibir anúncios no mapa</label>
-                      </div>
-                      </div>
-                      </div>
-
-                  {/* Cidade */}
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Cidade</label>
-                    <Input
-                      placeholder="Digite a cidade"
-                      value={cidade}
-                      onChange={(e) => setCidade(e.target.value)}
-                    />
+                    <label className="text-sm font-medium mb-1 block">Procedimento</label>
+                    <Select value={procedimento} onValueChange={setProcedimento}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione um procedimento" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-64">
+                        {procedimentosLista.map((p) => (
+                          <SelectItem key={p} value={p}>{p}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-gray-500 mt-1">Intervenção pontual/técnica realizada em sessão</p>
                   </div>
 
-                  {/* Bairro */}
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Bairro</label>
-                    <Input
-                      placeholder="Digite o bairro"
-                      value={bairro}
-                      onChange={(e) => setBairro(e.target.value)}
-                    />
+                  {/* Alternar exibição no mapa */}
+                  <div className="flex items-center gap-2 pt-6">
+                    <Checkbox id="toggleAnunciosMapa" checked={mostrarAnunciosNoMapa} onCheckedChange={setMostrarAnunciosNoMapa} />
+                    <label htmlFor="toggleAnunciosMapa" className="text-sm">Exibir anúncios no mapa</label>
                   </div>
 
-                  {/* Estado */}
+                  {/* Estado (prioritário) */}
                   <div>
-                    <label className="text-sm font-medium mb-2 block">Estado</label>
+                    <label className="text-sm font-medium mb-1 block">Estado (prioritário)</label>
                     <Select value={estado} onValueChange={setEstado}>
                       <SelectTrigger>
-                       <SelectValue placeholder="Estado" />
+                       <SelectValue placeholder="Selecione o estado" />
                       </SelectTrigger>
                       <SelectContent>
                         {estados.map((uf) => (
@@ -720,6 +697,18 @@ export default function Mapa() {
                         ))}
                       </SelectContent>
                     </Select>
+                    <p className="text-xs text-gray-500 mt-1">Defina primeiro o estado para refinar sua busca</p>
+                  </div>
+
+                  {/* Cidade */}
+                  <div>
+                    <label className="text-sm font-medium mb-1 block">Cidade</label>
+                    <Input
+                      placeholder="Digite a cidade"
+                      value={cidade}
+                      onChange={(e) => setCidade(e.target.value)}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Após o estado, escolha a cidade desejada</p>
                   </div>
 
                   {/* Preço */}
@@ -770,20 +759,7 @@ export default function Mapa() {
                     </Select>
                   </div>
 
-                  {/* Profissão */}
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Profissão</label>
-                    <Select value={profissao} onValueChange={setProfissao}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Todas" />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-[300px]">
-                        {['médico','dentista','biomédico','esteticista','enfermeiro','farmacêutico','fisioterapeuta'].map((p)=>(
-                          <SelectItem key={p} value={p}>{p.charAt(0).toUpperCase()+p.slice(1)}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+
 
                   {/* Distância */}
                   <div>
@@ -801,36 +777,9 @@ export default function Mapa() {
                     <p className="text-xs text-gray-500 mt-1">Use GPS primeiro</p>
                   </div>
 
-                  {/* Tempo Formação */}
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Tempo Formação</label>
-                    <Select value={tempoFormacao} onValueChange={setTempoFormacao}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Qualquer tempo" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {temposFormacao.map((tempo) => (
-                          <SelectItem key={tempo.valor} value={tempo.valor}>{tempo.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
 
-                  {/* Nível de Verificação */}
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Nível de Verificação</label>
-                    <Select value={nivelVerificacao} onValueChange={setNivelVerificacao}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Qualquer nível" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {[0,1,2,3].map((n)=>(
-                          <SelectItem key={n} value={String(n)}>{n} de 3 docs</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-gray-500 mt-1">Entenda: verificamos 3 documentos (Licença Sanitária, Alvará e Registro Profissional). Quanto maior o nível (0–3), maior a segurança.</p>
-                  </div>
+
+
 
                   {/* Avaliação mínima */}
                   <div>
@@ -912,17 +861,7 @@ export default function Mapa() {
                     </label>
                   </div>
 
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="patrocinados"
-                      checked={patrocinadoOnly}
-                      onCheckedChange={setPatrocinadoOnly}
-                      className="data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600 data-[state=checked]:text-white"
-                    />
-                    <label htmlFor="patrocinados" className="text-sm font-medium cursor-pointer">
-                      👑 Apenas Patrocinados
-                    </label>
-                  </div>
+
                 </div>
               </CardContent>
             </Card>

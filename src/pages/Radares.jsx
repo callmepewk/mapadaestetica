@@ -12,6 +12,7 @@ import RabiConsultoriaCTA from "../components/rabi/RabiConsultoriaCTA";
 
 
 import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 import RabiExpandableCard from "../components/rabi/RabiExpandableCard";
 import RabiReportModal from "../components/rabi/RabiReportModal";
 import RabiGAUploader from "../components/rabi/RabiGAUploader";
@@ -32,6 +33,7 @@ export default function Radares() {
 
   const [rabiOn, setRabiOn] = useState(false);
   const [planTier, setPlanTier] = useState('free');
+  const [loadingRadars, setLoadingRadars] = useState(false);
   useEffect(() => { (async () => { try { const u = await base44.auth.me(); setUser(u); setRabiOn(!!u?.rabi_ativado); setPlanTier(getPlanTierFromUser(u)); } catch {} })(); }, []);
   const queryClient = useQueryClient();
   useEffect(() => {
@@ -144,12 +146,35 @@ export default function Radares() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
       <div className="max-w-7xl mx-auto px-4 space-y-8">
-        <div className="flex items-center justify-between gap-2">
+        <div className="space-y-3">
           <div className="text-sm text-gray-700">RABI — Radar de Análise de Beleza Inteligente</div>
-          <Button size="sm" variant={rabiOn ? 'default' : 'outline'} onClick={() => { const next = !rabiOn; toggleRabi(); if (next) handleGenerateAiReport(); }}>
-            {rabiOn ? 'Desativar RABI' : 'Ativar RABI'}
-          </Button>
+          <div className="rounded-xl border-2 border-[#F7D426] bg-gradient-to-r from-[#FFF3A3] to-[#FFE066] p-4 flex items-center justify-between flex-col sm:flex-row gap-3">
+            <div className="text-center sm:text-left">
+              <p className="text-lg font-bold text-[#2C2C2C]">Ative o R.A.B.I e gere sua leitura estratégica automaticamente</p>
+              <p className="text-sm text-[#2C2C2C]/80">Os radares de Tendências e Frequência serão preenchidos em poucos segundos</p>
+            </div>
+            <Button
+              className="h-12 px-6 text-base font-bold bg-[#2C2C2C] text-[#F7D426] hover:bg-black"
+              onClick={async () => {
+                if (!rabiOn) { try { await base44.auth.updateMe({ rabi_ativado: true }); } catch {} }
+                setRabiOn(true);
+                setLoadingRadars(true);
+                try {
+                  await Promise.all([handleGenerateReport(), handleGenerateAiReport()]);
+                } finally {
+                  setLoadingRadars(false);
+                }
+              }}
+            >
+              {loadingRadars ? (<><Loader2 className="w-5 h-5 mr-2 animate-spin"/> Analisando dados estratégicos...</>) : (rabiOn ? 'Executar nova análise' : 'Ativar R.A.B.I')}
+            </Button>
+          </div>
         </div>
+        {loadingRadars && (
+          <div className="mt-2 rounded-lg border bg-yellow-50 text-yellow-900 p-3 text-sm flex items-center gap-2">
+            <Loader2 className="w-4 h-4 animate-spin" /> Analisando dados estratégicos...
+          </div>
+        )}
         {planTier==='free' && rabiOn && (
           <div className="mt-2 rounded-lg border bg-yellow-50 text-yellow-900 p-3 text-sm">
             Experiência completa disponível a partir do plano PRO. <a href="/Planos" className="underline">Ver Planos</a>.

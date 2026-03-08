@@ -126,6 +126,12 @@ export default function CardAnuncio({ anuncio, distancia, isPreview = false }) {
             <p className="text-xs sm:text-sm text-gray-600 font-medium truncate">
               {anuncio.profissional}
             </p>
+            {anuncio.profissao && (
+              <p className="text-[11px] sm:text-xs text-gray-500">Profissão: {anuncio.profissao}</p>
+            )}
+            {anuncio.estabelecimento_principal && (
+              <p className="text-[11px] sm:text-xs text-gray-500">Local principal: {anuncio.estabelecimento_principal}</p>
+            )}
           </div>
         </div>
 

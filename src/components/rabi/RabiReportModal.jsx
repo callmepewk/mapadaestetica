@@ -23,7 +23,7 @@ export default function RabiReportModal({ open, onClose, summary, userEmail, sec
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="max-w-[95vw] sm:max-w-3xl w-[95vw] sm:w-auto max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-extrabold">Relatório R.A.B.I (Prévia)</DialogTitle>
         </DialogHeader>
@@ -31,7 +31,7 @@ export default function RabiReportModal({ open, onClose, summary, userEmail, sec
           {loading ? (
             <div className="rounded-xl border bg-white p-6 flex items-center gap-3 text-gray-700">
               <span className="w-4 h-4 rounded-full border-2 border-[#F7D426] border-t-transparent animate-spin inline-block" />
-              Gerando relatório com dados internos...
+              Analisando dados estratégicos...
             </div>
           ) : (
             <>

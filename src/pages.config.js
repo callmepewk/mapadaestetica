@@ -54,8 +54,6 @@ import Anuncios from './pages/Anuncios';
 import ArtigoBlog from './pages/ArtigoBlog';
 import Blog from './pages/Blog';
 import CadastrarAnuncio from './pages/CadastrarAnuncio';
-import CalculadoraLaser from './pages/CalculadoraLaser';
-import Checkout from './pages/Checkout';
 import ControleAdmin from './pages/ControleAdmin';
 import ControlePlanos from './pages/ControlePlanos';
 import ControleProdutos from './pages/ControleProdutos';
@@ -64,20 +62,22 @@ import DashboardPatrocinador from './pages/DashboardPatrocinador';
 import DetalhesAnuncio from './pages/DetalhesAnuncio';
 import EditarAnuncio from './pages/EditarAnuncio';
 import FaleConosco from './pages/FaleConosco';
-import HubPontos from './pages/HubPontos';
 import Inicio from './pages/Inicio';
 import InstitutosAdmin from './pages/InstitutosAdmin';
-import LojaPontos from './pages/LojaPontos';
-import Mapa from './pages/Mapa';
 import Novidades from './pages/Novidades';
 import Perfil from './pages/Perfil';
 import PesquisaEspecializada from './pages/PesquisaEspecializada';
-import PlannerWellness from './pages/PlannerWellness';
-import Produtos from './pages/Produtos';
 import Radares from './pages/Radares';
 import RelatorioPrecoMedio from './pages/RelatorioPrecoMedio';
 import SobreNos from './pages/SobreNos';
+import Checkout from './pages/Checkout';
+import CalculadoraLaser from './pages/CalculadoraLaser';
+import HubPontos from './pages/HubPontos';
+import LojaPontos from './pages/LojaPontos';
+import Mapa from './pages/Mapa';
+import PlannerWellness from './pages/PlannerWellness';
 import Planos from './pages/Planos';
+import Produtos from './pages/Produtos';
 import __Layout from './Layout.jsx';
 
 
@@ -89,8 +89,6 @@ export const PAGES = {
     "ArtigoBlog": ArtigoBlog,
     "Blog": Blog,
     "CadastrarAnuncio": CadastrarAnuncio,
-    "CalculadoraLaser": CalculadoraLaser,
-    "Checkout": Checkout,
     "ControleAdmin": ControleAdmin,
     "ControlePlanos": ControlePlanos,
     "ControleProdutos": ControleProdutos,
@@ -99,20 +97,22 @@ export const PAGES = {
     "DetalhesAnuncio": DetalhesAnuncio,
     "EditarAnuncio": EditarAnuncio,
     "FaleConosco": FaleConosco,
-    "HubPontos": HubPontos,
     "Inicio": Inicio,
     "InstitutosAdmin": InstitutosAdmin,
-    "LojaPontos": LojaPontos,
-    "Mapa": Mapa,
     "Novidades": Novidades,
     "Perfil": Perfil,
     "PesquisaEspecializada": PesquisaEspecializada,
-    "PlannerWellness": PlannerWellness,
-    "Produtos": Produtos,
     "Radares": Radares,
     "RelatorioPrecoMedio": RelatorioPrecoMedio,
     "SobreNos": SobreNos,
+    "Checkout": Checkout,
+    "CalculadoraLaser": CalculadoraLaser,
+    "HubPontos": HubPontos,
+    "LojaPontos": LojaPontos,
+    "Mapa": Mapa,
+    "PlannerWellness": PlannerWellness,
     "Planos": Planos,
+    "Produtos": Produtos,
 }
 
 export const pagesConfig = {
