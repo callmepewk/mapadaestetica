@@ -177,7 +177,7 @@ export default function LojaPontos() {
         produto_id: produto.id,
         produto_nome: produto.nome,
         tipo: 'produto',
-        quantidade,
+        quantidade: Math.max(1, (quantidades?.[produto.id] || 1)),
         valor_total: 0,
         status_pedido: 'aguardando_pagamento'
       });
