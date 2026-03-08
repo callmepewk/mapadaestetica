@@ -65,7 +65,7 @@ const categorias = [
   "Mídia e Marketing"
 ];
 
-const servicosContrataveis = [
+/* removido: placeholders de serviços/produtos */ const servicosContrataveis = [] // mantido vazio para compatibilidade
   // PROGRAMAS EM EXPOSIÇÃO (pacientes)
   {
     id: "checkup-360",

@@ -432,7 +432,7 @@ export default function AdicionarProduto() {
         </Button>
 
         <Card className="border-2 border-[#F7D426]/50 shadow-2xl rounded-2xl bg-white/90 backdrop-blur">
-          <CardContent className="p-8 space-y-2">
+          <CardContent className="p-8 space-y-6">
             <div className="mb-6">
               <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-1">
                 Adicionar Produto/Serviço
@@ -509,7 +509,7 @@ export default function AdicionarProduto() {
               </div>
               </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-8">
               {/* Tipo: Produto ou Serviço */}
               <div>
                 <Label htmlFor="tipo">Tipo *</Label>

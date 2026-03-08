@@ -111,6 +111,15 @@ export default function PlannerWellness() {
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Planner de Wellness</h1>
         </div>
 
+        <Card className="border-2 border-blue-200 bg-blue-50">
+          <CardContent className="p-5 space-y-2 text-blue-900">
+            <p className="text-sm"><strong>O que é:</strong> seu espaço pessoal para definir metas de saúde/estética, organizar rotinas de autocuidado e acompanhar sua evolução.</p>
+            <p className="text-sm"><strong>Para pacientes:</strong> ajuda a planejar tratamentos, registrar objetivos e compartilhar com profissionais quando desejar.</p>
+            <p className="text-sm"><strong>Para profissionais:</strong> permite visualizar (se autorizado) as metas do paciente e ajustar protocolos e agendas.</p>
+            <p className="text-sm"><strong>Para patrocinadores:</strong> oferece visão de interesses e rotinas (de forma agregada) para ações mais relevantes.</p>
+          </CardContent>
+        </Card>
+
         {/* Métricas rápidas */}
         <div className="grid sm:grid-cols-2 gap-4">
           <Card className="border-2 border-emerald-200">

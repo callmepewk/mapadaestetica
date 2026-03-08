@@ -251,9 +251,7 @@ export default function Layout({ children }) {
                     { title: "Mapa", url: createPageUrl("Mapa"), icon: Search },
                     { title: "Blog", url: createPageUrl("Blog"), icon: Newspaper },
                     { title: "Produtos", url: createPageUrl("Produtos"), icon: ShoppingCart },
-                    ...(isProfissional || isPatrocinador ? [
-                                        { title: "Hub Pontos", url: createPageUrl("HubPontos"), icon: Star }
-                                      ] : []),
+
                     ...(!isPaciente ? [{ title: "Planos", url: createPageUrl("Planos"), icon: CreditCard }] : []),
                     { title: "Suporte", url: createPageUrl("FaleConosco"), icon: MessageCircle },
                     { title: "Sobre Nós", url: createPageUrl("SobreNos"), icon: Info },

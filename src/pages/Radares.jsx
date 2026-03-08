@@ -151,13 +151,14 @@ export default function Radares() {
           <div className="rounded-xl border-2 border-[#F7D426] bg-gradient-to-r from-[#FFF3A3] to-[#FFE066] p-4 flex items-center justify-between flex-col sm:flex-row gap-3">
             <div className="text-center sm:text-left">
               <p className="text-lg font-bold text-[#2C2C2C]">Ative o R.A.B.I e gere sua leitura estratégica automaticamente</p>
-              <p className="text-sm text-[#2C2C2C]/80">Os radares de Tendências e Frequência serão preenchidos em poucos segundos</p>
+              <p className="text-sm text-[#2C2C2C]/80">As leituras de Tendências serão preenchidas em poucos segundos</p>
             </div>
             <Button
               className="h-12 px-6 text-base font-bold bg-[#2C2C2C] text-[#F7D426] hover:bg-black"
               onClick={async () => {
                 if (!rabiOn) { try { await base44.auth.updateMe({ rabi_ativado: true }); } catch {} }
                 setRabiOn(true);
+                document.getElementById('rabi-trends')?.scrollIntoView({ behavior: 'smooth' });
                 setLoadingRadars(true);
                 try {
                   await Promise.all([handleGenerateReport(), handleGenerateAiReport()]);
@@ -172,7 +173,7 @@ export default function Radares() {
         </div>
         {loadingRadars && (
           <div className="mt-2 rounded-lg border bg-yellow-50 text-yellow-900 p-3 text-sm flex items-center gap-2">
-            <Loader2 className="w-4 h-4 animate-spin" /> Analisando dados estratégicos...
+            <Loader2 className="w-4 h-4 animate-spin" /> Analisando tendências do mercado estético...
           </div>
         )}
         {planTier==='free' && rabiOn && (
@@ -196,6 +197,7 @@ export default function Radares() {
             Gerar Relatório (IA)
           </Button>
         </div>
+        <div id="rabi-trends"></div>
         <RabiSection title="RABI — Tendências" subtitle="Leitura antecipada do mercado, movimentos emergentes e apoio à inovação estratégica.">
           <div className="grid md:grid-cols-3 gap-4 mb-4">
             <RabiExpandableCard title="Movimentos Emergentes" teaser="Sinais fracos ganhando tração.">

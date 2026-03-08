@@ -23,7 +23,7 @@ import {
 const buildMenus = (navigate) => {
   const openPlanos = () => navigate(createPageUrl("Planos"));
   const openMapa = () => navigate(createPageUrl("Mapa"));
-  const openFaleConosco = () => navigate(createPageUrl("FaleConosco"));
+  const openFaleConosco = () => { window.location.href = 'mailto:pedro_hbfreitas@hotmail.com'; };
   const openCadastrarAnuncio = () => navigate(createPageUrl("CadastrarAnuncio"));
 
   const NAV_ITEMS = {
@@ -261,7 +261,9 @@ export default function Chatbot({ user }) {
   const handleSelect = (option) => {
     // Encerrar conversa
     if (option.action === "end" || option.id === "encerrar") {
-      resetToStart();
+      setIsOpen(false);
+      setMessages([]);
+      setTimeout(() => { resetToStart(); }, 0);
       return;
     }
 

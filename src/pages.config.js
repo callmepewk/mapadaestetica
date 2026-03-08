@@ -64,7 +64,6 @@ import DashboardPatrocinador from './pages/DashboardPatrocinador';
 import DetalhesAnuncio from './pages/DetalhesAnuncio';
 import EditarAnuncio from './pages/EditarAnuncio';
 import FaleConosco from './pages/FaleConosco';
-import HubPontos from './pages/HubPontos';
 import Inicio from './pages/Inicio';
 import InstitutosAdmin from './pages/InstitutosAdmin';
 import LojaPontos from './pages/LojaPontos';
@@ -99,7 +98,6 @@ export const PAGES = {
     "DetalhesAnuncio": DetalhesAnuncio,
     "EditarAnuncio": EditarAnuncio,
     "FaleConosco": FaleConosco,
-    "HubPontos": HubPontos,
     "Inicio": Inicio,
     "InstitutosAdmin": InstitutosAdmin,
     "LojaPontos": LojaPontos,

@@ -832,7 +832,7 @@ export default function LojaPontos() {
 
         {/* Modal: Novo Item Loja */}
         <Dialog open={modalNovoItem} onOpenChange={setModalNovoItem}>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-2xl h-[80vh] overflow-y-auto rounded-xl">
             <DialogHeader>
               <DialogTitle>Novo item na Loja de Pontos</DialogTitle>
                 <p className="text-xs text-gray-500">Os planos referidos são os planos do Clube da Beleza.</p>
