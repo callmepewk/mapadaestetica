@@ -44,6 +44,7 @@ import LanguageSelector from "./components/layout/LanguageSelector";
 import { I18nProvider } from "./components/i18n/I18nProvider";
 import FloatingQuickbar from "./components/layout/FloatingQuickbar";
 import ImageWithLoader from "./components/common/ImageWithLoader";
+if (typeof window !== 'undefined') { try { window.produtosMeus = window.produtosMeus || []; } catch {} }
 
 if (typeof window !== 'undefined') { try { window.produtosMeus = window.produtosMeus || []; } catch {} }
 
