@@ -439,14 +439,10 @@ export default function Produtos() {
 
   // Filtrar produtos baseado no tipo de usuário
   const todosProdutos = [
-    // Exibir programas 12m do banco para pacientes em primeiro lugar
-    ...produtosDatabase.filter(p => p.programa_12_meses === true && (isPaciente)),
-    // Conteúdo estático de exposição e demais produtos
-
-    ...servicosContrataveis.filter(s =>
-      isProfissional ? s.tipo_publico === "profissional" : s.tipo_publico === "paciente"
-    ),
-    ...produtosDatabase
+    // Programas 12m primeiro (pacientes)
+    ...produtosDatabase.filter(p => p.programa_12_meses === true && isPaciente),
+    // Demais itens (evita duplicar os programas já priorizados)
+    ...produtosDatabase.filter(p => !(p.programa_12_meses === true && isPaciente))
   ];
 
   const produtosFiltrados = todosProdutos.filter(produto => {
@@ -880,7 +876,7 @@ export default function Produtos() {
                   <div className="mt-6 p-4 bg-yellow-50 border-2 border-yellow-200 rounded-lg text-left">
                     <p className="font-bold text-yellow-900 mb-2">Debug Info (Admin):</p>
                     <p className="text-sm text-yellow-800">Total produtos DB: {produtosDatabase.length}</p>
-                    <p className="text-sm text-yellow-800">Total serviços: {servicosContrataveis.length}</p>
+
                     <p className="text-sm text-yellow-800">Filtrados: {produtosFiltrados.length}</p>
                     <p className="text-sm text-yellow-800">Categoria filtro: {categoriaFiltro}</p>
                     <p className="text-sm text-yellow-800">Tipo busca: {tipoBusca}</p>

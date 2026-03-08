@@ -150,7 +150,7 @@ export default function LojaPontos() {
 
     const custo = efetivoPontos(produto) * quantidade;
     if (user.pontos_acumulados < custo) {
-      alert(`Você precisa de ${produto.pontos_necessarios} pontos para resgatar este produto. Você tem apenas ${user.pontos_acumulados} pontos.`);
+      alert(`Você precisa de ${custo} pontos para resgatar este item. Você tem apenas ${user.pontos_acumulados} pontos.`);
       return;
     }
 
@@ -708,7 +708,7 @@ export default function LojaPontos() {
                   <div className="flex items-center gap-2">
                     <Star className="w-5 h-5 text-[#F7D426] fill-[#F7D426]" />
                     <span className="text-2xl font-bold text-[#2C2C2C]">
-                      {produto.pontos_necessarios}
+                      {efetivoPontos(produto)}
                     </span>
                     <span className="text-sm text-gray-500">pontos</span>
                   </div>
@@ -751,7 +751,7 @@ export default function LojaPontos() {
 
                     <Button
                       onClick={() => handleResgatarProduto(produto, (()=>{ const step = produto.tipo_oferta === 'lote' ? Math.max(1, produto.lote_minimo || 1) : 1; return quantidades[produto.id] || step; })())}
-                      disabled={(() => { const step = produto.tipo_oferta === 'lote' ? Math.max(1, produto.lote_minimo || 1) : 1; const q = quantidades[produto.id] || step; const custo = (produto.pontos_necessarios||0) * q; return !user || ((user.pontos_acumulados||0) < custo) || produto.estoque <= 0 || q > produto.estoque; })()}
+                      disabled={(() => { const step = produto.tipo_oferta === 'lote' ? Math.max(1, produto.lote_minimo || 1) : 1; const q = quantidades[produto.id] || step; const custo = efetivoPontos(produto) * q; return !user || ((user.pontos_acumulados||0) < custo) || produto.estoque <= 0 || q > produto.estoque; })()}
                       className={`w-full ${
                         produto.nome && produto.nome.includes("Beauty Box")
                           ? "bg-gradient-to-r from-[#F7D426] to-[#FFE066] text-[#2C2C2C] hover:from-[#E5C215] hover:to-[#F7D426] border-2 border-[#2C2C2C]"
