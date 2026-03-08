@@ -45,6 +45,33 @@ import { I18nProvider } from "./components/i18n/I18nProvider";
 import FloatingQuickbar from "./components/layout/FloatingQuickbar";
 import ImageWithLoader from "./components/common/ImageWithLoader";
 
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, info) {
+    try { console.error('UI error:', error, info); } catch {}
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-[50vh] flex items-center justify-center p-6 text-center">
+          <div>
+            <h2 className="text-xl font-bold mb-2">Estamos ajustando algo por aqui</h2>
+            <p className="text-gray-600 mb-4">Tente atualizar a página ou volte em instantes.</p>
+            <button onClick={() => window.location.reload()} className="px-4 py-2 rounded-md bg-[#F7D426] text-[#2C2C2C] border-2 border-[#2C2C2C]">Atualizar</button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export default function Layout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -62,6 +89,7 @@ export default function Layout({ children }) {
 
   // Carregar carrinho do localStorage
   useEffect(() => {
+    try { if (typeof window !== 'undefined') { window.produtosMeus = window.produtosMeus || []; } } catch {}
     const carrinhoSalvo = localStorage.getItem('carrinho_mapa_estetica');
     if (carrinhoSalvo) {
       try {
@@ -734,7 +762,7 @@ export default function Layout({ children }) {
                 </header>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-x-hidden">{children}</main>
+      <main className="flex-1 overflow-x-hidden"><ErrorBoundary>{children}</ErrorBoundary></main>
 
       {/* Footer */}
       <footer className="bg-[#2C2C2C] text-white mt-12 sm:mt-20">
