@@ -87,8 +87,8 @@ Deno.serve(async (req) => {
     let ai;
     try {
       ai = await base44.integrations.Core.InvokeLLM({
-        prompt: `Você é um analista de mercado da estética. Gere um relatório RABI (Radar de Análise de Beleza Inteligente) em PT-BR, conciso e prático, baseado ESTRITAMENTE nos dados a seguir (JSON):\n\n${JSON.stringify(context)}\n\nEstruture em seções curtas com bullet points. Foque em:\n- Procedimentos em crescimento (emerging_terms)\n- Tendências regionais (top_states_by_ads, top_cities_by_ads, top_cities_by_appointments)\n- Procedimentos mais buscados (top_queries) e mais ofertados (top_procedures_offered)\n- Mudanças de comportamento (compare crescimento entre períodos a partir de emerging_terms).\nNão invente dados externos. Não cite o JSON, apenas interprete.\nAdapte a profundidade ao plano do usuário (free=3 itens/ seção; pro=5; prime=12).`,
-        add_context_from_internet: false,
+        prompt: `Você é um analista de mercado da estética. Gere um relatório RABI (Radar de Análise de Beleza Inteligente) em PT-BR, conciso e prático, combinando os DADOS INTERNOS (JSON abaixo) com sinais do Google Trends dos ÚLTIMOS 30 DIAS no Brasil, focando em tratamentos/procedimentos/produtos de estética. Respeite o JSON, mas complemente com insights reais do Trends.\n\nDADOS INTERNOS:\n${JSON.stringify(context)}\n\nINSTRUÇÕES:\n- Busque no Google Trends (últimos 30 dias, Brasil) termos relacionados à estética (tratamentos, procedimentos e produtos)\n- Traga até 12 termos em alta com variação percentual aproximada e regiões de maior interesse\n- Estruture em seções curtas com bullet points. Foque em:\n  • Procedimentos em crescimento\n  • Nuvem de oportunidades (palavras/categorias em alta)\n  • Market share por categoria\n  • Sazonalidade (últimos 30 dias)\n  • Mapa por região (UFs/cidades líderes)\n  • Áreas anatômicas mais buscadas (24h)\n  • Dicas de conteúdo para profissionais (24h)\n- Adapte a profundidade ao plano do usuário (free=3 itens/ seção; pro=5; prime=12).`,
+        add_context_from_internet: true,
         response_json_schema: {
           type: 'object',
           properties: {

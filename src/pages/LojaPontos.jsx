@@ -308,6 +308,22 @@ export default function LojaPontos() {
           </p>
         </div>
 
+        {/* Placeholders herdados do Hub de Pontos */}
+        <div className="grid md:grid-cols-3 gap-4 mb-8">
+          <Card className="border-2 border-yellow-200 bg-yellow-50 p-4">
+            <p className="font-semibold text-yellow-900">Em breve: Desafios Semanais</p>
+            <p className="text-xs text-yellow-800">Ganhe pontos extras completando missões.</p>
+          </Card>
+          <Card className="border-2 border-purple-200 bg-purple-50 p-4">
+            <p className="font-semibold text-purple-900">Em breve: Ranking</p>
+            <p className="text-xs text-purple-800">Veja sua posição entre amigos e cidades.</p>
+          </Card>
+          <Card className="border-2 border-green-200 bg-green-50 p-4">
+            <p className="font-semibold text-green-900">Em breve: Badges</p>
+            <p className="text-xs text-green-800">Colecione conquistas por participação.</p>
+          </Card>
+        </div>
+
         {/* Check-in Diário */}
         <Card className="mb-8 border-2 border-green-300 bg-gradient-to-br from-green-50 to-white">
           <CardContent className="p-6 flex items-center justify-between gap-4 flex-wrap">
@@ -837,10 +853,10 @@ export default function LojaPontos() {
               <DialogTitle>Novo item na Loja de Pontos</DialogTitle>
                 <p className="text-xs text-gray-500">Os planos referidos são os planos do Clube da Beleza.</p>
             </DialogHeader>
-            <div className="grid gap-3">
-              <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-3 space-y-2">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs text-gray-600">Tipo</label>
+                  <label className="text-xs text-gray-600 flex items-center gap-2">Tipo {novoItem.tipo ? <Check className="w-3 h-3 text-green-600" /> : null}</label>
                   <Select value={novoItem.tipo} onValueChange={(v)=>setNovoItem(prev=>({...prev, tipo: v}))}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -850,7 +866,7 @@ export default function LojaPontos() {
                   </Select>
                 </div>
                 <div>
-                  <label className="text-xs text-gray-600">Categoria</label>
+                  <label className="text-xs text-gray-600 flex items-center gap-2">Categoria {novoItem.categoria ? <Check className="w-3 h-3 text-green-600" /> : null}</label>
                   <Select value={novoItem.categoria} onValueChange={(v)=>setNovoItem(prev=>({...prev, categoria: v}))}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -864,15 +880,15 @@ export default function LojaPontos() {
                 </div>
               </div>
               <div className="grid gap-2">
-                <label className="text-xs text-gray-600">Nome</label>
+                <label className="text-xs text-gray-600 flex items-center gap-2">Nome {novoItem.nome ? <Check className="w-3 h-3 text-green-600" /> : null}</label>
                 <Input value={novoItem.nome} onChange={(e)=>setNovoItem(prev=>({...prev, nome: e.target.value}))} />
               </div>
               <div className="grid gap-2">
-                <label className="text-xs text-gray-600">Descrição</label>
+                <label className="text-xs text-gray-600 flex items-center gap-2">Descrição {novoItem.descricao ? <Check className="w-3 h-3 text-green-600" /> : null}</label>
                 <Input value={novoItem.descricao} onChange={(e)=>setNovoItem(prev=>({...prev, descricao: e.target.value}))} />
               </div>
               <div className="grid gap-2">
-                <label className="text-xs text-gray-600">Imagem (JPG ou PNG)</label>
+                <label className="text-xs text-gray-600 flex items-center gap-2">Imagem (JPG ou PNG) {Array.isArray(novoItem.imagens) && novoItem.imagens[0] ? <Check className="w-3 h-3 text-green-600" /> : null}</label>
                 <input
                   type="file"
                   accept="image/png, image/jpeg"
@@ -894,13 +910,13 @@ export default function LojaPontos() {
                   </div>
                 )}
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs text-gray-600">Pontos necessários</label>
+                  <label className="text-xs text-gray-600 flex items-center gap-2">Pontos necessários {(novoItem.pontos_necessarios||0) > 0 ? <Check className="w-3 h-3 text-green-600" /> : null}</label>
                   <Input type="number" value={novoItem.pontos_necessarios} onChange={(e)=>setNovoItem(prev=>({...prev, pontos_necessarios: parseInt(e.target.value)||0}))} />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-600">Estoque</label>
+                  <label className="text-xs text-gray-600 flex items-center gap-2">Estoque {(novoItem.estoque||0) > 0 ? <Check className="w-3 h-3 text-green-600" /> : null}</label>
                   <Input type="number" value={novoItem.estoque} onChange={(e)=>setNovoItem(prev=>({...prev, estoque: parseInt(e.target.value)||0}))} />
                 </div>
               </div>

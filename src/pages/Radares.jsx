@@ -12,11 +12,18 @@ import RabiConsultoriaCTA from "../components/rabi/RabiConsultoriaCTA";
 
 
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, Download } from "lucide-react";
 import RabiExpandableCard from "../components/rabi/RabiExpandableCard";
 import RabiReportModal from "../components/rabi/RabiReportModal";
 import RabiGAUploader from "../components/rabi/RabiGAUploader";
 import RabiTrendsChart from "../components/rabi/RabiTrendsChart";
+import TrendHeatmap from "../components/analytics/TrendRadar/TrendHeatmap";
+import TrendSharePie from "../components/analytics/TrendRadar/TrendSharePie";
+import TrendSeasonalityChart from "../components/analytics/TrendRadar/TrendSeasonalityChart";
+import BrazilRegionHeatmap from "../components/analytics/TrendRadar/BrazilRegionHeatmap";
+import TrendWordCloud from "../components/analytics/TrendRadar/TrendWordCloud";
+import TopAnatomicalAreas24h from "../components/analytics/TopAnatomicalAreas24h";
+import ContentTipsForPros from "../components/analytics/ContentTipsForPros";
 
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -53,7 +60,7 @@ export default function Radares() {
   };
 
   const handleGenerateReport = async () => {
-    setReportOpen(true);
+    // não abrir modal de preview
     setReportLoading(true);
     try {
       const [anunciosAll, searchEvents] = await Promise.all([
@@ -128,7 +135,7 @@ export default function Radares() {
     try { if (user) await base44.auth.updateMe({ rabi_ativado: next }); } catch {}
   };
   const handleGenerateAiReport = async () => {
-    setReportOpen(true);
+    // não abrir modal de preview
     setReportLoading(true);
     try {
       const { data } = await base44.functions.invoke('generateRabiReport');
@@ -196,6 +203,17 @@ export default function Radares() {
           <Button className="bg-pink-600 hover:bg-pink-700 text-white" onClick={handleGenerateAiReport}>
             Gerar Relatório (IA)
           </Button>
+          {(reportSections?.length || 0) > 0 && (
+            <Button className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={async ()=>{
+              try {
+                const res = await base44.functions.invoke('exportRabiPdf', { summary: reportSummary, sections: reportSections });
+                const uri = res?.data?.pdf_data_uri;
+                if (uri) { const a = document.createElement('a'); a.href = uri; a.download = 'RABI-relatorio.pdf'; a.click(); }
+              } catch {}
+            }}>
+              <Download className="w-4 h-4 mr-2"/> Exportar PDF
+            </Button>
+          )}
         </div>
         <div id="rabi-trends"></div>
         <RabiSection title="RABI — Tendências" subtitle="Leitura antecipada do mercado, movimentos emergentes e apoio à inovação estratégica.">
@@ -211,6 +229,19 @@ export default function Radares() {
             </RabiExpandableCard>
           </div>
           <RadarSection />
+
+          <div className="grid md:grid-cols-2 gap-6 mt-6">
+            <TrendWordCloud />
+            <TrendSharePie />
+          </div>
+          <div className="grid md:grid-cols-2 gap-6 mt-6">
+            <TrendSeasonalityChart />
+            <BrazilRegionHeatmap />
+          </div>
+          <div className="grid md:grid-cols-2 gap-6 mt-6">
+            <TopAnatomicalAreas24h />
+            <ContentTipsForPros />
+          </div>
 
 
 
