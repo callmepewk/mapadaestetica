@@ -8,6 +8,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const body = await req.json().catch(()=>({}));
+    const inputScope = (body?.scope || 'br');
+    const inputProfession = String(body?.profession || '').toLowerCase();
+
     const now = new Date();
     const daysAgo = (n) => new Date(now.getTime() - n * 24 * 60 * 60 * 1000);
 
@@ -143,6 +147,31 @@ Caso uma fonte não esteja acessível, use as demais.
       pricing = { procedures: [] };
     }
 
+    // Profissão do usuário (personalização)
+    const userProfession = (inputProfession || user?.profissao || user?.profession || user?.area_profissional || '').toLowerCase();
+
+    const PROF_KEYS = {
+      'medico': ['botox','toxina','preench','bioestimul','laser','rejuven','peeling','melasma','cicatriz','ipl','pico','co2'],
+      'dermatologista': ['botox','toxina','preench','bioestimul','laser','dermato','rejuven','melasma','cicatriz','rosácea','acne'],
+      'biomédico esteta': ['bioestimul','peeling','intraderm','microagulh','toxina','preench','enzimas','rf','hifu'],
+      'dentista harmonizador': ['harmonização','preench','botox','mandíbula','mento','lábios','rinomodela','masseter'],
+      'enfermeiro esteta': ['peeling','intraderm','microagulh','enzimas','estética facial','protocolos'],
+      'farmacêutico esteta': ['peeling','cosmeceut','intraderm','microagulh','protocolos'],
+      'fisioterapeuta dermatofuncional': ['radiofrequência','ultrassom','criolipólise','drenagem','massagem','flacidez','estrias','celulite'],
+      'esteticista': ['limpeza de pele','protocolo facial','peeling','massagem','drenagem','hidratação','skincare','capilar'],
+      'cosmetólogo': ['cosmético','cosmeceut','peeling','skincare','hidratação','rejuvenes'],
+      'terapeuta capilar': ['capilar','prp capilar','couro cabeludo','queda capilar','alopecia','crescimento capilar','led capilar'],
+      'especialista em micropigmentação': ['micropigment','sobrancelha','lábios','olhos','dermógrafo','fio a fio'],
+      'lash designer': ['cílios','lash lifting','extensão de cílios'],
+      'designer de sobrancelhas': ['sobrancelha','brow','henna','lamination'],
+      'massoterapeuta': ['massagem','relaxante','modeladora','drenagem','spa'],
+      'especialista em depilação': ['depilação','laser','cera','fotodepilação'],
+      'outra': []
+    };
+
+    const profKey = Object.keys(PROF_KEYS).find(k => userProfession.includes(k)) || 'outra';
+    const profKeywords = PROF_KEYS[profKey];
+
     // 3) Google Trends (demanda) — via web context
     const trendsPrompt = `Você é um analista usando Google Trends. Capture os principais termos de estética no BRASIL (últimos 30 dias), com score relativo (0–100) e menções a áreas anatômicas quando aplicável. Inclua botox, preenchimento labial, bioestimulador, depilação a laser, peeling químico, laser para melasma e demais termos relevantes. Se não conseguir dados diretos, infira com base em relatórios confiáveis e deixe uma nota.`;
 
@@ -178,6 +207,23 @@ Caso uma fonte não esteja acessível, use as demais.
       googleTrends = { terms: [], note: 'Sem dados diretos do Google Trends nesta execução.' };
     }
 
+    // Personalização: filtrar listas por profissão
+    const matchKeywords = (text) => {
+      if (!profKeywords?.length) return true; // se "outra", mantém geral
+      const t = (text||'').toLowerCase();
+      return profKeywords.some(k => t.includes(k));
+    };
+
+    const trendListRelevant = trendList.filter(t => matchKeywords(t.term));
+    const topProceduresRelevant = trendListRelevant.filter(t => /botox|preench|bioestimul|laser|peeling|limpeza|melasma|capilar|sobrancelha|cílios|massagem|drenagem|criolip|hifu|radiofrequ/.test(t.term)).slice(0, 15);
+    const topAreasRelevant = trendListRelevant.filter(t => /lábios|labios|olheiras|mandíbula|mandibula|pescoço|testa|nariz|couro cabeludo|abdômen|abdomen|glúteos|gluteos|mãos|maos|pálpebras|palpebras|bochechas/.test(t.term)).slice(0, 15);
+
+    const opportunityCloud = trendListRelevant
+      .filter(t => t.v7 >= 2)
+      .sort((a,b)=> (b.growthPct||0) - (a.growthPct||0))
+      .slice(0, 30)
+      .map(t => ({ term: t.term, growth: Math.round((t.growthPct||0)*10)/10 }));
+
     // 4) Índice Estético Brasileiro (IEB) — escala 0–140
     const avgTrendScore = trendList.slice(0, 50).reduce((s, t) => s + t.trendScore, 0) / Math.max(trendList.slice(0, 50).length, 1);
     const emergentCount = emergent.length;
@@ -203,20 +249,70 @@ Caso uma fonte não esteja acessível, use as demais.
     const topProcedures = trendList.filter(t => /botox|preenchimento|bioestimulador|laser|peeling|limpeza|melasma/.test(t.term)).slice(0, 15);
     const topAreas = trendList.filter(t => /lábios|labios|olheiras|mandíbula|mandibula|pescoço|testa|nariz|couro cabeludo|abdômen|abdomen|glúteos|gluteos|mãos|maos|pálpebras|palpebras|bochechas/.test(t.term)).slice(0, 15);
 
+    // 5) Google Analytics (opcional) — Top serviços por conversão
+    let gaTop = [];
+    try {
+      const { accessToken, connectionConfig } = await base44.asServiceRole.connectors.getConnection('google_analytics');
+      const propertyId = connectionConfig?.property_id || connectionConfig?.propertyId || Deno.env.get('GA_PROPERTY_ID');
+      if (accessToken && propertyId) {
+        const body = {
+          dateRanges: [{ startDate: new Date(now.getTime()-30*86400000).toISOString().slice(0,10), endDate: now.toISOString().slice(0,10) }],
+          dimensions: [{ name: 'pageTitle' }],
+          metrics: [{ name: 'conversions' }],
+          limit: 25
+        };
+        const resp = await fetch(`https://analyticsdata.googleapis.com/v1beta/properties/${propertyId}:runReport`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        if (resp.ok) {
+          const data = await resp.json();
+          gaTop = (data?.rows||[]).map(r => ({ name: r?.dimensionValues?.[0]?.value || 'Página', value: Number(r?.metricValues?.[0]?.value || '0') }))
+            .filter(it => matchKeywords(it.name))
+            .slice(0, 15);
+        }
+      }
+    } catch (_) { /* silencioso */ }
+
+    // Preços relevantes por profissão
+    const pricingRelevant = {
+      procedures: (pricing?.procedures||[]).filter(p => matchKeywords(`${p.name} ${p.category||''} ${p.area||''}`)).slice(0, 20)
+    };
+
+    // Market share relevante
+    const categoryShareRelevant = categoryShare.filter(c => matchKeywords(c.name)).slice(0, 20);
+
+    // Interesse regional (top cidades/estados)
+    const cityMap = new Map();
+    const stateMap = new Map();
+    for (const ev of (searchEvents||[])) {
+      if (ev.cidade) cityMap.set(ev.cidade, (cityMap.get(ev.cidade)||0)+1);
+      if (ev.estado) stateMap.set(ev.estado, (stateMap.get(ev.estado)||0)+1);
+    }
+    const regionInterest = {
+      cities: Array.from(cityMap.entries()).sort((a,b)=>b[1]-a[1]).slice(0,15).map(([name,count])=>({name,count})),
+      states: Array.from(stateMap.entries()).sort((a,b)=>b[1]-a[1]).slice(0,15).map(([name,count])=>({name,count})),
+    };
+
     return Response.json({
-      scope: 'br',
+      scope: inputScope,
       updated_at: now.toISOString(),
+      profession: profKey,
       trends: {
-        topProcedures,
-        topAreas,
-        trendList: trendList.slice(0, 200),
+        topProcedures: topProceduresRelevant,
+        topAreas: topAreasRelevant,
+        trendList: trendListRelevant.slice(0, 200),
       },
       googleTrends,
-      pricing,
-      categoryShare,
+      pricing: pricingRelevant,
+      categoryShare: categoryShareRelevant,
       seasonality,
       emergent,
       ieb: { value: IEB_scaled, label: IEB_label },
+      opportunityCloud,
+      regionInterest,
+      ga: { topConversions: gaTop }
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

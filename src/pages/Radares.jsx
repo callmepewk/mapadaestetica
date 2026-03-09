@@ -249,7 +249,9 @@ export default function Radares() {
             onClick={async ()=>{
               setMiLoading(true);
               try {
-                const { data } = await base44.functions.invoke('rabiMarketIntelligence', { scope: 'br' });
+                const u = await base44.auth.me().catch(()=>null);
+                const profession = (u?.profissao || u?.profession || u?.area_profissional || '').trim();
+                const { data } = await base44.functions.invoke('rabiMarketIntelligence', { scope: 'br', profession });
                 setMiData(data);
               } catch {}
               finally { setMiLoading(false); }
@@ -264,7 +266,9 @@ export default function Radares() {
           {(reportSections?.length || 0) > 0 && (
             <Button className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={async ()=>{
               try {
-                const res = await base44.functions.invoke('exportRabiPdf', { summary: reportSummary, sections: reportSections });
+                const u = await base44.auth.me().catch(()=>null);
+                const profession = (u?.profissao || u?.profession || u?.area_profissional || '').trim();
+                const res = await base44.functions.invoke('exportRabiPdf', { summary: reportSummary, sections: reportSections, profession });
                 const uri = res?.data?.pdf_data_uri;
                 if (uri) { const a = document.createElement('a'); a.href = uri; a.download = 'RABI-relatorio.pdf'; a.click(); }
               } catch {}
@@ -307,6 +311,19 @@ export default function Radares() {
             <div className="mt-4">
               <PricingSummary procedures={miData?.pricing?.procedures || []} />
             </div>
+            {miData?.ga?.topConversions?.length > 0 && (
+              <div className="mt-4 p-4 border rounded-lg bg-white/60">
+                <div className="font-semibold mb-2">Top serviços por taxa de conversão</div>
+                <ul className="text-sm text-gray-700 grid md:grid-cols-2 gap-x-6">
+                  {miData.ga.topConversions.slice(0,10).map((it, idx)=> (
+                    <li key={idx} className="flex items-center justify-between py-1 border-b last:border-b-0">
+                      <span className="truncate pr-3">{it.name}</span>
+                      <span className="text-gray-500">{it.value}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </RabiSection>
         )}
 

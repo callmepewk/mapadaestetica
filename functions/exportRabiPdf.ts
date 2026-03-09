@@ -9,9 +9,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await req.json().catch(() => ({ summary: '', sections: [] }));
+    const body = await req.json().catch(() => ({ summary: '', sections: [], profession: '' }));
     const summary = String(body?.summary || 'Relatório RABI');
     const sections = Array.isArray(body?.sections) ? body.sections : [];
+    const profession = String(body?.profession || '').trim();
 
     const doc = new jsPDF({ unit: 'pt', format: 'a4' });
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -20,7 +21,16 @@ Deno.serve(async (req) => {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(18);
     doc.text('RABI — Radar AI Business Intelligence', pageWidth/2, y, { align: 'center' });
-    y += 24;
+    y += 18;
+
+    if (profession) {
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      doc.text(`Relatório Estratégico Personalizado — Profissão: ${profession}`, pageWidth/2, y, { align: 'center' });
+      y += 18;
+    } else {
+      y += 6;
+    }
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(11);
