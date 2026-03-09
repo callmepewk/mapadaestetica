@@ -48,7 +48,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import ExplicadorCadastroAnuncio from "../components/anuncios/ExplicadorCadastroAnuncio";
 import AutoSubcategoriaIA from "../components/anuncios/AutoSubcategoriaIA";
 import AutoTagsIA from "../components/anuncios/AutoTagsIA";
-import { categoriasAgrupadas } from "../components/anuncios/CategoriasData";
+import { categoriasAgrupadas } from "../components/anuncios/CategoriasData"; import CategoriaSelector from "../components/anuncios/CategoriaSelector";
 
 // Categorias movidas para components/anuncios/CategoriasData.js (categoriasAgrupadas)
 
