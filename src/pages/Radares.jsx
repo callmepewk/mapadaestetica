@@ -17,6 +17,7 @@ import RabiExpandableCard from "../components/rabi/RabiExpandableCard";
 import RabiReportModal from "../components/rabi/RabiReportModal";
 import RabiGAUploader from "../components/rabi/RabiGAUploader";
 import RabiTrendsChart from "../components/rabi/RabiTrendsChart";
+import VisualInsightsGrid from "../components/rabi/VisualInsightsGrid";
 
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -47,8 +48,9 @@ export default function Radares() {
 
   const getPlanTierFromUser = (u) => {
     const p = (u?.plano || u?.plano_assinatura || u?.assinatura_plano || '').toLowerCase();
-    if (['prime','premium','platina','diamante'].includes(p)) return 'prime';
-    if (['pro','ouro'].includes(p)) return 'pro';
+    if (p.includes('premium') || p.includes('platina')) return 'premium';
+    if (p.includes('prime') || p.includes('diamante')) return 'prime';
+    if (p.includes('pro') || p.includes('ouro')) return 'pro';
     return 'free';
   };
 
@@ -275,6 +277,24 @@ export default function Radares() {
 
 
         </RabiSection>
+
+        <RabiSection title="Insights Visuais — Tendências e Oportunidades" subtitle="Resumo visual com gráficos e quadros principais do período analisado.">
+          <VisualInsightsGrid
+            insights={[
+              { title: 'Visão Geral do Relatório', subtitle: 'Parâmetros de análise e escopo', img: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/5f1d2b16a_visogeral.jpg', source: 'Google Trends + RABI' },
+              { title: 'Ranking de Interesse — Top 10 termos', subtitle: 'Índice relativo (0–100) — Região Sudeste', img: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/abb85ed05_rankingdeinteresses.jpg', source: 'Google Trends' },
+              { title: 'Distribuição por Tratamentos', subtitle: 'Participação relativa por macro categoria', img: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/0cf487bd0_graficodetratamentos.jpg', source: 'RABI' },
+              { title: 'Metodologia de Coleta', subtitle: 'Localização, período e filtro saúde', img: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/d52bbbac0_metodologiadecoleta.jpg', source: 'RABI' },
+              { title: 'Procedimentos Corporais e Especializados', subtitle: 'Oportunidades em nichos com diferenciação', img: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/f7f70819d_procedimentoscorporais.jpg', source: 'RABI' },
+              { title: 'Procedimentos Faciais em Destaque', subtitle: 'Rejuvenescimento, melasma, cicatriz e manchas', img: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/ed2d09de8_procedimentosemdestaquefacial.jpg', source: 'RABI' },
+              { title: 'Termos por Indicação Clínica', subtitle: 'Condição/objetivo do paciente', img: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/40333422d_indicaoclinica.jpg', source: 'RABI' },
+              { title: 'Oportunidades Imediatas', subtitle: 'Maior potencial no curto prazo', img: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/bab9655dc_relevanciaimediata.jpg', source: 'RABI' },
+              { title: 'Termos de Alta Relevância', subtitle: 'Tecnologias populares e acessíveis', img: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/61fcaa2d0_termosdealtarelevancia.jpg', source: 'Google Trends' },
+              { title: 'Tratamentos (sem percentual)', subtitle: 'Visão comparativa sem peso relativo', img: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/21652ad59_tratamentosempercentual.jpg', source: 'RABI' },
+            ]}
+          />
+        </RabiSection>
+
         <RabiConsultoriaCTA />
       <RabiReportModal
         open={reportOpen}
