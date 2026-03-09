@@ -954,7 +954,7 @@ export default function Mapa() {
                     placeholder="Cidade ou Estado"
                     value={buscaCidade}
                     onChange={(e) => setBuscaCidade(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 h-10"
                   />
                 </div>
 
@@ -964,12 +964,12 @@ export default function Mapa() {
                     placeholder="Bairro"
                     value={bairroMapa}
                     onChange={(e) => setBairroMapa(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 h-10"
                   />
                 </div>
 
                 <Select value={filtroCategoria} onValueChange={setFiltroCategoria}>
-                  <SelectTrigger>
+                  <SelectTrigger className="h-10">
                     <SelectValue placeholder="Categoria" />
                   </SelectTrigger>
                   <SelectContent>
@@ -985,7 +985,7 @@ export default function Mapa() {
                 <p className="text-xs text-gray-500 mt-1">Categorias exibem apenas estabelecimentos, serviços, produtos e eventos que possuem anúncio ativo nesta área.</p>
 
                 <Select value={filtroPlano} onValueChange={setFiltroPlano}>
-                  <SelectTrigger>
+                  <SelectTrigger className="h-10">
                     <SelectValue placeholder="Plano Clube" />
                   </SelectTrigger>
                   <SelectContent>
@@ -994,10 +994,11 @@ export default function Mapa() {
                     <SelectItem value="vip">💜 VIP (25%)</SelectItem>
                   </SelectContent>
                 </Select>
+                <p className="text-xs text-gray-600 -mt-2">Assinantes do Clube da Beleza têm desconto automático nos parceiros: LIGHT 10%, GOLD 15% e VIP 25%. Use o filtro para ver estabelecimentos com benefício ativo.</p>
 
                 <Select value={estadoMapa} onValueChange={setEstadoMapa}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="UF" />
+                                  <SelectTrigger className="h-10">
+                                   <SelectValue placeholder="UF" />
                   </SelectTrigger>
                   <SelectContent>
                     {estados.map((uf)=>(<SelectItem key={uf} value={uf}>{uf}</SelectItem>))}
@@ -1005,7 +1006,7 @@ export default function Mapa() {
                 </Select>
 
                 <Select value={distanciaMapa} onValueChange={setDistanciaMapa}>
-                  <SelectTrigger>
+                  <SelectTrigger className="h-10">
                     <SelectValue placeholder="Distância" />
                   </SelectTrigger>
                   <SelectContent className="max-h-64 overflow-y-auto z-[2001]">
