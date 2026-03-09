@@ -2276,13 +2276,13 @@ www.mapadaestetica.com.br
                   <CardContent className="p-6 space-y-6">
                     <div className="flex items-center justify-between">
                       <h3 className="font-semibold text-lg">Integrações de Redes Sociais</h3>
-                      <Badge variant="outline">Beta</Badge>
+                      <Badge className="bg-purple-600 text-white">Exclusivo Premium</Badge>
                     </div>
                     <Alert className="bg-yellow-50 border-yellow-200">
                       <AlertCircle className="h-4 w-4 text-yellow-600" />
                       <AlertDescription className="text-yellow-800 text-sm">
-                        Para autenticar com Instagram/Facebook, LinkedIn, X (Twitter) e WhatsApp Business, é necessário habilitar as Funções de Backend do app e autorizar os conectores. Após habilitar, clique em Conectar.
-                      </AlertDescription>
+                                               Recurso exclusivo do plano <strong>Premium</strong>: conexões oficiais (redirecionamento real), gerente de conta e mentoria. Para ativar, habilite as Funções de Backend e autorize os conectores.
+                                             </AlertDescription>
                     </Alert>
 
                     {/* Preferências globais */}
