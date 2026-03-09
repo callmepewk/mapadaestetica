@@ -1080,7 +1080,7 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
       }
 
       const anuncioData = {
-        {...formData, categoria: formData.categoria === 'Outros' ? (formData.subcategoria || 'Outros') : formData.categoria },
+        ...formData, categoria: formData.categoria === 'Outros' ? (formData.categoria_outros || formData.subcategoria || 'Outros') : formData.categoria,
         latitude: lat || formData.latitude,
         longitude: lon || formData.longitude,
         endereco: enderecoCompleto || formData.endereco, // Usar endereço montado ou o campo legado
