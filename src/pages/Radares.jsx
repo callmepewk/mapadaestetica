@@ -89,6 +89,10 @@ export default function Radares() {
   const handleGenerateReport = async (skipQuota = false) => {
     // não abrir modal de preview
     setReportLoading(true);
+    if (!skipQuota) {
+      const ok = await tryConsumeRabiQuota();
+      if (!ok) { setReportLoading(false); return; }
+    }
     try {
       const [anunciosAll, searchEvents] = await Promise.all([
         base44.entities.Anuncio.filter({ status: 'ativo' }, '-created_date', 500),
@@ -164,6 +168,10 @@ export default function Radares() {
   const handleGenerateAiReport = async (skipQuota = false) => {
     // não abrir modal de preview
     setReportLoading(true);
+    if (!skipQuota) {
+      const ok = await tryConsumeRabiQuota();
+      if (!ok) { setReportLoading(false); return; }
+    }
     try {
       const { data } = await base44.functions.invoke('generateRabiReport');
       const sections = (data?.sections || []).map((s) => ({ title: s.title, items: s.items }));

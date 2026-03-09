@@ -208,17 +208,41 @@ export default function CardAnuncio({ anuncio, distancia, isPreview = false }) {
         </div>
 
          <div className="flex items-center justify-between text-xs sm:text-sm text-gray-500 pt-2 sm:pt-3 border-t">
-          <div className="flex items-center gap-3 sm:gap-4">
-            <span className="flex items-center gap-1">
-              <Eye className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-              <span className="tabular-nums">{anuncio.visualizacoes || 0}</span>
-            </span>
-            <span className="flex items-center gap-1">
-              <Heart className={`w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0 ${anuncio.curtidas > 0 ? 'fill-red-500 text-red-500' : ''}`} />
-              <span className="tabular-nums">{anuncio.curtidas || 0}</span>
-            </span>
-          </div>
-        </div>
+           <div className="flex items-center gap-3 sm:gap-4">
+             <span className="flex items-center gap-1">
+               <Eye className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+               <span className="tabular-nums">{anuncio.visualizacoes || 0}</span>
+             </span>
+             <span className="flex items-center gap-1">
+               <Heart className={`w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0 ${anuncio.curtidas > 0 ? 'fill-red-500 text-red-500' : ''}`} />
+               <span className="tabular-nums">{anuncio.curtidas || 0}</span>
+             </span>
+           </div>
+           {(() => {
+             const plano = (anuncio.plano || '').toLowerCase();
+             const isAllowed = plano.includes('prime') || plano.includes('premium');
+             if (!isAllowed) return null;
+             const ig = (anuncio.instagram || '').trim();
+             const igUrl = ig ? (ig.includes('instagram.com') ? ig : `https://instagram.com/${ig.replace(/^@/, '')}`) : null;
+             const wa = (anuncio.whatsapp || '').replace(/\D/g, '');
+             const msg = encodeURIComponent(`Olá! Vim pelo Mapa da Estética e me interessei no seu anúncio: "${anuncio.titulo}". Podemos conversar?`);
+             const waUrl = wa ? `https://wa.me/${wa}?text=${msg}` : null;
+             return (
+               <div className="flex items-center gap-2 sm:gap-3">
+                 {igUrl && (
+                   <a href={igUrl} target="_blank" rel="noopener noreferrer" onClick={(e)=>e.stopPropagation()} className="px-2 py-1 rounded border text-xs hover:bg-gray-100">
+                     Instagram
+                   </a>
+                 )}
+                 {waUrl && (
+                   <a href={waUrl} target="_blank" rel="noopener noreferrer" onClick={(e)=>e.stopPropagation()} className="px-2 py-1 rounded border text-xs hover:bg-green-50">
+                     WhatsApp
+                   </a>
+                 )}
+               </div>
+             );
+           })()}
+         </div>
       </CardContent>
     </Card>
   );
