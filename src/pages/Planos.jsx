@@ -58,7 +58,7 @@ export default function Planos() {
   const professionalPlans = [
     {
       id: "free",
-      name: "Básico (Free)",
+      name: "Free",
       price: "R$ 0",
       period: "/mês",
       highlighted: false,
