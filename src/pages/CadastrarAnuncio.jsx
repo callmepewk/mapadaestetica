@@ -1238,22 +1238,12 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
                 </div>
 
                 <div>
-                  <Label className="text-sm">Categoria * <span className="ml-1">{(formData.categoria||'').trim()? '✅':'❌'}</span></Label>
-                  <Select value={formData.categoria} onValueChange={(value) => handleInputChange("categoria", value)}>
-                    <SelectTrigger className="mt-1 h-10 sm:h-11 text-sm">
-                      <SelectValue placeholder="Selecione a categoria" />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-[250px] sm:max-h-[350px]">
-                      {categoriasAgrupadas.map((group) => (
-                        <SelectGroup key={group.label}>
-                          <SelectLabel className="text-xs text-gray-500">{group.label}</SelectLabel>
-                          {group.items.map((cat) => (
-                            <SelectItem key={cat} value={cat} className="text-sm">{cat}</SelectItem>
-                          ))}
-                        </SelectGroup>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <CategoriaSelector
+                    value={formData.categoria}
+                    onChange={(v)=>handleInputChange('categoria', v)}
+                    categoriaOutros={formData.categoria_outros}
+                    onChangeOutros={(t)=>handleInputChange('categoria_outros', t)}
+                  />
                 </div>
               </div>
 
