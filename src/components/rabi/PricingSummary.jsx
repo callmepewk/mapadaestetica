@@ -18,9 +18,7 @@ export default function PricingSummary({ procedures = [] }) {
                   <span className="text-gray-500"> — faixa R$ {Math.round(p.price_low_br)}–{Math.round(p.price_high_br)}</span>
                 )}
               </div>
-              {p.sources && p.sources.length > 0 && (
-                <div className="mt-1 text-[11px] text-gray-500">Fontes: {p.sources.slice(0,2).join(', ')}{p.sources.length>2?'…':''}</div>
-              )}
+
             </div>
           ))}
         </div>

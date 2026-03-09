@@ -69,8 +69,8 @@ export default function Radares() {
 
   const tryConsumeRabiQuota = async () => {
     const tier = planTier;
-    if (!['prime','premium'].includes(tier)) {
-      alert('RABI disponível apenas para planos Prime e Premium.');
+    if (!['pro','prime','premium'].includes(tier)) {
+      alert('RABI disponível apenas para planos Pro e Premium.');
       return false;
     }
     const now = new Date();

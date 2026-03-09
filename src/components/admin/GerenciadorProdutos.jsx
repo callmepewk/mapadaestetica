@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -27,6 +28,8 @@ export default function GerenciadorProdutos() {
   const [mostrarModalEdicao, setMostrarModalEdicao] = useState(false);
   const [produtoPreview, setProdutoPreview] = useState(null);
   const [mostrarModalPreview, setMostrarModalPreview] = useState(false);
+
+  const [selecionados, setSelecionados] = useState([]);
 
   const { data: produtos = [], isLoading } = useQuery({
     queryKey: ['admin-produtos'],
@@ -68,6 +71,18 @@ export default function GerenciadorProdutos() {
     }
   };
 
+  const toggleSelect = (id) => {
+    setSelecionados(prev => prev.includes(id) ? prev.filter(x=>x!==id) : [...prev, id]);
+  };
+
+  const handleBulkDelete = async () => {
+    if (!selecionados.length) return;
+    if (!window.confirm(`Excluir ${selecionados.length} item(ns)? Esta ação não pode ser desfeita.`)) return;
+    await Promise.all(selecionados.map(id => base44.entities.Produto.delete(id)));
+    setSelecionados([]);
+    queryClient.invalidateQueries(['admin-produtos']);
+  };
+
   const produtosFiltrados = useMemo(() => {
     return produtos
       .filter(p => p.status === aba)
@@ -106,9 +121,16 @@ export default function GerenciadorProdutos() {
             <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin" /></div>
           ) : (
             <TabsContent value={aba}>
+              {selecionados.length > 0 && (
+                <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded flex items-center justify-between">
+                  <span className="text-sm text-red-700 font-semibold">{selecionados.length} selecionado(s)</span>
+                  <Button size="sm" variant="destructive" onClick={handleBulkDelete}>Excluir Selecionados</Button>
+                </div>
+              )}
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-8"><Checkbox checked={selecionados.length>0 && selecionados.length===produtosFiltrados.length} onCheckedChange={(v)=> setSelecionados(v? produtosFiltrados.map(p=>p.id): [])} /></TableHead>
                     <TableHead>Produto/Serviço</TableHead>
                     <TableHead>Autor</TableHead>
                     <TableHead>Preço</TableHead>
@@ -125,10 +147,11 @@ export default function GerenciadorProdutos() {
                     </TableRow>
                   ) : (
                     produtosFiltrados.map(p => {
-                      const StatusIcon = STATUS_CONFIG[p.status]?.icon || Clock;
-                      return (
-                        <TableRow key={p.id}>
-                          <TableCell className="font-medium">{p.nome}</TableCell>
+                       const StatusIcon = STATUS_CONFIG[p.status]?.icon || Clock;
+                       return (
+                         <TableRow key={p.id}>
+                           <TableCell><Checkbox checked={selecionados.includes(p.id)} onCheckedChange={()=>toggleSelect(p.id)} /></TableCell>
+                           <TableCell className="font-medium">{p.nome}</TableCell>
                           <TableCell className="text-sm text-gray-600">{p.created_by}</TableCell>
                           <TableCell>R$ {p.preco?.toFixed(2) || 'N/A'}</TableCell>
                           <TableCell>

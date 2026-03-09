@@ -39,6 +39,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CardAnuncio from "../components/anuncios/CardAnuncio";
 import { Checkbox } from "@/components/ui/checkbox";
 import SeletorProcedimentos from "../components/anuncios/SeletorProcedimentos";
+import { categoriasAgrupadas } from "../components/anuncios/CategoriasData";
 import AgendamentoRapidoModal from "../components/agendamentos/AgendamentoRapidoModal";
 
 // Fix Leaflet default marker icons
@@ -50,64 +51,7 @@ L.Icon.Default.mergeOptions({
 });
 
 // Constantes
-const categorias = [
-  "Estética Facial - Tratamentos Básicos",
-  "Estética Facial - Rejuvenescimento",
-  "Estética Facial - Tratamento de Condições",
-  "Estética Facial - Harmonização",
-  "Estética Corporal - Redução de Medidas",
-  "Estética Corporal - Celulite e Estrias",
-  "Estética Corporal - Flacidez e Contorno",
-  "Depilação",
-  "Drenagem Linfática",
-  "Estética Capilar e Tricologia",
-  "Transplante Capilar",
-  "Manicure e Pedicure",
-  "Podologia",
-  "Micropigmentação e Design de Sobrancelhas",
-  "Micropigmentação - Olhos e Lábios",
-  "Extensão e Alongamento de Cílios",
-  "Medicina Estética",
-  "Dermatologia",
-  "Cirurgia Plástica",
-  "Fisioterapia Dermato Funcional",
-  "Nutrição Estética",
-  "Psicologia e Coaching de Imagem",
-  "Pilates e Fitness",
-  "Acupuntura Estética",
-  "Terapias Integrativas e Complementares",
-  "Biomedicina Estética",
-  "Enfermagem Estética",
-  "Farmácia Estética",
-  "Odontologia Estética",
-  "Massoterapia",
-  "Barbearia",
-  "Tatuagem e Piercing",
-  "Spa e Bem-Estar",
-  "Longevidade e Medicina Integrativa",
-  "Clínicas e Consultórios",
-  "Salões de Beleza",
-  "Equipamentos - Venda",
-  "Equipamentos - Locação",
-  "Equipamentos - Seminovos",
-  "Cosméticos e Produtos",
-  "Injetáveis e Preenchedores",
-  "Nutracêuticos e Suplementos",
-  "Móveis e Decoração para Clínicas",
-  "Softwares de Gestão",
-  "Uniformes e Vestuário Profissional",
-  "Roupas de Compressão Pós-Cirúrgica",
-  "Alimentação Saudável e Fitness",
-  "Personal Trainer",
-  "Educação - Cursos e Workshops",
-  "Eventos - Congressos e Feiras",
-  "Consultoria e Assessoria",
-  "Franquias",
-  "Turismo de Saúde",
-  "Seguros e Financiamentos",
-  "Marketing e Design",
-  "Outros"
-];
+const categorias = categoriasAgrupadas.flatMap((g) => g.items);
 
 const estados = [
   "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA",
@@ -617,207 +561,126 @@ export default function Mapa() {
                 </div>
 
                 <div className="grid md:grid-cols-4 gap-4">
-                  {/* Busca Geral */}
+                  {/* Linha 1 */}
                   <div>
                     <label className="text-sm font-medium mb-2 block">Buscar</label>
                     <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                      <Input
-                        placeholder="Digite aqui..."
-                        value={busca}
-                        onChange={(e) => setBusca(e.target.value)}
-                        className="pl-9"
-                      />
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <Input value={busca} onChange={(e)=>setBusca(e.target.value)} placeholder="Digite aqui..." className="pl-9 h-10" />
                     </div>
                   </div>
-
-                  {/* Categoria */}
                   <div>
                     <label className="text-sm font-medium mb-2 block">Categoria</label>
                     <Select value={categoria} onValueChange={setCategoria}>
-                      <SelectTrigger>
+                      <SelectTrigger className="h-10">
                         <SelectValue placeholder="Todas" />
                       </SelectTrigger>
                       <SelectContent className="max-h-[300px]">
-                        {categorias.map((cat) => (
-                          <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                        ))}
+                        {categorias.map((cat)=>(<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}
                       </SelectContent>
                     </Select>
                   </div>
-
-                  {/* Tratamento */}
                   <div>
-                    <label className="text-sm font-medium mb-1 block">Tratamento</label>
+                    <label className="text-sm font-medium mb-2 block">Tratamento</label>
                     <Select value={tratamento} onValueChange={setTratamento}>
-                      <SelectTrigger>
+                      <SelectTrigger className="h-10">
                         <SelectValue placeholder="Selecione um tratamento" />
                       </SelectTrigger>
                       <SelectContent className="max-h-64">
-                        {tratamentosLista.map((t) => (
-                          <SelectItem key={t} value={t}>{t}</SelectItem>
-                        ))}
+                        {tratamentosLista.map((t)=>(<SelectItem key={t} value={t}>{t}</SelectItem>))}
                       </SelectContent>
                     </Select>
-                    <p className="text-xs text-gray-500 mt-1">Abordagem contínua com foco em melhora progressiva</p>
                   </div>
-
-                  {/* Procedimento */}
                   <div>
-                    <label className="text-sm font-medium mb-1 block">Procedimento</label>
+                    <label className="text-sm font-medium mb-2 block">Procedimento</label>
                     <Select value={procedimento} onValueChange={setProcedimento}>
-                      <SelectTrigger>
+                      <SelectTrigger className="h-10">
                         <SelectValue placeholder="Selecione um procedimento" />
                       </SelectTrigger>
                       <SelectContent className="max-h-64">
-                        {procedimentosLista.map((p) => (
-                          <SelectItem key={p} value={p}>{p}</SelectItem>
-                        ))}
+                        {procedimentosLista.map((p)=>(<SelectItem key={p} value={p}>{p}</SelectItem>))}
                       </SelectContent>
                     </Select>
-                    <p className="text-xs text-gray-500 mt-1">Intervenção pontual/técnica realizada em sessão</p>
                   </div>
 
-                  {/* Alternar exibição no mapa */}
-                  <div className="flex items-center gap-2 pt-6">
-                    <Checkbox id="toggleAnunciosMapa" checked={mostrarAnunciosNoMapa} onCheckedChange={setMostrarAnunciosNoMapa} />
-                    <label htmlFor="toggleAnunciosMapa" className="text-sm">Exibir anúncios no mapa</label>
-                  </div>
-
-                  {/* Estado (prioritário) */}
+                  {/* Linha 2 */}
                   <div>
-                    <label className="text-sm font-medium mb-1 block">Estado (prioritário)</label>
+                    <label className="text-sm font-medium mb-2 block">Estado (prioritário)</label>
                     <Select value={estado} onValueChange={setEstado}>
-                      <SelectTrigger>
-                       <SelectValue placeholder="Selecione o estado" />
-                      </SelectTrigger>
+                      <SelectTrigger className="h-10"><SelectValue placeholder="Selecione o estado" /></SelectTrigger>
                       <SelectContent>
-                        {estados.map((uf) => (
-                          <SelectItem key={uf} value={uf}>{uf}</SelectItem>
-                        ))}
+                        {estados.map((uf)=>(<SelectItem key={uf} value={uf}>{uf}</SelectItem>))}
                       </SelectContent>
                     </Select>
-                    <p className="text-xs text-gray-500 mt-1">Defina primeiro o estado para refinar sua busca</p>
                   </div>
-
-                  {/* Cidade */}
                   <div>
-                    <label className="text-sm font-medium mb-1 block">Cidade</label>
-                    <Input
-                      placeholder="Digite a cidade"
-                      value={cidade}
-                      onChange={(e) => setCidade(e.target.value)}
-                    />
-                    <p className="text-xs text-gray-500 mt-1">Após o estado, escolha a cidade desejada</p>
+                    <label className="text-sm font-medium mb-2 block">Cidade</label>
+                    <Input value={cidade} onChange={(e)=>setCidade(e.target.value)} placeholder="Digite a cidade" className="h-10" />
                   </div>
-
-                  {/* Preço */}
                   <div>
                     <label className="text-sm font-medium mb-2 block">Preço</label>
                     <Select value={faixaPreco} onValueChange={setFaixaPreco}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Todas" />
-                      </SelectTrigger>
+                      <SelectTrigger className="h-10"><SelectValue placeholder="Todas" /></SelectTrigger>
                       <SelectContent>
-                        {faixasPreco.map((preco) => (
-                          <SelectItem key={preco} value={preco}>{preco}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-gray-500 mt-1">Legenda: $ até R$ 500 • $$ R$ 500–1.000 • $$$ R$ 1.000–2.000 • $$$$ R$ 2.000–5.000 • $$$$$ acima de R$ 5.000</p>
-                  </div>
-
-                  {/* Tipo de Anúncio */}
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Tipo de Anúncio</label>
-                    <Select value={tipoAnuncio} onValueChange={setTipoAnuncio}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Todos" />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-[300px]">
-                        {tiposAnuncio.map((tipo) => (
-                          <SelectItem key={tipo.valor} value={tipo.valor}>{tipo.label}</SelectItem>
-                        ))}
+                        {faixasPreco.map((preco)=>(<SelectItem key={preco} value={preco}>{preco}</SelectItem>))}
                       </SelectContent>
                     </Select>
                   </div>
-
-                  {/* Tipo Estabelecimento */}
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Tipo Estabelecimento</label>
-                    <Select value={tipoEstabelecimento} onValueChange={setTipoEstabelecimento}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Todos os tipos" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {tiposEstabelecimento.map((tipo) => (
-                          <SelectItem key={tipo.valor} value={tipo.valor}>
-                            {tipo.label} ({tipo.estrelas} ⭐)
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-
-
-                  {/* Distância */}
                   <div>
                     <label className="text-sm font-medium mb-2 block">Distância</label>
                     <Select value={distancia} onValueChange={setDistancia}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Qualquer distância" />
-                      </SelectTrigger>
+                      <SelectTrigger className="h-10"><SelectValue placeholder="Qualquer distância" /></SelectTrigger>
                       <SelectContent className="max-h-64 overflow-y-auto z-[2001]">
-                        {faixasDistancia.map((faixa) => (
-                          <SelectItem key={faixa.valor} value={faixa.valor}>{faixa.label}</SelectItem>
-                        ))}
+                        {faixasDistancia.map((faixa)=>(<SelectItem key={faixa.valor} value={faixa.valor}>{faixa.label}</SelectItem>))}
                       </SelectContent>
                     </Select>
-                    <p className="text-xs text-gray-500 mt-1">Use GPS primeiro</p>
                   </div>
 
-
-
-
-
-                  {/* Avaliação mínima */}
+                  {/* Linha 3 */}
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Tipo de Anúncio</label>
+                    <Select value={tipoAnuncio} onValueChange={setTipoAnuncio}>
+                      <SelectTrigger className="h-10"><SelectValue placeholder="Todos" /></SelectTrigger>
+                      <SelectContent className="max-h-[300px]">
+                        {tiposAnuncio.map((tipo)=>(<SelectItem key={tipo.valor} value={tipo.valor}>{tipo.label}</SelectItem>))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Tipo Estabelecimento</label>
+                    <Select value={tipoEstabelecimento} onValueChange={setTipoEstabelecimento}>
+                      <SelectTrigger className="h-10"><SelectValue placeholder="Todos os tipos" /></SelectTrigger>
+                      <SelectContent>
+                        {tiposEstabelecimento.map((tipo)=>(<SelectItem key={tipo.valor} value={tipo.valor}>{tipo.label} ({tipo.estrelas} ⭐)</SelectItem>))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <div>
                     <label className="text-sm font-medium mb-2 block">Avaliação mínima</label>
                     <Select value={avaliacaoMin} onValueChange={setAvaliacaoMin}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Qualquer" />
-                      </SelectTrigger>
+                      <SelectTrigger className="h-10"><SelectValue placeholder="Qualquer" /></SelectTrigger>
                       <SelectContent>
-                        {[1,2,3,4,5].map((s)=>(
-                          <SelectItem key={s} value={String(s)}>{s} ⭐</SelectItem>
-                        ))}
+                        {[1,2,3,4,5].map((s)=>(<SelectItem key={s} value={String(s)}>{s} ⭐</SelectItem>))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Modalidade</label>
+                    <Select value={modalidade} onValueChange={setModalidade}>
+                      <SelectTrigger className="h-10"><SelectValue placeholder="Qualquer" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="online">Online</SelectItem>
+                        <SelectItem value="presencial">Presencial</SelectItem>
+                        <SelectItem value="hibrida">Híbrida</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
-                  {/* Modalidade */}
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Modalidade</label>
-                    <Select value={modalidade} onValueChange={setModalidade}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Qualquer" />
-                      </SelectTrigger>
-                      <SelectContent>
-                                                <SelectItem value="online">Online</SelectItem>
-                                                <SelectItem value="presencial">Presencial</SelectItem>
-                                                <SelectItem value="hibrida">Híbrida</SelectItem>
-                                              </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Atendimento */}
+                  {/* Linha 4 */}
                   <div>
                     <label className="text-sm font-medium mb-2 block">Atendimento</label>
                     <Select value={atendimento} onValueChange={setAtendimento}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Qualquer" />
-                      </SelectTrigger>
+                      <SelectTrigger className="h-10"><SelectValue placeholder="Qualquer" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="domicilio">Domiciliar</SelectItem>
                         <SelectItem value="clinica">Clínica</SelectItem>
@@ -829,39 +692,27 @@ export default function Mapa() {
                       </SelectContent>
                     </Select>
                   </div>
-
-                  {/* Cobrança */}
                   <div>
                     <label className="text-sm font-medium mb-2 block">Cobrança</label>
                     <Select value={atendimentoCobranca} onValueChange={setAtendimentoCobranca}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Qualquer" />
-                      </SelectTrigger>
+                      <SelectTrigger className="h-10"><SelectValue placeholder="Qualquer" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="convenio">Convênio</SelectItem>
                         <SelectItem value="particular">Particular</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-
-                  {/* Verificados */}
-                  <div className="flex items-center space-x-2 pt-6">
-                    <Checkbox
-                      id="verificados"
-                      checked={verificados}
-                      onCheckedChange={setVerificados}
-                      className="data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600 data-[state=checked]:text-white"
-                    />
-                    <label
-                      htmlFor="verificados"
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                    >
-                      <CheckCircle className="w-4 h-4 inline mr-1 text-blue-600" />
-                      Apenas Verificados
-                    </label>
+                  <div />
+                  <div className="flex items-center gap-2">
+                    <Checkbox id="verificados" checked={verificados} onCheckedChange={setVerificados} />
+                    <label htmlFor="verificados" className="text-sm font-medium cursor-pointer"><CheckCircle className="w-4 h-4 inline mr-1 text-blue-600" />Apenas Verificados</label>
                   </div>
+                </div>
 
-
+                {/* Opção: Exibir anúncios no mapa */}
+                <div className="mt-3 flex items-center gap-2">
+                  <Checkbox id="toggleAnunciosMapa" checked={mostrarAnunciosNoMapa} onCheckedChange={setMostrarAnunciosNoMapa} />
+                  <label htmlFor="toggleAnunciosMapa" className="text-sm">Exibir anúncios no mapa</label>
                 </div>
               </CardContent>
             </Card>
