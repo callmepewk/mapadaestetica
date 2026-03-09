@@ -666,8 +666,8 @@ Por favor, revisar e aprovar/reprovar esta solicitação.
 
   // Função para solicitar ajuda com descrição
   const handleSolicitarAjudaDescricao = async () => {
-    if (!formData.titulo || !formData.categoria) {
-      setErro("Preencha o título e a categoria primeiro para receber sugestões!");
+    if (!((user?.plano_ativo||user?.plano||'').toLowerCase().includes('premium')) || !formData.titulo || !formData.categoria) {
+      setErro("Recurso Premium: faça upgrade e preencha título e categoria para receber sugestões!");
       return;
     }
 
@@ -728,8 +728,8 @@ ${formData.faixa_preco ? `Faixa de preço: ${formData.faixa_preco}` : ''}`;
 
   // Função para solicitar ajuda com título
   const handleSolicitarAjudaTitulo = async () => {
-    if (!formData.categoria) {
-      setErro("Preencha a categoria primeiro para receber sugestões de título!");
+    if (!((user?.plano_ativo||user?.plano||'').toLowerCase().includes('premium')) || !formData.categoria) {
+      setErro("Recurso Premium: faça upgrade e preencha categoria para receber sugestões!");
       return;
     }
 
@@ -804,8 +804,8 @@ Gere APENAS o título, sem aspas ou explicações adicionais.`;
 
   // Função para gerar anúncio completo com IA
   const handleGerarAnuncioIA = async () => {
-    if (!dadosGeradorIA.tipo_negocio || !dadosGeradorIA.especialidade_principal) {
-      setErro("Preencha pelo menos o tipo de negócio e a especialidade principal!");
+    if (!((user?.plano_ativo||user?.plano||'').toLowerCase().includes('premium')) || !dadosGeradorIA.tipo_negocio || !dadosGeradorIA.especialidade_principal) {
+      setErro("Recurso Premium: faça upgrade e preencha os campos obrigatórios!");
       return;
     }
 
@@ -1049,7 +1049,7 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
     try {
       // Limite por plano (Pro=3, Prime=5)
       const plano = user?.plano_ativo || '';
-      const limite = plano === 'pro' ? 3 : (plano === 'prime' ? 5 : Infinity);
+      const limite = (plano || '').toLowerCase().includes('free') ? 1 : Infinity;
       const ativosOuPendentes = (meusAnuncios || []).filter(a => ['ativo','pendente','em_destaque','programado'].includes(a.status || '')); 
       if (Number.isFinite(limite) && ativosOuPendentes.length >= limite) {
         setErro(`Limite de anúncios atingido para o seu plano (${plano.toUpperCase()}): ${limite}. Exclua ou finalize algum anúncio para continuar.`);
@@ -1080,13 +1080,13 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
       }
 
       const anuncioData = {
-        ...formData,
+        {...formData, categoria: formData.categoria === 'Outros' ? (formData.subcategoria || 'Outros') : formData.categoria },
         latitude: lat || formData.latitude,
         longitude: lon || formData.longitude,
         endereco: enderecoCompleto || formData.endereco, // Usar endereço montado ou o campo legado
         status: "ativo",
         plano: user?.plano_ativo || "cobre",
-        dias_exposicao: 30,
+        dias_exposicao: (plano || '').toLowerCase().includes('premium') ? 90 : (plano || '').toLowerCase().includes('prime') ? 60 : (plano || '').toLowerCase().includes('basico') ? 30 : 7,
         visualizacoes: 0,
         curtidas: 0,
         profissional_verificado: !!user?.profissional_verificado,

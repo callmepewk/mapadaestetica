@@ -13,32 +13,22 @@ function diasPorPlano(plano){
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    // Scheduled/automation context: use service role
+
+    // buscar até 5000 anúncios ativos
+    const anuncios = await base44.asServiceRole.entities.Anuncio.filter({ status: 'ativo' }, '-created_date', 5000);
     const now = Date.now();
-    const PAGE = 500;
-    let skip = 0;
     let totalExpired = 0;
 
-    // Fetch batches of active ads
-    while (true) {
-      const batch = await base44.asServiceRole.entities.Anuncio.filter({ status: 'ativo' }, '-created_date', PAGE, skip);
-      const anuncios = Array.isArray(batch) ? batch : [];
-      if (!anuncios.length) break;
-
-      for (const a of anuncios) {
-        const dias = a.dias_exposicao || diasPorPlano(a.plano);
-        const created = a.created_date ? new Date(a.created_date).getTime() : now;
-        const expAt = a.data_expiracao ? new Date(a.data_expiracao).getTime() : (created + dias*DAY_MS);
-        if (now >= expAt) {
-          await base44.asServiceRole.entities.Anuncio.update(a.id, { status: 'expirado' });
-          totalExpired += 1;
-        } else if (!a.data_expiracao) {
-          // backfill expiration date for consistency
-          await base44.asServiceRole.entities.Anuncio.update(a.id, { data_expiracao: new Date(expAt).toISOString(), dias_exposicao: dias });
-        }
+    for (const a of (anuncios || [])) {
+      const dias = a.dias_exposicao || diasPorPlano(a.plano);
+      const created = a.created_date ? new Date(a.created_date).getTime() : now;
+      const expAt = a.data_expiracao ? new Date(a.data_expiracao).getTime() : (created + dias*DAY_MS);
+      if (now >= expAt) {
+        await base44.asServiceRole.entities.Anuncio.update(a.id, { status: 'expirado' });
+        totalExpired += 1;
+      } else if (!a.data_expiracao) {
+        await base44.asServiceRole.entities.Anuncio.update(a.id, { data_expiracao: new Date(expAt).toISOString(), dias_exposicao: dias });
       }
-      if (anuncios.length < PAGE) break;
-      skip += PAGE;
     }
 
     return Response.json({ status: 'ok', expired: totalExpired });
