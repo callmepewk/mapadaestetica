@@ -268,26 +268,28 @@ export default function Radares() {
             Gerar Relatório (IA)
           </Button>
           {(reportSections?.length || 0) > 0 && (
-            <Button className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={async ()=>{
-              try {
-                const u = await base44.auth.me().catch(()=>null);
-                const profession = (u?.profissao || u?.profession || u?.area_profissional || '').trim();
-                const res = await base44.functions.invoke('exportRabiPdf', { summary: reportSummary, sections: reportSections, profession });
-                const uri = res?.data?.pdf_data_uri;
-                if (uri) { const a = document.createElement('a'); a.href = uri; a.download = 'RABI-relatorio.pdf'; a.click(); }
-              } catch {}
-            }}>
-              <Download className="w-4 h-4 mr-2"/> Exportar PDF
-            </Button>
-            <Button variant="outline" className="border-emerald-600 text-emerald-700 hover:bg-emerald-50" onClick={async ()=>{
-              try {
-                const text = `Resumo\n${reportSummary}\n\nSeções\n${(reportSections||[]).map(s=>`- ${s.title}\n  ${(s.items||[]).join('\n  ')}`).join('\n')}`;
-                await navigator.clipboard.writeText(text);
-                window.open('https://gamma.app', '_blank');
-              } catch {}
-            }}>
-              <ExternalLink className="w-4 h-4 mr-2"/> Exportar para Gamma
-            </Button>
+            <>
+              <Button className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={async ()=>{
+                try {
+                  const u = await base44.auth.me().catch(()=>null);
+                  const profession = (u?.profissao || u?.profession || u?.area_profissional || '').trim();
+                  const res = await base44.functions.invoke('exportRabiPdf', { summary: reportSummary, sections: reportSections, profession });
+                  const uri = res?.data?.pdf_data_uri;
+                  if (uri) { const a = document.createElement('a'); a.href = uri; a.download = 'RABI-relatorio.pdf'; a.click(); }
+                } catch {}
+              }}>
+                <Download className="w-4 h-4 mr-2"/> Exportar PDF
+              </Button>
+              <Button variant="outline" className="border-emerald-600 text-emerald-700 hover:bg-emerald-50" onClick={async ()=>{
+                try {
+                  const text = `Resumo\n${reportSummary}\n\nSeções\n${(reportSections||[]).map(s=>`- ${s.title}\n  ${(s.items||[]).join('\n  ')}`).join('\n')}`;
+                  await navigator.clipboard.writeText(text);
+                  window.open('https://gamma.app', '_blank');
+                } catch {}
+              }}>
+                <ExternalLink className="w-4 h-4 mr-2"/> Exportar para Gamma
+              </Button>
+            </>
           )}
         </div>
         <div id="rabi-trends"></div>
