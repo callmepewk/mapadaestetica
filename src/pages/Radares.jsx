@@ -301,7 +301,7 @@ export default function Radares() {
           <RabiSection title="RABI — Motor de Inteligência de Mercado" subtitle="Google Trends (demanda), preços consolidados e IEB (Brasil)">
             <div className="grid md:grid-cols-3 gap-4 mb-4">
               <IebCard value={miData?.ieb?.value} label={miData?.ieb?.label} updatedAt={miData?.updated_at} />
-              <TrendsTopList title="Top Procedimentos (tendência)" items={miData?.trends?.topProcedures || []} />
+              <TrendsTopList title="Top Procedimentos (tendência)" items={(miData?.trends?.topProcedures && miData.trends.topProcedures.length>0) ? miData.trends.topProcedures : (miData?.googleTrends?.terms || [])} />
               <TrendsTopList title="Áreas Anatômicas em Alta" items={miData?.trends?.topAreas || []} />
             </div>
             <div className="mt-4">
