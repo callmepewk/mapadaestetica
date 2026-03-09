@@ -5,7 +5,7 @@ import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Star, Crown, Medal, Trophy, Gem } from "lucide-react";
+import { Check, Star, Crown, Medal, Trophy, Gem, MapPin, TrendingUp, Rocket, Sparkles } from "lucide-react";
 
 export default function Planos() {
   const [user, setUser] = useState(null);
@@ -231,6 +231,63 @@ export default function Planos() {
           )}
         </div>
 
+        {/* Hero estratégico para profissionais */}
+        <div className="mb-12 rounded-2xl bg-gradient-to-br from-sky-500 to-violet-600 text-white p-6 md:p-10 shadow-xl">
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div>
+              <Badge className="bg-white/15 text-white border-white/20 mb-3">Para Profissionais</Badge>
+              <h2 className="text-2xl md:text-4xl font-extrabold leading-tight">
+                Faça o Mapa trabalhar por você: atraia pacientes certos, todos os dias
+              </h2>
+              <p className="mt-3 text-white/90">
+                Posicionamento local inteligente no mapa, vitrine sempre ativa e inteligência de mercado (RABI) para você
+                decidir o que promover em cada bairro/cidade. Sem promessas vazias — só estratégia, dados e execução.
+              </p>
+              <ul className="mt-5 space-y-2 text-sm md:text-base">
+                <li className="flex items-start gap-2"><Check className="w-4 h-4 mt-0.5 text-emerald-300"/> Ranqueamento local que prioriza relevância e experiência do paciente</li>
+                <li className="flex items-start gap-2"><Check className="w-4 h-4 mt-0.5 text-emerald-300"/> Leads qualificados com contato 1‑clique (WhatsApp) e agendamento</li>
+                <li className="flex items-start gap-2"><Check className="w-4 h-4 mt-0.5 text-emerald-300"/> RABI: tendências reais de busca para ajustar suas ofertas toda semana</li>
+                <li className="flex items-start gap-2"><Check className="w-4 h-4 mt-0.5 text-emerald-300"/> Impulsionamentos e avaliações para acelerar sua autoridade local</li>
+              </ul>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <Button
+                  variant="secondary"
+                  onClick={() => navigate(createPageUrl("Mapa"))}
+                  className="text-sky-900 font-bold bg-white hover:bg-white/90"
+                >
+                  Ver o Mapa
+                </Button>
+                <Button
+                  onClick={() => document.getElementById('planos-profissionais')?.scrollIntoView({behavior:'smooth'})}
+                  className="bg-black/20 hover:bg-black/30 border border-white/30"
+                >
+                  Começar agora
+                </Button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-xl bg-white/10 p-4 backdrop-blur border border-white/15">
+                <div className="flex items-center gap-2 text-white font-semibold"><MapPin className="w-4 h-4"/> Presença no mapa</div>
+                <p className="text-xs text-white/80 mt-1">Seja encontrado por quem já está buscando perto de você.</p>
+              </div>
+              <div className="rounded-xl bg-white/10 p-4 backdrop-blur border border-white/15">
+                <div className="flex items-center gap-2 text-white font-semibold"><TrendingUp className="w-4 h-4"/> Tendências reais</div>
+                <p className="text-xs text-white/80 mt-1">RABI mostra o que as pessoas procuram agora na sua região.</p>
+              </div>
+              <div className="rounded-xl bg-white/10 p-4 backdrop-blur border border-white/15">
+                <div className="flex items-center gap-2 text-white font-semibold"><Sparkles className="w-4 h-4"/> Autoridade</div>
+                <p className="text-xs text-white/80 mt-1">Avaliações + conteúdo certo = confiança e conversão.</p>
+              </div>
+              <div className="rounded-xl bg-white/10 p-4 backdrop-blur border border-white/15">
+                <div className="flex items-center gap-2 text-white font-semibold"><Rocket className="w-4 h-4"/> Crescimento</div>
+                <p className="text-xs text-white/80 mt-1">Impulsionamentos mensais para acelerar resultados.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="planos-profissionais" />
         <Section
           title="Planos para Profissionais"
           subtitle="Foque no que importa: seus resultados e seus pacientes."
