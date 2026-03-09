@@ -11,7 +11,7 @@ Deno.serve(async (req) => {
     const now = new Date();
     const daysAgo = (n) => new Date(now.getTime() - n * 24 * 60 * 60 * 1000);
 
-    // 1) Coleta interna
+    // 1) Coleta interna (demanda e oferta)
     const [searchEvents, anuncios] = await Promise.all([
       base44.entities.SearchEvent.list('-created_date', 5000), // amostra grande
       base44.entities.Anuncio.filter({ status: 'ativo' }, '-created_date', 1000),
@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
       .map((t) => ({ term: t.term, growthPct: Math.round(t.growthPct * 10) / 10, v7: t.v7 }));
 
     // 2) Preços (web + internos) via Core.InvokeLLM
-    const prompt = `Você é um analista de dados do mercado de estética. Extraia e consolide preços médios no BRASIL a partir das fontes abaixo, aplicando o modelo:
+    const pricingPrompt = `Você é um analista de dados do mercado de estética. Extraia e consolide preços médios no BRASIL a partir das fontes abaixo, aplicando o modelo:
 Preço_estimado = (media_clinicas * 0.35) + (media_tabelas_profissionais * 0.25) + (media_marketplaces * 0.25) + (media_profissionais_do_mapa * 0.15)
 
 REGRAS:
@@ -107,7 +107,7 @@ Liste ao menos: botox, preenchimento labial, bioestimulador, depilação a laser
 Caso uma fonte não esteja acessível, use as demais.
 `;
 
-    const responseSchema = {
+    const pricingSchema = {
       type: 'object',
       properties: {
         procedures: {
@@ -134,22 +134,56 @@ Caso uma fonte não esteja acessível, use as demais.
     let pricing = { procedures: [] };
     try {
       pricing = await base44.integrations.Core.InvokeLLM({
-        prompt,
+        prompt: pricingPrompt,
         add_context_from_internet: true,
         model: 'gemini_3_flash',
-        response_json_schema: responseSchema,
+        response_json_schema: pricingSchema,
       });
     } catch (err) {
-      // Fallback básico se web falhar
       pricing = { procedures: [] };
     }
 
-    // 3) Índice Estético Brasileiro (IEB) — escala 0–140
+    // 3) Google Trends (demanda) — via web context
+    const trendsPrompt = `Você é um analista usando Google Trends. Capture os principais termos de estética no BRASIL (últimos 30 dias), com score relativo (0–100) e menções a áreas anatômicas quando aplicável. Inclua botox, preenchimento labial, bioestimulador, depilação a laser, peeling químico, laser para melasma e demais termos relevantes. Se não conseguir dados diretos, infira com base em relatórios confiáveis e deixe uma nota.`;
+
+    const trendsSchema = {
+      type: 'object',
+      properties: {
+        terms: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              term: { type: 'string' },
+              rel_score: { type: 'number' },
+              note: { type: 'string' }
+            },
+            required: ['term']
+          }
+        },
+        note: { type: 'string' }
+      },
+      required: ['terms']
+    };
+
+    let googleTrends = { terms: [], note: '' };
+    try {
+      googleTrends = await base44.integrations.Core.InvokeLLM({
+        prompt: trendsPrompt,
+        add_context_from_internet: true,
+        model: 'gemini_3_flash',
+        response_json_schema: trendsSchema,
+      });
+    } catch (_e) {
+      googleTrends = { terms: [], note: 'Sem dados diretos do Google Trends nesta execução.' };
+    }
+
+    // 4) Índice Estético Brasileiro (IEB) — escala 0–140
     const avgTrendScore = trendList.slice(0, 50).reduce((s, t) => s + t.trendScore, 0) / Math.max(trendList.slice(0, 50).length, 1);
     const emergentCount = emergent.length;
 
     // Normalizações simples
-    const norm = (v, min, max) => Math.max(0, Math.min(1, (v - min) / Math.max(max - min, 1))));
+    const norm = (v, min, max) => Math.max(0, Math.min(1, (v - min) / Math.max(max - min, 1)));
     const nTrend = norm(avgTrendScore, 0, 2); // TrendScore médio típico 0–2
     const nVol = norm(totalSearch30, 0, 5000); // escala amostral
     // crescimento mensal aproximado (variação entre mês corrente e anterior)
@@ -159,8 +193,7 @@ Caso uma fonte não esteja acessível, use as demais.
     const nEmergent = norm(emergentCount, 0, 20);
 
     const IEB = Math.round((nTrend * 40 + nVol * 30 + nGrowth * 20 + nEmergent * 10) * 100) / 100; // 0–100
-    // Reescala para 0–140 aproximando a tabela do usuário (0–50 fraco; 50–80 estável; 80–120 aquecido; 120+ expansão)
-    const IEB_scaled = Math.round(IEB * 1.4);
+    const IEB_scaled = Math.round(IEB * 1.4); // reescala 0–140
     let IEB_label = 'mercado fraco';
     if (IEB_scaled >= 120) IEB_label = 'mercado em expansão';
     else if (IEB_scaled >= 80) IEB_label = 'mercado aquecido';
@@ -178,6 +211,7 @@ Caso uma fonte não esteja acessível, use as demais.
         topAreas,
         trendList: trendList.slice(0, 200),
       },
+      googleTrends,
       pricing,
       categoryShare,
       seasonality,
