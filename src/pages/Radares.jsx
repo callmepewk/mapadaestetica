@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import RadarSection from "../components/analytics/RadarSection";
+
 
 import RabiHero from "../components/rabi/RabiHero";
 import RabiMicrocopyStrip from "../components/rabi/RabiMicrocopyStrip";
@@ -207,7 +207,7 @@ export default function Radares() {
                 try {
                   const allowed = await tryConsumeRabiQuota();
                   if (!allowed) { return; }
-                  await Promise.all([handleGenerateReport(true), handleGenerateAiReport(true)]);
+                  await handleGenerateAiReport(true);
                 } finally {
                   setLoadingRadars(false);
                 }
@@ -239,9 +239,7 @@ export default function Radares() {
 
 
         <div className="mt-4 flex flex-wrap gap-3">
-          <Button className="bg-[#2C2C2C] text-[#F7D426] border-2 border-[#2C2C2C]" onClick={handleGenerateReport}>
-            Gerar Relatório (MVP)
-          </Button>
+
           <Button className="bg-pink-600 hover:bg-pink-700 text-white" onClick={handleGenerateAiReport}>
             Gerar Relatório (IA)
           </Button>
@@ -270,7 +268,7 @@ export default function Radares() {
               Picos e vales esperados. Útil para planejamento de oferta e comunicação.
             </RabiExpandableCard>
           </div>
-          <RadarSection />
+
 
 
 
@@ -285,14 +283,14 @@ export default function Radares() {
           <VisualInsightsGrid
             insights={[
               { title: 'Visão Geral do Relatório', subtitle: 'Parâmetros de análise e escopo', img: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/5f1d2b16a_visogeral.jpg', source: 'Google Trends + RABI' },
-              { title: 'Ranking de Interesse — Top 10 termos', subtitle: 'Índice relativo (0–100) — Região Sudeste', img: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/abb85ed05_rankingdeinteresses.jpg', source: 'Google Trends' },
+              { title: 'Ranking de Interesse — Top 10 termos', subtitle: 'Índice relativo (0–100) — Região Sudeste', img: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/abb85ed05_rankingdeinteresses.jpg', source: 'RABI' },
               { title: 'Distribuição por Tratamentos', subtitle: 'Participação relativa por macro categoria', img: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/0cf487bd0_graficodetratamentos.jpg', source: 'RABI' },
               { title: 'Metodologia de Coleta', subtitle: 'Localização, período e filtro saúde', img: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/d52bbbac0_metodologiadecoleta.jpg', source: 'RABI' },
               { title: 'Procedimentos Corporais e Especializados', subtitle: 'Oportunidades em nichos com diferenciação', img: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/f7f70819d_procedimentoscorporais.jpg', source: 'RABI' },
               { title: 'Procedimentos Faciais em Destaque', subtitle: 'Rejuvenescimento, melasma, cicatriz e manchas', img: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/ed2d09de8_procedimentosemdestaquefacial.jpg', source: 'RABI' },
               { title: 'Termos por Indicação Clínica', subtitle: 'Condição/objetivo do paciente', img: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/40333422d_indicaoclinica.jpg', source: 'RABI' },
-              { title: 'Oportunidades Imediatas', subtitle: 'Maior potencial no curto prazo', img: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/bab9655dc_relevanciaimediata.jpg', source: 'RABI' },
-              { title: 'Termos de Alta Relevância', subtitle: 'Tecnologias populares e acessíveis', img: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/61fcaa2d0_termosdealtarelevancia.jpg', source: 'Google Trends' },
+              { title: 'Termos de Relevância Intermediária', subtitle: 'Conjunto de termos com relevância intermediária', img: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/bab9655dc_relevanciaimediata.jpg', source: 'RABI' },
+              { title: 'Termos de Alta Relevância', subtitle: 'Tecnologias populares e acessíveis', img: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/61fcaa2d0_termosdealtarelevancia.jpg', source: 'RABI' },
               { title: 'Tratamentos (sem percentual)', subtitle: 'Visão comparativa sem peso relativo', img: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/21652ad59_tratamentosempercentual.jpg', source: 'RABI' },
             ]}
           />
