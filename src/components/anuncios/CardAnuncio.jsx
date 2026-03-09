@@ -129,6 +129,9 @@ export default function CardAnuncio({ anuncio, distancia, isPreview = false }) {
             {anuncio.profissao && (
               <p className="text-[11px] sm:text-xs text-gray-500">Profissão: {anuncio.profissao}</p>
             )}
+            {anuncio.profissional_especializado && (
+              <p className="text-[11px] sm:text-xs text-purple-700 font-medium">Especializado</p>
+            )}
             {(anuncio.subcategoria || anuncio.categoria_clinica) && (
               <p className="text-[11px] sm:text-xs text-gray-500">Especialidade: {anuncio.subcategoria || anuncio.categoria_clinica}</p>
             )}
