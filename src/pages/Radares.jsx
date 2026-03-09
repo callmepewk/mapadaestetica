@@ -189,6 +189,7 @@ export default function Radares() {
       setReportSections([]);
       setReportSummary('Não foi possível gerar o relatório com IA agora.');
     } finally {
+      try { clearTimeout(__rabiTimeout); } catch {}
       setReportLoading(false);
     }
   };
