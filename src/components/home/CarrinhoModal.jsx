@@ -50,15 +50,27 @@ export default function CarrinhoModal({ open, onClose, carrinho, onRemoverItem, 
           <div className="text-center py-12">
             <ShoppingCart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-600 mb-4">Seu carrinho está vazio</p>
-            <Button
-              onClick={() => {
-                onClose();
-                navigate(createPageUrl("Produtos"));
-              }}
-              className="bg-gradient-to-r from-pink-600 to-rose-600"
-            >
-              Ir para Produtos
-            </Button>
+            <div className="flex gap-3 justify-center">
+              <Button
+                onClick={() => {
+                  onClose();
+                  navigate(createPageUrl("Produtos"));
+                }}
+                className="bg-gradient-to-r from-pink-600 to-rose-600"
+              >
+                Ir para Produtos
+              </Button>
+              <Button
+                onClick={() => {
+                  onClose();
+                  navigate(createPageUrl("LojaPontos"));
+                }}
+                variant="outline"
+                className="border-2 border-[#F7D426] text-[#2C2C2C]"
+              >
+                Ir para Loja de Pontos
+              </Button>
+            </div>
           </div>
         ) : (
           <>
