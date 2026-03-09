@@ -258,7 +258,7 @@ export default function Radares() {
             {miLoading ? (<><Loader2 className="w-4 h-4 mr-2 animate-spin"/> Atualizando inteligência…</>) : 'Atualizar Inteligência (Brasil)'}
           </Button>
 
-          <Button className="bg-pink-600 hover:bg-pink-700 text-white" onClick={handleGenerateAiReport}>
+          <Button className="bg-pink-600 hover:bg-pink-700 text-white" onClick={handleGenerateAiReport} disabled={!['pro','prime','premium'].includes(planTier)} title={!['pro','prime','premium'].includes(planTier) ? 'Disponível para planos Pro e Premium' : undefined}>
             Gerar Relatório (IA)
           </Button>
           {(reportSections?.length || 0) > 0 && (
