@@ -18,6 +18,9 @@ import RabiReportModal from "../components/rabi/RabiReportModal";
 import RabiGAUploader from "../components/rabi/RabiGAUploader";
 import RabiTrendsChart from "../components/rabi/RabiTrendsChart";
 import VisualInsightsGrid from "../components/rabi/VisualInsightsGrid";
+import IebCard from "../components/rabi/IebCard";
+import TrendsTopList from "../components/rabi/TrendsTopList";
+import PricingSummary from "../components/rabi/PricingSummary";
 
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -30,6 +33,8 @@ export default function Radares() {
   const [gaTrends, setGaTrends] = useState({ gaMetrics: [], trendsSeries: [] });
   const [alertsOn, setAlertsOn] = useState(false);
   const [schedule, setSchedule] = useState('mensal');
+  const [miLoading, setMiLoading] = useState(false);
+  const [miData, setMiData] = useState(null);
 
 
   const [rabiOn, setRabiOn] = useState(false);
@@ -239,6 +244,19 @@ export default function Radares() {
 
 
         <div className="mt-4 flex flex-wrap gap-3">
+          <Button
+            className="bg-indigo-600 hover:bg-indigo-700 text-white"
+            onClick={async ()=>{
+              setMiLoading(true);
+              try {
+                const { data } = await base44.functions.invoke('rabiMarketIntelligence', { scope: 'br' });
+                setMiData(data);
+              } catch {}
+              finally { setMiLoading(false); }
+            }}
+          >
+            {miLoading ? (<><Loader2 className="w-4 h-4 mr-2 animate-spin"/> Atualizando inteligência…</>) : 'Atualizar Inteligência (Brasil)'}
+          </Button>
 
           <Button className="bg-pink-600 hover:bg-pink-700 text-white" onClick={handleGenerateAiReport}>
             Gerar Relatório (IA)
@@ -278,6 +296,19 @@ export default function Radares() {
 
 
         </RabiSection>
+
+        {miData && (
+          <RabiSection title="RABI — Motor de Inteligência de Mercado" subtitle="Google Trends (demanda), preços consolidados e IEB (Brasil)">
+            <div className="grid md:grid-cols-3 gap-4 mb-4">
+              <IebCard value={miData?.ieb?.value} label={miData?.ieb?.label} updatedAt={miData?.updated_at} />
+              <TrendsTopList title="Top Procedimentos (tendência)" items={miData?.trends?.topProcedures || []} />
+              <TrendsTopList title="Áreas Anatômicas em Alta" items={miData?.trends?.topAreas || []} />
+            </div>
+            <div className="mt-4">
+              <PricingSummary procedures={miData?.pricing?.procedures || []} />
+            </div>
+          </RabiSection>
+        )}
 
         <RabiSection title="Insights Visuais — Tendências e Oportunidades" subtitle="Resumo visual com gráficos e quadros principais do período analisado.">
           <VisualInsightsGrid
