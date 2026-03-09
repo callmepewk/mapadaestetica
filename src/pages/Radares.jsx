@@ -12,7 +12,7 @@ import RabiConsultoriaCTA from "../components/rabi/RabiConsultoriaCTA";
 
 
 import { Button } from "@/components/ui/button";
-import { Loader2, Download } from "lucide-react";
+import { Loader2, Download, ExternalLink } from "lucide-react";
 import RabiExpandableCard from "../components/rabi/RabiExpandableCard";
 import RabiReportModal from "../components/rabi/RabiReportModal";
 import RabiGAUploader from "../components/rabi/RabiGAUploader";
@@ -175,6 +175,7 @@ export default function Radares() {
   const handleGenerateAiReport = async (skipQuota = false) => {
     // não abrir modal de preview
     setReportLoading(true);
+    const __rabiTimeout = setTimeout(()=> setReportLoading(false), 40000);
     if (!skipQuota) {
       const ok = await tryConsumeRabiQuota();
       if (!ok) { setReportLoading(false); return; }
@@ -218,7 +219,7 @@ export default function Radares() {
                 }
               }}
             >
-              {loadingRadars ? (<><Loader2 className="w-5 h-5 mr-2 animate-spin"/> Analisando dados estratégicos...</>) : (rabiOn ? 'Executar nova análise' : 'Ativar R.A.B.I')}
+              {loadingRadars ? (<><Loader2 className="w-5 h-5 mr-2 animate-spin"/> Analisando dados estratégicos (até 40s)...</>) : (rabiOn ? 'Executar análise de mercado' : 'Ativar R.A.B.I')}
             </Button>
           </div>
         </div>
@@ -253,11 +254,13 @@ export default function Radares() {
                 const profession = (u?.profissao || u?.profession || u?.area_profissional || '').trim();
                 const { data } = await base44.functions.invoke('rabiMarketIntelligence', { scope: 'br', profession });
                 setMiData(data);
+                await handleGenerateAiReport(true);
+                document.getElementById('rabi-trends')?.scrollIntoView({ behavior: 'smooth' });
               } catch {}
               finally { setMiLoading(false); }
             }}
           >
-            {miLoading ? (<><Loader2 className="w-4 h-4 mr-2 animate-spin"/> Atualizando inteligência…</>) : 'Atualizar Inteligência (Brasil)'}
+            {miLoading ? (<><Loader2 className="w-4 h-4 mr-2 animate-spin"/> Obtendo métricas…</>) : 'Obter Métricas (Brasil)'}
           </Button>
 
           <Button className="bg-pink-600 hover:bg-pink-700 text-white" onClick={handleGenerateAiReport} disabled={!['pro','prime','premium'].includes(planTier)} title={!['pro','prime','premium'].includes(planTier) ? 'Disponível para planos Pro e Premium' : undefined}>
@@ -274,6 +277,15 @@ export default function Radares() {
               } catch {}
             }}>
               <Download className="w-4 h-4 mr-2"/> Exportar PDF
+            </Button>
+            <Button variant="outline" className="border-emerald-600 text-emerald-700 hover:bg-emerald-50" onClick={async ()=>{
+              try {
+                const text = `Resumo\n${reportSummary}\n\nSeções\n${(reportSections||[]).map(s=>`- ${s.title}\n  ${(s.items||[]).join('\n  ')}`).join('\n')}`;
+                await navigator.clipboard.writeText(text);
+                window.open('https://gamma.app', '_blank');
+              } catch {}
+            }}>
+              <ExternalLink className="w-4 h-4 mr-2"/> Exportar para Gamma
             </Button>
           )}
         </div>
@@ -302,11 +314,17 @@ export default function Radares() {
         </RabiSection>
 
         {miData && (
-          <RabiSection title="RABI — Motor de Inteligência de Mercado" subtitle="Google Trends (demanda), preços consolidados e IEB (Brasil)">
+          <RabiSection title="RABI — Motor de Inteligência de Mercado" subtitle="Métricas consolidadas (Brasil) e IEB — nosso índice exclusivo do RABI">
             <div className="grid md:grid-cols-3 gap-4 mb-4">
               <IebCard value={miData?.ieb?.value} label={miData?.ieb?.label} updatedAt={miData?.updated_at} />
               <TrendsTopList title="Top Procedimentos (tendência)" items={(miData?.trends?.topProcedures && miData.trends.topProcedures.length>0) ? miData.trends.topProcedures : (miData?.googleTrends?.terms || [])} />
-              <TrendsTopList title="Áreas Anatômicas em Alta" items={miData?.trends?.topAreas || []} />
+              <div className="rounded-xl overflow-hidden border bg-white">
+                <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/52786eadb_rabi.jpg" alt="RABI Brand" className="w-full h-40 object-contain bg-white" />
+                <div className="p-4 text-sm text-gray-700">
+                  <div className="font-semibold">IEB — Índice Estético Brasileiro</div>
+                  <p className="mt-1">Nosso indicador exclusivo do RABI, consolidando sinais de demanda, oferta e tendências emergentes do mercado estético.</p>
+                </div>
+              </div>
             </div>
             <div className="mt-4">
               <PricingSummary procedures={miData?.pricing?.procedures || []} />

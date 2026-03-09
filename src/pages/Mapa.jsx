@@ -188,7 +188,9 @@ export default function Mapa() {
   const [mostrarSeletorProcedimentos, setMostrarSeletorProcedimentos] = useState(false);
   const [agendarOpen, setAgendarOpen] = useState(false);
   const [itemAgendar, setItemAgendar] = useState(null);
-  const [mostrarAnunciosNoMapa, setMostrarAnunciosNoMapa] = useState(true);
+  const [mostrarInfoFiltros, setMostrarInfoFiltros] = useState(false);
+  const [mostrarInfoPreco, setMostrarInfoPreco] = useState(false);
+  const [categoriaOutrosTexto, setCategoriaOutrosTexto] = useState("");
   
   // Filtros para Anúncios
   const [busca, setBusca] = useState("");
@@ -360,7 +362,13 @@ export default function Mapa() {
       anuncio.titulo?.toLowerCase().includes(busca.toLowerCase()) ||
       anuncio.descricao?.toLowerCase().includes(busca.toLowerCase()) ||
       anuncio.profissional?.toLowerCase().includes(busca.toLowerCase());
-    const matchCategoria = !categoria || anuncio.categoria === categoria;
+    const matchCategoria = !categoria || (categoria === 'Outros' ? (
+      !categoriaOutrosTexto ? true : (
+        (anuncio.titulo||'').toLowerCase().includes(categoriaOutrosTexto.toLowerCase()) ||
+        (anuncio.descricao||'').toLowerCase().includes(categoriaOutrosTexto.toLowerCase()) ||
+        (anuncio.tags||[]).some(t => (t||'').toLowerCase().includes(categoriaOutrosTexto.toLowerCase()))
+      )
+    ) : anuncio.categoria === categoria);
     const matchProcedimento = !procedimento || 
       anuncio.procedimentos_servicos?.some(p => p.toLowerCase().includes(procedimento.toLowerCase()));
     const tLower = (tratamento || '').toLowerCase();
@@ -549,6 +557,8 @@ export default function Mapa() {
                   <h3 className="font-semibold text-lg flex items-center gap-2">
                     <Filter className="w-5 h-5 text-pink-600" />
                     Filtros de Busca
+
+                    <span className="ml-2 text-xs text-gray-500 font-normal">(Aplicação automática — sem botão Buscar)</span>
                   </h3>
                   <Button
                     variant="outline"
@@ -577,11 +587,18 @@ export default function Mapa() {
                       </SelectTrigger>
                       <SelectContent className="max-h-[300px]">
                         {categorias.map((cat)=>(<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}
+                        <SelectItem value="Outros">Outros</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
+                  {categoria === 'Outros' && (
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Especifique (texto livre)</label>
+                      <Input value={categoriaOutrosTexto} onChange={(e)=>setCategoriaOutrosTexto(e.target.value)} placeholder="Ex.: limpeza profunda, harmonização..." className="h-10" />
+                    </div>
+                  )}
                   <div>
-                    <label className="text-sm font-medium mb-2 block">Tratamento</label>
+                     <label className="text-sm font-medium mb-2 block">Tratamento</label>
                     <Select value={tratamento} onValueChange={setTratamento}>
                       <SelectTrigger className="h-10">
                         <SelectValue placeholder="Selecione um tratamento" />
@@ -618,7 +635,12 @@ export default function Mapa() {
                     <Input value={cidade} onChange={(e)=>setCidade(e.target.value)} placeholder="Digite a cidade" className="h-10" />
                   </div>
                   <div>
-                    <label className="text-sm font-medium mb-2 block">Preço</label>
+                    <label className="text-sm font-medium mb-2 block">Preço <button type="button" className="text-xs text-blue-600 underline ml-1" onClick={()=>setMostrarInfoPreco(v=>!v)}>Entenda a faixa</button></label>
+                    {mostrarInfoPreco && (
+                      <div className="text-xs text-gray-600 bg-blue-50 border border-blue-200 rounded p-2 mb-2">
+                        $ até R$200 • $$ R$200–R$500 • $$$ R$500–R$3.000 • $$$$ R$3.000–R$5.000 • $$$$$ acima de R$5.000
+                      </div>
+                    )}
                     <Select value={faixaPreco} onValueChange={setFaixaPreco}>
                       <SelectTrigger className="h-10"><SelectValue placeholder="Todas" /></SelectTrigger>
                       <SelectContent>
@@ -709,10 +731,16 @@ export default function Mapa() {
                   </div>
                 </div>
 
-                {/* Opção: Exibir anúncios no mapa */}
-                <div className="mt-3 flex items-center gap-2">
-                  <Checkbox id="toggleAnunciosMapa" checked={mostrarAnunciosNoMapa} onCheckedChange={setMostrarAnunciosNoMapa} />
-                  <label htmlFor="toggleAnunciosMapa" className="text-sm">Exibir anúncios no mapa</label>
+                {/* Ajuda: Entenda os filtros */}
+                <div className="mt-3">
+                  <Button type="button" variant="outline" size="sm" onClick={()=>setMostrarInfoFiltros(v=>!v)}>
+                    Entenda os filtros
+                  </Button>
+                  {mostrarInfoFiltros && (
+                    <div className="mt-2 text-sm text-gray-700 bg-gray-50 border rounded p-3">
+                      • Cidade/UF/Bairro limitam a região mostrada. • Categoria/Procedimento/Tratamento refinam os serviços. • Distância usa sua localização para priorizar próximos. • Faixa de preço segue o padrão indicado no tooltip acima. As buscas são aplicadas automaticamente — por isso não há botão “Buscar”.
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -1106,7 +1134,7 @@ export default function Mapa() {
                     );
                   })}
 
-                  {mostrarAnunciosNoMapa && anunciosFiltrados.map((a) => (
+                  {anunciosFiltrados.map((a) => (
                     a.latitude && a.longitude ? (
                       <Marker
                         key={`anuncio-${a.id}`}
