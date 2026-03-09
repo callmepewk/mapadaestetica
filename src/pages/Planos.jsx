@@ -43,6 +43,10 @@ export default function Planos() {
       open('https://wa.me/5521980343873?text=Ol%C3%A1!%20Tenho%20interesse%20no%20plano%20Premium%20do%20Mapa%20da%20Est%C3%A9tica.%20Podemos%20conversar%3F');
       return;
     }
+    if (['cobre','prata','ouro','diamante','platina'].includes(planId)) {
+      open(`https://wa.me/5521980343873?text=${encodeURIComponent('Olá! Quero contratar o plano de Patrocinador: ' + planId.toUpperCase())}`);
+      return;
+    }
     // Free: direciona para cadastrar anúncio (sem usar Checkout). Se não logado, pede login.
     if (!auth) {
       base44.auth.redirectToLogin(nextUrl);

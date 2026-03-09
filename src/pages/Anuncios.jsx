@@ -517,7 +517,7 @@ export default function Anuncios() {
                           setBuscaTexto(e.target.value);
                           setPaginaAtual(1);
                         }}
-                        className="w-full h-9 sm:h-10 md:h-11 text-sm"
+                        className="w-full h-10 text-sm"
                       />
                     </div>
 
@@ -530,7 +530,7 @@ export default function Anuncios() {
                           setPaginaAtual(1);
                         }}
                       >
-                        <SelectTrigger className="h-9 sm:h-10 md:h-11 text-sm">
+                        <SelectTrigger className="border-2 h-10 text-sm">
                           <SelectValue placeholder="Categoria" />
                         </SelectTrigger>
                         <SelectContent className="max-h-[200px] sm:max-h-[300px]">
@@ -559,7 +559,7 @@ export default function Anuncios() {
                           type="button"
                           onClick={() => setMostrarSeletorProcedimentos(true)}
                           variant="outline"
-                          className="h-9 sm:h-10 md:h-11 px-2.5 sm:px-3 flex-shrink-0"
+                          className="h-10 px-2.5 sm:px-3 flex-shrink-0"
                           title="Selecionar da lista"
                         >
                           <Search className="w-4 h-4" />
@@ -592,7 +592,7 @@ export default function Anuncios() {
                           setPaginaAtual(1);
                         }}
                       >
-                        <SelectTrigger className="h-9 sm:h-10 text-sm">
+                        <SelectTrigger className="border-2 h-9 sm:h-10 text-sm">
                           <SelectValue placeholder="Estado" />
                         </SelectTrigger>
                         <SelectContent className="max-h-[200px]">
@@ -613,7 +613,7 @@ export default function Anuncios() {
                           setPaginaAtual(1);
                         }}
                       >
-                        <SelectTrigger className="h-9 sm:h-10 text-sm">
+                        <SelectTrigger className="border-2 h-9 sm:h-10 text-sm">
                           <SelectValue placeholder="R$" />
                         </SelectTrigger>
                         <SelectContent>
@@ -654,7 +654,7 @@ export default function Anuncios() {
                           setPaginaAtual(1);
                         }}
                       >
-                        <SelectTrigger className="h-9 sm:h-10 text-sm">
+                        <SelectTrigger className="border-2 h-9 sm:h-10 text-sm">
                           <SelectValue placeholder="Todos" />
                         </SelectTrigger>
                         <SelectContent className="max-h-[250px]">
@@ -677,7 +677,7 @@ export default function Anuncios() {
                           setPaginaAtual(1);
                         }}
                       >
-                        <SelectTrigger className="h-9 sm:h-10 text-sm">
+                        <SelectTrigger className="border-2 h-9 sm:h-10 text-sm">
                           <SelectValue placeholder="Tipo" />
                         </SelectTrigger>
                         <SelectContent>
@@ -700,7 +700,7 @@ export default function Anuncios() {
                         }}
                         disabled={!minhaLocalizacao}
                       >
-                        <SelectTrigger className="h-9 sm:h-10 text-sm">
+                        <SelectTrigger className="border-2 h-9 sm:h-10 text-sm">
                           <SelectValue placeholder={minhaLocalizacao ? "Distância" : "Use GPS"} />
                         </SelectTrigger>
                         <SelectContent className="max-h-[200px]">
@@ -725,7 +725,7 @@ export default function Anuncios() {
                           setPaginaAtual(1);
                         }}
                       >
-                        <SelectTrigger className="h-9 sm:h-10 text-sm">
+                        <SelectTrigger className="border-2 h-9 sm:h-10 text-sm">
                           <SelectValue placeholder="Anos" />
                         </SelectTrigger>
                         <SelectContent>
@@ -764,7 +764,7 @@ export default function Anuncios() {
                 disabled={localizando}
                 variant="outline"
                 size="sm"
-                className="w-full sm:w-auto h-9 sm:h-10 text-xs sm:text-sm"
+                className="w-full sm:w-auto h-10 text-sm md:text-base"
               >
                 <Locate className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
                 {localizando ? "Localizando..." : "Minha Localização"}
@@ -777,7 +777,7 @@ export default function Anuncios() {
                   setPaginaAtual(1);
                 }}
               >
-                <SelectTrigger className="w-full sm:w-52 md:w-64 h-9 sm:h-10 text-xs sm:text-sm">
+                <SelectTrigger className="border-2 w-full sm:w-52 md:w-64 h-9 sm:h-10 text-xs sm:text-sm">
                   <SelectValue placeholder="Ordenar" />
                 </SelectTrigger>
                 <SelectContent>

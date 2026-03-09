@@ -52,7 +52,41 @@ export default function Radares() {
     return 'free';
   };
 
-  const handleGenerateReport = async () => {
+  const getWeekKey = (date) => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2,'0');
+    const d = date.getDate();
+    const w = Math.ceil(d / 7);
+    return `${y}-${m}-W${w}`;
+  };
+
+  const tryConsumeRabiQuota = async () => {
+    const tier = planTier;
+    if (!['prime','premium'].includes(tier)) {
+      alert('RABI disponível apenas para planos Prime e Premium.');
+      return false;
+    }
+    const now = new Date();
+    const monthKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    const weekKey = getWeekKey(now);
+    const u = await base44.auth.me();
+    let { rabi_month_key, rabi_month_count = 0, rabi_week_key, rabi_week_count = 0 } = u || {};
+    if (rabi_month_key !== monthKey) { rabi_month_key = monthKey; rabi_month_count = 0; }
+    if (rabi_week_key !== weekKey) { rabi_week_key = weekKey; rabi_week_count = 0; }
+    const limits = tier === 'premium' ? { month: 8, week: 2 } : { month: 2, week: 1 };
+    if (rabi_month_count >= limits.month || rabi_week_count >= limits.week) {
+      alert(`Limite de relatórios atingido (${tier === 'premium' ? '2 por semana, 8 por mês' : '1 por semana, 2 por mês'}).`);
+      return false;
+    }
+    await base44.auth.updateMe({
+      rabi_month_key, rabi_week_key,
+      rabi_month_count: rabi_month_count + 1,
+      rabi_week_count: rabi_week_count + 1
+    });
+    return true;
+  };
+
+  const handleGenerateReport = async (skipQuota = false) => {
     // não abrir modal de preview
     setReportLoading(true);
     try {
@@ -127,7 +161,7 @@ export default function Radares() {
     setRabiOn(next);
     try { if (user) await base44.auth.updateMe({ rabi_ativado: next }); } catch {}
   };
-  const handleGenerateAiReport = async () => {
+  const handleGenerateAiReport = async (skipQuota = false) => {
     // não abrir modal de preview
     setReportLoading(true);
     try {
@@ -161,7 +195,9 @@ export default function Radares() {
                 document.getElementById('rabi-trends')?.scrollIntoView({ behavior: 'smooth' });
                 setLoadingRadars(true);
                 try {
-                  await Promise.all([handleGenerateReport(), handleGenerateAiReport()]);
+                  const allowed = await tryConsumeRabiQuota();
+                  if (!allowed) { return; }
+                  await Promise.all([handleGenerateReport(true), handleGenerateAiReport(true)]);
                 } finally {
                   setLoadingRadars(false);
                 }

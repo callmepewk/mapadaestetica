@@ -949,7 +949,7 @@ export default function Mapa() {
             <div className="bg-white border rounded-lg shadow-sm mb-6 p-4">
               <div className="grid md:grid-cols-6 gap-4">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
                   <Input
                     placeholder="Cidade ou Estado"
                     value={buscaCidade}
@@ -959,7 +959,7 @@ export default function Mapa() {
                 </div>
 
                 <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
                   <Input
                     placeholder="Bairro"
                     value={bairroMapa}
