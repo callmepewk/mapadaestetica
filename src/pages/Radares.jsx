@@ -227,9 +227,9 @@ export default function Radares() {
             <Loader2 className="w-4 h-4 animate-spin" /> Analisando tendências do mercado estético...
           </div>
         )}
-        {planTier==='free' && rabiOn && (
+        {!['pro','prime','premium'].includes(planTier) && (
           <div className="mt-2 rounded-lg border bg-yellow-50 text-yellow-900 p-3 text-sm">
-            Experiência completa disponível a partir do plano PRO. <a href="/Planos" className="underline">Ver Planos</a>.
+            Para realizar a análise de mercado e obter o relatório do R.A.B.I, assine os planos Pro ou Premium. <a href="/Planos" className="underline">Ver Planos</a>.
           </div>
         )}
         <RabiHero />
