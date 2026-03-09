@@ -17,13 +17,6 @@ import RabiExpandableCard from "../components/rabi/RabiExpandableCard";
 import RabiReportModal from "../components/rabi/RabiReportModal";
 import RabiGAUploader from "../components/rabi/RabiGAUploader";
 import RabiTrendsChart from "../components/rabi/RabiTrendsChart";
-import TrendHeatmap from "../components/analytics/TrendRadar/TrendHeatmap";
-import TrendSharePie from "../components/analytics/TrendRadar/TrendSharePie";
-import TrendSeasonalityChart from "../components/analytics/TrendRadar/TrendSeasonalityChart";
-import BrazilRegionHeatmap from "../components/analytics/TrendRadar/BrazilRegionHeatmap";
-import TrendWordCloud from "../components/analytics/TrendRadar/TrendWordCloud";
-import TopAnatomicalAreas24h from "../components/analytics/TopAnatomicalAreas24h";
-import ContentTipsForPros from "../components/analytics/ContentTipsForPros";
 
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -229,19 +222,6 @@ export default function Radares() {
             </RabiExpandableCard>
           </div>
           <RadarSection />
-
-          <div className="grid md:grid-cols-2 gap-6 mt-6">
-            <TrendWordCloud />
-            <TrendSharePie />
-          </div>
-          <div className="grid md:grid-cols-2 gap-6 mt-6">
-            <TrendSeasonalityChart />
-            <BrazilRegionHeatmap />
-          </div>
-          <div className="grid md:grid-cols-2 gap-6 mt-6">
-            <TopAnatomicalAreas24h />
-            <ContentTipsForPros />
-          </div>
 
 
 
