@@ -228,6 +228,9 @@ export default function Radares() {
           </div>
         )}
         <RabiHero />
+        <div className="rounded-xl overflow-hidden border">
+          <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/5f1d2b16a_visogeral.jpg" alt="RABI" className="w-full h-auto" />
+        </div>
         <RabiMicrocopyStrip />
         <RabiExplainer />
         <RabiTutorial />
