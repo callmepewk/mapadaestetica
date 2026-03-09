@@ -28,19 +28,33 @@ export default function Planos() {
 
   const userPlan = (user?.plano || user?.plano_assinatura || user?.assinatura_plano || "").toLowerCase();
 
-  const handleChoose = (planId) => {
+  const handleChoose = async (planId) => {
     const nextUrl = location.pathname + location.search;
+    const open = (url) => window.open(url, '_blank');
+    if (planId === 'basico') {
+      open('https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=ecb3830244194758803318fe45d4cbde');
+      return;
+    }
+    if (planId === 'prime') {
+      open('https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=13c2448777fd4359a6ecd5d545beacd1');
+      return;
+    }
+    if (planId === 'premium') {
+      open('https://wa.me/5521980343873?text=Ol%C3%A1!%20Tenho%20interesse%20no%20plano%20Premium%20do%20Mapa%20da%20Est%C3%A9tica.%20Podemos%20conversar%3F');
+      return;
+    }
+    // Free: direciona para cadastrar anúncio (sem usar Checkout). Se não logado, pede login.
     if (!auth) {
       base44.auth.redirectToLogin(nextUrl);
       return;
     }
-    navigate(createPageUrl(`Checkout?plan=${planId}`));
+    navigate(createPageUrl('CadastrarAnuncio'));
   };
 
   const professionalPlans = [
     {
       id: "free",
-      name: "Free (Profissional)",
+      name: "Básico (Free)",
       price: "R$ 0",
       period: "/mês",
       highlighted: false,
@@ -48,9 +62,23 @@ export default function Planos() {
       icon: Star,
       features: [
         "Presença básica no Mapa",
-        "Publicação de 1 anúncio por mês",
-        "Perfil simples e contato",
-        "Suporte por e‑mail"
+        "1 anúncio ativo",
+        "Exposição: 7 dias",
+        "Perfil simples e contato"
+      ]
+    },
+    {
+      id: "basico",
+      name: "Básico (Profissional)",
+      price: "R$ 9,90",
+      period: "/mês",
+      highlighted: false,
+      cta: "Assinar Básico",
+      icon: Medal,
+      features: [
+        "Presença no Mapa + Destaques pontuais",
+        "Exposição: 30 dias",
+        "Ferramentas essenciais de vitrine"
       ]
     },
     {
@@ -63,7 +91,7 @@ export default function Planos() {
       icon: Crown,
       features: [
         "Destaque no Mapa e nos Anúncios",
-        "Até 30 anúncios por mês",
+        "Exposição: 60 dias",
         "RABI (Radar) básico + relatórios mensais",
         "Agendamento e WhatsApp 1‑clique",
         "Perfil profissional avançado e avaliações",
@@ -77,11 +105,11 @@ export default function Planos() {
       price: "Sob consulta",
       period: "",
       highlighted: false,
-      cta: "Falar com consultor",
-      icon: Star,
+      cta: "Falar no WhatsApp",
+      icon: Trophy,
       features: [
         "Tudo do Prime",
-        "Anúncios ilimitados",
+        "Exposição: 90 dias",
         "RABI completo + IA e insights de mercado",
         "Consultoria dedicada de posicionamento",
         "Impulsionamentos avançados e campanhas",
