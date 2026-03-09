@@ -80,9 +80,10 @@ export default function Planos() {
       cta: "Assinar Básico",
       icon: Medal,
       features: [
-        "Presença no Mapa + Destaques pontuais",
-        "Exposição: 30 dias",
-        "Ferramentas essenciais de vitrine"
+       "Presença no Mapa + Destaques pontuais",
+       "Exposição: 30 dias",
+       "Ferramentas essenciais de vitrine",
+       "Checkout redireciona para Produtos/Loja de Pontos"
       ]
     },
     {
