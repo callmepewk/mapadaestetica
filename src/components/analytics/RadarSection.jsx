@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import TrendRadar from "./TrendRadar/TrendRadar";
-import AestheticRadar from "./AestheticRadar";
+// import AestheticRadar from "./AestheticRadar";
+import TrendWordCloud from "./TrendRadar/TrendWordCloud";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -66,29 +67,46 @@ export default function RadarSection() {
   const [user, setUser] = useState(null);
   const [tab, setTab] = useState('tendencias');
   const tendenciasRef = useRef(null);
-  const frequenciaRef = useRef(null);
+  const [oppItems, setOppItems] = useState([]);
+  const [oppSelected, setOppSelected] = useState(null);
 
   useEffect(() => { (async () => { try { setUser(await base44.auth.me()); } catch {} })(); }, []);
+
+  // Carregar termos recentes para a Nuvem de Oportunidades
+  useEffect(() => {
+    (async () => {
+      try {
+        const since = new Date(Date.now() - 60*24*60*60*1000).toISOString();
+        const rows = await base44.entities.SearchEvent.list('-created_date', 1000);
+        const recent = rows.filter(r => !r.created_date || r.created_date >= since);
+        const map = new Map();
+        for (const ev of recent) {
+          const t = (ev.query || '').trim().toLowerCase();
+          if (!t) continue;
+          map.set(t, (map.get(t) || 0) + 1);
+        }
+        const items = Array.from(map.entries()).sort((a,b)=>b[1]-a[1]).slice(0,50).map(([term,count])=>({ term, count }));
+        setOppItems(items);
+      } catch {}
+    })();
+  }, [user]);
   const isAdmin = user?.role === 'admin';
   const plan = user?.plano_ativo || 'cobre';
   const limits = PLAN_LIMITS[plan] || PLAN_LIMITS.cobre;
 
   const tend = useMonthlyUsage(user, 'tendencias');
-  const freq = useMonthlyUsage(user, 'frequencia');
 
-  const canView = async (tipo) => {
+  const canView = async () => {
     if (isAdmin) return true;
-    const ctl = tipo==='tendencias'?tend:freq;
-    if ((ctl.usage.acessos || 0) >= limits.views) { alert('Limite mensal de acessos atingido para seu plano. Faça upgrade para mais acessos.'); return false; }
-    await ctl.increment('acessos');
+    if ((tend.usage.acessos || 0) >= limits.views) { alert('Limite mensal de acessos atingido para seu plano. Faça upgrade para mais acessos.'); return false; }
+    await tend.increment('acessos');
     return true;
   };
 
-  const beforeExport = async (tipo) => {
+  const beforeExport = async () => {
     if (isAdmin) return true;
-    const ctl = tipo==='tendencias'?tend:freq;
-    if ((ctl.usage.relatorios || 0) >= limits.reports) { alert('Limite mensal de relatórios em PDF atingido para seu plano.'); return false; }
-    await ctl.increment('relatorios');
+    if ((tend.usage.relatorios || 0) >= limits.reports) { alert('Limite mensal de relatórios em PDF atingido para seu plano.'); return false; }
+    await tend.increment('relatorios');
     return true;
   };
 
@@ -115,12 +133,12 @@ export default function RadarSection() {
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Badge className="bg-indigo-600 text-white">Radares</Badge>
-            {!isAdmin && (
-              <span className="text-xs text-gray-600">
-                Acessos: {tend.usage.acessos + freq.usage.acessos}/{limits.views} • Relatórios: {tend.usage.relatorios + freq.usage.relatorios}/{limits.reports}
-              </span>
-            )}
+           <Badge className="bg-indigo-600 text-white">Radares</Badge>
+           {!isAdmin && (
+             <span className="text-xs text-gray-600">
+               Acessos: {tend.usage.acessos}/{limits.views} • Relatórios: {tend.usage.relatorios}/{limits.reports}
+             </span>
+           )}
           </div>
           <div className="flex items-center gap-2 text-xs text-gray-500"><Shield className="w-4 h-4"/> Limites por plano aplicados</div>
         </div>
@@ -128,7 +146,6 @@ export default function RadarSection() {
         <Tabs value={tab} onValueChange={async (v)=>{ setTab(v); const ok = await canView(v); if (!ok) setTab(tab); }}>
           <TabsList className="mb-4">
             <TabsTrigger value="tendencias">Radar de Tendências</TabsTrigger>
-            <TabsTrigger value="frequencia">Radar de Frequência</TabsTrigger>
           </TabsList>
 
           <div className="grid lg:grid-cols-3 gap-6">
@@ -136,36 +153,23 @@ export default function RadarSection() {
               <TabsContent value="tendencias">
                 <div ref={tendenciasRef}>
                   <div className="flex justify-end mb-2">
-                    <ExportPDFButton containerRef={tendenciasRef} onBeforeExport={()=>beforeExport('tendencias')} />
+                    <ExportPDFButton containerRef={tendenciasRef} onBeforeExport={beforeExport} />
                   </div>
                   <TrendRadar />
-                </div>
-              </TabsContent>
-
-              <TabsContent value="frequencia">
-                <div ref={frequenciaRef}>
-                  <div className="flex justify-end mb-2">
-                    <ExportPDFButton containerRef={frequenciaRef} onBeforeExport={()=>beforeExport('frequencia')} />
-                  </div>
-                  <AestheticRadar />
                 </div>
               </TabsContent>
             </div>
 
             <div className="bg-white border rounded-xl p-4">
-              <div className="flex items-center gap-2 mb-2"><Sparkles className="w-4 h-4 text-pink-600"/><span className="font-semibold">Visão em Radar</span></div>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart data={radarData} outerRadius={90}>
-                    <PolarGrid />
-                    <PolarAngleAxis dataKey="kpi" />
-                    <PolarRadiusAxis angle={30} domain={[0, 100]} />
-                    <Tooltip />
-                    <Radar name="KPI" dataKey="v" stroke="#ec4899" fill="#ec4899" fillOpacity={0.5} />
-                  </RadarChart>
-                </ResponsiveContainer>
-              </div>
-              <p className="text-xs text-gray-500 mt-2">Resumo visual interativo para comparar métricas-chave desta aba.</p>
+             <div className="flex items-center gap-2 mb-2"><Sparkles className="w-4 h-4 text-pink-600"/><span className="font-semibold">Nuvem de Oportunidades</span></div>
+             <div className="min-h-40">
+               {oppItems.length === 0 ? (
+                 <p className="text-sm text-gray-500">Coletando termos recentes… gere o RABI ou aguarde alguns acessos.</p>
+               ) : (
+                 <TrendWordCloud items={oppItems} selected={oppSelected} onSelect={setOppSelected} />
+               )}
+             </div>
+             <p className="text-xs text-gray-500 mt-2">Termos mais promissores extraídos das buscas recentes.</p>
             </div>
           </div>
         </Tabs>
