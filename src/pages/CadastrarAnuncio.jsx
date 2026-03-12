@@ -1389,7 +1389,7 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
               </div>
 
               {/* Recompensas (Pontos e Beauty Coins) */}
-              {['pontos','beauty_coins'].includes(formData.forma_cobranca) && (<div className="rounded-lg border-2 border-yellow-200 bg-yellow-50 p-4 sm:p-5">
+              {(['pontos','beauty_coins'].includes(formData.forma_cobranca)) ? (<div className="rounded-lg border-2 border-yellow-200 bg-yellow-50 p-4 sm:p-5">
                 <div className="flex items-center justify-between mb-3">
                   <Label className="text-sm font-semibold text-yellow-900">Recompensas do Anúncio</Label>
                   <Button
