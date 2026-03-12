@@ -606,6 +606,23 @@ export default function Inicio() {
                 ))}
               </div>
             </div>
+
+            {/* CTA educativo: Profissionais regulamentados */}
+            <div className="mt-6 max-w-3xl mx-auto text-center px-4">
+              <p className="text-xs sm:text-sm text-white/90 mb-1 font-medium">
+                Não sabe qual profissional pode realizar o procedimento que você deseja?
+              </p>
+              <p className="text-[11px] sm:text-sm text-white/80 mb-3">
+                Descubra quais profissionais são autorizados a realizar cada tipo de procedimento estético com base nos conselhos regulamentadores da saúde no Brasil.
+              </p>
+              <Button
+                variant="outline"
+                className="bg-white text-[#2C2C2C] hover:bg-gray-100 font-semibold border-2 border-white"
+                onClick={() => document.getElementById('profissionais-regulamentados')?.scrollIntoView({ behavior: 'smooth' })}
+              >
+                Descubra aqui
+              </Button>
+            </div>
           </motion.section>
 
 

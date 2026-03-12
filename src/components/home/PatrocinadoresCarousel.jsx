@@ -72,9 +72,9 @@ export default function PatrocinadoresCarousel() {
               setSelected(b);
               setOpen(true);
             }}
-            className="text-left"
+            className={`text-left ${(()=>{const t=String(b?.plano_patrocinador||'').toLowerCase();return t==='platinum'?'col-span-2 md:col-span-2 lg:col-span-2':''})()}`}
           >
-            <Card className={`group relative aspect-square overflow-hidden bg-white hover:shadow-2xl transition-all ${(()=>{const t=String(b?.plano_patrocinador||'').toLowerCase();return t==='platinum'?'border-2 border-yellow-400 ring-2 ring-yellow-300': t==='gold'?'border-2 border-amber-300':'border';})()}`}>
+            <Card className={`group relative ${(()=>{const t=String(b?.plano_patrocinador||'').toLowerCase();return t==='platinum'?'aspect-[4/3]':'aspect-square';})()} overflow-hidden bg-white hover:shadow-2xl transition-all ${(()=>{const t=String(b?.plano_patrocinador||'').toLowerCase();return t==='platinum'?'border-2 border-yellow-400 ring-2 ring-yellow-300': t==='gold'?'border-2 border-amber-300':'border';})()}`}>
               {b?.imagem_banner || b?.logo_empresa ? (
                 <img src={b.imagem_banner || b.logo_empresa} alt={b.nome_empresa || b.titulo} className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105" />
               ) : (
