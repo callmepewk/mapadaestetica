@@ -667,7 +667,7 @@ Por favor, revisar e aprovar/reprovar esta solicitação.
   // Função para solicitar ajuda com descrição
   const handleSolicitarAjudaDescricao = async () => {
     if (!((user?.plano_ativo||user?.plano||'').toLowerCase().includes('premium')) || !formData.titulo || !formData.categoria) {
-      setErro("Recurso Premium: faça upgrade e preencha título e categoria para receber sugestões!");
+      setErro("Recurso Prime/Premium: faça upgrade e preencha título e categoria para receber sugestões!");
       return;
     }
 
