@@ -58,6 +58,7 @@ import {
 } from "@/components/ui/dialog";
 import BannerRotativo from "../components/banners/BannerRotativo";
 import PatrocinadoresCarousel from "../components/home/PatrocinadoresCarousel";
+import RegulamentacaoEstetica from "../components/home/RegulamentacaoEstetica";
 import HeroPremium from "../components/home/HeroPremium";
 import AuthorityStrip from "../components/home/AuthorityStrip";
 import ValidationThreeSteps from "../components/home/ValidationThreeSteps";
@@ -700,9 +701,10 @@ export default function Inicio() {
             <section className="py-12 bg-white">
               <div className="max-w-7xl mx-auto px-4">
                 <div className="text-center mb-8">
-                  <Badge className="mb-3 bg-amber-100 text-amber-800">Programas Spa da Pele</Badge>
-                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Tratamentos Programados por 12 meses</h2>
-                  <p className="text-gray-600">Definidos por profissionais e admins, com agenda por data e horário</p>
+                  <Badge className="mb-3 bg-amber-100 text-amber-800">Programas Anuais</Badge>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Programas de Tratamento Estético por 12 Meses</h2>
+                  <p className="text-gray-700">Protocolos completos planejados por profissionais para acompanhar sua evolução ao longo do ano.</p>
+                  <p className="text-gray-600 text-sm mt-2">Alguns tratamentos estéticos funcionam melhor quando realizados de forma programada. Esses programas organizam seu acompanhamento durante 12 meses, com avaliações periódicas e protocolos definidos por especialistas.</p>
                 </div>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -727,11 +729,20 @@ export default function Inicio() {
                         <p className="text-sm text-gray-600 mb-3 line-clamp-3">{p.descricao}</p>
                         <div className="flex items-center justify-between">
                           <Button
-                            onClick={() => (p.id ? handleAgendar(p) : (window.location.href = createPageUrl('Produtos')))}
-                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                            onClick={() => {
+                              const base = 'https://wa.me/5521980343873';
+                              const nome = (p.nome || '').toLowerCase();
+                              const msg = nome.includes('checkup 360')
+                                ? 'Ol%C3%A1!%0AVim%20pelo%20Mapa%20da%20Est%C3%A9tica%20e%20gostaria%20de%20agendar%20o%20Checkup%20360%20%E2%80%93%20Avalia%C3%A7%C3%A3o%20completa%20com%20planejamento%20de%20tratamentos%20por%2012%20meses.%0A%0APoderia%20me%20passar%20mais%20informa%C3%A7%C3%B5es%3F'
+                                : nome.includes('checkup da pele')
+                                ? 'Ol%C3%A1!%0AVim%20pelo%20Mapa%20da%20Est%C3%A9tica%20e%20gostaria%20de%20agendar%20o%20Checkup%20da%20Pele%20%E2%80%93%20Programa%20de%20acompanhamento%20do%20Spa%20da%20Pele%20por%2012%20meses.%0A%0APoderia%20me%20passar%20mais%20informa%C3%A7%C3%B5es%3F'
+                                : encodeURIComponent(`Olá! Vim pelo Mapa da Estética e gostaria de agendar o programa ${p.nome || 'de 12 meses'}. Poderia me passar mais informações?`);
+                              window.open(`${base}?text=${msg}`, '_blank');
+                            }}
+                            className="bg-green-600 hover:bg-green-700 text-white"
                             size="sm"
                           >
-                            Agendar
+                            Agendar via WhatsApp
                           </Button>
                           <Link to={createPageUrl('Produtos')}>
                             <Button variant="outline" size="sm">Ver no catálogo</Button>
@@ -754,23 +765,34 @@ export default function Inicio() {
 
 
           {/* Wellness Planner — Destaque */}
-          <section className="py-8 bg-gradient-to-r from-[#F7D426] to-[#FFE066]">
+          <section className="py-10 bg-gradient-to-r from-[#F7D426] to-[#FFE066]">
             <div className="max-w-7xl mx-auto px-4">
-              <Card className="border-none shadow-2xl bg-white/95 backdrop-blur overflow-hidden">
-                <CardContent className="p-6 md:p-8">
-                  <div className="flex flex-col md:flex-row items-center gap-6">
-                    <div className="flex-1 text-center md:text-left">
-                      <Badge className="mb-2 bg-[#F7D426] text-[#2C2C2C] border-none font-bold">Novo • Wellness Planner</Badge>
-                      <h2 className="text-2xl md:text-3xl font-bold text-[#2C2C2C]">Planeje sua Jornada de Beleza</h2>
-                      <p className="text-gray-700 mt-2">Descubra quais tratamentos fazem sentido para você e encontre profissionais dentro do seu orçamento.</p>
-                      <p className="text-gray-600 text-sm mt-1">Informe os procedimentos de interesse e quanto pretende investir; nós recomendamos quem atende sua faixa de preço.</p>
+              <Card className="border-none shadow-2xl bg-white overflow-hidden">
+                <CardContent className="p-0">
+                  <div className="grid md:grid-cols-2">
+                    <div className="p-6 md:p-10">
+                      <Badge className="mb-3 bg-[#F7D426] text-[#2C2C2C] border-none font-bold">Wellness Planner</Badge>
+                      <h2 className="text-3xl md:text-4xl font-bold text-[#2C2C2C]">Planeje sua Jornada de Beleza</h2>
+                      <p className="text-gray-700 mt-3 text-base md:text-lg">Descubra quais tratamentos fazem sentido para você e encontre profissionais dentro do seu orçamento.</p>
+                      <p className="text-gray-600 mt-2 text-sm md:text-base">O Wellness Planner ajuda você a organizar seus objetivos estéticos com segurança e planejamento. Você informa quais tratamentos deseja realizar e quanto pretende investir; nós recomendamos profissionais compatíveis com sua faixa de investimento.</p>
+
+                      <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div className="flex items-start gap-2"><span className="text-2xl">🧭</span><div><p className="font-semibold text-sm">Planejamento inteligente</p><p className="text-xs text-gray-600">Metas claras ao longo do ano</p></div></div>
+                        <div className="flex items-start gap-2"><span className="text-2xl">💸</span><div><p className="font-semibold text-sm">Compatível com seu orçamento</p><p className="text-xs text-gray-600">Sem surpresas no preço</p></div></div>
+                        <div className="flex items-start gap-2"><span className="text-2xl">🏥</span><div><p className="font-semibold text-sm">Profissionais qualificados</p><p className="text-xs text-gray-600">Recomendações confiáveis</p></div></div>
+                      </div>
+
+                      <a href={createPageUrl('PlannerWellness')} className="inline-block mt-6">
+                        <Button size="lg" className="bg-[#2C2C2C] hover:bg-[#3A3A3A] text-[#F7D426] font-bold shadow-xl">
+                          Criar meu Wellness Planner
+                          <ArrowRight className="w-5 h-5 ml-2" />
+                        </Button>
+                      </a>
                     </div>
-                    <a href={createPageUrl('PlannerWellness')} className="flex-shrink-0">
-                      <Button size="lg" className="bg-[#2C2C2C] hover:bg-[#3A3A3A] text-[#F7D426] font-bold shadow-xl">
-                        Criar meu Wellness Planner
-                        <ArrowRight className="w-5 h-5 ml-2" />
-                      </Button>
-                    </a>
+                    <div className="relative h-64 md:h-full">
+                      <img src="https://images.unsplash.com/photo-1556228724-4f1203d05335?w=1200&q=80" alt="Estética e bem-estar" className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -1227,6 +1249,8 @@ export default function Inicio() {
             </div>
             </div>
             </section>
+
+      <RegulamentacaoEstetica />
 
       {/* PATROCINADORES - AMBOS */}
       <section className="py-12 sm:py-16 bg-gradient-to-br from-gray-50 to-white">

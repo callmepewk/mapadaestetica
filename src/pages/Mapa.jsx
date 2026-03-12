@@ -357,10 +357,15 @@ export default function Mapa() {
 
   // Filtrar anúncios
   const anunciosFiltrados = anuncios.filter(anuncio => {
-    const matchBusca = !busca || 
-      anuncio.titulo?.toLowerCase().includes(busca.toLowerCase()) ||
-      anuncio.descricao?.toLowerCase().includes(busca.toLowerCase()) ||
-      anuncio.profissional?.toLowerCase().includes(busca.toLowerCase());
+    const key = (busca||'').toLowerCase();
+    const matchBusca = !key || 
+      (anuncio.titulo||'').toLowerCase().includes(key) ||
+      (anuncio.descricao||'').toLowerCase().includes(key) ||
+      (anuncio.profissional||'').toLowerCase().includes(key) ||
+      (anuncio.categoria||'').toLowerCase().includes(key) ||
+      (anuncio.subcategoria||'').toLowerCase().includes(key) ||
+      (anuncio.procedimentos_servicos||[]).some(p => (p||'').toLowerCase().includes(key)) ||
+      (anuncio.tags||[]).some(t => (t||'').toLowerCase().includes(key));
     const matchCategoria = !categoria || (categoria === 'Outros' ? (
       !categoriaOutrosTexto ? true : (
         (anuncio.titulo||'').toLowerCase().includes(categoriaOutrosTexto.toLowerCase()) ||
@@ -1149,8 +1154,8 @@ export default function Mapa() {
                               <button className="text-xs text-pink-600 font-semibold hover:underline" onClick={()=>window.location.href=`${createPageUrl("DetalhesAnuncio")}?id=${a.id}`}>
                                 Ver anúncio
                               </button>
-                              <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => { setItemAgendar(a); setAgendarOpen(true); }}>
-                                Agendar
+                              <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => { const base='https://wa.me/5521980343873'; const msg = encodeURIComponent(`Olá! Vim pelo Mapa da Estética e gostaria de agendar ${a.titulo}. Poderia me passar mais informações?`); window.open(`${base}?text=${msg}`, '_blank'); }}>
+                                Agendar via WhatsApp
                               </Button>
                             </div>
                           </div>

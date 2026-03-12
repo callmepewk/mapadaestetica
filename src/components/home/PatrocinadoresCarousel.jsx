@@ -74,15 +74,20 @@ export default function PatrocinadoresCarousel() {
             }}
             className="text-left"
           >
-            <Card className="relative aspect-square overflow-hidden bg-white hover:shadow-2xl transition-all border">
+            <Card className="group relative aspect-square overflow-hidden bg-white hover:shadow-2xl transition-all border">
               {b?.imagem_banner || b?.logo_empresa ? (
-                <img src={b.imagem_banner || b.logo_empresa} alt={b.nome_empresa || b.titulo} className="w-full h-full object-cover" />
+                <img src={b.imagem_banner || b.logo_empresa} alt={b.nome_empresa || b.titulo} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-4xl">🎯</div>
               )}
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 text-white">
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-3 text-white">
                 <p className="text-xs font-semibold truncate">{b?.nome_empresa || b?.titulo}</p>
                 {b?.descricao && <p className="text-[10px] opacity-90 line-clamp-2">{b.descricao}</p>}
+                <div className="mt-2">
+                  <Button size="sm" variant="secondary" className="bg-white/90 text-black hover:bg-white" onClick={(e)=>{ e.preventDefault(); e.stopPropagation(); const url = b?.links?.[0]?.url || b?.site; if (url) window.open(url, '_blank'); }}>
+                    Saiba mais
+                  </Button>
+                </div>
               </div>
               {b?.plano_patrocinador && (
                 <Badge className="absolute top-2 right-2 bg-[#F7D426] text-[#2C2C2C] border-2 border-[#2C2C2C]">
