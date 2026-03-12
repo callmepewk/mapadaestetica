@@ -29,7 +29,6 @@ export default function CategoriaSelector({ value, onChange, categoriaOutros, on
               ))}
             </SelectGroup>
           ))}
-          <SelectItem value="Outros" className="text-sm">Outros</SelectItem>
         </SelectContent>
       </Select>
       {value === 'Outros' && (
