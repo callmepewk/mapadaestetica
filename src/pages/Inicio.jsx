@@ -1022,6 +1022,33 @@ const KEYWORDS = {
               </div>
             </div>
           </section>
+          {/* Banner Faculdade CTA */}
+          {isProfissional && (
+            <section className="py-6">
+              <div className="max-w-7xl mx-auto px-4">
+                <div className="relative overflow-hidden rounded-2xl border-2 border-indigo-200 bg-gradient-to-r from-indigo-50 to-blue-50 shadow">
+                  <div className="grid md:grid-cols-3 gap-0">
+                    <div className="md:col-span-2 p-6">
+                      <h3 className="text-2xl md:text-3xl font-extrabold text-gray-900">
+                        Parceria com a Faculdade CTA – Centro de Treinamento Acadêmico
+                      </h3>
+                      <p className="text-gray-700 mt-2">
+                        Instituição que oferece cursos de graduação e pós-graduação na área da estética.
+                      </p>
+                      <a href="https://www.faculdadecta.edu.br/" target="_blank" rel="noopener noreferrer" className="inline-block mt-4">
+                        <Button className="bg-[#2C2C2C] hover:bg-[#3A3A3A] text-[#F7D426] font-bold">
+                          Conhecer a Faculdade CTA
+                        </Button>
+                      </a>
+                    </div>
+                    <div className="hidden md:block">
+                      <img src="https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?w=1200&q=80" alt="Faculdade CTA" className="h-full w-full object-cover"/>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
           {isPatrocinador && (
             <DashboardPatrocinadorHome />
           )}

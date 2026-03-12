@@ -924,6 +924,34 @@ export default function Mapa() {
             <Button onClick={aplicarBuscaIntencao} className="absolute right-2 top-1/2 -translate-y-1/2 h-10 px-5 bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold">Buscar</Button>
           </div>
           <p className="text-xs md:text-sm text-gray-500 mt-2">Exemplos: "botox", "tirar estrias", "limpeza de pele", "clínica estética"</p>
+          {(procedimento || tratamento || categoria) && (
+            <div className="flex flex-wrap gap-2 mt-3">
+              {procedimento && (
+                <span className="inline-flex items-center gap-1 text-xs bg-emerald-50 border border-emerald-200 text-emerald-800 px-2.5 py-1 rounded-full">
+                  Procedimento: {procedimento}
+                  <button onClick={()=>setProcedimento('')} className="ml-1 hover:text-emerald-900" aria-label="Limpar procedimento">
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              )}
+              {tratamento && (
+                <span className="inline-flex items-center gap-1 text-xs bg-blue-50 border border-blue-200 text-blue-800 px-2.5 py-1 rounded-full">
+                  Tratamento: {tratamento}
+                  <button onClick={()=>setTratamento('')} className="ml-1 hover:text-blue-900" aria-label="Limpar tratamento">
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              )}
+              {categoria && (
+                <span className="inline-flex items-center gap-1 text-xs bg-purple-50 border border-purple-200 text-purple-800 px-2.5 py-1 rounded-full">
+                  Categoria: {categoria}
+                  <button onClick={()=>setCategoria('')} className="ml-1 hover:text-purple-900" aria-label="Limpar categoria">
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
