@@ -77,7 +77,6 @@ export default function PlannerWellness() {
   const [experiencia, setExperiencia] = useState(""); // nunca | uma | regular
   const [conhecimento, setConhecimento] = useState(""); // sim | pouco | nao
   const [investimento, setInvestimento] = useState(""); // ate300 | 300-700 | 700-1500 | 1500-3000 | 3000+
-  const [step, setStep] = useState(1);
 
   useEffect(()=>{
     if (planner) {
