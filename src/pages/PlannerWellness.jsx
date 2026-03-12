@@ -38,6 +38,17 @@ export default function PlannerWellness() {
     initialData: null
   });
 
+  const { data: planner = null } = useQuery({
+    queryKey: ["wellness-planner", email],
+    queryFn: async () => {
+      if (!email) return null;
+      const list = await base44.entities.WellnessPlanner.filter({ user_email: email }, "-created_date", 1);
+      return list?.[0] || null;
+    },
+    enabled: !!email,
+    initialData: null
+  });
+
   const [objetivos, setObjetivos] = useState("");
   const [metas, setMetas] = useState([]);
   const [compartilhar, setCompartilhar] = useState(true);
