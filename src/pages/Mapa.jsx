@@ -765,6 +765,28 @@ export default function Mapa() {
                 </div>
 
                 <div className="grid md:grid-cols-4 gap-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">Procedimento</label>
+                <Select value={procedimento} onValueChange={setProcedimento}>
+                  <SelectTrigger className="h-10">
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-64">
+                    {procedimentosLista.map((p)=>(<SelectItem key={p} value={p}>{p}</SelectItem>))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Tratamento</label>
+                <Select value={tratamento} onValueChange={setTratamento}>
+                  <SelectTrigger className="h-10">
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-64">
+                    {tratamentosLista.map((t)=>(<SelectItem key={t} value={t}>{t}</SelectItem>))}
+                  </SelectContent>
+                </Select>
+              </div>
                   {/* Linha 1 */}
                   <div>
                     <label className="text-sm font-medium mb-2 block">Buscar</label>
