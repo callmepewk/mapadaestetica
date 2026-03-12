@@ -2281,7 +2281,7 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
               Sugestão de Título com IA
             </DialogTitle>
             <DialogDescription>
-              Baseado na sua categoria, nossa IA gerou este título profissional e otimizado
+              Título gerado COM IA. Baseado na sua categoria, nossa IA gerou este título profissional e otimizado
             </DialogDescription>
           </DialogHeader>
 
