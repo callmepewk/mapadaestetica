@@ -582,15 +582,22 @@ export default function Mapa() {
   const limparFiltros = () => {
     setBusca("");
     setCategoria("");
+    setCategoriaOutrosTexto("");
     setProcedimento("");
     setTratamento("");
     setCidade("");
     setEstado("");
     setFaixaPreco("");
-    setVerificados(false);
     setTipoAnuncio("");
     setTipoEstabelecimento("");
     setDistancia("999999");
+    setAvaliacaoMin("");
+    setModalidade("");
+    setAtendimento("");
+    setAtendimentoCobranca("");
+    setTecnologia("");
+    setVerificados(false);
+    setOrdenarPor('recentes');
   };
 
   if (!localizacaoUsuario) {
