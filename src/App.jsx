@@ -8,6 +8,8 @@ import { pagesConfig } from './pages.config'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { setupIframeMessaging } from './lib/iframe-messaging';
 import PageNotFound from './lib/PageNotFound';
+import ProcedimentoPage from './pages/Procedimento';
+import TratamentoPage from './pages/Tratamento';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
@@ -52,6 +54,9 @@ const AuthenticatedApp = () => {
         {Object.entries(Pages).map(([path, Page]) => (
           <Route key={path} path={`/${path}`} element={<Page />} />
         ))}
+        {/* SEO pages for procedures and treatments */}
+        <Route path="/procedimentos/:slug" element={<ProcedimentoPage />} />
+        <Route path="/tratamentos/:slug" element={<TratamentoPage />} />
         <Route path="*" element={<PageNotFound />} />
       </Routes>
     </LayoutWrapper>

@@ -97,6 +97,7 @@ const cidades = [
 export default function Inicio() {
   const [buscaCidade, setBuscaCidade] = useState("");
   const [buscaCategoria, setBuscaCategoria] = useState("");
+  const [buscaIntencao, setBuscaIntencao] = useState("");
   const [mostrarOnboarding, setMostrarOnboarding] = useState(false);
   const [mostrarComparacao, setMostrarComparacao] = useState(false);
   const [mostrarLoginPrompt, setMostrarLoginPrompt] = useState(false);
@@ -322,6 +323,50 @@ export default function Inicio() {
     window.location.href = `${base}?${query.toString()}`;
   };
 
+  const KEYWORDS = {
+    procedimentos: {
+      'toxina botulínica': ['botox','toxina botulinica','toxina botulínica','botox facial'],
+      'preenchimento': ['preenchimento','preenchimento labial','ácido hialurônico','preenchimentos'],
+      'bioestimulador': ['bioestimulador','bioestimuladores','sculptra','ellansé'],
+      'microagulhamento': ['microagulhamento','dermaroller','microneedling'],
+      'laser': ['laser','laser facial','laser dermatológico','depilação a laser'],
+      'peeling químico': ['peeling','peeling químico'],
+      'radiofrequência': ['radiofrequência','radiofrequencia'],
+    },
+    tratamentos: {
+      'estrias': ['estrias','tratamento estrias','remover estrias'],
+      'acne': ['acne','tratamento de acne','espinhas'],
+      'melasma': ['melasma','manchas escuras'],
+      'flacidez': ['flacidez','melhora de flacidez'],
+      'queda de cabelo': ['queda de cabelo','calvície','tratamento capilar'],
+      'olheiras': ['olheiras','tratamento de olheiras']
+    }
+  };
+
+  const handleBuscaIntencao = () => {
+    const q = (buscaIntencao||'').toLowerCase();
+    if (!q.trim()) return;
+    // Procedimentos
+    for (const [canon, syns] of Object.entries(KEYWORDS.procedimentos)) {
+      if (syns.some(s => q.includes(s))) {
+        const base = createPageUrl('Mapa');
+        window.location.href = `${base}?aba=anuncios&procedimento=${encodeURIComponent(canon)}`;
+        return;
+      }
+    }
+    // Tratamentos
+    for (const [canon, syns] of Object.entries(KEYWORDS.tratamentos)) {
+      if (syns.some(s => q.includes(s))) {
+        const base = createPageUrl('Mapa');
+        window.location.href = `${base}?aba=anuncios&tratamento=${encodeURIComponent(canon)}`;
+        return;
+      }
+    }
+    // Fallback: leva ao mapa com busca livre
+    const base = createPageUrl('Mapa');
+    window.location.href = `${base}?aba=anuncios&busca=${encodeURIComponent(q)}`;
+  };
+
   const handleAcessarDrBeleza = () => {
     window.open("https://dr-beleza-ai.base44.app", "_blank");
   };
@@ -495,98 +540,18 @@ export default function Inicio() {
               </p>
 
               <div className="max-w-4xl mx-auto bg-white rounded-lg sm:rounded-xl md:rounded-2xl shadow-2xl p-3 sm:p-4 md:p-6 lg:p-8">
-                <div className="flex flex-col gap-2.5 sm:gap-3 md:gap-4">
+                <div className="flex flex-col gap-3">
                   <div className="relative">
-                    <MapPin className="absolute left-2.5 sm:left-3 top-2.5 sm:top-3 md:top-3.5 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                     <Input
-                      placeholder="Cidade, ex: São Paulo"
-                      value={buscaCidade}
-                      onChange={(e) => setBuscaCidade(e.target.value)}
-                      className="pl-8 sm:pl-10 h-10 sm:h-11 md:h-12 text-gray-800 border-gray-200 text-sm sm:text-base"
+                      placeholder='O que você gostaria de melhorar? Ex: "quero fazer botox", "tratar estrias", "limpeza de pele"'
+                      value={buscaIntencao}
+                      onChange={(e) => setBuscaIntencao(e.target.value)}
+                      onKeyDown={(e)=>{ if(e.key==='Enter') handleBuscaIntencao(); }}
+                      className="h-12 text-gray-900 border-gray-200 pr-28"
                     />
+                    <Button onClick={handleBuscaIntencao} className="absolute right-1 top-1 h-10 px-5 bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold border-2 border-[#2C2C2C]">Buscar</Button>
                   </div>
-
-
-
-                  <FiltrosBuscaPaciente
-                    categorias={categorias}
-                    valores={filtros}
-                    onChange={setFiltros}
-                    onOpenAdvanced={()=>setOpenFiltrosAvancados(true)}
-                    onBuscar={handleBuscar}
-                    onClear={() => { 
-                      setFiltros({ tipo:"", categoria:"", especialidade:"", preco:"", rating:"", distancia:"" });
-                      setFiltrosAvancados({ data:"", hora:"", atendimento_domicilio:false, atendimento_local:false, convenios:"" });
-                      const url = new URL(window.location.href);
-                      ['cidade','categoria','tipo','categoria_filtro','especialidade','preco_min','preco_max','rating_min','distancia_km','data','hora','at_domicilio','at_local','convenios','aba'].forEach(k=>url.searchParams.delete(k));
-                      window.history.replaceState({}, '', url.toString());
-                    } }
-                  />
-
-
-
-                  {/* Filtros integrados ao Explore (mobile) */}
-                  <div className="hidden">
-                    <FiltrosBuscaPaciente
-                      categorias={categorias}
-                      valores={filtros}
-                      onChange={setFiltros}
-                      onOpenAdvanced={()=>setOpenFiltrosAvancados(true)}
-                      onBuscar={handleBuscar}
-                      onClear={() => { 
-                        setFiltros({ tipo:"", categoria:"", especialidade:"", preco:"", rating:"", distancia:"" });
-                        setFiltrosAvancados({ data:"", hora:"", atendimento_domicilio:false, atendimento_local:false, convenios:"" });
-                        const url = new URL(window.location.href);
-                        ['cidade','categoria','tipo','categoria_filtro','especialidade','preco_min','preco_max','rating_min','distancia_km','data','hora','at_domicilio','at_local','convenios','aba'].forEach(k=>url.searchParams.delete(k));
-                        window.history.replaceState({}, '', url.toString());
-                      } }
-                    />
-                  </div>
-
-                  {/* Filtros integrados ao Explore (desktop) */}
-                  <div className="hidden">
-                    <FiltrosBuscaPaciente
-                      categorias={categorias}
-                      valores={filtros}
-                      onChange={setFiltros}
-                      onOpenAdvanced={()=>setOpenFiltrosAvancados(true)}
-                      onBuscar={handleBuscar}
-                      onClear={() => { 
-                        setFiltros({ tipo:"", categoria:"", especialidade:"", preco:"", rating:"", distancia:"" });
-                        setFiltrosAvancados({ data:"", hora:"", atendimento_domicilio:false, atendimento_local:false, convenios:"" });
-                        const url = new URL(window.location.href);
-                        ['cidade','categoria','tipo','categoria_filtro','especialidade','preco_min','preco_max','rating_min','distancia_km','data','hora','at_domicilio','at_local','convenios','aba'].forEach(k=>url.searchParams.delete(k));
-                        window.history.replaceState({}, '', url.toString());
-                      } }
-                    />
-                  </div>
-
-                  {/* Filtros integrados ao Explore (mobile) */}
-                  <div className="hidden">
-                    <FiltrosBuscaPaciente
-                      categorias={categorias}
-                      valores={filtros}
-                      onChange={setFiltros}
-                      onOpenAdvanced={()=>setOpenFiltrosAvancados(true)}
-                      onBuscar={handleBuscar}
-                      onClear={() => { 
-                        setFiltros({ tipo:"", categoria:"", especialidade:"", preco:"", rating:"", distancia:"" });
-                        setFiltrosAvancados({ data:"", hora:"", atendimento_domicilio:false, atendimento_local:false, convenios:"" });
-                        const url = new URL(window.location.href);
-                        ['cidade','categoria','tipo','categoria_filtro','especialidade','preco_min','preco_max','rating_min','distancia_km','data','hora','at_domicilio','at_local','convenios','aba'].forEach(k=>url.searchParams.delete(k));
-                        window.history.replaceState({}, '', url.toString());
-                      } }
-                    />
-                  </div>
-
-
-                                     <Button
-                                     onClick={handleBuscar}
-                                     className="h-10 sm:h-11 md:h-12 bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold shadow-lg hover:shadow-xl transition-all text-sm sm:text-base border-2 border-[#2C2C2C]"
-                                     >
-                                     <Search className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                                     Buscar
-                                     </Button>
+                  <p className="text-xs text-gray-600">Dica: digite sua intenção em linguagem natural e nós encontramos o procedimento/tratamento para você.</p>
                 </div>
               </div>
 
@@ -609,18 +574,18 @@ export default function Inicio() {
 
             {/* CTA educativo: Profissionais regulamentados */}
             <div className="mt-6 max-w-3xl mx-auto text-center px-4">
-              <p className="text-xs sm:text-sm text-white/90 mb-1 font-medium">
+              <p className="text-sm sm:text-base text-white mb-1 font-semibold">
                 Não sabe qual profissional pode realizar o procedimento que você deseja?
               </p>
-              <p className="text-[11px] sm:text-sm text-white/80 mb-3">
-                Descubra quais profissionais são autorizados a realizar cada tipo de procedimento estético com base nos conselhos regulamentadores da saúde no Brasil.
+              <p className="text-xs sm:text-sm text-white/90 mb-4">
+                Veja quais especialistas são autorizados de acordo com os conselhos profissionais da saúde.
               </p>
               <Button
-                variant="outline"
-                className="bg-white text-[#2C2C2C] hover:bg-gray-100 font-semibold border-2 border-white"
-                onClick={() => document.getElementById('profissionais-regulamentados')?.scrollIntoView({ behavior: 'smooth' })}
+                className="h-12 px-6 bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-extrabold shadow-xl hover:shadow-2xl border-2 border-[#2C2C2C] transition-transform hover:-translate-y-0.5"
+                onClick={() => document.getElementById('profissionais-regulamentados')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
               >
-                Descubra aqui
+                <span className="mr-2">🔎</span>
+                Descubra qual profissional pode realizar seu procedimento
               </Button>
             </div>
           </motion.section>
@@ -1269,6 +1234,23 @@ export default function Inicio() {
             </div>
             </div>
             </section>
+
+      {/* Como funciona o Mapa da Estética */}
+      <section className="py-12 sm:py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">Como funciona o Mapa da Estética</h2>
+          <p className="text-gray-700 max-w-4xl">
+            O Mapa da Estética é um mapa interativo onde você pode descobrir profissionais e estabelecimentos especializados próximos de você.
+            Cada profissional ou clínica pode anunciar seus serviços dentro da plataforma, aparecendo tanto nos resultados de busca quanto diretamente no mapa interativo.
+          </p>
+          <ul className="mt-4 grid sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm text-gray-800">
+            <li className="bg-gray-50 border rounded-lg p-3">• encontrar especialistas próximos</li>
+            <li className="bg-gray-50 border rounded-lg p-3">• visualizar avaliações</li>
+            <li className="bg-gray-50 border rounded-lg p-3">• ver os procedimentos oferecidos</li>
+            <li className="bg-gray-50 border rounded-lg p-3">• acessar localização e rotas diretamente pelo Google Maps</li>
+          </ul>
+        </div>
+      </section>
 
       <RegulamentacaoEstetica />
 

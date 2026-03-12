@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { createPageUrl } from "@/utils";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Card, CardContent } from "@/components/ui/card";
@@ -187,6 +187,7 @@ export default function Mapa() {
   const [mostrarSeletorProcedimentos, setMostrarSeletorProcedimentos] = useState(false);
   const [agendarOpen, setAgendarOpen] = useState(false);
   const [itemAgendar, setItemAgendar] = useState(null);
+  const [selectedAd, setSelectedAd] = useState(null);
   const [mostrarInfoFiltros, setMostrarInfoFiltros] = useState(false);
   const [mostrarInfoPreco, setMostrarInfoPreco] = useState(false);
   const [categoriaOutrosTexto, setCategoriaOutrosTexto] = useState("");
@@ -273,6 +274,8 @@ export default function Mapa() {
       const catFiltro = p.get('categoria_filtro');
       const cid = p.get('cidade');
       const aba = p.get('aba');
+      const proc = p.get('procedimento');
+      const trat = p.get('tratamento');
       const distKm = p.get('distancia_km');
       const tipo = p.get('tipo');
       const pmin = p.get('preco_min');
@@ -284,7 +287,9 @@ export default function Mapa() {
         setCidade(cid);
         setBuscaCidade(cid);
       }
-      if (aba) setAbaSelecionada(aba);
+      if (aba) setAbaSelecionada(aba); else if (proc || trat) setAbaSelecionada('anuncios');
+      if (proc) setProcedimento(proc);
+      if (trat) setTratamento(trat);
       if (distKm) setDistancia(distKm);
       if (tipo) setTipoAnuncio(tipo);
       if (pmin || pmax) {
@@ -832,13 +837,45 @@ export default function Mapa() {
                   ))}
                 </div>
               ) : anunciosFiltrados.length === 0 ? (
-                <div className="text-center py-12">
-                  <Sparkles className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">Nenhum anúncio encontrado para os filtros selecionados</p>
-                  <p className="text-sm text-gray-500 mt-2">Tente ajustar os filtros ou limpar a busca</p>
-                  <Button onClick={limparFiltros} className="mt-4 bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C]">
-                    Limpar Filtros
-                  </Button>
+                <div className="py-4">
+                  <div className="text-center mb-4">
+                    <Sparkles className="w-10 h-10 text-gray-400 mx-auto mb-2" />
+                    <p className="text-gray-700 font-semibold">Sem anúncios nesta busca — veja categorias populares</p>
+                  </div>
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {[
+                      {nome:'Clínica de Estética', icon:'💆', exemplos:['botox','preenchimento','bioestimulador']},
+                      {nome:'Spa', icon:'🌿', exemplos:['drenagem linfática','massagem relaxante','detox corporal']},
+                      {nome:'Salão de Beleza', icon:'💇', exemplos:['design de sobrancelha','escova','maquiagem']},
+                      {nome:'Harmonização Facial', icon:'✨', exemplos:['toxina botulínica','preenchimentos','fios de sustentação']},
+                      {nome:'Depilação a Laser', icon:'🔆', exemplos:['axilas','pernas','virilha']},
+                      {nome:'Tratamentos Corporais', icon:'💪', exemplos:['criolipólise','radiofrequência','ultrassom']},
+                      {nome:'Tratamentos Faciais', icon:'🧖‍♀️', exemplos:['limpeza de pele','peeling','microagulhamento']},
+                      {nome:'Capilar', icon:'🧴', exemplos:['queda de cabelo','fortalecimento','terapias do couro cabeludo']},
+                      {nome:'Odonto Estética', icon:'😁', exemplos:['harmonização orofacial','lipo de papada enzimática','toxina facial']},
+                      {nome:'Dermatologia', icon:'🩺', exemplos:['laser médico','peelings médicos','cirurgia dermatológica']},
+                      {nome:'Biomedicina Estética', icon:'🔬', exemplos:['bioestimuladores','intradermoterapia','toxina']},
+                      {nome:'Farmácia Estética', icon:'💉', exemplos:['toxina','peelings','microagulhamento']},
+                      {nome:'Enfermagem Estética', icon:'🩹', exemplos:['microagulhamento','peelings','laser estético']},
+                      {nome:'Fisioterapia Dermato', icon:'🏃‍♀️', exemplos:['drenagem','radiofrequência','criolipólise']},
+                      {nome:'Podologia', icon:'🦶', exemplos:['unhas','calosidades','cuidados']},
+                      {nome:'Massoterapia', icon:'💆‍♂️', exemplos:['relaxante','modeladora','drenagem']},
+                      {nome:'Cosmetologia', icon:'🧴', exemplos:['cuidados com a pele','dermatocosméticos','protocolos']},
+                    ].map((c)=> (
+                      <Card key={c.nome} className="border shadow-sm">
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-bold text-gray-900">{c.icon} {c.nome}</h4>
+                            <Button size="sm" variant="outline" onClick={()=>{ const base=createPageUrl('Mapa'); window.location.href=`${base}?aba=anuncios&procedimento=${encodeURIComponent(c.exemplos[0])}`; }}>Ver profissionais</Button>
+                          </div>
+                          <p className="text-xs text-gray-600">Procedimentos populares:</p>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {c.exemplos.map((e)=> <Badge key={e} className="bg-gray-100 text-gray-800">{e}</Badge>)}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 transition-opacity duration-300">
@@ -1171,14 +1208,26 @@ export default function Mapa() {
                         key={`anuncio-${a.id}`}
                         position={[a.latitude, a.longitude]}
                         icon={criarIconeAnuncio(!!a.profissional_verificado, (!!a.em_destaque || !!a.impulsionado || ['ouro','diamante','platina'].includes(a.plano)))}
+                        eventHandlers={{ click: () => setItemAgendar({ ...a, tipo: 'anuncio' }) }}
                       >
+                        <Tooltip direction="top" offset={[0,-10]} opacity={1} permanent={false}>
+                          <div className="text-xs">
+                            <p className="font-bold line-clamp-1">{a.titulo}</p>
+                            <p className="opacity-80 line-clamp-1">{a.profissao || a.categoria}</p>
+                            {Array.isArray(a.procedimentos_servicos) && a.procedimentos_servicos[0] && (
+                              <p className="opacity-80 line-clamp-1">Proc.: {a.procedimentos_servicos[0]}</p>
+                            )}
+                            {a.estrelas_estabelecimento && (<p>⭐ {a.estrelas_estabelecimento}</p>)}
+                            <button className="mt-1 text-pink-600 font-semibold underline" onClick={()=>window.location.href=`${createPageUrl('DetalhesAnuncio')}?id=${a.id}`}>Ver detalhes</button>
+                          </div>
+                        </Tooltip>
                         <Popup>
                           <div className="p-2 min-w-[220px]">
                             <p className="font-bold text-gray-900 mb-1">{a.titulo}</p>
                             {a.profissional && (<p className="text-xs text-gray-600 mb-1">{a.profissional}</p>)}
                             {a.cidade && (<p className="text-xs text-gray-600 mb-2">{a.cidade} - {a.estado}</p>)}
                             <div className="flex items-center gap-2 mt-2">
-                              <button className="text-xs text-pink-600 font-semibold hover:underline" onClick={()=>window.location.href=`${createPageUrl("DetalhesAnuncio")}?id=${a.id}`}>
+                              <button className="text-xs text-pink-600 font-semibold hover:underline" onClick={()=>window.location.href=`${createPageUrl('DetalhesAnuncio')}?id=${a.id}`}>
                                 Ver anúncio
                               </button>
                               <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => { const base='https://wa.me/5521980343873'; const msg = encodeURIComponent(`Olá! Vim pelo Mapa da Estética e gostaria de agendar ${a.titulo}. Poderia me passar mais informações?`); window.open(`${base}?text=${msg}`, '_blank'); }}>
@@ -1272,6 +1321,36 @@ export default function Mapa() {
         onClose={(ok) => { setAgendarOpen(false); setItemAgendar(null); if (ok) alert('Agendamento confirmado!'); }}
         item={itemAgendar}
       />
+
+      {/* Quick view anúncio */}
+      {selectedAd && (
+        <div className="fixed inset-0 bg-black/50 z-[2000] flex items-center justify-center p-4" onClick={()=>setSelectedAd(null)}>
+          <div className="bg-white rounded-xl max-w-lg w-full shadow-2xl overflow-hidden" onClick={(e)=>e.stopPropagation()}>
+            <div className="p-4 border-b">
+              <h3 className="text-xl font-bold">{selectedAd.titulo}</h3>
+              {selectedAd.profissional && (<p className="text-sm text-gray-600">{selectedAd.profissional} • {selectedAd.profissao}</p>)}
+            </div>
+            <div className="p-4 space-y-2 max-h-[70vh] overflow-y-auto">
+              {Array.isArray(selectedAd.procedimentos_servicos) && selectedAd.procedimentos_servicos.length>0 && (
+                <div className="flex flex-wrap gap-1">
+                  {selectedAd.procedimentos_servicos.map((p,i)=> <span key={i} className="text-xs bg-gray-100 px-2 py-0.5 rounded">{p}</span>)}
+                </div>
+              )}
+              {selectedAd.descricao && (<p className="text-sm text-gray-700 whitespace-pre-wrap">{selectedAd.descricao}</p>)}
+              {selectedAd.endereco && (<p className="text-sm">📍 {selectedAd.endereco} {selectedAd.cidade?`, ${selectedAd.cidade}`:''}{selectedAd.estado?` - ${selectedAd.estado}`:''}</p>)}
+            </div>
+            <div className="p-4 border-t flex gap-2 justify-end">
+              <Button variant="outline" onClick={()=>window.location.href=`${createPageUrl('DetalhesAnuncio')}?id=${selectedAd.id}`}>Ver anúncio</Button>
+              {localizacaoUsuario && selectedAd.latitude && selectedAd.longitude && (
+                <Button onClick={()=>{ const url = `https://www.google.com/maps/dir/?api=1&origin=${localizacaoUsuario.lat},${localizacaoUsuario.lng}&destination=${selectedAd.latitude},${selectedAd.longitude}`; window.open(url,'_blank'); }}>Ver rota</Button>
+              )}
+              {selectedAd.whatsapp && (
+                <Button className="bg-green-600 hover:bg-green-700" onClick={()=> window.open(`https://wa.me/${String(selectedAd.whatsapp).replace(/\D/g,'')}`, '_blank')}>WhatsApp</Button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
        {/* Modal Seletor de Procedimentos */}
       <SeletorProcedimentos
