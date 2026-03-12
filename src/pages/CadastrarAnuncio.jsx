@@ -805,7 +805,7 @@ Gere APENAS o título, sem aspas ou explicações adicionais.`;
   // Função para gerar anúncio completo com IA
   const handleGerarAnuncioIA = async () => {
     if (!((user?.plano_ativo||user?.plano||'').toLowerCase().includes('premium')) || !dadosGeradorIA.tipo_negocio || !dadosGeradorIA.especialidade_principal) {
-      setErro("Recurso Premium: faça upgrade e preencha os campos obrigatórios!");
+      setErro("Recurso Prime/Premium: faça upgrade e preencha os campos obrigatórios!");
       return;
     }
 
