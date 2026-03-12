@@ -729,7 +729,7 @@ ${formData.faixa_preco ? `Faixa de preço: ${formData.faixa_preco}` : ''}`;
   // Função para solicitar ajuda com título
   const handleSolicitarAjudaTitulo = async () => {
     if (!((user?.plano_ativo||user?.plano||'').toLowerCase().includes('premium')) || !formData.categoria) {
-      setErro("Recurso Premium: faça upgrade e preencha categoria para receber sugestões!");
+      setErro("Recurso Prime/Premium: faça upgrade e preencha categoria para receber sugestões!");
       return;
     }
 
