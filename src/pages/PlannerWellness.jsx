@@ -3,12 +3,14 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import CardAnuncio from "../components/anuncios/CardAnuncio";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Target, Calendar, Clock, ShieldCheck, Save } from "lucide-react";
+import { Plus, Trash2, Target, Calendar, Clock, ShieldCheck, Save, MapPin, DollarSign, User } from "lucide-react";
 
 const SUGESTOES_METAS = [
   "Rejuvenescimento", "Redução de manchas", "Melhorar textura da pele", "Reduzir gordura localizada", "Ganhar tônus", "Relaxamento / bem-estar"
@@ -46,6 +48,30 @@ export default function PlannerWellness() {
       setCompartilhar(meta.compartilhar_com_profissionais ?? true);
     }
   }, [meta]);
+
+  const PROCEDURES = ["Botox","Preenchimento","Laser","Limpeza de pele","Tratamento para manchas","Depilação a laser","Rejuvenescimento facial"];
+  const [step, setStep] = useState(1);
+  const [selectedProcs, setSelectedProcs] = useState([]);
+  const [budgets, setBudgets] = useState({});
+  const [customBudgets, setCustomBudgets] = useState({});
+  const [prefCity, setPrefCity] = useState("");
+  const [maxDist, setMaxDist] = useState("");
+  const [prefType, setPrefType] = useState("indiferente");
+  const [matches, setMatches] = useState([]);
+  const [loadingMatch, setLoadingMatch] = useState(false);
+  const [userLoc, setUserLoc] = useState(null);
+
+  useEffect(()=>{
+    if (planner) {
+      setSelectedProcs((planner.procedures||[]).map(p=>p.nome));
+      const b = {}; const c = {};
+      (planner.procedures||[]).forEach(p=>{ b[p.nome]=p.faixa||''; if (p.valor_custom) c[p.nome]=p.valor_custom; });
+      setBudgets(b); setCustomBudgets(c);
+      setPrefCity(planner.cidade||"");
+      setMaxDist(planner.distancia_km? String(planner.distancia_km):"");
+      setPrefType(planner.preferencia||"indiferente");
+    }
+  }, [planner]);
 
   const upsertMeta = useMutation({
     mutationFn: async () => {
@@ -97,13 +123,146 @@ export default function PlannerWellness() {
   });
 
   const addSlot = () => setSlots((s)=> [...s, { dia_semana: "seg", inicio: "09:00", fim: "18:00" }]);
+
+  const upsertPlanner = useMutation({
+    mutationFn: async (payload) => {
+      if (!email) return null;
+      if (planner?.id) return base44.entities.WellnessPlanner.update(planner.id, payload);
+      return base44.entities.WellnessPlanner.create(payload);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["wellness-planner", email] })
+  });
+
+  const mapBudgetToFaixas = (code, custom) => {
+    switch (code) {
+      case 'ate300': return ['$', '$$'];
+      case '300-600': return ['$$'];
+      case '600-1000': return ['$$$'];
+      case '1000+': return ['$$$', '$$$$', '$$$$$'];
+      case 'custom': {
+        const v = Number(custom||0);
+        if (v<=200) return ['$'];
+        if (v<=500) return ['$$'];
+        if (v<=3000) return ['$$$'];
+        if (v<=5000) return ['$$$$'];
+        return ['$$$$$'];
+      }
+      default: return [];
+    }
+  };
+
+  const haversine = (lat1, lon1, lat2, lon2) => {
+    const R=6371; const dLat=(lat2-lat1)*Math.PI/180; const dLon=(lon2-lon1)*Math.PI/180;
+    const a=Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+    return 2*R*Math.asin(Math.sqrt(a));
+  };
+
+  const generateMatches = async () => {
+    setLoadingMatch(true);
+    try {
+      const anuncios = await base44.entities.Anuncio.filter({ status: 'ativo' }, '-created_date', 500);
+      const procSet = new Set(selectedProcs.map(p=>p.toLowerCase()));
+      const recs = [];
+      anuncios.forEach(a=>{
+        const texto = `${a.titulo||''} ${(a.descricao||'')}`.toLowerCase();
+        const tags = (a.tags||[]).map(t=> (t||'').toLowerCase());
+        const procs = (a.procedimentos_servicos||[]).map(p=>(p||'').toLowerCase());
+        const matchProc = [...procSet].some(p=> texto.includes(p) || tags.includes(p) || procs.includes(p));
+        if (!matchProc) return;
+        // price compatibility
+        const anyFaixaOk = [...procSet].some(p=>{
+          const code = budgets[p]||''; const custom = customBudgets[p]||null;
+          const faixas = mapBudgetToFaixas(code, custom);
+          return faixas.includes(a.faixa_preco);
+        });
+        if (!anyFaixaOk) return;
+        // city / distance
+        if (prefCity && a.cidade && !a.cidade.toLowerCase().includes(prefCity.toLowerCase())) return;
+        let dist = null;
+        if (userLoc && a.latitude && a.longitude) {
+          dist = haversine(userLoc.lat, userLoc.lng, a.latitude, a.longitude);
+          if (maxDist && Number(maxDist)>0 && dist > Number(maxDist)) return;
+        }
+        const stars = a.estrelas_estabelecimento || 0;
+        const pops = a.visualizacoes || 0;
+        const priceScore = 1; // matched
+        const distScore = dist==null ? 0.5 : (dist<=5?1: dist<=10?0.8: dist<=20?0.6: 0.3);
+        const score = priceScore*3 + distScore + stars*0.2 + Math.min(pops/100,1)*0.5;
+        recs.push({ a, score, dist });
+      });
+      recs.sort((x,y)=> y.score - x.score);
+      setMatches(recs.slice(0,24).map(r=>r.a));
+    } finally { setLoadingMatch(false); }
+  };
+
+  const salvarERecomendar = async () => {
+    const payload = {
+      user_email: email,
+      procedures: selectedProcs.map(p=>({ nome: p, faixa: budgets[p]||'', valor_custom: customBudgets[p]||null })),
+      cidade: prefCity || undefined,
+      distancia_km: maxDist? Number(maxDist): undefined,
+      preferencia: prefType
+    };
+    await upsertPlanner.mutateAsync(payload);
+    await generateMatches();
+    document.getElementById('recomendacoes-planner')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const pedirLocalizacao = () => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition((pos)=> setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude }));
+  };
+
   const removeSlot = (idx) => setSlots((s)=> s.filter((_,i)=> i!==idx));
   const setSlot = (idx, field, val) => setSlots((s)=> s.map((sl,i)=> i===idx? { ...sl, [field]: val } : sl));
 
   const totalAg = ags.length;
   const totalProc = procs.length;
 
-  return (
+  // Profissionais: agregados do planner
+  function ProfInsightsInner() {
+    const [stats, setStats] = useState({ top: [], dist: [] });
+    useEffect(()=>{ (async()=>{
+      try {
+        const all = await base44.entities.WellnessPlanner.list('-created_date', 1000);
+        const procCount = {};
+        const budgetCount = {};
+        (all||[]).forEach(w=>{
+          (w.procedures||[]).forEach(p=>{
+            procCount[p.nome] = (procCount[p.nome]||0)+1;
+            const k = `${p.nome}|${p.faixa||'custom'}`;
+            budgetCount[k] = (budgetCount[k]||0)+1;
+          });
+        });
+        const top = Object.entries(procCount).sort((a,b)=> b[1]-a[1]).slice(0,5);
+        const focus = top[0]?.[0];
+        const dist = Object.entries(budgetCount)
+          .filter(([k])=> k.startsWith((focus||'')+"|"))
+          .map(([k,v])=> ({ faixa: k.split('|')[1], v }))
+          .sort((a,b)=> b.v-a.v);
+        setStats({ top, dist });
+      } catch {}
+    })(); }, []);
+    return (
+      <div className="grid md:grid-cols-2 gap-4">
+        <div>
+          <h4 className="font-semibold">Mais procurados</h4>
+          <ul className="text-sm mt-2 space-y-1">
+            {stats.top.map(([nome, v])=> <li key={nome} className="flex items-center justify-between"><span>{nome}</span><span className="text-gray-500">{v}</span></li>)}
+          </ul>
+        </div>
+        <div>
+          <h4 className="font-semibold">Faixa de investimento — foco</h4>
+          <ul className="text-sm mt-2 space-y-1">
+            {stats.dist.map((d)=> <li key={d.faixa} className="flex items-center justify-between"><span>{d.faixa}</span><span className="text-gray-500">{d.v}</span></li>)}
+          </ul>
+        </div>
+      </div>
+    );
+  }
+  const ProfInsights = ProfInsightsInner;
+
+   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white p-6">
       <div className="max-w-5xl mx-auto space-y-8">
         <div className="flex items-center gap-3">
@@ -119,6 +278,110 @@ export default function PlannerWellness() {
             <p className="text-sm"><strong>Para patrocinadores:</strong> oferece visão de interesses e rotinas (de forma agregada) para ações mais relevantes.</p>
           </CardContent>
         </Card>
+
+        {/* Planner (Paciente) - Passos */}
+        {!isProf && (
+          <Card className="border-2 border-emerald-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-emerald-700"><Target className="w-5 h-5"/> Wellness Planner</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <div className="flex items-center justify-between text-sm"><span>Etapa {step} de 3</span><button className="text-blue-600 underline" onClick={pedirLocalizacao}>Usar minha localização</button></div>
+                <Progress value={(step/3)*100} className="h-2" />
+              </div>
+
+              {step===1 && (
+                <div>
+                  <p className="text-sm text-gray-700 mb-2">Quais tratamentos/procedimentos você deseja realizar?</p>
+                  <div className="flex flex-wrap gap-2">
+                    {PROCEDURES.map(p=>{
+                      const on = selectedProcs.includes(p);
+                      return (
+                        <button key={p} onClick={()=> setSelectedProcs(prev=> on? prev.filter(x=>x!==p): [...prev, p])} className={`px-3 py-1 rounded-full border text-sm ${on? 'bg-emerald-600 text-white border-emerald-600' : 'hover:bg-emerald-50'}`}>{p}</button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {step===2 && (
+                <div className="space-y-3">
+                  <p className="text-sm text-gray-700">Quanto você está disposto(a) a investir em cada procedimento?</p>
+                  {selectedProcs.length===0 && (<p className="text-xs text-gray-500">Selecione ao menos um procedimento na etapa anterior.</p>)}
+                  {selectedProcs.map(p=> (
+                    <div key={p} className="grid md:grid-cols-3 gap-2 items-center">
+                      <div className="font-medium text-sm flex items-center gap-2"><DollarSign className="w-4 h-4"/> {p}</div>
+                      <Select value={budgets[p]||""} onValueChange={(v)=> setBudgets(s=> ({...s, [p]: v}))}>
+                        <SelectTrigger><SelectValue placeholder="Faixa de investimento"/></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="ate300">Até R$300</SelectItem>
+                          <SelectItem value="300-600">R$300–R$600</SelectItem>
+                          <SelectItem value="600-1000">R$600–R$1000</SelectItem>
+                          <SelectItem value="1000+">R$1000+</SelectItem>
+                          <SelectItem value="custom">Outro (valor)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {(budgets[p]==='custom') && (
+                        <Input type="number" placeholder="R$" value={customBudgets[p]||""} onChange={(e)=> setCustomBudgets(s=> ({...s, [p]: e.target.value}))} />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {step===3 && (
+                <div className="grid md:grid-cols-3 gap-3">
+                  <div>
+                    <label className="text-sm font-medium flex items-center gap-2"><MapPin className="w-4 h-4"/>Cidade</label>
+                    <Input value={prefCity} onChange={(e)=> setPrefCity(e.target.value)} placeholder="Ex.: São Paulo" />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Distância máxima (km)</label>
+                    <Select value={maxDist} onValueChange={setMaxDist}>
+                      <SelectTrigger><SelectValue placeholder="Qualquer"/></SelectTrigger>
+                      <SelectContent>
+                        {["5","10","20","50",""].map(v=> <SelectItem key={v||'qualquer'} value={v}>{v?`Até ${v} km`:'Qualquer'}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium flex items-center gap-2"><User className="w-4 h-4"/> Preferência</label>
+                    <Select value={prefType} onValueChange={setPrefType}>
+                      <SelectTrigger><SelectValue placeholder="Indiferente"/></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="indiferente">Indiferente</SelectItem>
+                        <SelectItem value="profissional">Profissional</SelectItem>
+                        <SelectItem value="clinica">Clínica</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex justify-between">
+                <Button variant="outline" disabled={step===1} onClick={()=> setStep(s=> Math.max(1, s-1))}>Voltar</Button>
+                {step<3 ? (
+                  <Button onClick={()=> setStep(s=> Math.min(3, s+1))}>Avançar</Button>
+                ) : (
+                  <Button onClick={salvarERecomendar} className="bg-emerald-600 hover:bg-emerald-700 text-white">Salvar & Ver Recomendações</Button>
+                )}
+              </div>
+
+              <div id="recomendacoes-planner" className="pt-2">
+                {(loadingMatch) && (<div className="text-sm text-gray-600">Buscando recomendações…</div>)}
+                {!loadingMatch && matches.length>0 && (
+                  <div className="mt-3">
+                    <h3 className="font-semibold mb-2">Recomendações para você</h3>
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      {matches.map(anuncio=> <CardAnuncio key={anuncio.id} anuncio={anuncio} />)}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Métricas rápidas */}
         <div className="grid sm:grid-cols-2 gap-4">
@@ -163,6 +426,18 @@ export default function PlannerWellness() {
             <Button onClick={()=> upsertMeta.mutate()} className="bg-blue-600 hover:bg-blue-700 text-white"><Save className="w-4 h-4 mr-2"/>Salvar Metas</Button>
           </CardContent>
         </Card>
+
+        {/* Inteligência do Planner (Profissionais) */}
+        {isProf && (
+          <Card className="border-2 border-emerald-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-emerald-700"><Target className="w-5 h-5"/> Inteligência do Planner — Visão de Mercado</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ProfInsights />
+            </CardContent>
+          </Card>
+        )}
 
         {/* Disponibilidade do Profissional (opcional) */}
         {isProf && (

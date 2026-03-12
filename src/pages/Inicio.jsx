@@ -753,42 +753,24 @@ export default function Inicio() {
           {/* Anúncios em Destaque */}
 
 
-          {/* Dr da Beleza */}
+          {/* Wellness Planner — Destaque */}
           <section className="py-8 bg-gradient-to-r from-[#F7D426] to-[#FFE066]">
             <div className="max-w-7xl mx-auto px-4">
               <Card className="border-none shadow-2xl bg-white/95 backdrop-blur overflow-hidden">
                 <CardContent className="p-6 md:p-8">
                   <div className="flex flex-col md:flex-row items-center gap-6">
-                    <div className="w-32 h-32 md:w-40 md:h-40 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg overflow-hidden">
-                      <img
-                        src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/8b8866b2d_drbeleza.png"
-                        alt="Dr da Beleza"
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/04265179e_drbeleza.png';
-                        }}
-                      />
-                    </div>
                     <div className="flex-1 text-center md:text-left">
-                      <Badge className="mb-2 bg-[#F7D426] text-[#2C2C2C] border-none font-bold">
-                        Consulte Tratamentos Agora
-                      </Badge>
-                      <h2 className="text-2xl md:text-3xl font-bold text-[#2C2C2C] mb-2">
-                        Dr da Beleza - Seu Assistente Inteligente
-                      </h2>
-                      <p className="text-gray-600 mb-4">
-                        Descubra como funciona e qual o tratamento certo para você com inteligência artificial
-                      </p>
+                      <Badge className="mb-2 bg-[#F7D426] text-[#2C2C2C] border-none font-bold">Novo • Wellness Planner</Badge>
+                      <h2 className="text-2xl md:text-3xl font-bold text-[#2C2C2C]">Planeje sua Jornada de Beleza</h2>
+                      <p className="text-gray-700 mt-2">Descubra quais tratamentos fazem sentido para você e encontre profissionais dentro do seu orçamento.</p>
+                      <p className="text-gray-600 text-sm mt-1">Informe os procedimentos de interesse e quanto pretende investir; nós recomendamos quem atende sua faixa de preço.</p>
                     </div>
-                    <Button 
-                      onClick={handleAcessarDrBeleza}
-                      size="lg" 
-                      className="bg-[#2C2C2C] hover:bg-[#3A3A3A] text-[#F7D426] font-bold shadow-xl flex-shrink-0"
-                    >
-                      Acessar Dr da Beleza
-                      <ArrowRight className="w-5 h-5 ml-2" />
-                    </Button>
+                    <a href={createPageUrl('PlannerWellness')} className="flex-shrink-0">
+                      <Button size="lg" className="bg-[#2C2C2C] hover:bg-[#3A3A3A] text-[#F7D426] font-bold shadow-xl">
+                        Criar meu Wellness Planner
+                        <ArrowRight className="w-5 h-5 ml-2" />
+                      </Button>
+                    </a>
                   </div>
                 </CardContent>
               </Card>
