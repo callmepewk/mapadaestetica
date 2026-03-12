@@ -239,10 +239,26 @@ export default function Mapa() {
     const q = (busca||'').toLowerCase();
     if (!q.trim()) return;
     for (const [canon, syns] of Object.entries(MAP_KEYWORDS.procedimentos)) {
-      if (syns.some(s => q.includes(s))) { setProcedimento(canon); setTratamento(''); return; }
+      if (syns.some(s => q.includes(s))) {
+        setProcedimento(canon);
+        setTratamento('');
+        setCategoria('');
+        return;
+      }
     }
     for (const [canon, syns] of Object.entries(MAP_KEYWORDS.tratamentos)) {
-      if (syns.some(s => q.includes(s))) { setTratamento(canon); setProcedimento(''); return; }
+      if (syns.some(s => q.includes(s))) {
+        setTratamento(canon);
+        setProcedimento('');
+        setCategoria('');
+        return;
+      }
+    }
+    // Se não casar, tenta categoria genérica
+    if (q.includes('clínica') || q.includes('clinica')) {
+      setCategoria('Clínica de Estética');
+      setProcedimento('');
+      setTratamento('');
     }
   };
 
