@@ -48,7 +48,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import ExplicadorCadastroAnuncio from "../components/anuncios/ExplicadorCadastroAnuncio";
 import AutoSubcategoriaIA from "../components/anuncios/AutoSubcategoriaIA";
 import AutoTagsIA from "../components/anuncios/AutoTagsIA";
-import { categoriasAgrupadas } from "../components/anuncios/CategoriasData"; import CategoriaSelector from "../components/anuncios/CategoriaSelector";
+import AnuncioCategoriasSection from "../components/anuncios/AnuncioCategoriasSection";
 
 // Categorias movidas para components/anuncios/CategoriasData.js (categoriasAgrupadas)
 
@@ -1079,8 +1079,12 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
         } catch {}
       }
 
+      const secundarias = (formData.categorias_secundarias || []).filter(c => c && c !== formData.categoria);
       const anuncioData = {
-        ...formData, categoria: formData.categoria === 'Outros' ? (formData.categoria_outros || formData.subcategoria || 'Outros') : formData.categoria,
+        ...formData,
+        categoria: formData.categoria,
+        categoria_clinica: formData.categoria_clinica || formData.categoria_outros || formData.categoria_clinica,
+        categorias_secundarias: secundarias,
         latitude: lat || formData.latitude,
         longitude: lon || formData.longitude,
         endereco: enderecoCompleto || formData.endereco, // Usar endereço montado ou o campo legado
@@ -1238,12 +1242,7 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
                 </div>
 
                 <div>
-                  <CategoriaSelector
-                    value={formData.categoria}
-                    onChange={(v)=>handleInputChange('categoria', v)}
-                    categoriaOutros={formData.categoria_outros}
-                    onChangeOutros={(t)=>handleInputChange('categoria_outros', t)}
-                  />
+                  <AnuncioCategoriasSection formData={formData} setFormData={setFormData} />
                 </div>
               </div>
 
