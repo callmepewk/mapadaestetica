@@ -1161,9 +1161,7 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-bold text-sm sm:text-base md:text-lg mb-1">Gerar Anúncio com IA</h3>
-                  <p className="text-xs sm:text-sm text-gray-600 line-clamp-2">
-                    Preencha informações básicas e deixe a IA criar seu anúncio completo
-                  </p>
+                  <p className="text-xs sm:text-sm text-gray-600 line-clamp-2">Preencha informações básicas e deixe a IA criar seu anúncio completo • Recurso disponível apenas para planos Prime e Premium</p>
                 </div>
               </div>
             </CardContent>
@@ -1177,9 +1175,7 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-bold text-sm sm:text-base md:text-lg mb-1">Ajuda com Descrição IA</h3>
-                  <p className="text-xs sm:text-sm text-gray-600 line-clamp-2">
-                    Receba sugestões de descrição baseadas no seu título e categoria
-                  </p>
+                  <p className="text-xs sm:text-sm text-gray-600 line-clamp-2">Receba sugestões de descrição baseadas no seu título e categoria • Recurso disponível apenas para planos Prime e Premium</p>
                 </div>
               </div>
             </CardContent>
@@ -1393,7 +1389,7 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
               </div>
 
               {/* Recompensas (Pontos e Beauty Coins) */}
-              <div className="rounded-lg border-2 border-yellow-200 bg-yellow-50 p-4 sm:p-5">
+              {['pontos','beauty_coins'].includes(formData.forma_cobranca) && (<div className="rounded-lg border-2 border-yellow-200 bg-yellow-50 p-4 sm:p-5">
                 <div className="flex items-center justify-between mb-3">
                   <Label className="text-sm font-semibold text-yellow-900">Recompensas do Anúncio</Label>
                   <Button
@@ -1429,9 +1425,7 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
                     />
                   </div>
                 </div>
-                <p className="text-xs text-yellow-800 mt-2">
-                  Dica: use a IA para estimar automaticamente com base no conteúdo do anúncio e imagens.
-                </p>
+                <p className="text-xs text-yellow-800 mt-2">Cada anúncio pode gerar recompensas acumulativas dentro da plataforma. Essas recompensas podem ser utilizadas posteriormente na loja de pontos para resgatar produtos ou serviços. Beauty Coins são uma moeda digital do Clube da Beleza que pode ser acumulada e utilizada para resgatar produtos ou serviços dentro da plataforma. Dica: use a IA para estimar automaticamente com base no conteúdo do anúncio e imagens.</p>
               </div>
 
               {/* NEW FIELDS */}
@@ -2361,7 +2355,7 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
               Sugestão de Descrição com IA
             </DialogTitle>
             <DialogDescription>
-              Baseado no seu título e categoria, nossa IA gerou esta descrição profissional
+              Descrição gerada COM IA. Baseado no seu título e categoria, nossa IA gerou esta descrição profissional
             </DialogDescription>
           </DialogHeader>
 
