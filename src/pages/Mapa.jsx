@@ -618,6 +618,24 @@ export default function Mapa() {
         </div>
       </div>
 
+      {/* Busca principal */}
+      <div className="max-w-7xl mx-auto px-4 -mt-4">
+        <div className="bg-white rounded-2xl shadow p-4 md:p-6 border -translate-y-6">
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Input
+              value={busca}
+              onChange={(e)=>setBusca(e.target.value)}
+              onKeyDown={(e)=>{ if(e.key==='Enter') aplicarBuscaIntencao(); }}
+              placeholder="Busque por procedimento, tratamento ou clínica (ex.: botox, tirar estrias, limpeza de pele)"
+              className="pl-12 pr-36 h-14 text-base md:text-lg"
+            />
+            <Button onClick={aplicarBuscaIntencao} className="absolute right-2 top-1/2 -translate-y-1/2 h-10 px-5 bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold">Buscar</Button>
+          </div>
+          <p className="text-xs md:text-sm text-gray-500 mt-2">Exemplos: "botox", "tirar estrias", "limpeza de pele", "clínica estética"</p>
+        </div>
+      </div>
+
       {/* Explicação institucional */}
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="bg-white rounded-2xl border shadow-sm p-6 md:p-8">
