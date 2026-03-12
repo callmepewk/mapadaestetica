@@ -243,11 +243,84 @@ export default function Mapa() {
       'microagulhamento capilar','microagulhamento estrias'
     ],
 
-    'laser': [
-      'laser','laser facial','laser dermatológico','laser estético',
-      'laser fracionado','laser co2','laser co2 fracionado','laser erbium',
-      'laser vascular','laser pigmento'
-    ],
+'laser': [
+  'laser',
+  'laser estetico',
+  'laser dermatologico',
+  'laser facial',
+  'laser corporal',
+
+  // tipos de laser
+  'laser co2',
+  'laser co2 fracionado',
+  'laser fracionado',
+  'laser ablativo',
+  'laser nao ablativo',
+  'laser erbium',
+  'laser erbium yag',
+  'laser nd yag',
+  'laser diodo',
+  'laser alexandrite',
+  'laser rubi',
+  'laser thulium',
+  'laser pico',
+  'laser picossegundos',
+  'laser q switched',
+  'laser vascular',
+  'laser pigmento',
+  'laser resurfacing',
+
+  // aplicações
+  'laser depilacao',
+  'depilacao a laser',
+  'laser remocao de pelos',
+  'laser manchas',
+  'laser melasma',
+  'laser pigmentacao',
+  'laser cicatrizes',
+  'laser acne',
+  'laser rejuvenescimento',
+  'laser estrias',
+  'laser flacidez',
+  'laser olheiras',
+  'laser vasinhos',
+  'laser rosacea',
+
+  // equipamentos
+  'equipamento laser',
+  'aparelho laser',
+  'maquina laser estetica',
+  'plataforma laser estetica',
+  'plataforma laser dermatologica',
+  'laser profissional estetica',
+  'laser medico dermatologico',
+
+  // compra e venda
+  'venda laser',
+  'comprar laser',
+  'compra laser',
+  'laser usado',
+  'laser seminovo',
+  'laser novo',
+  'revenda laser',
+  'troca laser',
+  'permuta laser',
+
+  // aluguel
+  'aluguel laser',
+  'locacao laser',
+  'locar laser',
+  'laser aluguel',
+  'laser locacao estetica',
+  'alugar equipamento laser',
+
+  // mercado
+  'laser estetica',
+  'laser clinica estetica',
+  'laser dermatologia',
+  'laser para clinica',
+  'laser para estetica'
+],
 
     'depilação a laser': [
       'depilação a laser','depilacao a laser','laser depilação','remoção definitiva de pelos'
