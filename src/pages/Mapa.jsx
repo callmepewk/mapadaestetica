@@ -219,23 +219,216 @@ export default function Mapa() {
   const [formaCobranca, setFormaCobranca] = useState(""); // dinheiro|pontos|beauty_coins
   const [ordenarPor, setOrdenarPor] = useState('recentes');
   const MAP_KEYWORDS = {
-    procedimentos: {
-      'botox': ['botox','toxina botulinica','toxina botulínica','botox facial'],
-      'preenchimento': ['preenchimento','preenchimento labial','ácido hialurônico','preenchimentos'],
-      'microagulhamento': ['microagulhamento','dermaroller','microneedling','dermapen','dermaroller'],
-      'laser dermatológico': ['laser','laser facial','laser dermatológico','depilação a laser','laser para manchas','laser para cicatrizes'],
-      'peeling químico': ['peeling','peeling químico'],
-      'radiofrequência': ['radiofrequência','radiofrequencia','radiofrequência fracionada']
-    },
-    tratamentos: {
-      'tratamento de estrias': ['estrias','tratamento estrias','remover estrias'],
-      'tratamento de acne': ['acne','tratamento de acne','espinhas'],
-      'tratamento de melasma': ['melasma','manchas na pele','manchas'],
-      'melhora de flacidez': ['flacidez','flacidez corporal','flacidez facial'],
-      'tratamento capilar': ['queda de cabelo','calvície','afinamento capilar'],
-      'tratamento de olheiras': ['olheiras','tratamento de olheiras']
-    }
-  };
+
+  procedimentos: {
+
+    'toxina botulínica': [
+      'botox','toxina botulinica','toxina botulínica','botox facial','botox estético','botox testa',
+      'botox rugas','botox preventivo','toxina botulínica estética'
+    ],
+
+    'preenchimento': [
+      'preenchimento','preenchimento facial','preenchimento labial','ácido hialurônico',
+      'preenchimento olheiras','preenchimento bigode chines','preenchimento queixo',
+      'preenchimento mandíbula','preenchimento malar','preenchimento sulco nasogeniano'
+    ],
+
+    'bioestimulador': [
+      'bioestimulador','bioestimuladores','sculptra','ellansé','radiesse',
+      'estimulador de colágeno','bioestimulador de colágeno'
+    ],
+
+    'microagulhamento': [
+      'microagulhamento','dermaroller','microneedling','microagulhamento facial',
+      'microagulhamento capilar','microagulhamento estrias'
+    ],
+
+    'laser': [
+      'laser','laser facial','laser dermatológico','laser estético',
+      'laser fracionado','laser co2','laser co2 fracionado','laser erbium',
+      'laser vascular','laser pigmento'
+    ],
+
+    'depilação a laser': [
+      'depilação a laser','depilacao a laser','laser depilação','remoção definitiva de pelos'
+    ],
+
+    'peeling químico': [
+      'peeling','peeling químico','peeling ácido','peeling facial',
+      'peeling de fenol','peeling retinoico','peeling mandélico'
+    ],
+
+    'peeling de diamante': [
+      'peeling diamante','peeling de diamante','microdermoabrasão','dermoabrasão'
+    ],
+
+    'radiofrequência': [
+      'radiofrequência','radiofrequencia','radiofrequência facial',
+      'radiofrequência corporal','rf estética'
+    ],
+
+    'ultrassom estético': [
+      'ultrassom','ultrassom estético','ultrassom corporal','ultrassom cavitacional'
+    ],
+
+    'criolipólise': [
+      'criolipólise','criolipolise','crio gordura','congelamento de gordura',
+      'criolipólise abdominal'
+    ],
+
+    'lipo enzimática': [
+      'lipo enzimática','lipo sem cirurgia','enzimas gordura','aplicação de enzimas'
+    ],
+
+    'intradermoterapia': [
+      'intradermoterapia','mesoterapia','mesoterapia estética','mesoterapia facial'
+    ],
+
+    'skinbooster': [
+      'skinbooster','hidratação profunda','hidratação injetável'
+    ],
+
+    'fios de sustentação': [
+      'fios de sustentação','fios faciais','lifting com fios','fios pdo'
+    ],
+
+    'harmonização facial': [
+      'harmonização facial','harmonização orofacial','procedimentos faciais',
+      'full face','harmonização completa'
+    ],
+
+    'limpeza de pele': [
+      'limpeza de pele','limpeza facial','limpeza profunda','extração cravos'
+    ],
+
+    'hidratação facial': [
+      'hidratação facial','hidratação profunda pele','hidratação estética'
+    ],
+
+    'drenagem linfática': [
+      'drenagem linfática','drenagem','drenagem estética','drenagem corporal'
+    ],
+
+    'massagem modeladora': [
+      'massagem modeladora','modeladora corporal','massagem estética'
+    ],
+
+    'endermologia': [
+      'endermologia','vacuum terapia','vacuoterapia'
+    ],
+
+    'carboxiterapia': [
+      'carboxiterapia','carbox facial','carbox corporal'
+    ],
+
+    'luz intensa pulsada': [
+      'luz pulsada','luz intensa pulsada','ipl','fototerapia'
+    ],
+
+    'ledterapia': [
+      'ledterapia','terapia led','led facial'
+    ],
+
+    'jato de plasma': [
+      'jato de plasma','plasma estético','plasma lift'
+    ],
+
+    'bb glow': [
+      'bb glow','bb glow facial','efeito base permanente'
+    ],
+
+    'design de sobrancelhas': [
+      'design de sobrancelha','design sobrancelhas','sobrancelha perfeita'
+    ],
+
+    'micropigmentação': [
+      'micropigmentação','microblading','sobrancelha fio a fio',
+      'micropigmentação labial'
+    ],
+
+    'dermopigmentação': [
+      'dermopigmentação','pigmentação estética'
+    ]
+
+  },
+
+  tratamentos: {
+
+    'estrias': [
+      'estrias','tratamento estrias','remover estrias','estrias brancas','estrias vermelhas'
+    ],
+
+    'acne': [
+      'acne','espinhas','tratamento acne','espinha inflamada','acne adulta'
+    ],
+
+    'melasma': [
+      'melasma','manchas escuras','manchas na pele','clareamento melasma'
+    ],
+
+    'manchas na pele': [
+      'manchas pele','manchas solares','hiperpigmentação'
+    ],
+
+    'flacidez': [
+      'flacidez','flacidez facial','flacidez corporal','pele flácida'
+    ],
+
+    'queda de cabelo': [
+      'queda de cabelo','calvície','alopecia','tratamento capilar'
+    ],
+
+    'olheiras': [
+      'olheiras','olheira profunda','olheira escura'
+    ],
+
+    'gordura localizada': [
+      'gordura localizada','gordura abdominal','redução de gordura'
+    ],
+
+    'celulite': [
+      'celulite','tratamento celulite','reduzir celulite'
+    ],
+
+    'rejuvenescimento facial': [
+      'rejuvenescimento facial','rejuvenescer pele','anti idade','anti aging'
+    ],
+
+    'poros dilatados': [
+      'poros dilatados','poros abertos','diminuir poros'
+    ],
+
+    'cicatrizes': [
+      'cicatriz','cicatriz acne','tratamento cicatriz'
+    ],
+
+    'rosácea': [
+      'rosacea','rosácea','tratamento rosacea'
+    ],
+
+    'queda capilar feminina': [
+      'queda capilar feminina','afinamento capilar'
+    ],
+
+    'barba falhada': [
+      'barba falhada','crescimento barba'
+    ],
+
+    'clareamento de pele': [
+      'clareamento pele','clareamento facial','clareamento íntimo'
+    ],
+
+    'papada': [
+      'papada','redução papada','gordura submentoniana'
+    ],
+
+    'rugas': [
+      'rugas','linhas de expressão','rugas profundas'
+    ]
+
+  }
+
+};
   const aplicarBuscaIntencao = () => {
     const q = (busca||'').toLowerCase();
     if (!q.trim()) return;
