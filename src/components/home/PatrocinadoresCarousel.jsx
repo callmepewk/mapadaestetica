@@ -76,7 +76,7 @@ export default function PatrocinadoresCarousel() {
           >
             <Card className="group relative aspect-square overflow-hidden bg-white hover:shadow-2xl transition-all border">
               {b?.imagem_banner || b?.logo_empresa ? (
-                <img src={b.imagem_banner || b.logo_empresa} alt={b.nome_empresa || b.titulo} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                <img src={b.imagem_banner || b.logo_empresa} alt={b.nome_empresa || b.titulo} className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-4xl">🎯</div>
               )}

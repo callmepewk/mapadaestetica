@@ -715,7 +715,7 @@ export default function Inicio() {
                     <Card key={p.id || p.nome} className="border-none shadow-lg hover:shadow-xl transition-all overflow-hidden">
                       <div className="h-40 bg-gray-100 flex items-center justify-center overflow-hidden">
                         {p.imagens && p.imagens.length > 0 ? (
-                          <img src={p.imagens[0]} alt={p.nome} className="w-full h-full object-cover" />
+                          <img src={p.imagens[0]} alt={p.nome} className="w-full h-full object-cover object-center" />
                         ) : (
                           <div className="text-5xl">🧖‍♀️</div>
                         )}
@@ -770,6 +770,9 @@ export default function Inicio() {
               <Card className="border-none shadow-2xl bg-white overflow-hidden">
                 <CardContent className="p-0">
                   <div className="grid md:grid-cols-2">
+                    <div className="relative h-64 md:h-full bg-white flex items-center justify-center p-4">
+                      <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/99c3e2f47_ChatGPTImage12demarde202611_48_09.png" alt="Wellness Planner" className="max-w-full h-full object-contain object-center" />
+                    </div>
                     <div className="p-6 md:p-10">
                       <Badge className="mb-3 bg-[#F7D426] text-[#2C2C2C] border-none font-bold">Wellness Planner</Badge>
                       <h2 className="text-3xl md:text-4xl font-bold text-[#2C2C2C]">Planeje sua Jornada de Beleza</h2>
@@ -788,10 +791,6 @@ export default function Inicio() {
                           <ArrowRight className="w-5 h-5 ml-2" />
                         </Button>
                       </a>
-                    </div>
-                    <div className="relative h-64 md:h-full">
-                      <img src="https://images.unsplash.com/photo-1556228724-4f1203d05335?w=1200&q=80" alt="Estética e bem-estar" className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                     </div>
                   </div>
                 </CardContent>

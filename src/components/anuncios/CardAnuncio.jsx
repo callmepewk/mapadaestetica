@@ -38,7 +38,7 @@ export default function CardAnuncio({ anuncio, distancia, isPreview = false }) {
           <ImageWithLoader
             src={anuncio.imagem_principal}
             alt={anuncio.titulo}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-400 text-4xl sm:text-5xl md:text-6xl">

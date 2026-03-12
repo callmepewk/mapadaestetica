@@ -362,6 +362,7 @@ export default function Mapa() {
       (anuncio.titulo||'').toLowerCase().includes(key) ||
       (anuncio.descricao||'').toLowerCase().includes(key) ||
       (anuncio.profissional||'').toLowerCase().includes(key) ||
+      (anuncio.profissao||'').toLowerCase().includes(key) ||
       (anuncio.categoria||'').toLowerCase().includes(key) ||
       (anuncio.subcategoria||'').toLowerCase().includes(key) ||
       (anuncio.procedimentos_servicos||[]).some(p => (p||'').toLowerCase().includes(key)) ||
