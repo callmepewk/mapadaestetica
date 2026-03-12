@@ -219,21 +219,20 @@ export default function Mapa() {
   const [ordenarPor, setOrdenarPor] = useState('recentes');
   const MAP_KEYWORDS = {
     procedimentos: {
-      'toxina botulínica': ['botox','toxina botulinica','toxina botulínica','botox facial'],
+      'botox': ['botox','toxina botulinica','toxina botulínica','botox facial'],
       'preenchimento': ['preenchimento','preenchimento labial','ácido hialurônico','preenchimentos'],
-      'bioestimulador': ['bioestimulador','bioestimuladores','sculptra','ellansé'],
       'microagulhamento': ['microagulhamento','dermaroller','microneedling','dermapen','dermaroller'],
-      'laser': ['laser','laser facial','laser dermatológico','depilação a laser'],
+      'laser dermatológico': ['laser','laser facial','laser dermatológico','depilação a laser','laser para manchas','laser para cicatrizes'],
       'peeling químico': ['peeling','peeling químico'],
       'radiofrequência': ['radiofrequência','radiofrequencia','radiofrequência fracionada']
     },
     tratamentos: {
-      'estrias': ['estrias','tratamento estrias','remover estrias'],
-      'acne': ['acne','tratamento de acne','espinhas'],
-      'melasma': ['melasma','manchas na pele','manchas'],
-      'flacidez': ['flacidez','flacidez corporal','flacidez facial'],
-      'queda de cabelo': ['queda de cabelo','calvície','afinamento capilar'],
-      'olheiras': ['olheiras','tratamento de olheiras']
+      'tratamento de estrias': ['estrias','tratamento estrias','remover estrias'],
+      'tratamento de acne': ['acne','tratamento de acne','espinhas'],
+      'tratamento de melasma': ['melasma','manchas na pele','manchas'],
+      'melhora de flacidez': ['flacidez','flacidez corporal','flacidez facial'],
+      'tratamento capilar': ['queda de cabelo','calvície','afinamento capilar'],
+      'tratamento de olheiras': ['olheiras','tratamento de olheiras']
     }
   };
   const aplicarBuscaIntencao = () => {
