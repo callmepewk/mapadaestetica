@@ -745,436 +745,20 @@ export default function Mapa() {
         </div>
       )}
 
-      {/* Tabs: Anúncios e Mapa da Estética */}
+      {/* Mapa + Lista Unificados */}
       <div className="max-w-7xl mx-auto px-4 py-6">
-        <Tabs value={abaSelecionada} onValueChange={setAbaSelecionada}>
-          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-6">
-            {/* data-state active styling */}
-            <TabsTrigger value="mapa" className="flex items-center gap-2">
-              <MapPin className="w-4 h-4" />
-              Mapa da Estética ({estabelecimentosFiltradosComDist.length})
-            </TabsTrigger>
-            <TabsTrigger value="anuncios" className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4" />
-              Anúncios ({anunciosFiltrados.length})
-            </TabsTrigger>
-          </TabsList>
-
-          {/* ABA: ANÚNCIOS */}
-          <TabsContent value="anuncios">
-            {/* Filtros Avançados */}
-            <Card className="mb-6 border-none shadow-lg">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-lg flex items-center gap-2">
-                    <Filter className="w-5 h-5 text-pink-600" />
-                    Filtros de Busca
-
-                    <span className="ml-2 text-xs text-gray-500 font-normal">(Aplicação automática — sem botão Buscar)</span>
-                  </h3>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={limparFiltros}
-                    className="text-xs"
-                  >
-                    Limpar Filtros
-                  </Button>
-                </div>
-
-                <div className="grid md:grid-cols-4 gap-4">
-              <div>
-                <label className="text-sm font-medium mb-2 block">Procedimento</label>
-                <Select value={procedimento} onValueChange={setProcedimento}>
-                  <SelectTrigger className="h-10">
-                    <SelectValue placeholder="Selecione" />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-64">
-                    {procedimentosLista.map((p)=>(<SelectItem key={p} value={p}>{p}</SelectItem>))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block">Tratamento</label>
-                <Select value={tratamento} onValueChange={setTratamento}>
-                  <SelectTrigger className="h-10">
-                    <SelectValue placeholder="Selecione" />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-64">
-                    {tratamentosLista.map((t)=>(<SelectItem key={t} value={t}>{t}</SelectItem>))}
-                  </SelectContent>
-                </Select>
-              </div>
-                  {/* Linha 1 */}
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Buscar</label>
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-                      <Input value={busca} onChange={(e)=>setBusca(e.target.value)} onKeyDown={(e)=>{ if(e.key==='Enter') aplicarBuscaIntencao(); }} placeholder="Digite aqui... (ex: quero tirar estrias, botox)" className="pl-9 h-10" />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Categoria</label>
-                    <Select value={categoria} onValueChange={setCategoria}>
-                      <SelectTrigger className="h-10">
-                        <SelectValue placeholder="Todas" />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-[300px]">
-                        {categorias.map((cat)=>(<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}
-                        <SelectItem value="Outros">Outros</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {categoria === 'Outros' && (
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">Especifique (texto livre)</label>
-                      <Input value={categoriaOutrosTexto} onChange={(e)=>setCategoriaOutrosTexto(e.target.value)} placeholder="Ex.: limpeza profunda, harmonização..." className="h-10" />
-                    </div>
-                  )}
-                  <div>
-                     <label className="text-sm font-medium mb-2 block">Tratamento</label>
-                    <Select value={tratamento} onValueChange={setTratamento}>
-                      <SelectTrigger className="h-10">
-                        <SelectValue placeholder="Selecione um tratamento" />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-64">
-                        {tratamentosLista.map((t)=>(<SelectItem key={t} value={t}>{t}</SelectItem>))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                     <label className="text-sm font-medium mb-2 block">Procedimento</label>
-                     <Select value={procedimento} onValueChange={setProcedimento}>
-                       <SelectTrigger className="h-10">
-                         <SelectValue placeholder="Selecione um procedimento" />
-                       </SelectTrigger>
-                       <SelectContent className="max-h-64">
-                         {procedimentosLista.map((p)=>(<SelectItem key={p} value={p}>{p}</SelectItem>))}
-                       </SelectContent>
-                     </Select>
-                   </div>
- 
-                   <div>
-                     <label className="text-sm font-medium mb-2 block">Tecnologia</label>
-                     <Select value={tecnologia} onValueChange={setTecnologia}>
-                       <SelectTrigger className="h-10">
-                         <SelectValue placeholder="Todas" />
-                       </SelectTrigger>
-                       <SelectContent className="max-h-64">
-                         {["Laser","Radiofrequência","HIFU","Ultrassom","Peeling Químico","Microagulhamento","Luz Pulsada"].map((t)=>(<SelectItem key={t} value={t}>{t}</SelectItem>))}
-                       </SelectContent>
-                     </Select>
-                   </div>
-
-                  {/* Linha 2 */}
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Estado (prioritário)</label>
-                    <Select value={estado} onValueChange={setEstado}>
-                      <SelectTrigger className="h-10"><SelectValue placeholder="Selecione o estado" /></SelectTrigger>
-                      <SelectContent>
-                        {estados.map((uf)=>(<SelectItem key={uf} value={uf}>{uf}</SelectItem>))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Cidade</label>
-                    <Input value={cidade} onChange={(e)=>setCidade(e.target.value)} placeholder="Digite a cidade" className="h-10" />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Preço <button type="button" className="text-xs text-blue-600 underline ml-1" onClick={()=>setMostrarInfoPreco(v=>!v)}>Entenda a faixa</button></label>
-                    {mostrarInfoPreco && (
-                      <div className="text-xs text-gray-600 bg-blue-50 border border-blue-200 rounded p-2 mb-2">
-                        $ até R$200 • $$ R$200–R$500 • $$$ R$500–R$3.000 • $$$$ R$3.000–R$5.000 • $$$$$ acima de R$5.000
-                      </div>
-                    )}
-                    <Select value={faixaPreco} onValueChange={setFaixaPreco}>
-                      <SelectTrigger className="h-10"><SelectValue placeholder="Todas" /></SelectTrigger>
-                      <SelectContent>
-                        {faixasPreco.map((preco)=>(<SelectItem key={preco} value={preco}>{preco}</SelectItem>))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Distância</label>
-                    <Select value={distancia} onValueChange={setDistancia}>
-                      <SelectTrigger className="h-10"><SelectValue placeholder="Qualquer distância" /></SelectTrigger>
-                      <SelectContent className="max-h-64 overflow-y-auto z-[2001]">
-                        {faixasDistancia.map((faixa)=>(<SelectItem key={faixa.valor} value={faixa.valor}>{faixa.label}</SelectItem>))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Linha 3 */}
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Tipo de Anúncio</label>
-                    <Select value={tipoAnuncio} onValueChange={setTipoAnuncio}>
-                      <SelectTrigger className="h-10"><SelectValue placeholder="Todos" /></SelectTrigger>
-                      <SelectContent className="max-h-[300px]">
-                        {tiposAnuncio.map((tipo)=>(<SelectItem key={tipo.valor} value={tipo.valor}>{tipo.label}</SelectItem>))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Tipo Estabelecimento</label>
-                    <Select value={tipoEstabelecimento} onValueChange={setTipoEstabelecimento}>
-                      <SelectTrigger className="h-10"><SelectValue placeholder="Todos os tipos" /></SelectTrigger>
-                      <SelectContent>
-                        {tiposEstabelecimento.map((tipo)=>(<SelectItem key={tipo.valor} value={tipo.valor}>{tipo.label} ({tipo.estrelas} ⭐)</SelectItem>))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Avaliação mínima</label>
-                    <Select value={avaliacaoMin} onValueChange={setAvaliacaoMin}>
-                      <SelectTrigger className="h-10"><SelectValue placeholder="Qualquer" /></SelectTrigger>
-                      <SelectContent>
-                        {[1,2,3,4,5].map((s)=>(<SelectItem key={s} value={String(s)}>{s} ⭐</SelectItem>))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Modalidade</label>
-                    <Select value={modalidade} onValueChange={setModalidade}>
-                      <SelectTrigger className="h-10"><SelectValue placeholder="Qualquer" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="online">Online</SelectItem>
-                        <SelectItem value="presencial">Presencial</SelectItem>
-                        <SelectItem value="hibrida">Híbrida</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Linha 4 */}
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Atendimento</label>
-                    <Select value={atendimento} onValueChange={setAtendimento}>
-                      <SelectTrigger className="h-10"><SelectValue placeholder="Qualquer" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="domicilio">Domiciliar</SelectItem>
-                        <SelectItem value="clinica">Clínica</SelectItem>
-                        <SelectItem value="ambulatorial">Ambulatorial</SelectItem>
-                        <SelectItem value="hospitalar">Hospitalar</SelectItem>
-                        <SelectItem value="homecare">Home Care</SelectItem>
-                        <SelectItem value="corporativo">In Company/Corporativo</SelectItem>
-                        <SelectItem value="teleatendimento">Teleatendimento</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Cobrança</label>
-                    <Select value={atendimentoCobranca} onValueChange={setAtendimentoCobranca}>
-                      <SelectTrigger className="h-10"><SelectValue placeholder="Qualquer" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="convenio">Convênio</SelectItem>
-                        <SelectItem value="particular">Particular</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div />
-                  <div className="flex items-center gap-2">
-                    <Checkbox id="verificados" checked={verificados} onCheckedChange={setVerificados} />
-                    <label htmlFor="verificados" className="text-sm font-medium cursor-pointer"><CheckCircle className="w-4 h-4 inline mr-1 text-blue-600" />Apenas Verificados</label>
-                  </div>
-                </div>
-
-                {/* Ajuda: Entenda os filtros */}
-                <div className="mt-3">
-                  <Button type="button" variant="outline" size="sm" onClick={()=>setMostrarInfoFiltros(v=>!v)}>
-                    Entenda os filtros
-                  </Button>
-                  {mostrarInfoFiltros && (
-                    <div className="mt-2 text-sm text-gray-700 bg-gray-50 border rounded p-3">
-                      • Cidade/UF/Bairro limitam a região mostrada. • Categoria/Procedimento/Tratamento refinam os serviços. • Distância usa sua localização para priorizar próximos. • Faixa de preço segue o padrão indicado no tooltip acima. As buscas são aplicadas automaticamente — por isso não há botão “Buscar”.
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Lista de Anúncios */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-2">
-                 <div className="flex items-center gap-3">
-                  <Button
-                    onClick={handleUsarMinhaLocalizacao}
-                    disabled={buscandoLocalizacao}
-                    variant="outline"
-                    className="border-2 border-[#F7D426]"
-                  >
-                    {buscandoLocalizacao ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Buscando...
-                      </>
-                    ) : (
-                      <>
-                        <Navigation className="w-4 h-4 mr-2" />
-                        Minha Localização
-                      </>
-                    )}
-                  </Button>
-                  
-                  <Select value={ordenarPor} onValueChange={setOrdenarPor}>
-                    <SelectTrigger className="w-56">
-                      <SelectValue placeholder="Ordenar" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="recentes">Mais Recentes</SelectItem>
-                      <SelectItem value="relevancia">Relevância</SelectItem>
-                      <SelectItem value="patrocinados">Patrocinados Primeiro</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* CTA Destaque */}
-              <Card className="mb-4 border-2 border-amber-200 bg-amber-50">
-                <CardContent className="p-4 flex items-center justify-between gap-3 flex-wrap">
-                  <div>
-                    <p className="font-semibold text-amber-900">Impulsione seu anúncio e apareça no topo</p>
-                    <p className="text-sm text-amber-800">Patrocinados ganham destaque e mais cliques</p>
-                  </div>
-                  <Button onClick={() => window.location.href = isProfissional ? createPageUrl('CadastrarAnuncio') : createPageUrl('Planos')} className="bg-amber-600 hover:bg-amber-700">
-                    {isProfissional ? 'Criar Anúncio' : 'Ver Planos'}
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {isLoadingAnuncios ? (
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {[...Array(6)].map((_,i)=> (
-                    <div key={i} className="h-64 rounded-xl bg-gray-100 animate-pulse" />
-                  ))}
-                </div>
-              ) : anunciosFiltrados.length === 0 ? (
-                <div className="py-4">
-                  <div className="text-center mb-4">
-                    <Sparkles className="w-10 h-10 text-gray-400 mx-auto mb-2" />
-                    <p className="text-gray-700 font-semibold">Sem anúncios nesta busca — veja categorias populares</p>
-                  </div>
-                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {[
-                      {nome:'Clínica de Estética', icon:'💆', exemplos:['botox','preenchimento','bioestimulador']},
-                      {nome:'Spa', icon:'🌿', exemplos:['drenagem linfática','massagem relaxante','detox corporal']},
-                      {nome:'Salão de Beleza', icon:'💇', exemplos:['design de sobrancelha','escova','maquiagem']},
-                      {nome:'Harmonização Facial', icon:'✨', exemplos:['toxina botulínica','preenchimentos','fios de sustentação']},
-                      {nome:'Depilação a Laser', icon:'🔆', exemplos:['axilas','pernas','virilha']},
-                      {nome:'Tratamentos Corporais', icon:'💪', exemplos:['criolipólise','radiofrequência','ultrassom']},
-                      {nome:'Tratamentos Faciais', icon:'🧖‍♀️', exemplos:['limpeza de pele','peeling','microagulhamento']},
-                      {nome:'Capilar', icon:'🧴', exemplos:['queda de cabelo','fortalecimento','terapias do couro cabeludo']},
-                      {nome:'Odonto Estética', icon:'😁', exemplos:['harmonização orofacial','lipo de papada enzimática','toxina facial']},
-                      {nome:'Dermatologia', icon:'🩺', exemplos:['laser médico','peelings médicos','cirurgia dermatológica']},
-                      {nome:'Biomedicina Estética', icon:'🔬', exemplos:['bioestimuladores','intradermoterapia','toxina']},
-                      {nome:'Farmácia Estética', icon:'💉', exemplos:['toxina','peelings','microagulhamento']},
-                      {nome:'Enfermagem Estética', icon:'🩹', exemplos:['microagulhamento','peelings','laser estético']},
-                      {nome:'Fisioterapia Dermato', icon:'🏃‍♀️', exemplos:['drenagem','radiofrequência','criolipólise']},
-                      {nome:'Podologia', icon:'🦶', exemplos:['unhas','calosidades','cuidados']},
-                      {nome:'Massoterapia', icon:'💆‍♂️', exemplos:['relaxante','modeladora','drenagem']},
-                      {nome:'Cosmetologia', icon:'🧴', exemplos:['cuidados com a pele','dermatocosméticos','protocolos']},
-                    ].map((c)=> (
-                      <Card key={c.nome} className="border shadow-sm">
-                        <CardContent className="p-4">
-                          <div className="flex items-center justify-between mb-2">
-                            <h4 className="font-bold text-gray-900">{c.icon} {c.nome}</h4>
-                            <Button size="sm" variant="outline" onClick={()=>{ const base=createPageUrl('Mapa'); window.location.href=`${base}?aba=anuncios&procedimento=${encodeURIComponent(c.exemplos[0])}`; }}>Ver profissionais</Button>
-                          </div>
-                          <p className="text-xs text-gray-600">Procedimentos populares:</p>
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {c.exemplos.map((e)=> <Badge key={e} className="bg-gray-100 text-gray-800">{e}</Badge>)}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 transition-opacity duration-300">
-                  {anunciosOrdenados.map((anuncio) => {
-                    const isSponsored = !!anuncio.em_destaque || !!anuncio.impulsionado || ['ouro','diamante','platina'].includes(anuncio.plano);
-                    return (
-                      <CardAnuncio key={anuncio.id} anuncio={anuncio} destaque={isSponsored} />
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </TabsContent>
-
-          {/* ABA: MAPA DA ESTÉTICA (Estabelecimentos) */}
-          <TabsContent value="mapa">
-            {/* Filtros do Mapa */}
-            <div className="bg-white border rounded-lg shadow-sm mb-6 p-4">
-              <div className="grid md:grid-cols-6 gap-4">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
-                  <Input
-                    placeholder="Cidade ou Estado"
-                    value={buscaCidade}
-                    onChange={(e) => setBuscaCidade(e.target.value)}
-                    className="pl-10 h-10 border-2"
-                  />
-                </div>
-
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
-                  <Input
-                    placeholder="Bairro"
-                    value={bairroMapa}
-                    onChange={(e) => setBairroMapa(e.target.value)}
-                    className="pl-10 h-10 border-2"
-                  />
-                </div>
-
-                <Select value={filtroCategoria} onValueChange={setFiltroCategoria}>
-                  <SelectTrigger className="h-10 border-2">
-                    <SelectValue placeholder="Categoria" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Salão de Beleza">💇 Salão de Beleza</SelectItem>
-                    <SelectItem value="Clínica de Estética">💆 Clínica de Estética</SelectItem>
-                    <SelectItem value="Spa">🌿 Spa</SelectItem>
-                    <SelectItem value="Barbearia">✂️ Barbearia</SelectItem>
-                    <SelectItem value="Centro de Estética">✨ Centro de Estética</SelectItem>
-                    <SelectItem value="Consultório">🏥 Consultório</SelectItem>
-                    <SelectItem value="Personal Trainer">🏋️ Personal Trainer</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-gray-500 mt-1">Categorias exibem apenas estabelecimentos, serviços, produtos e eventos que possuem anúncio ativo nesta área.</p>
-
-                <Select value={filtroPlano} onValueChange={setFiltroPlano}>
-                  <SelectTrigger className="h-10 border-2">
-                    <SelectValue placeholder="Plano Clube" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="light">💙 LIGHT (10%)</SelectItem>
-                    <SelectItem value="gold">💛 GOLD (15%)</SelectItem>
-                    <SelectItem value="vip">💜 VIP (25%)</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-gray-600 -mt-2">Assinantes do Clube da Beleza têm desconto automático nos parceiros: LIGHT 10%, GOLD 15% e VIP 25%. Use o filtro para ver estabelecimentos com benefício ativo.</p>
-
-                <Select value={estadoMapa} onValueChange={setEstadoMapa}>
-                                  <SelectTrigger className="h-10 border-2">
-                                   <SelectValue placeholder="UF" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {estados.map((uf)=>(<SelectItem key={uf} value={uf}>{uf}</SelectItem>))}
-                  </SelectContent>
-                </Select>
-
-                <Select value={distanciaMapa} onValueChange={setDistanciaMapa}>
-                  <SelectTrigger className="h-10 border-2">
-                    <SelectValue placeholder="Distância" />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-64 overflow-y-auto z-[2001]">
-                    {faixasDistancia.map((fa)=>(<SelectItem key={fa.valor} value={fa.valor}>{fa.label}</SelectItem>))}
-                  </SelectContent>
-                </Select>
-
+        <Card className="mb-6 border-none shadow-lg">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+              <h3 className="font-semibold text-lg flex items-center gap-2">
+                <Filter className="w-5 h-5 text-pink-600" />
+                Filtros
+              </h3>
+              <div className="flex items-center gap-2">
                 <Button
                   onClick={handleUsarMinhaLocalizacao}
                   disabled={buscandoLocalizacao}
-                  className="bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold"
+                  className="h-10 bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C]"
                 >
                   {buscandoLocalizacao ? (
                     <>
@@ -1188,318 +772,214 @@ export default function Mapa() {
                     </>
                   )}
                 </Button>
-              </div>
-            </div>
-
-            <div className="grid lg:grid-cols-3 gap-0 h-[calc(100vh-450px)] min-h-[600px]">
-              {/* Lista Lateral */}
-              <div className="lg:col-span-1 bg-white border-r overflow-y-auto p-4">
-                <div className="mb-4">
-                  <h2 className="font-bold text-lg text-gray-900 mb-2">
-                    📍 {estabelecimentosOrdenados.length} estabelecimentos do Mapa da Estética
-                  </h2>
-                  {localizacaoUsuario && (
-                    <p className="text-sm text-gray-600">
-                      Mostrando por proximidade
-                    </p>
-                  )}
-                </div>
-
-                {isLoadingEstabelecimentos ? (
-                  <div className="flex justify-center py-12">
-                    <Loader2 className="w-8 h-8 animate-spin text-[#F7D426]" />
-                  </div>
-                ) : estabelecimentosOrdenados.length === 0 ? (
-                  <div className="text-center py-12">
-                    <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600">Nenhum estabelecimento encontrado</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {estabelecimentosOrdenados.map((est) => {
-                      const descontoInfo = getDescontoInfo(est.plano_desconto);
-                      
-                      return (
-                        <Card
-                          key={est.id}
-                          className="cursor-pointer hover:shadow-lg transition-all border-2 border-gray-200 hover:border-[#F7D426]"
-                          onClick={() => handleCentralizarEstabelecimento(est)}
-                        >
-                          <CardContent className="p-4">
-                            {est.foto && (
-                              <div className="w-full h-32 bg-gray-100 rounded-lg mb-3 overflow-hidden">
-                                <img
-                                  src={est.foto}
-                                  alt={est.nome}
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                            )}
-
-                            <div className="mb-3">
-                              <h3 className="font-bold text-lg text-gray-900 mb-1">{est.nome}</h3>
-                              <Badge variant="outline" className="text-xs">
-                                {est.categoria}
-                              </Badge>
-                            </div>
-
-                            <div className="flex items-start gap-2 mb-2 text-sm text-gray-600">
-                              <MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                              <span>{est.endereco}, {est.cidade} - {est.estado}</span>
-                            </div>
-
-                            {est.distancia !== null && (
-                              <div className="flex items-center gap-2 mb-3 text-sm">
-                                <Navigation className="w-4 h-4 text-[#F7D426]" />
-                                <span className="font-bold text-[#F7D426]">
-                                  {est.distancia.toFixed(1)} km de você
-                                </span>
-                              </div>
-                            )}
-
-                            {descontoInfo && (
-                              <div className="mb-3">
-                                <Badge className={`${descontoInfo.cor} font-bold`}>
-                                  <Crown className="w-3 h-3 mr-1" />
-                                  {descontoInfo.badge} - {descontoInfo.desconto} OFF
-                                </Badge>
-                              </div>
-                            )}
-
-                            {est.horario_funcionamento && (
-                              <div className="flex items-center gap-2 mb-3 text-sm text-gray-600">
-                                <Clock className="w-4 h-4" />
-                                <span>{est.horario_funcionamento}</span>
-                              </div>
-                            )}
-
-                            <div className="flex gap-2">
-                              <Button
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleComoChegar(est);
-                                }}
-                                className="flex-1 bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C]"
-                                disabled={!localizacaoUsuario}
-                              >
-                                <Navigation className="w-3 h-3 mr-1" />
-                                Como Chegar
-                              </Button>
-
-                              {est.whatsapp && (
-                                <Button
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    window.open(`https://wa.me/${est.whatsapp.replace(/\D/g, '')}`, '_blank');
-                                  }}
-                                  className="flex-1 bg-green-600 hover:bg-green-700"
-                                >
-                                  <MessageCircle className="w-3 h-3 mr-1" />
-                                  WhatsApp
-                                </Button>
-                              )}
-
-                              {est.telefone && !est.whatsapp && (
-                                <Button
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    window.open(`tel:${est.telefone}`, '_blank');
-                                  }}
-                                  variant="outline"
-                                  className="flex-1"
-                                >
-                                  <Phone className="w-3 h-3 mr-1" />
-                                  Ligar
-                                </Button>
-                              )}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              {/* Mapa */}
-              <div className="lg:col-span-2 relative">
-                <MapContainer
-                  center={localizacaoUsuario ? [localizacaoUsuario.lat, localizacaoUsuario.lng] : [-15.7801, -47.9292]}
-                  zoom={13}
-                  style={{ height: '100%', width: '100%' }}
-                  className="z-0"
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={limparFiltros}
+                  className="border-2 border-red-300 text-red-700"
                 >
-                  <TileLayer
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                  />
-
-                  {localizacaoUsuario && (
-                    <Marker
-                      position={[localizacaoUsuario.lat, localizacaoUsuario.lng]}
-                      icon={criarIconeUsuario()}
-                    >
-                      <Popup>
-                        <div className="text-center p-2">
-                          <p className="font-bold text-blue-600">📍 Você está aqui</p>
-                        </div>
-                      </Popup>
-                    </Marker>
-                  )}
-
-                  {estabelecimentosOrdenados.map((est) => {
-                    if (!est.latitude || !est.longitude) return null;
-                    
-                    const descontoInfo = getDescontoInfo(est.plano_desconto);
-                    
-                    return (
-                      <Marker
-                        key={est.id}
-                        position={[est.latitude, est.longitude]}
-                        icon={criarIconeEstabelecimento(est.categoria)}
-                      >
-                        <Popup>
-                          <div className="p-2 min-w-[200px]">
-                            <h3 className="font-bold text-gray-900 mb-2">{est.nome}</h3>
-                            
-                            {descontoInfo && (
-                              <Badge className={`${descontoInfo.cor} mb-2`}>
-                                <Crown className="w-3 h-3 mr-1" />
-                                {descontoInfo.badge} - {descontoInfo.desconto} OFF
-                              </Badge>
-                            )}
-                            
-                            <p className="text-sm text-gray-600 mb-2">
-                              {est.endereco}, {est.cidade}
-                            </p>
-                            
-                            {est.distancia !== null && (
-                              <p className="text-sm font-bold text-[#F7D426] mb-2">
-                                📍 {est.distancia.toFixed(1)} km de você
-                              </p>
-                            )}
-                            
-                            {est.telefone && (
-                              <p className="text-sm text-gray-600 mb-2">
-                                📞 {est.telefone}
-                              </p>
-                            )}
-                            
-                            <div className="flex gap-2 mt-3">
-                              <Button
-                                size="sm"
-                                onClick={() => handleComoChegar(est)}
-                                className="flex-1 bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C]"
-                              >
-                                Como Chegar
-                              </Button>
-                              {est.whatsapp && (
-                                <Button
-                                  size="sm"
-                                  onClick={() => window.open(`https://wa.me/${est.whatsapp.replace(/\D/g, '')}`, '_blank')}
-                                  className="flex-1 bg-green-600 hover:bg-green-700"
-                                >
-                                  WhatsApp
-                                </Button>
-                              )}
-                            </div>
-                          </div>
-                        </Popup>
-                      </Marker>
-                    );
-                  })}
-
-                  {anunciosFiltrados.map((a) => (
-                    a.latitude && a.longitude ? (
-                      <Marker
-                        key={`anuncio-${a.id}`}
-                        position={[a.latitude, a.longitude]}
-                        icon={criarIconeAnuncio(!!a.profissional_verificado, (!!a.em_destaque || !!a.impulsionado || ['ouro','diamante','platina'].includes(a.plano)))}
-                        eventHandlers={{ click: () => setSelectedAd(a) }}
-                      >
-                        <Tooltip direction="top" offset={[0,-10]} opacity={1} permanent={false}>
-                          <div className="text-xs">
-                            <p className="font-bold line-clamp-1">{a.titulo}</p>
-                            <p className="opacity-80 line-clamp-1">{a.profissao || a.categoria}</p>
-                            {Array.isArray(a.procedimentos_servicos) && a.procedimentos_servicos[0] && (
-                              <p className="opacity-80 line-clamp-1">Proc.: {a.procedimentos_servicos[0]}</p>
-                            )}
-                            {a.estrelas_estabelecimento && (<p>⭐ {a.estrelas_estabelecimento}</p>)}
-                            <button className="mt-1 text-pink-600 font-semibold underline" onClick={()=>window.location.href=`${createPageUrl('DetalhesAnuncio')}?id=${a.id}`}>Ver detalhes</button>
-                          </div>
-                        </Tooltip>
-                        <Popup>
-                          <div className="p-2 min-w-[220px]">
-                            <p className="font-bold text-gray-900 mb-1">{a.titulo}</p>
-                            {a.profissional && (<p className="text-xs text-gray-600 mb-1">{a.profissional}</p>)}
-                            {a.cidade && (<p className="text-xs text-gray-600 mb-2">{a.cidade} - {a.estado}</p>)}
-                            <div className="flex items-center gap-2 mt-2">
-                              <button className="text-xs text-pink-600 font-semibold hover:underline" onClick={()=>window.location.href=`${createPageUrl('DetalhesAnuncio')}?id=${a.id}`}>
-                                Ver anúncio
-                              </button>
-                              <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => { const base='https://wa.me/5521980343873'; const msg = encodeURIComponent(`Olá! Vim pelo Mapa da Estética e gostaria de agendar ${a.titulo}. Poderia me passar mais informações?`); window.open(`${base}?text=${msg}`, '_blank'); }}>
-                                Agendar via WhatsApp
-                              </Button>
-                            </div>
-                          </div>
-                        </Popup>
-                      </Marker>
-                    ) : null
-                  ))}
-
-                  {eventosVisiveis.map((ev) => (
-                    ev.latitude && ev.longitude ? (
-                      <Marker key={`evento-${ev.id}`} position={[ev.latitude, ev.longitude]} icon={criarIconeEvento()}>
-                        <Popup>
-                          <div className="p-2 min-w-[220px]">
-                            <p className="font-bold text-gray-900">{ev.titulo}</p>
-                            {ev.cidade && (<p className="text-xs text-gray-600">{ev.cidade} - {ev.estado}</p>)}
-                            {ev.data_hora && (<p className="text-xs text-gray-600 mt-1">🗓 {new Date(ev.data_hora).toLocaleString('pt-BR')}</p>)}
-                            <p className="text-xs font-semibold mt-1">{ev.preco_tipo === 'pago' ? `R$ ${Number(ev.preco_valor||0).toFixed(2)}` : 'Grátis'}</p>
-                          </div>
-                        </Popup>
-                      </Marker>
-                    ) : null
-                  ))}
-
-                   {centralizarEm && <CentralizarMapa center={centralizarEm} />}
-                </MapContainer>
-
-                {/* Botão flutuante: Minha Localização */}
-                <div className="absolute bottom-4 right-4 z-[1000]">
-                  <Button onClick={handleUsarMinhaLocalizacao} className="shadow-lg bg-white text-[#2C2C2C] hover:bg-gray-100 border-2 border-[#F7D426]">
-                    <Navigation className="w-4 h-4 mr-2 text-[#F7D426]" /> Minha localização
-                  </Button>
-                </div>
-
-                {/* Badge de Info no Mapa */}
-                <div className="absolute top-4 right-4 z-[1000] bg-white rounded-lg shadow-lg p-3 border-2 border-[#F7D426]">
-                  <div className="flex items-center gap-2 mb-2">
-                    <MapPin className="w-5 h-5 text-[#F7D426]" />
-                    <span className="font-bold text-gray-900">Legenda:</span>
-                  </div>
-                  <div className="space-y-1 text-sm">
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 bg-blue-500 rounded-full border-2 border-white"></div>
-                      <span>Você</span>
-                    </div>
-                    <div className="flex items-center gap-2 mt-2">
-                      <div className="w-3 h-3 rounded-full border-2 border-white" style={{ background:'#10B981', boxShadow:'0 0 10px rgba(0,0,0,0.2)'}}></div>
-                      <span>Anúncio Verificado</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full border-2 border-white" style={{ background:'#9CA3AF', boxShadow:'0 0 0 4px rgba(247, 212, 38, 0.5), 0 0 10px rgba(0,0,0,0.2)'}}></div>
-                      <span>Anúncio Patrocinado</span>
-                    </div>
-                  </div>
-                </div>
+                  Limpar Filtros
+                </Button>
               </div>
             </div>
-          </TabsContent>
-        </Tabs>
+            <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">Estado</label>
+                <Select value={estado} onValueChange={setEstado}>
+                  <SelectTrigger className="h-10"><SelectValue placeholder="Selecione o estado" /></SelectTrigger>
+                  <SelectContent>
+                    {estados.map((uf)=>(<SelectItem key={uf} value={uf}>{uf}</SelectItem>))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Cidade</label>
+                <Input value={cidade} onChange={(e)=>setCidade(e.target.value)} placeholder="Digite a cidade" className="h-10" />
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Distância</label>
+                <Select value={distancia} onValueChange={setDistancia}>
+                  <SelectTrigger className="h-10"><SelectValue placeholder="Qualquer distância" /></SelectTrigger>
+                  <SelectContent className="max-h-64 overflow-y-auto z-[2001]">
+                    {faixasDistancia.map((faixa)=>(<SelectItem key={faixa.valor} value={faixa.valor}>{faixa.label}</SelectItem>))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Tipo de Anúncio</label>
+                <Select value={tipoAnuncio} onValueChange={setTipoAnuncio}>
+                  <SelectTrigger className="h-10"><SelectValue placeholder="Todos" /></SelectTrigger>
+                  <SelectContent className="max-h-[300px]">
+                    {tiposAnuncio.map((tipo)=>(<SelectItem key={tipo.valor} value={tipo.valor}>{tipo.label}</SelectItem>))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Tipo de Estabelecimento</label>
+                <Select value={tipoEstabelecimento} onValueChange={setTipoEstabelecimento}>
+                  <SelectTrigger className="h-10"><SelectValue placeholder="Todos os tipos" /></SelectTrigger>
+                  <SelectContent>
+                    {tiposEstabelecimento.map((tipo)=>(<SelectItem key={tipo.valor} value={tipo.valor}>{tipo.label} ({tipo.estrelas} ⭐)</SelectItem>))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Forma de Cobrança</label>
+                <Select value={formaCobranca} onValueChange={setFormaCobranca}>
+                  <SelectTrigger className="h-10"><SelectValue placeholder="Todas" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="dinheiro">Dinheiro</SelectItem>
+                    <SelectItem value="pontos">Pontos</SelectItem>
+                    <SelectItem value="beauty_coins">Beauty Coins</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Faixa de Preço</label>
+                <Select value={faixaPreco} onValueChange={setFaixaPreco}>
+                  <SelectTrigger className="h-10"><SelectValue placeholder="Todas" /></SelectTrigger>
+                  <SelectContent>
+                    {faixasPreco.map((preco)=>(<SelectItem key={preco} value={preco}>{preco}</SelectItem>))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Avaliação mínima</label>
+                <Select value={avaliacaoMin} onValueChange={setAvaliacaoMin}>
+                  <SelectTrigger className="h-10"><SelectValue placeholder="Qualquer" /></SelectTrigger>
+                  <SelectContent>
+                    {[1,2,3,4,5].map((s)=>(<SelectItem key={s} value={String(s)}>{s} ⭐</SelectItem>))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Atendimento</label>
+                <Select value={atendimento} onValueChange={setAtendimento}>
+                  <SelectTrigger className="h-10"><SelectValue placeholder="Qualquer" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="domicilio">Domiciliar</SelectItem>
+                    <SelectItem value="clinica">Clínica</SelectItem>
+                    <SelectItem value="ambulatorial">Ambulatorial</SelectItem>
+                    <SelectItem value="hospitalar">Hospitalar</SelectItem>
+                    <SelectItem value="homecare">Home Care</SelectItem>
+                    <SelectItem value="corporativo">In Company/Corporativo</SelectItem>
+                    <SelectItem value="teleatendimento">Teleatendimento</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="grid lg:grid-cols-3 gap-4">
+          {/* Mapa à esquerda (maior) */}
+          <div className="lg:col-span-2 relative h-[60vh] min-h-[520px]">
+            <MapContainer
+              center={localizacaoUsuario ? [localizacaoUsuario.lat, localizacaoUsuario.lng] : [-15.7801, -47.9292]}
+              zoom={13}
+              style={{ height: '100%', width: '100%' }}
+              className="z-0 rounded-xl overflow-hidden border"
+            >
+              <TileLayer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+              />
+
+              {localizacaoUsuario && (
+                <Marker position={[localizacaoUsuario.lat, localizacaoUsuario.lng]} icon={criarIconeUsuario()}>
+                  <Popup>
+                    <div className="text-center p-2">
+                      <p className="font-bold text-blue-600">📍 Você está aqui</p>
+                    </div>
+                  </Popup>
+                </Marker>
+              )}
+
+              {anunciosFiltrados.map((a) => (
+                a.latitude && a.longitude ? (
+                  <Marker
+                    key={`anuncio-${a.id}`}
+                    position={[a.latitude, a.longitude]}
+                    icon={criarIconeAnuncio(!!a.profissional_verificado, (!!a.em_destaque || !!a.impulsionado || ['ouro','diamante','platina'].includes(a.plano)))}
+                    eventHandlers={{ click: () => setSelectedAd(a) }}
+                  >
+                    <Tooltip direction="top" offset={[0,-10]} opacity={1} permanent={false}>
+                      <div className="text-xs">
+                        <p className="font-bold line-clamp-1">{a.titulo}</p>
+                        <p className="opacity-80 line-clamp-1">{a.profissao || a.categoria}</p>
+                        {Array.isArray(a.procedimentos_servicos) && a.procedimentos_servicos[0] && (
+                          <p className="opacity-80 line-clamp-1">Proc.: {a.procedimentos_servicos[0]}</p>
+                        )}
+                        {a.estrelas_estabelecimento && (<p>⭐ {a.estrelas_estabelecimento}</p>)}
+                        <button className="mt-1 text-pink-600 font-semibold underline" onClick={()=>window.location.href=`${createPageUrl('DetalhesAnuncio')}?id=${a.id}`}>Ver detalhes</button>
+                      </div>
+                    </Tooltip>
+                    <Popup>
+                      <div className="p-2 min-w-[220px]">
+                        <p className="font-bold text-gray-900 mb-1">{a.titulo}</p>
+                        {a.profissional && (<p className="text-xs text-gray-600 mb-1">{a.profissional}</p>)}
+                        {a.cidade && (<p className="text-xs text-gray-600 mb-2">{a.cidade} - {a.estado}</p>)}
+                        <div className="flex items-center gap-2 mt-2">
+                          <button className="text-xs text-pink-600 font-semibold hover:underline" onClick={()=>window.location.href=`${createPageUrl('DetalhesAnuncio')}?id=${a.id}`}>
+                            Ver anúncio
+                          </button>
+                          <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => { const base='https://wa.me/5521980343873'; const msg = encodeURIComponent(`Olá! Vim pelo Mapa da Estética e gostaria de agendar ${a.titulo}. Poderia me passar mais informações?`); window.open(`${base}?text=${msg}`, '_blank'); }}>
+                            Agendar via WhatsApp
+                          </Button>
+                        </div>
+                      </div>
+                    </Popup>
+                  </Marker>
+                ) : null
+              ))}
+
+              {centralizarEm && <CentralizarMapa center={centralizarEm} />}
+            </MapContainer>
+
+            {/* Botão flutuante */}
+            <div className="absolute bottom-4 right-4 z-[1000]">
+              <Button onClick={handleUsarMinhaLocalizacao} className="shadow-lg bg-white text-[#2C2C2C] hover:bg-gray-100 border-2 border-[#F7D426]">
+                <Navigation className="w-4 h-4 mr-2 text-[#F7D426]" /> Minha localização
+              </Button>
+            </div>
+          </div>
+
+          {/* Lista de Anúncios à direita */}
+          <div className="lg:col-span-1">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="font-bold text-lg text-gray-900">Anúncios ({anunciosFiltrados.length})</h2>
+              <Select value={ordenarPor} onValueChange={setOrdenarPor}>
+                <SelectTrigger className="w-48 h-9">
+                  <SelectValue placeholder="Ordenar" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="recentes">Mais Recentes</SelectItem>
+                  <SelectItem value="relevancia">Relevância</SelectItem>
+                  <SelectItem value="patrocinados">Patrocinados Primeiro</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {isLoadingAnuncios ? (
+              <div className="space-y-3">
+                {[...Array(6)].map((_,i)=> (<div key={i} className="h-36 rounded-xl bg-gray-100 animate-pulse" />))}
+              </div>
+            ) : anunciosFiltrados.length === 0 ? (
+              <div className="text-center py-12">
+                <Sparkles className="w-10 h-10 text-gray-400 mx-auto mb-2" />
+                <p className="text-gray-700 font-semibold">Sem anúncios nesta busca</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {anunciosOrdenados.map((anuncio) => {
+                  const isSponsored = !!anuncio.em_destaque || !!anuncio.impulsionado || ['ouro','diamante','platina'].includes(anuncio.plano);
+                  return (
+                    <CardAnuncio key={anuncio.id} anuncio={anuncio} destaque={isSponsored} />
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Info sobre Clube da Beleza */}
