@@ -212,6 +212,35 @@ export default function Mapa() {
   const [atendimento, setAtendimento] = useState(""); // domicilio|clinica|ambulatorial|hospitalar|homecare|corporativo|teleatendimento
   const [atendimentoCobranca, setAtendimentoCobranca] = useState(""); // convenio|particular
   const [ordenarPor, setOrdenarPor] = useState('recentes');
+  const MAP_KEYWORDS = {
+    procedimentos: {
+      'toxina botulínica': ['botox','toxina botulinica','toxina botulínica','botox facial'],
+      'preenchimento': ['preenchimento','preenchimento labial','ácido hialurônico','preenchimentos'],
+      'bioestimulador': ['bioestimulador','bioestimuladores','sculptra','ellansé'],
+      'microagulhamento': ['microagulhamento','dermaroller','microneedling','dermapen','dermaroller'],
+      'laser': ['laser','laser facial','laser dermatológico','depilação a laser'],
+      'peeling químico': ['peeling','peeling químico'],
+      'radiofrequência': ['radiofrequência','radiofrequencia','radiofrequência fracionada']
+    },
+    tratamentos: {
+      'estrias': ['estrias','tratamento estrias','remover estrias'],
+      'acne': ['acne','tratamento de acne','espinhas'],
+      'melasma': ['melasma','manchas na pele','manchas'],
+      'flacidez': ['flacidez','flacidez corporal','flacidez facial'],
+      'queda de cabelo': ['queda de cabelo','calvície','afinamento capilar'],
+      'olheiras': ['olheiras','tratamento de olheiras']
+    }
+  };
+  const aplicarBuscaIntencao = () => {
+    const q = (busca||'').toLowerCase();
+    if (!q.trim()) return;
+    for (const [canon, syns] of Object.entries(MAP_KEYWORDS.procedimentos)) {
+      if (syns.some(s => q.includes(s))) { setProcedimento(canon); setTratamento(''); return; }
+    }
+    for (const [canon, syns] of Object.entries(MAP_KEYWORDS.tratamentos)) {
+      if (syns.some(s => q.includes(s))) { setTratamento(canon); setProcedimento(''); return; }
+    }
+  };
 
   // Filtros para Mapa (Estabelecimentos)
   const [buscaCidade, setBuscaCidade] = useState("");
@@ -327,17 +356,25 @@ export default function Mapa() {
     }
   }, []);
 
-  const handleUsarMinhaLocalizacao = () => {
+  const handleUsarMinhaLocalizacao = async () => {
     if (navigator.geolocation) {
       setBuscandoLocalizacao(true);
       navigator.geolocation.getCurrentPosition(
-        (position) => {
+        async (position) => {
           const novaLocalizacao = {
             lat: position.coords.latitude,
             lng: position.coords.longitude
           };
           setLocalizacaoUsuario(novaLocalizacao);
           setCentralizarEm(novaLocalizacao);
+          try {
+            const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${novaLocalizacao.lat}&lon=${novaLocalizacao.lng}`);
+            const data = await resp.json();
+            const cid = data.address.city || data.address.town || data.address.village || '';
+            const uf = data.address.state_code || '';
+            if (cid) setCidade(cid);
+            if (uf) { setEstado(uf.toUpperCase()); setEstadoMapa(uf.toUpperCase()); }
+          } catch {}
           setBuscandoLocalizacao(false);
         },
         (error) => {
@@ -590,7 +627,7 @@ export default function Mapa() {
                     <label className="text-sm font-medium mb-2 block">Buscar</label>
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-                      <Input value={busca} onChange={(e)=>setBusca(e.target.value)} placeholder="Digite aqui..." className="pl-9 h-10" />
+                      <Input value={busca} onChange={(e)=>setBusca(e.target.value)} onKeyDown={(e)=>{ if(e.key==='Enter') aplicarBuscaIntencao(); }} placeholder="Digite aqui... (ex: quero tirar estrias, botox)" className="pl-9 h-10" />
                     </div>
                   </div>
                   <div>
@@ -1208,7 +1245,7 @@ export default function Mapa() {
                         key={`anuncio-${a.id}`}
                         position={[a.latitude, a.longitude]}
                         icon={criarIconeAnuncio(!!a.profissional_verificado, (!!a.em_destaque || !!a.impulsionado || ['ouro','diamante','platina'].includes(a.plano)))}
-                        eventHandlers={{ click: () => setItemAgendar({ ...a, tipo: 'anuncio' }) }}
+                        eventHandlers={{ click: () => setSelectedAd(a) }}
                       >
                         <Tooltip direction="top" offset={[0,-10]} opacity={1} permanent={false}>
                           <div className="text-xs">

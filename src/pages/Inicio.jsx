@@ -96,6 +96,7 @@ const cidades = [
 
 export default function Inicio() {
   const [buscaCidade, setBuscaCidade] = useState("");
+  const [buscaIntencao, setBuscaIntencao] = useState("");
   const [buscaCategoria, setBuscaCategoria] = useState("");
   const [buscaIntencao, setBuscaIntencao] = useState("");
   const [mostrarOnboarding, setMostrarOnboarding] = useState(false);
@@ -556,7 +557,7 @@ export default function Inicio() {
               </div>
 
               <div className="mt-4 sm:mt-6 md:mt-8 flex flex-wrap justify-center gap-1.5 sm:gap-2 px-4">
-                <span className="text-white/80 text-xs sm:text-sm w-full sm:w-auto text-center mb-1.5 sm:mb-0">Cidades populares:</span>
+                <span className="text-white/80 text-xs sm:text-sm w-full sm:w-auto text-center mb-1.5 sm:mb-0">Sugestões:</span>
                 {cidades.slice(0, 5).map((cidade) => (
                   <button
                     key={cidade}
