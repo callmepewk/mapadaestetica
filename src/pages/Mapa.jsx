@@ -216,6 +216,7 @@ export default function Mapa() {
   const [modalidade, setModalidade] = useState(""); // online|presencial
   const [atendimento, setAtendimento] = useState(""); // domicilio|clinica|ambulatorial|hospitalar|homecare|corporativo|teleatendimento
   const [atendimentoCobranca, setAtendimentoCobranca] = useState(""); // convenio|particular
+  const [formaCobranca, setFormaCobranca] = useState(""); // dinheiro|pontos|beauty_coins
   const [ordenarPor, setOrdenarPor] = useState('recentes');
   const MAP_KEYWORDS = {
     procedimentos: {
@@ -481,6 +482,7 @@ export default function Mapa() {
     const matchVerificados = !verificados || anuncio.profissional_verificado === true;
     const matchTipoAnuncio = !tipoAnuncio || anuncio.tipo_anuncio === tipoAnuncio;
     const matchTipoEstabelecimento = !tipoEstabelecimento || anuncio.tipo_estabelecimento === tipoEstabelecimento;
+    const matchFormaCobranca = !formaCobranca || anuncio.forma_cobranca === formaCobranca;
 
     const matchTecnologia = !tecnologia || (anuncio.tags||[]).some(t => (t||'').toLowerCase().includes(tecnologia.toLowerCase()));
 
@@ -525,7 +527,7 @@ export default function Mapa() {
     }
     
     return matchBusca && matchCategoria && matchProcedimento && matchTratamento && matchCidade && matchEstado && 
-    matchPreco && matchVerificados && matchTipoAnuncio && matchTipoEstabelecimento && matchTecnologia &&
+    matchPreco && matchVerificados && matchTipoAnuncio && matchTipoEstabelecimento && matchFormaCobranca && matchTecnologia &&
     matchAvaliacao && matchModalidade && matchAtendimento && matchCobranca && matchDistancia && matchPublico;
   });
 
@@ -610,6 +612,7 @@ export default function Mapa() {
     setModalidade("");
     setAtendimento("");
     setAtendimentoCobranca("");
+    setFormaCobranca("");
     setTecnologia("");
     setVerificados(false);
     setOrdenarPor('recentes');
