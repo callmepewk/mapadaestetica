@@ -196,6 +196,8 @@ export default function Mapa() {
   const [categoria, setCategoria] = useState("");
   const [procedimento, setProcedimento] = useState("");
   const [tratamento, setTratamento] = useState("");
+  const [profissaoFiltro, setProfissaoFiltro] = useState("");
+  const [tecnologia, setTecnologia] = useState("");
   const [cidade, setCidade] = useState("");
   const [estado, setEstado] = useState("");
   const [faixaPreco, setFaixaPreco] = useState("");
@@ -388,6 +390,8 @@ export default function Mapa() {
     const matchVerificados = !verificados || anuncio.profissional_verificado === true;
     const matchTipoAnuncio = !tipoAnuncio || anuncio.tipo_anuncio === tipoAnuncio;
     const matchTipoEstabelecimento = !tipoEstabelecimento || anuncio.tipo_estabelecimento === tipoEstabelecimento;
+    const matchProfissao = !profissaoFiltro || (anuncio.profissao||'').toLowerCase() === profissaoFiltro.toLowerCase();
+    const matchTecnologia = !tecnologia || (anuncio.tags||[]).some(t => (t||'').toLowerCase().includes(tecnologia.toLowerCase()));
 
     const tagsLower = (anuncio.tags || []).map(t => (t || '').toLowerCase());
 
@@ -430,8 +434,8 @@ export default function Mapa() {
     }
     
     return matchBusca && matchCategoria && matchProcedimento && matchTratamento && matchCidade && matchEstado && 
-           matchPreco && matchVerificados && matchTipoAnuncio && matchTipoEstabelecimento && 
-           matchAvaliacao && matchModalidade && matchAtendimento && matchCobranca && matchDistancia && matchPublico;
+    matchPreco && matchVerificados && matchTipoAnuncio && matchTipoEstabelecimento && matchProfissao && matchTecnologia &&
+    matchAvaliacao && matchModalidade && matchAtendimento && matchCobranca && matchDistancia && matchPublico;
   });
 
   const anunciosOrdenados = useMemo(() => {
@@ -614,16 +618,38 @@ export default function Mapa() {
                     </Select>
                   </div>
                   <div>
-                    <label className="text-sm font-medium mb-2 block">Procedimento</label>
-                    <Select value={procedimento} onValueChange={setProcedimento}>
-                      <SelectTrigger className="h-10">
-                        <SelectValue placeholder="Selecione um procedimento" />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-64">
-                        {procedimentosLista.map((p)=>(<SelectItem key={p} value={p}>{p}</SelectItem>))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                     <label className="text-sm font-medium mb-2 block">Procedimento</label>
+                     <Select value={procedimento} onValueChange={setProcedimento}>
+                       <SelectTrigger className="h-10">
+                         <SelectValue placeholder="Selecione um procedimento" />
+                       </SelectTrigger>
+                       <SelectContent className="max-h-64">
+                         {procedimentosLista.map((p)=>(<SelectItem key={p} value={p}>{p}</SelectItem>))}
+                       </SelectContent>
+                     </Select>
+                   </div>
+                   <div>
+                     <label className="text-sm font-medium mb-2 block">Profissão</label>
+                     <Select value={profissaoFiltro} onValueChange={setProfissaoFiltro}>
+                       <SelectTrigger className="h-10">
+                         <SelectValue placeholder="Todas" />
+                       </SelectTrigger>
+                       <SelectContent className="max-h-64">
+                         {["Médico Dermatologista","Médico Cirurgião Plástico","Médico em Medicina Estética","Biomédico Esteta","Farmacêutico Esteta","Enfermeiro Esteta","Fisioterapeuta Dermatofuncional","Dentista Harmonizador Orofacial","Biólogo Esteta","Nutricionista Estético","Esteticista","Tecnólogo em Estética e Cosmética","Cosmetólogo","Tricologista","Podólogo","Massoterapeuta","Terapeuta Capilar"].map((p)=>(<SelectItem key={p} value={p}>{p}</SelectItem>))}
+                       </SelectContent>
+                     </Select>
+                   </div>
+                   <div>
+                     <label className="text-sm font-medium mb-2 block">Tecnologia</label>
+                     <Select value={tecnologia} onValueChange={setTecnologia}>
+                       <SelectTrigger className="h-10">
+                         <SelectValue placeholder="Todas" />
+                       </SelectTrigger>
+                       <SelectContent className="max-h-64">
+                         {["Laser","Radiofrequência","HIFU","Ultrassom","Peeling Químico","Microagulhamento","Luz Pulsada"].map((t)=>(<SelectItem key={t} value={t}>{t}</SelectItem>))}
+                       </SelectContent>
+                     </Select>
+                   </div>
 
                   {/* Linha 2 */}
                   <div>

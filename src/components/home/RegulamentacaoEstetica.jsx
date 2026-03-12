@@ -1,7 +1,27 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ShieldCheck, Scale, FileCheck2 } from "lucide-react";
+import { ShieldCheck, Scale, FileCheck2, BookOpen } from "lucide-react";
+
+const PROFISSOES = [
+  { nome: "Médico Dermatologista", conselho: "CFM", escopo: ["Diagnóstico dermatológico", "Tratamentos médicos da pele", "Procedimentos estéticos invasivos"], procedimentos: ["Toxina botulínica", "Preenchimentos", "Lasers dermatológicos", "Bioestimuladores", "Peelings médicos", "Cirurgia dermatológica"] },
+  { nome: "Médico Cirurgião Plástico", conselho: "CFM", escopo: ["Cirurgias estéticas", "Procedimentos estéticos invasivos"], procedimentos: ["Cirurgia plástica", "Preenchimentos", "Toxina botulínica", "Bioestimuladores", "Lasers", "Tratamentos corporais invasivos"] },
+  { nome: "Médico em Medicina Estética", conselho: "CFM", escopo: ["Tratamentos estéticos médicos"], procedimentos: ["Toxina botulínica", "Bioestimuladores", "Preenchimentos", "Lasers", "Peelings"] },
+  { nome: "Biomédico Esteta", conselho: "CFBM", escopo: ["Estética avançada sob regulamentação"], procedimentos: ["Toxina botulínica", "Bioestimuladores", "Preenchimentos", "Microagulhamento", "Lasers", "Peelings"] },
+  { nome: "Farmacêutico Esteta", conselho: "CFF", escopo: ["Estética injetável e não-invasiva"], procedimentos: ["Toxina botulínica", "Bioestimuladores", "Lasers", "Peelings", "Microagulhamento"] },
+  { nome: "Enfermeiro Esteta", conselho: "COFEN", escopo: ["Estética clínica"], procedimentos: ["Toxina botulínica", "Bioestimuladores", "Lasers", "Microagulhamento", "Peelings"] },
+  { nome: "Fisioterapeuta Dermatofuncional", conselho: "CREFITO", escopo: ["Estética corporal e dermato-funcional"], procedimentos: ["Radiofrequência", "Criolipólise", "Drenagem linfática", "Ultrassom estético", "Tratamentos corporais"] },
+  { nome: "Dentista Harmonizador Orofacial", conselho: "CFO", escopo: ["Estética facial (limitação: apenas face)"], procedimentos: ["Toxina botulínica facial", "Preenchimento facial", "Bioestimuladores faciais", "Harmonização orofacial"] },
+  { nome: "Biólogo Esteta", conselho: "CFBio", escopo: ["Estética injetável e regenerativa"], procedimentos: ["Injetáveis", "Tratamentos regenerativos", "Bioestimuladores"] },
+  { nome: "Nutricionista Estético", conselho: "CFN", escopo: ["Nutrição estética e integrativa", "Tratamento metabólico"], procedimentos: ["Protocolos nutricionais", "Suporte a tratamentos estéticos"] },
+  { nome: "Esteticista", conselho: "Lei 13.643/2018", escopo: ["Estética não invasiva"], procedimentos: ["Limpeza de pele", "Peeling superficial", "Drenagem linfática", "Radiofrequência estética", "Massagem estética"] },
+  { nome: "Tecnólogo em Estética e Cosmética", conselho: "Lei 13.643/2018", escopo: ["Estética não invasiva"], procedimentos: ["Protocolos faciais", "Estética corporal"] },
+  { nome: "Cosmetólogo", conselho: "—", escopo: ["Terapias e cosméticos"], procedimentos: ["Tratamentos cosméticos", "Cuidados com a pele", "Terapias dermatocosméticas"] },
+  { nome: "Tricologista", conselho: "—", escopo: ["Estética capilar"], procedimentos: ["Queda de cabelo", "Fortalecimento capilar", "Terapias capilares"] },
+  { nome: "Podólogo", conselho: "—", escopo: ["Saúde e estética dos pés"], procedimentos: ["Tratamento de unhas", "Calosidades", "Cuidados estéticos dos pés"] },
+  { nome: "Massoterapeuta", conselho: "—", escopo: ["Terapias corporais"], procedimentos: ["Massagem relaxante", "Drenagem", "Massagem modeladora"] },
+  { nome: "Terapeuta Capilar", conselho: "—", escopo: ["Tratamentos capilares"], procedimentos: ["Terapias capilares", "Fortalecimento capilar", "Tratamentos do couro cabeludo"] },
+];
 
 export default function RegulamentacaoEstetica() {
   return (
@@ -11,54 +31,27 @@ export default function RegulamentacaoEstetica() {
           <Badge className="mb-3 bg-blue-100 text-blue-800">Institucional</Badge>
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">Organizando a Estética com Segurança e Regulamentação</h2>
           <p className="text-gray-700 mt-3 max-w-3xl mx-auto">
-            O Mapa da Estética nasceu para organizar o mercado com segurança, transparência e respeito às regulamentações profissionais. 
-            Ajudamos pacientes a encontrar profissionais qualificados para cada tipo de tratamento.
+            No Brasil, os <strong>conselhos profissionais</strong> (CFM, CFO, COFEN, CFF, CFBM, CREFITO, CFN, CFBio, entre outros) definem quem pode realizar cada procedimento estético — não a ANVISA. Nosso papel é <strong>educar pacientes e profissionais</strong>, respeitar limites de atuação e <strong>conectar pessoas qualificadas</strong> aos tratamentos adequados.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-4 sm:gap-6">
-          <Card className="border-2 border-blue-200">
-            <CardContent className="p-5">
-              <div className="flex items-center gap-2 text-blue-700 font-semibold mb-2"><ShieldCheck className="w-5 h-5"/>Profissionais Regulamentados</div>
-              <p className="text-sm text-gray-700">Valorizamos todas as profissões regulamentadas e respeitamos seus escopos de atuação.</p>
-            </CardContent>
-          </Card>
-          <Card className="border-2 border-emerald-200">
-            <CardContent className="p-5">
-              <div className="flex items-center gap-2 text-emerald-700 font-semibold mb-2"><FileCheck2 className="w-5 h-5"/>Informação Correta ao Paciente</div>
-              <p className="text-sm text-gray-700">Explicamos limitações de cada categoria profissional e indicamos quem pode fazer cada procedimento.</p>
-            </CardContent>
-          </Card>
-          <Card className="border-2 border-amber-200">
-            <CardContent className="p-5">
-              <div className="flex items-center gap-2 text-amber-700 font-semibold mb-2"><Scale className="w-5 h-5"/>Mercado Organizado</div>
-              <p className="text-sm text-gray-700">Promovemos segurança e responsabilidade na contratação de serviços estéticos.</p>
-            </CardContent>
-          </Card>
+        <div className="grid md:grid-cols-3 gap-4 sm:gap-6 mb-10">
+          <Card className="border-2 border-blue-200"><CardContent className="p-5"><div className="flex items-center gap-2 text-blue-700 font-semibold mb-2"><ShieldCheck className="w-5 h-5"/>Profissionais Regulamentados</div><p className="text-sm text-gray-700">Respeitamos as regras dos conselhos e organizamos o mercado com base nelas.</p></CardContent></Card>
+          <Card className="border-2 border-emerald-200"><CardContent className="p-5"><div className="flex items-center gap-2 text-emerald-700 font-semibold mb-2"><FileCheck2 className="w-5 h-5"/>Informação Clara ao Paciente</div><p className="text-sm text-gray-700">Explicamos escopos e exemplos de procedimentos para escolhas seguras.</p></CardContent></Card>
+          <Card className="border-2 border-amber-200"><CardContent className="p-5"><div className="flex items-center gap-2 text-amber-700 font-semibold mb-2"><Scale className="w-5 h-5"/>Responsabilidade</div><p className="text-sm text-gray-700">Acesso a dados <strong>agregados</strong> para patrocinadores — sem dados individuais.</p></CardContent></Card>
         </div>
 
-        <div className="mt-8 grid md:grid-cols-2 gap-6">
-          <Card>
-            <CardContent className="p-6">
-              <h3 className="font-semibold text-gray-900 mb-2">Exemplos de Escopo Profissional</h3>
-              <ul className="text-sm text-gray-700 space-y-2 list-disc list-inside">
-                <li><strong>Biomédico:</strong> pode atuar em estética.</li>
-                <li><strong>Biomédico Esteta:</strong> habilitação específica para procedimentos mais avançados, inclusive alguns invasivos.</li>
-                <li><strong>Dentistas com especialização em estética:</strong> podem atuar em estética facial, não em tratamentos corporais.</li>
-                <li>Outros profissionais possuem escopos definidos por seus conselhos.</li>
-              </ul>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <h3 className="font-semibold text-gray-900 mb-2">Nosso Compromisso</h3>
-              <ul className="text-sm text-gray-700 space-y-2 list-disc list-inside">
-                <li>Valorizar todos os profissionais regulamentados</li>
-                <li>Informar corretamente os pacientes</li>
-                <li>Organizar o mercado da estética com responsabilidade</li>
-              </ul>
-            </CardContent>
-          </Card>
+        <div className="mb-6 flex items-center gap-2"><BookOpen className="w-5 h-5 text-blue-700"/><h3 className="text-xl font-bold text-gray-900">Profissões da Estética — Conselhos, Escopo e Exemplos</h3></div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {PROFISSOES.map((p) => (
+            <Card key={p.nome} className="border">
+              <CardContent className="p-5">
+                <div className="flex items-center justify-between mb-2"><h4 className="font-semibold text-gray-900">{p.nome}</h4><Badge className="bg-gray-100 text-gray-800">{p.conselho}</Badge></div>
+                {p.escopo?.length>0 && (<div className="mb-2"><p className="text-xs text-gray-500 mb-1">Escopo</p><ul className="text-sm text-gray-700 list-disc list-inside space-y-1">{p.escopo.map((e)=> <li key={e}>{e}</li>)}</ul></div>)}
+                {p.procedimentos?.length>0 && (<div><p className="text-xs text-gray-500 mb-1">Exemplos de procedimentos</p><div className="flex flex-wrap gap-1">{p.procedimentos.map((e)=> <Badge key={e} className="bg-blue-50 text-blue-800">{e}</Badge>)}</div></div>)}
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
     </section>

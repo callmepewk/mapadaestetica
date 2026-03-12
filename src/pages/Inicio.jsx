@@ -59,6 +59,7 @@ import {
 import BannerRotativo from "../components/banners/BannerRotativo";
 import PatrocinadoresCarousel from "../components/home/PatrocinadoresCarousel";
 import RegulamentacaoEstetica from "../components/home/RegulamentacaoEstetica";
+import DashboardPatrocinadorHome from "../components/patrocinadores/DashboardPatrocinadorHome";
 import HeroPremium from "../components/home/HeroPremium";
 import AuthorityStrip from "../components/home/AuthorityStrip";
 import ValidationThreeSteps from "../components/home/ValidationThreeSteps";
@@ -410,6 +411,7 @@ export default function Inicio() {
   const isAdmin = user?.role === 'admin';
   const isPaciente = visaoAtual === 'paciente';
   const isProfissional = visaoAtual === 'profissional' || visaoAtual === 'patrocinador';
+  const isPatrocinador = visaoAtual === 'patrocinador';
 
   // LOADING STATE
   if (!visaoAtual) {
@@ -744,9 +746,7 @@ export default function Inicio() {
                           >
                             Agendar via WhatsApp
                           </Button>
-                          <Link to={createPageUrl('Produtos')}>
-                            <Button variant="outline" size="sm">Ver no catálogo</Button>
-                          </Link>
+
                         </div>
                       </CardContent>
                     </Card>
@@ -848,6 +848,10 @@ export default function Inicio() {
               </div>
             </div>
           </section>
+          {isPatrocinador && (
+            <DashboardPatrocinadorHome />
+          )}
+
           {/* Eventos Próximos (Profissional) */}
           {eventosVisiveisHome.length > 0 && (
             <section className="py-8 bg-white">
