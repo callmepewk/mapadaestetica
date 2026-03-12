@@ -1426,7 +1426,7 @@ Retorne APENAS o emoji escolhido, sem aspas, explicações ou texto adicional.`;
                   </div>
                 </div>
                 <p className="text-xs text-yellow-800 mt-2">Cada anúncio pode gerar recompensas acumulativas dentro da plataforma. Essas recompensas podem ser utilizadas posteriormente na loja de pontos para resgatar produtos ou serviços. Beauty Coins são uma moeda digital do Clube da Beleza que pode ser acumulada e utilizada para resgatar produtos ou serviços dentro da plataforma. Dica: use a IA para estimar automaticamente com base no conteúdo do anúncio e imagens.</p>
-              </div>)}
+              </div>) : null}
 
               {/* NEW FIELDS */}
               <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
