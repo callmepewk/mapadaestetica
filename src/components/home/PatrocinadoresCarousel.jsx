@@ -74,7 +74,7 @@ export default function PatrocinadoresCarousel() {
             }}
             className="text-left"
           >
-            <Card className="group relative aspect-square overflow-hidden bg-white hover:shadow-2xl transition-all border">
+            <Card className={`group relative aspect-square overflow-hidden bg-white hover:shadow-2xl transition-all ${(()=>{const t=String(b?.plano_patrocinador||'').toLowerCase();return t==='platinum'?'border-2 border-yellow-400 ring-2 ring-yellow-300': t==='gold'?'border-2 border-amber-300':'border';})()}`}>
               {b?.imagem_banner || b?.logo_empresa ? (
                 <img src={b.imagem_banner || b.logo_empresa} alt={b.nome_empresa || b.titulo} className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105" />
               ) : (
@@ -83,6 +83,11 @@ export default function PatrocinadoresCarousel() {
               <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-3 text-white">
                 <p className="text-xs font-semibold truncate">{b?.nome_empresa || b?.titulo}</p>
                 {b?.descricao && <p className="text-[10px] opacity-90 line-clamp-2">{b.descricao}</p>}
+                <div className="mt-1 flex items-center gap-2 text-[10px] opacity-90">
+                  {b?.cidade && <span>📍 {b.cidade}</span>}
+                  {b?.especialidade && <span>• {b.especialidade}</span>}
+                  {typeof b?.avaliacao_media === 'number' && <span>• ⭐ {Number(b.avaliacao_media).toFixed(1)}</span>}
+                </div>
                 <div className="mt-2">
                   <Button size="sm" variant="secondary" className="bg-white/90 text-black hover:bg-white" onClick={(e)=>{ e.preventDefault(); e.stopPropagation(); const url = b?.links?.[0]?.url || b?.site; if (url) window.open(url, '_blank'); }}>
                     Saiba mais

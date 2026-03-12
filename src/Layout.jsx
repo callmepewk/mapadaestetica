@@ -782,34 +782,40 @@ export default function Layout({ children }) {
             </div>
 
             <div>
-              <h4 className="font-semibold mb-4 text-[#F7D426]">Links Rápidos</h4>
+              <h4 className="font-semibold mb-4 text-[#F7D426]">Plataforma</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><Link to={createPageUrl("Inicio")} className="hover:text-[#F7D426] transition-colors">Início</Link></li>
-                <li><Link to={createPageUrl("Mapa")} className="hover:text-[#F7D426] transition-colors">Mapa</Link></li>
-                <li><Link to={createPageUrl("Produtos")} className="hover:text-[#F7D426] transition-colors">Produtos</Link></li>
-                {!isPaciente && <li><Link to={createPageUrl("Planos")} className="hover:text-[#F7D426] transition-colors">Planos</Link></li>}
-                <li><Link to={createPageUrl("Blog")} className="hover:text-[#F7D426] transition-colors">Blog</Link></li>
+                <li><Link to={createPageUrl("SobreNos")} className="hover:text-[#F7D426] transition-colors">Sobre o Mapa da Estética</Link></li>
+                <li><Link to={createPageUrl("SobreNos")} className="hover:text-[#F7D426] transition-colors">Como funciona</Link></li>
+                <li><a href={`${createPageUrl("Inicio")}#profissionais-regulamentados`} className="hover:text-[#F7D426] transition-colors">Profissionais regulamentados</a></li>
+                <li><a href={`${createPageUrl("Inicio")}#tipos-estabelecimentos`} className="hover:text-[#F7D426] transition-colors">Tipos de estabelecimentos</a></li>
               </ul>
             </div>
 
             <div>
-              <h4 className="font-semibold mb-4 text-[#F7D426]">Contatos</h4>
+              <h4 className="font-semibold mb-4 text-[#F7D426]">Para Pacientes</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li className="font-semibold text-white">Central de Vendas:</li>
-                <li><a href="tel:21980343873" className="hover:text-[#F7D426] transition-colors">(21) 98034-3873</a></li>
-                <li className="font-semibold text-white mt-3">Suporte Técnico:</li>
-                <li><a href="tel:54991554136" className="hover:text-[#F7D426] transition-colors">(54) 99155-4136</a></li>
-                <li className="font-semibold text-white mt-3">Business & Partnerships:</li>
-                <li><a href="tel:21980343873" className="hover:text-[#F7D426] transition-colors">(21) 98034-3873</a></li>
+                <li><Link to={createPageUrl("Mapa")} className="hover:text-[#F7D426] transition-colors">Encontrar profissionais</Link></li>
+                <li><Link to={createPageUrl("PlannerWellness")} className="hover:text-[#F7D426] transition-colors">Planejar tratamentos</Link></li>
+                <li><Link to={createPageUrl("PlannerWellness")} className="hover:text-[#F7D426] transition-colors">Wellness Planner</Link></li>
               </ul>
             </div>
 
             <div>
-              <h4 className="font-semibold mb-4 text-[#F7D426]">Institucional</h4>
+              <h4 className="font-semibold mb-4 text-[#F7D426]">Para Profissionais</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><Link to={createPageUrl("FaleConosco")} className="hover:text-[#F7D426] transition-colors">Fale Conosco</Link></li>
-                <li><Link to={createPageUrl("SobreNos")} className="hover:text-[#F7D426] transition-colors">Sobre Nós</Link></li>
-                <li><Link to={createPageUrl("PesquisaEspecializada")} className="hover:text-[#F7D426] transition-colors">Dr da Beleza</Link></li>
+                <li><Link to={createPageUrl("CadastrarAnuncio")} className="hover:text-[#F7D426] transition-colors">Criar perfil</Link></li>
+                <li><Link to={createPageUrl("Planos")} className="hover:text-[#F7D426] transition-colors">Planos profissionais</Link></li>
+                <li><Link to={createPageUrl("Planos")} className="hover:text-[#F7D426] transition-colors">Patrocínio</Link></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-semibold mb-4 text-[#F7D426]">Contato</h4>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li><Link to={createPageUrl("FaleConosco")} className="hover:text-[#F7D426] transition-colors">Suporte</Link></li>
+                <li><a href="https://www.instagram.com/_mapadaestetica/" target="_blank" rel="noopener noreferrer" className="hover:text-[#F7D426] transition-colors">Instagram</a></li>
+                <li><a href="https://www.facebook.com/mapadaestetica" target="_blank" rel="noopener noreferrer" className="hover:text-[#F7D426] transition-colors">Facebook</a></li>
+                <li><a href="mailto:contato@mapadaestetica.com" className="hover:text-[#F7D426] transition-colors">Email</a></li>
               </ul>
             </div>
           </div>
