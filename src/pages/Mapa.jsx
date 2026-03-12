@@ -141,7 +141,6 @@ const criarIconeEstabelecimento = (categoria) => {
     "Barbearia": "✂️",
     "Centro de Estética": "✨",
     "Consultório": "🏥",
-    "Personal Trainer": "🏋️",
     "Outros": "📍"
   };
   
