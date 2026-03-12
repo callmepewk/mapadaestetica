@@ -62,7 +62,6 @@ export default function PlannerWellness() {
   }, [meta]);
 
   const PROCEDURES = ["Botox","Preenchimento","Laser","Limpeza de pele","Tratamento para manchas","Depilação a laser","Rejuvenescimento facial"];
-  const [step, setStep] = useState(1);
   const [selectedProcs, setSelectedProcs] = useState([]);
   const [budgets, setBudgets] = useState({});
   const [customBudgets, setCustomBudgets] = useState({});
