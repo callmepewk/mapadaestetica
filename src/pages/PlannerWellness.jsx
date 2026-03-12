@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, Target, Calendar, Clock, ShieldCheck, Save, MapPin, DollarSign, User } from "lucide-react";
+import { createPageUrl } from "@/utils";
 
 const SUGESTOES_METAS = [
   "Rejuvenescimento", "Redução de manchas", "Melhorar textura da pele", "Reduzir gordura localizada", "Ganhar tônus", "Relaxamento / bem-estar"
@@ -71,6 +72,13 @@ export default function PlannerWellness() {
   const [matches, setMatches] = useState([]);
   const [loadingMatch, setLoadingMatch] = useState(false);
   const [userLoc, setUserLoc] = useState(null);
+  // Wizard (novo fluxo 6 etapas)
+  const [objetivo, setObjetivo] = useState(""); // rosto | corpo | cabelo | pele | intimo
+  const [dor, setDor] = useState("");
+  const [experiencia, setExperiencia] = useState(""); // nunca | uma | regular
+  const [conhecimento, setConhecimento] = useState(""); // sim | pouco | nao
+  const [investimento, setInvestimento] = useState(""); // ate300 | 300-700 | 700-1500 | 1500-3000 | 3000+
+  const [step, setStep] = useState(1);
 
   useEffect(()=>{
     if (planner) {
@@ -290,105 +298,155 @@ export default function PlannerWellness() {
           </CardContent>
         </Card>
 
-        {/* Planner (Paciente) - Passos */}
+        {/* Planner (Paciente) - Passos (novo fluxo 6 etapas) */}
         {!isProf && (
           <Card className="border-2 border-emerald-200">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-emerald-700"><Target className="w-5 h-5"/> Wellness Planner</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-5">
+              {/* Marketing copy */}
+              <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3 text-emerald-900 text-sm">
+                <p className="font-semibold">Seu plano de autoestima começa aqui.</p>
+                <p>O Wellness Planner analisa seus objetivos estéticos e mostra tratamentos, profissionais e valores médios para você se planejar com segurança.</p>
+              </div>
+
+              {/* Progresso */}
               <div>
-                <div className="flex items-center justify-between text-sm"><span>Etapa {step} de 3</span><button className="text-blue-600 underline" onClick={pedirLocalizacao}>Usar minha localização</button></div>
-                <Progress value={(step/3)*100} className="h-2" />
+                <div className="flex items-center justify-between text-sm"><span>Etapa {step} de 6</span><button className="text-blue-600 underline" onClick={pedirLocalizacao}>Usar minha localização</button></div>
+                <Progress value={(step/6)*100} className="h-2" />
               </div>
 
+              {/* Etapa 1 — Objetivo estético */}
               {step===1 && (
-                <div>
-                  <p className="text-sm text-gray-700 mb-2">Quais tratamentos/procedimentos você deseja realizar?</p>
+                <div className="space-y-3 animate-in fade-in">
+                  <p className="text-sm text-gray-700">O que você gostaria de melhorar?</p>
                   <div className="flex flex-wrap gap-2">
-                    {PROCEDURES.map(p=>{
-                      const on = selectedProcs.includes(p);
-                      return (
-                        <button key={p} onClick={()=> setSelectedProcs(prev=> on? prev.filter(x=>x!==p): [...prev, p])} className={`px-3 py-1 rounded-full border text-sm ${on? 'bg-emerald-600 text-white border-emerald-600' : 'hover:bg-emerald-50'}`}>{p}</button>
-                      );
-                    })}
+                    {["rosto","corpo","cabelo","pele","intimo"].map(op=> (
+                      <button key={op} onClick={()=> setObjetivo(op)} className={`px-3 py-1 rounded-full border text-sm ${objetivo===op? 'bg-emerald-600 text-white border-emerald-600' : 'hover:bg-emerald-50'}`}>{op}</button>
+                    ))}
                   </div>
                 </div>
               )}
 
+              {/* Etapa 2 — Dor estética principal */}
               {step===2 && (
-                <div className="space-y-3">
-                  <p className="text-sm text-gray-700">Quanto você está disposto(a) a investir em cada procedimento?</p>
-                  {selectedProcs.length===0 && (<p className="text-xs text-gray-500">Selecione ao menos um procedimento na etapa anterior.</p>)}
-                  {selectedProcs.map(p=> (
-                    <div key={p} className="grid md:grid-cols-3 gap-2 items-center">
-                      <div className="font-medium text-sm flex items-center gap-2"><DollarSign className="w-4 h-4"/> {p}</div>
-                      <Select value={budgets[p]||""} onValueChange={(v)=> setBudgets(s=> ({...s, [p]: v}))}>
-                        <SelectTrigger><SelectValue placeholder="Faixa de investimento"/></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="ate300">Até R$300</SelectItem>
-                          <SelectItem value="300-600">R$300–R$600</SelectItem>
-                          <SelectItem value="600-1000">R$600–R$1000</SelectItem>
-                          <SelectItem value="1000+">R$1000+</SelectItem>
-                          <SelectItem value="custom">Outro (valor)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      {(budgets[p]==='custom') && (
-                        <Input type="number" placeholder="R$" value={customBudgets[p]||""} onChange={(e)=> setCustomBudgets(s=> ({...s, [p]: e.target.value}))} />
-                      )}
-                    </div>
-                  ))}
+                <div className="space-y-3 animate-in fade-in">
+                  <p className="text-sm text-gray-700">Qual dessas situações mais afeta sua autoestima hoje?</p>
+                  <div className="flex flex-wrap gap-2">
+                    {(
+                      objetivo==="cabelo" ? ["queda de cabelo","calvície","afinamento capilar","oleosidade capilar","caspa","fortalecimento capilar"] :
+                      objetivo==="corpo" ? ["gordura localizada","celulite","flacidez corporal","estrias","retenção de líquidos","inchaço corporal","modelagem corporal"] :
+                      ["rugas","linhas de expressão","manchas na pele","melasma","olheiras","poros dilatados","pele oleosa","pele seca","pele envelhecida","flacidez facial","rejuvenescimento facial"]
+                    ).map(op=> (
+                      <button key={op} onClick={()=> setDor(op)} className={`px-3 py-1 rounded-full border text-sm ${dor===op? 'bg-emerald-600 text-white border-emerald-600' : 'hover:bg-emerald-50'}`}>{op}</button>
+                    ))}
+                  </div>
                 </div>
               )}
 
+              {/* Etapa 3 — Experiência anterior */}
               {step===3 && (
-                <div className="grid md:grid-cols-3 gap-3">
-                  <div>
-                    <label className="text-sm font-medium flex items-center gap-2"><MapPin className="w-4 h-4"/>Cidade</label>
-                    <Input value={prefCity} onChange={(e)=> setPrefCity(e.target.value)} placeholder="Ex.: São Paulo" />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Distância máxima (km)</label>
-                    <Select value={maxDist} onValueChange={setMaxDist}>
-                      <SelectTrigger><SelectValue placeholder="Qualquer"/></SelectTrigger>
-                      <SelectContent>
-                        {["5","10","20","50",""].map(v=> <SelectItem key={v||'qualquer'} value={v}>{v?`Até ${v} km`:'Qualquer'}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium flex items-center gap-2"><User className="w-4 h-4"/> Preferência</label>
-                    <Select value={prefType} onValueChange={setPrefType}>
-                      <SelectTrigger><SelectValue placeholder="Indiferente"/></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="indiferente">Indiferente</SelectItem>
-                        <SelectItem value="profissional">Profissional</SelectItem>
-                        <SelectItem value="clinica">Clínica</SelectItem>
-                      </SelectContent>
-                    </Select>
+                <div className="space-y-3 animate-in fade-in">
+                  <p className="text-sm text-gray-700">Você já realizou procedimentos estéticos antes?</p>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      {k:"nunca", l:"nunca fiz"},
+                      {k:"uma", l:"fiz uma vez"},
+                      {k:"regular", l:"faço regularmente"}
+                    ].map(op=> (
+                      <button key={op.k} onClick={()=> setExperiencia(op.k)} className={`px-3 py-1 rounded-full border text-sm ${experiencia===op.k? 'bg-emerald-600 text-white border-emerald-600' : 'hover:bg-emerald-50'}`}>{op.l}</button>
+                    ))}
                   </div>
                 </div>
               )}
 
-              <div className="flex justify-between">
-                <Button variant="outline" disabled={step===1} onClick={()=> setStep(s=> Math.max(1, s-1))}>Voltar</Button>
-                {step<3 ? (
-                  <Button onClick={()=> setStep(s=> Math.min(3, s+1))}>Avançar</Button>
-                ) : (
-                  <Button onClick={salvarERecomendar} className="bg-emerald-600 hover:bg-emerald-700 text-white">Salvar & Ver Recomendações</Button>
-                )}
-              </div>
+              {/* Etapa 4 — Conhecimento de segurança */}
+              {step===4 && (
+                <div className="space-y-3 animate-in fade-in">
+                  <p className="text-sm text-gray-700">Você conhece a importância da segurança técnica nos procedimentos estéticos?</p>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      {k:"sim", l:"sim"},
+                      {k:"pouco", l:"pouco"},
+                      {k:"nao", l:"não"}
+                    ].map(op=> (
+                      <button key={op.k} onClick={()=> setConhecimento(op.k)} className={`px-3 py-1 rounded-full border text-sm ${conhecimento===op.k? 'bg-emerald-600 text-white border-emerald-600' : 'hover:bg-emerald-50'}`}>{op.l}</button>
+                    ))}
+                  </div>
+                  <div className="text-xs text-emerald-900 bg-emerald-50 border border-emerald-200 rounded p-2">
+                    Sempre procure profissionais habilitados pelos conselhos da saúde.
+                  </div>
+                </div>
+              )}
 
-              <div id="recomendacoes-planner" className="pt-2">
-                {(loadingMatch) && (<div className="text-sm text-gray-600">Buscando recomendações…</div>)}
-                {!loadingMatch && matches.length>0 && (
-                  <div className="mt-3">
-                    <h3 className="font-semibold mb-2">Recomendações para você</h3>
-                    <div className="grid sm:grid-cols-2 gap-4">
-                      {matches.map(anuncio=> <CardAnuncio key={anuncio.id} anuncio={anuncio} />)}
+              {/* Etapa 5 — Faixa de investimento */}
+              {step===5 && (
+                <div className="space-y-3 animate-in fade-in">
+                  <p className="text-sm text-gray-700">Quanto você estaria disposto(a) a investir em você?</p>
+                  <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-2">
+                    {[
+                      {k:"ate300", l:"até 300"},
+                      {k:"300-700", l:"300 a 700"},
+                      {k:"700-1500", l:"700 a 1500"},
+                      {k:"1500-3000", l:"1500 a 3000"},
+                      {k:"3000+", l:"3000+"}
+                    ].map(op=> (
+                      <button key={op.k} onClick={()=> setInvestimento(op.k)} className={`px-3 py-2 rounded-lg border text-sm text-left ${investimento===op.k? 'bg-emerald-600 text-white border-emerald-600' : 'hover:bg-emerald-50'}`}>{op.l}</button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Etapa 6 — Resultado */}
+              {step===6 && (
+                <div className="space-y-4 animate-in fade-in">
+                  <p className="text-sm text-gray-700">Resultado do seu plano:</p>
+                  <div className="grid md:grid-cols-3 gap-3">
+                    <div className="p-3 rounded border bg-white shadow-sm">
+                      <p className="text-xs text-gray-500">Tratamentos recomendados</p>
+                      <p className="font-semibold">
+                        {dor || objetivo || 'Defina sua dor/objetivo'}
+                      </p>
+                    </div>
+                    <div className="p-3 rounded border bg-white shadow-sm">
+                      <p className="text-xs text-gray-500">Profissionais próximos</p>
+                      <p className="font-semibold">Ver no mapa</p>
+                    </div>
+                    <div className="p-3 rounded border bg-white shadow-sm">
+                      <p className="text-xs text-gray-500">Faixa média de preço</p>
+                      <p className="font-semibold">
+                        {investimento==="ate300"? "R$ até 300" : investimento==="300-700"? "R$ 300–700" : investimento==="700-1500"? "R$ 700–1500" : investimento==="1500-3000"? "R$ 1500–3000" : investimento==="3000+"? "R$ 3000+" : "—"}
+                      </p>
                     </div>
                   </div>
-                )}
+                  <div className="flex justify-end">
+                    <Button className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={()=>{
+                      const map = {
+                        "estrias": {type:'tratamento', value:'estrias'},
+                        "gordura localizada": {type:'tratamento', value:'gordura localizada'},
+                        "celulite": {type:'tratamento', value:'celulite'},
+                        "flacidez corporal": {type:'tratamento', value:'flacidez corporal'},
+                        "flacidez facial": {type:'tratamento', value:'flacidez facial'},
+                        "manchas na pele": {type:'tratamento', value:'manchas na pele'},
+                        "melasma": {type:'tratamento', value:'melasma'},
+                        "olheiras": {type:'procedimento', value:'preenchimento de olheiras'},
+                        "rugas": {type:'procedimento', value:'toxina botulínica'},
+                        "linhas de expressão": {type:'procedimento', value:'toxina botulínica'},
+                        "queda de cabelo": {type:'tratamento', value:'queda de cabelo'}
+                      };
+                      const sel = map[dor?.toLowerCase?.()||""] || (objetivo==="cabelo"? {type:'tratamento', value:'queda de cabelo'} : {type:'procedimento', value:'harmonização facial'});
+                      const qs = `${sel.type}=${encodeURIComponent(sel.value)}`;
+                      window.location.href = `${createPageUrl('Mapa')}?${qs}`;
+                    }}>Ver recomendações no mapa</Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Navegação */}
+              <div className="flex justify-between pt-2">
+                <Button variant="outline" disabled={step===1} onClick={()=> setStep(s=> Math.max(1, s-1))}>Voltar</Button>
+                <Button onClick={()=> setStep(s=> Math.min(6, s+1))}>{step<6? 'Avançar' : 'Concluir'}</Button>
               </div>
             </CardContent>
           </Card>
