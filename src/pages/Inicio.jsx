@@ -98,7 +98,6 @@ export default function Inicio() {
   const [buscaCidade, setBuscaCidade] = useState("");
   const [buscaIntencao, setBuscaIntencao] = useState("");
   const [buscaCategoria, setBuscaCategoria] = useState("");
-  const [buscaIntencao, setBuscaIntencao] = useState("");
   const [mostrarOnboarding, setMostrarOnboarding] = useState(false);
   const [mostrarComparacao, setMostrarComparacao] = useState(false);
   const [mostrarLoginPrompt, setMostrarLoginPrompt] = useState(false);
