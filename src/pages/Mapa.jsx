@@ -34,6 +34,8 @@ import {
   CheckCircle,
   Home,
   DollarSign,
+  Instagram,
+  Facebook,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CardAnuncio from "../components/anuncios/CardAnuncio";
@@ -191,13 +193,16 @@ export default function Mapa() {
   const [mostrarInfoFiltros, setMostrarInfoFiltros] = useState(false);
   const [mostrarInfoPreco, setMostrarInfoPreco] = useState(false);
   const [categoriaOutrosTexto, setCategoriaOutrosTexto] = useState("");
+  const [pais, setPais] = useState("");
+  const [cep, setCep] = useState("");
+  const [permissaoNegada, setPermissaoNegada] = useState(false);
   
   // Filtros para Anúncios
   const [busca, setBusca] = useState("");
   const [categoria, setCategoria] = useState("");
   const [procedimento, setProcedimento] = useState("");
   const [tratamento, setTratamento] = useState("");
-  const [profissaoFiltro, setProfissaoFiltro] = useState("");
+
   const [tecnologia, setTecnologia] = useState("");
   const [cidade, setCidade] = useState("");
   const [estado, setEstado] = useState("");
@@ -292,6 +297,12 @@ export default function Mapa() {
     },
   });
 
+  // Query produtos em destaque
+  const { data: produtos = [], isLoading: isLoadingProdutos } = useQuery({
+    queryKey: ['produtos-destaque'],
+    queryFn: async () => await base44.entities.Produto.filter({ status: 'ativo', em_destaque: true }, '-created_date', 8),
+  });
+
   useEffect(()=>{
     (async ()=>{
       try {
@@ -338,20 +349,39 @@ export default function Mapa() {
     if (navigator.geolocation) {
       setBuscandoLocalizacao(true);
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setLocalizacaoUsuario({
+        async (position) => {
+          const novaLoc = {
             lat: position.coords.latitude,
-            lng: position.coords.longitude
-          });
+            lng: position.coords.longitude,
+          };
+          setLocalizacaoUsuario(novaLoc);
+          setCentralizarEm(novaLoc);
+          try {
+            const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${novaLoc.lat}&lon=${novaLoc.lng}`);
+            const data = await resp.json();
+            const cid = data.address.city || data.address.town || data.address.village || '';
+            const uf = (data.address.state_code || data.address.state || '').toString().slice(0,2).toUpperCase();
+            const paisResp = data.address.country || '';
+            const cepResp = data.address.postcode || '';
+            if (cid) { setCidade(cid); setBuscaCidade(cid); }
+            if (uf) { setEstado(uf); setEstadoMapa(uf); }
+            if (paisResp) setPais(paisResp);
+            if (cepResp) setCep(cepResp);
+          } catch (e) {
+            console.warn('Falha na geocodificação reversa', e);
+          }
           setBuscandoLocalizacao(false);
         },
         (error) => {
           console.error("Erro ao obter localização:", error);
+          setPermissaoNegada(true);
           setBuscandoLocalizacao(false);
           setLocalizacaoUsuario({ lat: -15.7801, lng: -47.9292 });
-        }
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
       );
     } else {
+      setPermissaoNegada(true);
       setLocalizacaoUsuario({ lat: -15.7801, lng: -47.9292 });
     }
   }, []);
@@ -371,9 +401,13 @@ export default function Mapa() {
             const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${novaLocalizacao.lat}&lon=${novaLocalizacao.lng}`);
             const data = await resp.json();
             const cid = data.address.city || data.address.town || data.address.village || '';
-            const uf = data.address.state_code || '';
-            if (cid) setCidade(cid);
-            if (uf) { setEstado(uf.toUpperCase()); setEstadoMapa(uf.toUpperCase()); }
+            const uf = (data.address.state_code || data.address.state || '').toString().slice(0,2).toUpperCase();
+            const paisResp = data.address.country || '';
+            const cepResp = data.address.postcode || '';
+            if (cid) { setCidade(cid); setBuscaCidade(cid); }
+            if (uf) { setEstado(uf); setEstadoMapa(uf); }
+            if (paisResp) setPais(paisResp);
+            if (cepResp) setCep(cepResp);
           } catch {}
           setBuscandoLocalizacao(false);
         },
@@ -432,7 +466,7 @@ export default function Mapa() {
     const matchVerificados = !verificados || anuncio.profissional_verificado === true;
     const matchTipoAnuncio = !tipoAnuncio || anuncio.tipo_anuncio === tipoAnuncio;
     const matchTipoEstabelecimento = !tipoEstabelecimento || anuncio.tipo_estabelecimento === tipoEstabelecimento;
-    const matchProfissao = !profissaoFiltro || (anuncio.profissao||'').toLowerCase() === profissaoFiltro.toLowerCase();
+
     const matchTecnologia = !tecnologia || (anuncio.tags||[]).some(t => (t||'').toLowerCase().includes(tecnologia.toLowerCase()));
 
     const tagsLower = (anuncio.tags || []).map(t => (t || '').toLowerCase());
@@ -476,7 +510,7 @@ export default function Mapa() {
     }
     
     return matchBusca && matchCategoria && matchProcedimento && matchTratamento && matchCidade && matchEstado && 
-    matchPreco && matchVerificados && matchTipoAnuncio && matchTipoEstabelecimento && matchProfissao && matchTecnologia &&
+    matchPreco && matchVerificados && matchTipoAnuncio && matchTipoEstabelecimento && matchTecnologia &&
     matchAvaliacao && matchModalidade && matchAtendimento && matchCobranca && matchDistancia && matchPublico;
   });
 
@@ -584,18 +618,102 @@ export default function Mapa() {
         </div>
       </div>
 
+      {/* Explicação institucional */}
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="bg-white rounded-2xl border shadow-sm p-6 md:p-8">
+          <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 mb-3">Como funciona o Mapa da Estética</h2>
+          <p className="text-gray-600 mb-6">Conectamos você aos melhores profissionais e estabelecimentos próximos, com busca por procedimento e comparação clara.</p>
+          <div className="grid md:grid-cols-3 gap-4">
+            <div className="p-4 rounded-xl bg-gray-50 border">
+              <div className="text-3xl mb-2">🔎</div>
+              <h4 className="font-semibold mb-1">1) Busque por procedimento</h4>
+              <p className="text-sm text-gray-600">Ex.: Botox, Preenchimento, Laser, Microagulhamento, Peeling...</p>
+            </div>
+            <div className="p-4 rounded-xl bg-gray-50 border">
+              <div className="text-3xl mb-2">📍</div>
+              <h4 className="font-semibold mb-1">2) Vemos sua região</h4>
+              <p className="text-sm text-gray-600">Com sua permissão, detectamos sua localização e trazemos opções próximas.</p>
+            </div>
+            <div className="p-4 rounded-xl bg-gray-50 border">
+              <div className="text-3xl mb-2">🤝</div>
+              <h4 className="font-semibold mb-1">3) Contrate com segurança</h4>
+              <p className="text-sm text-gray-600">Veja avaliações, verificação profissional e fale direto por WhatsApp.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Produtos para você */}
+      <div className="max-w-7xl mx-auto px-4 pb-2">
+        <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-2xl border shadow-sm p-6 md:p-8">
+          <div className="flex items-center justify-between gap-4 flex-wrap mb-4">
+            <div>
+              <h3 className="text-xl md:text-2xl font-bold text-gray-900">Produtos para você</h3>
+              <p className="text-sm text-gray-600">Seleção de itens e serviços em destaque perto de você</p>
+            </div>
+            <Button onClick={() => window.location.href = createPageUrl('Produtos')} variant="outline">Ver todos</Button>
+          </div>
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {(produtos||[]).slice(0,8).map((p)=> (
+              <div key={p.id} className="bg-white rounded-xl border overflow-hidden hover:shadow-lg transition-all">
+                {Array.isArray(p.imagens) && p.imagens[0] ? (
+                  <img src={p.imagens[0]} alt={p.nome} className="w-full h-32 object-cover" />
+                ) : (
+                  <div className="w-full h-32 bg-gray-100 flex items-center justify-center text-gray-400">sem imagem</div>
+                )}
+                <div className="p-3">
+                  <p className="font-semibold text-gray-900 line-clamp-2 mb-1">{p.nome}</p>
+                  <p className="text-sm text-gray-600">{p.preco_texto || (p.preco ? `R$ ${Number(p.preco).toFixed(2)}` : 'Consultar')}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Banner de busca manual quando sem permissão de localização */}
+      {permissaoNegada && (
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="bg-white border-2 border-amber-200 rounded-2xl p-4 mb-4 shadow-sm">
+            <p className="text-sm text-gray-800 mb-3">Não conseguimos acessar sua localização. Busque manualmente por cidade ou CEP.</p>
+            <div className="grid sm:grid-cols-3 gap-3">
+              <Input placeholder="Cidade" value={cidade} onChange={(e)=>setCidade(e.target.value)} className="h-10" />
+              <Input placeholder="CEP" value={cep} onChange={(e)=>setCep(e.target.value)} className="h-10" />
+              <Button
+                onClick={async ()=>{
+                  const cepNum = cep.replace(/\D/g,'');
+                  if (cepNum.length === 8) {
+                    try {
+                      const r = await fetch(`https://viacep.com.br/ws/${cepNum}/json/`);
+                      const d = await r.json();
+                      if (!d.erro) {
+                         setCidade(d.localidade||'');
+                         setEstado((d.uf||'').toUpperCase());
+                         setEstadoMapa((d.uf||'').toUpperCase());
+                         setBuscaCidade(`${d.localidade||''}`);
+                       }
+                    } catch {}
+                  }
+                }}
+                className="h-10 bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C]"
+              >Aplicar</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Tabs: Anúncios e Mapa da Estética */}
       <div className="max-w-7xl mx-auto px-4 py-6">
         <Tabs value={abaSelecionada} onValueChange={setAbaSelecionada}>
           <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-6">
             {/* data-state active styling */}
-            <TabsTrigger value="anuncios" className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4" />
-              Anúncios ({anunciosFiltrados.length})
-            </TabsTrigger>
             <TabsTrigger value="mapa" className="flex items-center gap-2">
               <MapPin className="w-4 h-4" />
               Mapa da Estética ({estabelecimentosFiltradosComDist.length})
+            </TabsTrigger>
+            <TabsTrigger value="anuncios" className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4" />
+              Anúncios ({anunciosFiltrados.length})
             </TabsTrigger>
           </TabsList>
 
@@ -670,17 +788,7 @@ export default function Mapa() {
                        </SelectContent>
                      </Select>
                    </div>
-                   <div>
-                     <label className="text-sm font-medium mb-2 block">Profissão</label>
-                     <Select value={profissaoFiltro} onValueChange={setProfissaoFiltro}>
-                       <SelectTrigger className="h-10">
-                         <SelectValue placeholder="Todas" />
-                       </SelectTrigger>
-                       <SelectContent className="max-h-64">
-                         {["Médico Dermatologista","Médico Cirurgião Plástico","Médico em Medicina Estética","Biomédico Esteta","Farmacêutico Esteta","Enfermeiro Esteta","Fisioterapeuta Dermatofuncional","Dentista Harmonizador Orofacial","Biólogo Esteta","Nutricionista Estético","Esteticista","Tecnólogo em Estética e Cosmética","Cosmetólogo","Tricologista","Podólogo","Massoterapeuta","Terapeuta Capilar"].map((p)=>(<SelectItem key={p} value={p}>{p}</SelectItem>))}
-                       </SelectContent>
-                     </Select>
-                   </div>
+ 
                    <div>
                      <label className="text-sm font-medium mb-2 block">Tecnologia</label>
                      <Select value={tecnologia} onValueChange={setTecnologia}>
@@ -1399,6 +1507,25 @@ export default function Mapa() {
         }}
         procedimentoAtual={procedimento}
       />
+      {/* Siga nas redes sociais */}
+      <div className="bg-white py-10 mt-10 border-t">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <h3 className="text-2xl md:text-3xl font-extrabold text-gray-900 mb-2">Acompanhe o Mapa da Estética nas redes sociais</h3>
+          <p className="text-gray-600 mb-6">Fique por dentro de novidades, dicas e tendências do universo da estética.</p>
+          <div className="flex items-center justify-center gap-4 flex-wrap">
+            <a href="https://www.instagram.com/_mapadaestetica/" target="_blank" rel="noopener noreferrer"
+               className="group inline-flex items-center gap-3 px-6 py-3 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-[1.02]">
+              <Instagram className="w-6 h-6" />
+              <span className="text-base">Instagram</span>
+            </a>
+            <a href="https://www.facebook.com/mapadaestetica" target="_blank" rel="noopener noreferrer"
+               className="group inline-flex items-center gap-3 px-6 py-3 rounded-full bg-blue-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-[1.02]">
+              <Facebook className="w-6 h-6" />
+              <span className="text-base">Facebook</span>
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
