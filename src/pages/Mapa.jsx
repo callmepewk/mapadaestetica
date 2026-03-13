@@ -551,79 +551,154 @@ procedimentos: {
 
   },
 
-  tratamentos: {
+tratamentos: {
 
-    'estrias': [
-      'estrias','tratamento estrias','remover estrias','estrias brancas','estrias vermelhas'
-    ],
+  'estrias': [
+    'estrias','tratamento estrias','remover estrias','estrias brancas','estrias vermelhas'
+  ],
 
-    'acne': [
-      'acne','espinhas','tratamento acne','espinha inflamada','acne adulta'
-    ],
+  'acne': [
+    'acne','espinhas','tratamento acne','espinha inflamada','acne adulta'
+  ],
 
-    'melasma': [
-      'melasma','manchas escuras','manchas na pele','clareamento melasma'
-    ],
+  'melasma': [
+    'melasma','manchas escuras','manchas na pele','clareamento melasma'
+  ],
 
-    'manchas na pele': [
-      'manchas pele','manchas solares','hiperpigmentação'
-    ],
+  'manchas na pele': [
+    'manchas pele','manchas solares','hiperpigmentação'
+  ],
 
-    'flacidez': [
-      'flacidez','flacidez facial','flacidez corporal','pele flácida'
-    ],
+  'flacidez': [
+    'flacidez','flacidez facial','flacidez corporal','pele flácida'
+  ],
 
-    'queda de cabelo': [
-      'queda de cabelo','calvície','alopecia','tratamento capilar'
-    ],
+  'queda de cabelo': [
+    'queda de cabelo','calvície','alopecia','tratamento capilar'
+  ],
 
-    'olheiras': [
-      'olheiras','olheira profunda','olheira escura'
-    ],
+  'olheiras': [
+    'olheiras','olheira profunda','olheira escura'
+  ],
 
-    'gordura localizada': [
-      'gordura localizada','gordura abdominal','redução de gordura'
-    ],
+  'gordura localizada': [
+    'gordura localizada','gordura abdominal','redução de gordura'
+  ],
 
-    'celulite': [
-      'celulite','tratamento celulite','reduzir celulite'
-    ],
+  'celulite': [
+    'celulite','tratamento celulite','reduzir celulite'
+  ],
 
-    'rejuvenescimento facial': [
-      'rejuvenescimento facial','rejuvenescer pele','anti idade','anti aging'
-    ],
+  'rejuvenescimento facial': [
+    'rejuvenescimento facial','rejuvenescer pele','anti idade','anti aging'
+  ],
 
-    'poros dilatados': [
-      'poros dilatados','poros abertos','diminuir poros'
-    ],
+  'poros dilatados': [
+    'poros dilatados','poros abertos','diminuir poros'
+  ],
 
-    'cicatrizes': [
-      'cicatriz','cicatriz acne','tratamento cicatriz'
-    ],
+  'cicatrizes': [
+    'cicatriz','cicatriz acne','tratamento cicatriz'
+  ],
 
-    'rosácea': [
-      'rosacea','rosácea','tratamento rosacea'
-    ],
+  'rosácea': [
+    'rosacea','rosácea','tratamento rosacea'
+  ],
 
-    'queda capilar feminina': [
-      'queda capilar feminina','afinamento capilar'
-    ],
+  'queda capilar feminina': [
+    'queda capilar feminina','afinamento capilar'
+  ],
 
-    'barba falhada': [
-      'barba falhada','crescimento barba'
-    ],
+  'barba falhada': [
+    'barba falhada','crescimento barba'
+  ],
 
-    'clareamento de pele': [
-      'clareamento pele','clareamento facial','clareamento íntimo'
-    ],
+  'clareamento de pele': [
+    'clareamento pele','clareamento facial','clareamento íntimo'
+  ],
 
-    'papada': [
-      'papada','redução papada','gordura submentoniana'
-    ],
+  'papada': [
+    'papada','redução papada','gordura submentoniana'
+  ],
 
-    'rugas': [
-      'rugas','linhas de expressão','rugas profundas'
-    ]
+  'rugas': [
+    'rugas','linhas de expressão','rugas profundas'
+  ],
+
+
+  /* NOVOS TRATAMENTOS ADICIONADOS (sem duplicar os existentes) */
+
+  'vasinhos': [
+    'vasinhos','vasinhos pernas','vasinhos rosto','telangiectasia'
+  ],
+
+  'vermelhidão facial': [
+    'vermelhidão facial','pele avermelhada','rubor facial'
+  ],
+
+  'pele sensível': [
+    'pele sensível','pele sensibilizada','sensibilidade facial'
+  ],
+
+  'textura irregular da pele': [
+    'textura irregular','pele irregular','pele áspera','melhorar textura pele'
+  ],
+
+  'qualidade da pele': [
+    'qualidade da pele','melhora da pele','pele saudável','skin quality'
+  ],
+
+  'rejuvenescimento corporal': [
+    'rejuvenescimento corporal','rejuvenescer corpo','anti idade corporal'
+  ],
+
+  'redução de medidas': [
+    'redução medidas','diminuir medidas','emagrecimento estético'
+  ],
+
+  'modelagem corporal': [
+    'modelagem corporal','contorno corporal','escultura corporal'
+  ],
+
+  'retenção de líquidos': [
+    'retenção líquidos','inchaço corporal','drenagem retenção liquido'
+  ],
+
+  'cicatriz cirúrgica': [
+    'cicatriz cirurgica','cicatriz cirurgia','melhorar cicatriz cirurgia'
+  ],
+
+  'cicatriz de queimadura': [
+    'cicatriz queimadura','marca queimadura','tratamento queimadura pele'
+  ],
+
+  'manchas íntimas': [
+    'mancha íntima','mancha genital','hiperpigmentação íntima'
+  ],
+
+  'rejuvenescimento íntimo': [
+    'rejuvenescimento íntimo','estética íntima','tratamento íntimo'
+  ],
+
+  'flacidez íntima': [
+    'flacidez íntima','flacidez vaginal','firmeza vaginal'
+  ],
+
+  'queda capilar masculina': [
+    'queda capilar masculina','calvície masculina','alopecia androgenética'
+  ],
+
+  'caspa': [
+    'caspa','dermatite seborreica','descamação couro cabeludo'
+  ],
+
+  'oleosidade da pele': [
+    'pele oleosa','oleosidade excessiva','controle oleosidade'
+  ],
+
+  'pele seca': [
+    'pele seca','desidratação da pele','hidratação profunda pele'
+  ]
 
   }
 
