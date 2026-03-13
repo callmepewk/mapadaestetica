@@ -221,28 +221,153 @@ export default function Mapa() {
   const [ordenarPor, setOrdenarPor] = useState('recentes');
   const MAP_KEYWORDS = {
 
-  procedimentos: {
+procedimentos: {
 
-    'toxina botulínica': [
-      'botox','toxina botulinica','toxina botulínica','botox facial','botox estético','botox testa',
-      'botox rugas','botox preventivo','toxina botulínica estética'
-    ],
+  'toxina botulínica': [
+    'botox','toxina botulinica','toxina botulínica','botox facial','botox estético','botox testa',
+    'botox rugas','botox preventivo','toxina botulínica estética'
+  ],
 
-    'preenchimento': [
-      'preenchimento','preenchimento facial','preenchimento labial','ácido hialurônico',
-      'preenchimento olheiras','preenchimento bigode chines','preenchimento queixo',
-      'preenchimento mandíbula','preenchimento malar','preenchimento sulco nasogeniano'
-    ],
+  'preenchimento': [
+    'preenchimento','preenchimento facial','preenchimento labial','ácido hialurônico',
+    'acido hialuronico','preenchimento olheiras','preenchimento bigode chines',
+    'preenchimento queixo','preenchimento mandíbula','preenchimento mandibula',
+    'preenchimento malar','preenchimento sulco nasogeniano'
+  ],
 
-    'bioestimulador': [
-      'bioestimulador','bioestimuladores','sculptra','ellansé','radiesse',
-      'estimulador de colágeno','bioestimulador de colágeno'
-    ],
+  'bioestimulador de colágeno': [
+    'bioestimulador','bioestimulador de colageno','bioestimulador de colágeno',
+    'sculptra','radiesse','ellanse','estimulação de colágeno','estimulador de colageno'
+  ],
 
-    'microagulhamento': [
-      'microagulhamento','dermaroller','microneedling','microagulhamento facial',
-      'microagulhamento capilar','microagulhamento estrias'
-    ],
+  'skinbooster': [
+    'skinbooster','skin booster','hidratação injetável','hidratacao injetavel',
+    'hidratação profunda da pele','hidratacao profunda da pele'
+  ],
+
+  'microagulhamento': [
+    'microagulhamento','microagulhamento facial','microagulhamento pele',
+    'dermapen','dermaroller','indução percutânea de colágeno',
+    'ipca','microagulhamento estético'
+  ],
+
+  'peeling químico': [
+    'peeling quimico','peeling químico','peeling facial','peeling ácido',
+    'peeling de acido','peeling de fenol','peeling de retinoico',
+    'peeling superficial','peeling médio','peeling profundo'
+  ],
+
+  'peeling de diamante': [
+    'peeling diamante','peeling de diamante','microdermoabrasão',
+    'microdermoabrasao','dermoabrasão estética'
+  ],
+
+  'limpeza de pele': [
+    'limpeza de pele','limpeza facial','limpeza profunda','extração de cravos',
+    'extracao de cravos','remoção de comedões','remocao de comedoes'
+  ],
+
+  'depilação a laser': [
+    'depilação a laser','depilacao a laser','laser depilação','laser depilacao',
+    'depilação definitiva','depilacao definitiva','laser alexandrite',
+    'laser diodo','laser nd yag depilação'
+  ],
+
+  'laser co2': [
+    'laser co2','laser co2 fracionado','laser fracionado co2',
+    'laser resurfacing','laser ablativo','laser rejuvenescimento',
+    'laser cicatriz acne','laser estrias','laser rugas'
+  ],
+
+  'laser para manchas': [
+    'laser manchas','laser para manchas','laser pigmentação',
+    'laser pigmentacao','laser melasma','laser manchas solares',
+    'laser lentigos','laser sardas'
+  ],
+
+  'remoção de tatuagem a laser': [
+    'remoção de tatuagem','remocao de tatuagem','remoção de tatuagem a laser',
+    'laser tattoo removal','laser remover tatuagem'
+  ],
+
+  'laser vascular': [
+    'laser vascular','laser vasos','laser telangiectasia',
+    'laser rosacea','laser vasinhos','laser angioma'
+  ],
+
+  'radiofrequência': [
+    'radiofrequencia','radiofrequência','radiofrequência facial',
+    'radiofrequência corporal','radiofrequencia pele',
+    'radiofrequência flacidez'
+  ],
+
+  'ultrassom microfocado': [
+    'ultrassom microfocado','ultrassom microfocado facial',
+    'ultraformer','liftera','hifu','lifting ultrassom'
+  ],
+
+  'criolipólise': [
+    'criolipólise','criolipolise','criolipolise gordura',
+    'criolipólise gordura localizada','congelamento de gordura',
+    'criolipolise abdominal'
+  ],
+
+  'carboxiterapia': [
+    'carboxiterapia','carbox facial','carbox corporal',
+    'carbox estrias','carbox olheiras','aplicação de co2 estético'
+  ],
+
+  'intradermoterapia': [
+    'intradermoterapia','mesoterapia','mesoterapia facial',
+    'mesoterapia corporal','mesoterapia gordura localizada',
+    'injeção estética pele'
+  ],
+
+  'enzimas para gordura': [
+    'enzimas gordura','enzimas gordura localizada',
+    'aplicação de enzimas','lipo enzimatica','lipoliticos',
+    'injeção gordura localizada'
+  ],
+
+  'fios de pdo': [
+    'fios pdo','fio de pdo','fios de sustentação',
+    'fios de tração','lifting com fios','fio lifting'
+  ],
+
+  'jato de plasma': [
+    'jato de plasma','plasma pen','plasma fibroblast',
+    'plasma lifting','plasma pele'
+  ],
+
+  'hidradermabrasão': [
+    'hidradermabrasao','hidradermabrasão','hydrafacial',
+    'limpeza hydrafacial','hidratação profunda facial'
+  ],
+
+  'ledterapia': [
+    'ledterapia','led facial','fototerapia led',
+    'luz led estética','fotobiomodulação'
+  ],
+
+  'massagem modeladora': [
+    'massagem modeladora','massagem redutora',
+    'massagem corporal estética','massagem gordura localizada'
+  ],
+
+  'drenagem linfática': [
+    'drenagem linfatica','drenagem linfática','drenagem pós operatório',
+    'drenagem corporal','drenagem estética'
+  ],
+
+  'implante capilar': [
+    'implante capilar','transplante capilar',
+    'fue capilar','fut capilar','restauração capilar'
+  ],
+
+  'microagulhamento capilar': [
+    'microagulhamento capilar','dermaroller capilar',
+    'dermapen capilar','indução colageno capilar'
+  ],
 
 'laser': [
   'laser',
