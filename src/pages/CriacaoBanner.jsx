@@ -50,9 +50,9 @@ const dimensoesPorPlano = {
     diasExibicao: 60,
     posicoes: ["home_topo", "home_meio", "produtos", "mapa"]
   }
+  };
 
-
-const posicoesDisponiveis = [
+  const posicoesDisponiveis = [
   { valor: "home_topo", label: "🏠 Home - Topo" },
   { valor: "home_meio", label: "🏠 Home - Meio" },
   { valor: "home_rodape", label: "🏠 Home - Rodapé" },
