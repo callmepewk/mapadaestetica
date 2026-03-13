@@ -43,9 +43,13 @@ export default function Planos() {
       open('https://wa.me/5521980343873?text=Ol%C3%A1!%20Tenho%20interesse%20no%20plano%20Premium%20do%20Mapa%20da%20Est%C3%A9tica.%20Podemos%20conversar%3F');
       return;
     }
-    if (['cobre','prata','ouro','diamante','platina'].includes(planId)) {
-      open(`https://wa.me/5521980343873?text=${encodeURIComponent('Olá! Quero contratar o plano de Patrocinador: ' + planId.toUpperCase())}`);
-      return;
+    if (planId === 'cobre') {
+        open('https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=2c8353c5df514f4c87d7f7454cb12880');
+        return;
+    }
+    if (planId === 'diamante') {
+        open('https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=5148b2fef0aa48db9aee0132f65b9897');
+        return;
     }
     // Free: direciona para cadastrar anúncio (sem usar Checkout). Se não logado, pede login.
     if (!auth) {
@@ -58,9 +62,9 @@ export default function Planos() {
   const professionalPlans = [
     {
       id: "free",
-      name: "Básico (Free)",
+      name: "Free",
       price: "R$ 0",
-      period: "/mês",
+      period: "para sempre",
       highlighted: false,
       cta: "Começar grátis",
       icon: Star,
@@ -88,7 +92,7 @@ export default function Planos() {
     },
     {
       id: "prime",
-      name: "Prime (Profissional)",
+      name: "Prime",
       price: "R$ 99",
       period: "/mês",
       highlighted: true,
@@ -106,7 +110,7 @@ export default function Planos() {
     },
     {
       id: "premium",
-      name: "Premium (Profissional)",
+      name: "Premium",
       price: "Sob consulta",
       period: "",
       highlighted: false,
@@ -128,72 +132,27 @@ export default function Planos() {
     {
       id: "cobre",
       name: "Cobre (Patrocinador)",
-      price: "A partir de R$ 499",
+      price: "R$ 99,90",
       period: "/mês",
       highlighted: false,
       cta: "Contratar Cobre",
       icon: Medal,
       features: [
-        "1 banner rotativo (posições básicas)",
-        "Exibição geográfica ampla",
-        "Métricas essenciais (views e cliques)",
-        "Tempo de exibição conforme plano"
-      ]
-    },
-    {
-      id: "prata",
-      name: "Prata (Patrocinador)",
-      price: "A partir de R$ 999",
-      period: "/mês",
-      highlighted: false,
-      cta: "Contratar Prata",
-      icon: Medal,
-      features: [
-        "2 banners rotativos",
-        "Melhores posições em páginas-chave",
-        "Segmentação por cidade/UF (básica)",
-        "Relatório mensal de performance"
-      ]
-    },
-    {
-      id: "ouro",
-      name: "Ouro (Patrocinador)",
-      price: "A partir de R$ 1.999",
-      period: "/mês",
-      highlighted: true,
-      cta: "Contratar Ouro",
-      icon: Trophy,
-      features: [
-        "3 banners em posições premium",
-        "Segmentação por público e região",
-        "Conteúdos editoriais patrocinados",
-        "Relatórios detalhados e recomendações"
+        "Banner por 30 dias",
+        "2 relatórios por mês"
       ]
     },
     {
       id: "diamante",
       name: "Diamante (Patrocinador)",
-      price: "Sob consulta",
-      period: "",
-      highlighted: false,
-      cta: "Falar com consultor",
+      price: "R$ 199,90",
+      period: "/mês",
+      highlighted: true,
+      cta: "Contratar Diamante",
       icon: Gem,
       features: [
-        "4–5 banners com prioridade máxima",
-        "Campanhas multi-páginas e formatos",
-        "Segmentação avançada e testes A/B",
-        "Suporte estratégico e co-criação de ações"
-      ]
-    },
-    {
-      id: "platina",
-      name: "Platina (Patrocinador)",
-      price: "Projeto custom",
-      period: "",
-      highlighted: false,
-      cta: "Solicitar proposta",
-      icon: Crown,
-      features: [
+        "Banner por 60 dias",
+        "1 relatório por semana",
         "Pacotes especiais e takeovers",
         "Séries de conteúdo e ativações",
         "Eventos, lançamentos e experiências",

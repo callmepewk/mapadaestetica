@@ -51,7 +51,8 @@ export default function ModalEditarUsuario({
   setDadosEdicaoUsuario,
   onSalvar,
   isPending,
-  PLANOS_INFO
+  PLANOS_PROFISSIONAL_INFO,
+  PLANOS_PATROCINADOR_INFO
 }) {
   if (!usuarioEditando) return null;
 
@@ -332,8 +333,8 @@ export default function ModalEditarUsuario({
                         <SelectValue placeholder="Selecione o plano" />
                       </SelectTrigger>
                       <SelectContent>
-                        {Object.keys(PLANOS_INFO).map(key => (
-                          <SelectItem key={key} value={key}>{PLANOS_INFO[key].nome}</SelectItem>
+                        {Object.keys(PLANOS_PROFISSIONAL_INFO).map(key => (
+                          <SelectItem key={key} value={key}>{PLANOS_PROFISSIONAL_INFO[key].nome}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -368,11 +369,9 @@ export default function ModalEditarUsuario({
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="nenhum">Nenhum</SelectItem>
-                        <SelectItem value="cobre">Cobre</SelectItem>
-                        <SelectItem value="prata">Prata</SelectItem>
-                        <SelectItem value="ouro">Ouro</SelectItem>
-                        <SelectItem value="diamante">Diamante</SelectItem>
-                        <SelectItem value="platina">Platina</SelectItem>
+                        {Object.keys(PLANOS_PATROCINADOR_INFO).map(key => (
+                          <SelectItem key={key} value={key}>{PLANOS_PATROCINADOR_INFO[key].nome}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
