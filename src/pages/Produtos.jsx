@@ -607,8 +607,9 @@ export default function Produtos() {
                 </div>
               </Card>
             ) : (
-              {/* Produtos com paginação (6 por página) */}
-              {(() => {
+              <>
+                {/* Produtos com paginação (6 por página) */}
+                {(() => {
                 const isServico = (p) => p.categoria === "Serviços Contratáveis" || p.categoria === "Serviços para Pacientes" || p.categoria === "Produtos para Pacientes";
                 const produtosApenas = produtosFiltrados.filter(p => !isServico(p));
                 const servicosApenas = produtosFiltrados.filter(isServico);
