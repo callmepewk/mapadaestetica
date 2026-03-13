@@ -1257,8 +1257,9 @@ tratamentos: {
         </div>
       )}
 
-      {/* Mapa + Lista Unificados */}
+      {/* Mapa, depois institucional, depois cards e só então anúncios — mapa é protagonista */}
       <div className="max-w-7xl mx-auto px-4 py-6">
+        {/* Filtros principais */}
         <Card className="mb-6 border-none shadow-lg">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
@@ -1388,141 +1389,207 @@ tratamentos: {
           </CardContent>
         </Card>
 
-        <div className="grid lg:grid-cols-3 gap-4">
-          {/* Mapa à esquerda (maior) */}
-          <div id="mapa-interativo" className="lg:col-span-2 relative h-[60vh] min-h-[520px]">
-            <MapContainer
-              center={localizacaoUsuario ? [localizacaoUsuario.lat, localizacaoUsuario.lng] : [-15.7801, -47.9292]}
-              zoom={13}
-              style={{ height: '100%', width: '100%' }}
-              className="z-0 rounded-xl overflow-hidden border"
-            >
-              <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-              />
+        {/* Mapa — protagonista */}
+        <div id="mapa-interativo" className="relative h-[60vh] min-h-[520px] mb-10">
+          <MapContainer
+            center={localizacaoUsuario ? [localizacaoUsuario.lat, localizacaoUsuario.lng] : [-15.7801, -47.9292]}
+            zoom={13}
+            style={{ height: '100%', width: '100%' }}
+            className="z-0 rounded-xl overflow-hidden border"
+          >
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            />
 
-              {localizacaoUsuario && (
-                <Marker position={[localizacaoUsuario.lat, localizacaoUsuario.lng]} icon={criarIconeUsuario()}>
+            {localizacaoUsuario && (
+              <Marker position={[localizacaoUsuario.lat, localizacaoUsuario.lng]} icon={criarIconeUsuario()}>
+                <Popup>
+                  <div className="text-center p-2">
+                    <p className="font-bold text-blue-600">📍 Você está aqui</p>
+                  </div>
+                </Popup>
+              </Marker>
+            )}
+
+            {anunciosFiltrados.map((a) => (
+              a.latitude && a.longitude ? (
+                <Marker
+                  key={`anuncio-${a.id}`}
+                  position={[a.latitude, a.longitude]}
+                  icon={criarIconeAnuncio(!!a.profissional_verificado, (!!a.em_destaque || !!a.impulsionado || ['ouro','diamante','platina'].includes(a.plano)))}
+                  eventHandlers={{ click: () => setSelectedAd(a) }}
+                >
+                  <Tooltip direction="top" offset={[0,-10]} opacity={1} permanent={false}>
+                    <div className="text-xs">
+                      <p className="font-bold line-clamp-1">{a.titulo}</p>
+                      <p className="opacity-80 line-clamp-1">{a.profissao || a.categoria}</p>
+                      {Array.isArray(a.procedimentos_servicos) && a.procedimentos_servicos[0] && (
+                        <p className="opacity-80 line-clamp-1">Proc.: {a.procedimentos_servicos[0]}</p>
+                      )}
+                      {a.estrelas_estabelecimento && (<p>⭐ {a.estrelas_estabelecimento}</p>)}
+                      <button className="mt-1 text-pink-600 font-semibold underline" onClick={()=>window.location.href=`${createPageUrl('DetalhesAnuncio')}?id=${a.id}`}>Ver detalhes</button>
+                    </div>
+                  </Tooltip>
                   <Popup>
-                    <div className="text-center p-2">
-                      <p className="font-bold text-blue-600">📍 Você está aqui</p>
+                    <div className="p-2 min-w-[220px]">
+                      <p className="font-bold text-gray-900 mb-1">{a.titulo}</p>
+                      {a.profissional && (<p className="text-xs text-gray-600 mb-1">{a.profissional}</p>)}
+                      {a.cidade && (<p className="text-xs text-gray-600 mb-2">{a.cidade} - {a.estado}</p>)}
+                      <div className="flex items-center gap-2 mt-2">
+                        <button className="text-xs text-pink-600 font-semibold hover:underline" onClick={()=>window.location.href=`${createPageUrl('DetalhesAnuncio')}?id=${a.id}`}>
+                          Ver anúncio
+                        </button>
+                        <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => { const base='https://wa.me/5521980343873'; const msg = encodeURIComponent(`Olá! Vim pelo Mapa da Estética e gostaria de agendar ${a.titulo}. Poderia me passar mais informações?`); window.open(`${base}?text=${msg}`, '_blank'); }}>
+                          Agendar via WhatsApp
+                        </Button>
+                      </div>
                     </div>
                   </Popup>
                 </Marker>
-              )}
+              ) : null
+            ))}
 
-              {anunciosFiltrados.map((a) => (
-                a.latitude && a.longitude ? (
-                  <Marker
-                    key={`anuncio-${a.id}`}
-                    position={[a.latitude, a.longitude]}
-                    icon={criarIconeAnuncio(!!a.profissional_verificado, (!!a.em_destaque || !!a.impulsionado || ['ouro','diamante','platina'].includes(a.plano)))}
-                    eventHandlers={{ click: () => setSelectedAd(a) }}
-                  >
-                    <Tooltip direction="top" offset={[0,-10]} opacity={1} permanent={false}>
-                      <div className="text-xs">
-                        <p className="font-bold line-clamp-1">{a.titulo}</p>
-                        <p className="opacity-80 line-clamp-1">{a.profissao || a.categoria}</p>
-                        {Array.isArray(a.procedimentos_servicos) && a.procedimentos_servicos[0] && (
-                          <p className="opacity-80 line-clamp-1">Proc.: {a.procedimentos_servicos[0]}</p>
-                        )}
-                        {a.estrelas_estabelecimento && (<p>⭐ {a.estrelas_estabelecimento}</p>)}
-                        <button className="mt-1 text-pink-600 font-semibold underline" onClick={()=>window.location.href=`${createPageUrl('DetalhesAnuncio')}?id=${a.id}`}>Ver detalhes</button>
-                      </div>
-                    </Tooltip>
-                    <Popup>
-                      <div className="p-2 min-w-[220px]">
-                        <p className="font-bold text-gray-900 mb-1">{a.titulo}</p>
-                        {a.profissional && (<p className="text-xs text-gray-600 mb-1">{a.profissional}</p>)}
-                        {a.cidade && (<p className="text-xs text-gray-600 mb-2">{a.cidade} - {a.estado}</p>)}
-                        <div className="flex items-center gap-2 mt-2">
-                          <button className="text-xs text-pink-600 font-semibold hover:underline" onClick={()=>window.location.href=`${createPageUrl('DetalhesAnuncio')}?id=${a.id}`}>
-                            Ver anúncio
-                          </button>
-                          <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => { const base='https://wa.me/5521980343873'; const msg = encodeURIComponent(`Olá! Vim pelo Mapa da Estética e gostaria de agendar ${a.titulo}. Poderia me passar mais informações?`); window.open(`${base}?text=${msg}`, '_blank'); }}>
-                            Agendar via WhatsApp
-                          </Button>
+            {centralizarEm && <CentralizarMapa center={centralizarEm} />}
+          </MapContainer>
+
+          {/* Botão flutuante */}
+          <div className="absolute bottom-4 right-4 z-[1000]">
+            <Button onClick={handleUsarMinhaLocalizacao} className="shadow-lg bg-white text-[#2C2C2C] hover:bg-gray-100 border-2 border-[#F7D426]">
+              <Navigation className="w-4 h-4 mr-2 text-[#F7D426]" /> Minha localização
+            </Button>
+          </div>
+        </div>
+
+        {/* Seção institucional — imediatamente abaixo do mapa */}
+        <div className="bg-white rounded-2xl border shadow-sm p-6 md:p-8 mb-10">
+          <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 mb-3">Como funciona o Mapa da Estética</h2>
+          <p className="text-gray-600 mb-6">Conectamos você aos melhores profissionais e estabelecimentos próximos, com busca por procedimento e comparação clara.</p>
+          <div className="grid md:grid-cols-3 gap-4">
+            <div className="p-4 rounded-xl bg-gray-50 border">
+              <div className="text-3xl mb-2">🔎</div>
+              <h4 className="font-semibold mb-1">1) Busque por procedimento</h4>
+              <p className="text-sm text-gray-600">Ex.: Botox, Preenchimento, Laser, Microagulhamento, Peeling...</p>
+            </div>
+            <div className="p-4 rounded-xl bg-gray-50 border">
+              <div className="text-3xl mb-2">📍</div>
+              <h4 className="font-semibold mb-1">2) Vemos sua região</h4>
+              <p className="text-sm text-gray-600">Com sua permissão, detectamos sua localização e trazemos opções próximas.</p>
+            </div>
+            <div className="p-4 rounded-xl bg-gray-50 border">
+              <div className="text-3xl mb-2">🤝</div>
+              <h4 className="font-semibold mb-1">3) Contrate com segurança</h4>
+              <p className="text-sm text-gray-600">Veja avaliações, verificação profissional e fale direto por WhatsApp.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Cards premium de Procedimentos e Tratamentos — interagem com o mapa */}
+        <div className="mb-10">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-xl md:text-2xl font-bold text-gray-900">Procedimentos e Tratamentos Populares</h3>
+            <p className="text-sm text-gray-500">Clique para filtrar no mapa</p>
+          </div>
+
+          {/* Dados dos cards */}
+          {(() => {
+            const CARDS = [
+              // Procedimentos
+              { tipo: 'procedimento', titulo: 'Botox', grad: 'from-emerald-200 to-emerald-50' },
+              { tipo: 'procedimento', titulo: 'Preenchimento facial', grad: 'from-pink-200 to-pink-50' },
+              { tipo: 'procedimento', titulo: 'Bioestimulador de colágeno', grad: 'from-amber-200 to-amber-50' },
+              { tipo: 'procedimento', titulo: 'Depilação a laser', grad: 'from-purple-200 to-purple-50' },
+              { tipo: 'procedimento', titulo: 'Laser facial', grad: 'from-blue-200 to-blue-50' },
+              { tipo: 'procedimento', titulo: 'Ultrassom microfocado (HIFU)', grad: 'from-indigo-200 to-indigo-50' },
+              { tipo: 'procedimento', titulo: 'Criolipólise', grad: 'from-cyan-200 to-cyan-50' },
+              { tipo: 'procedimento', titulo: 'Microagulhamento', grad: 'from-rose-200 to-rose-50' },
+              { tipo: 'procedimento', titulo: 'Peeling químico', grad: 'from-teal-200 to-teal-50' },
+              { tipo: 'procedimento', titulo: 'Fios de sustentação', grad: 'from-sky-200 to-sky-50' },
+              // Tratamentos
+              { tipo: 'tratamento', titulo: 'Rugas', grad: 'from-emerald-100 to-white' },
+              { tipo: 'tratamento', titulo: 'Melasma', grad: 'from-pink-100 to-white' },
+              { tipo: 'tratamento', titulo: 'Acne', grad: 'from-amber-100 to-white' },
+              { tipo: 'tratamento', titulo: 'Cicatriz de acne', grad: 'from-purple-100 to-white' },
+              { tipo: 'tratamento', titulo: 'Flacidez', grad: 'from-blue-100 to-white' },
+              { tipo: 'tratamento', titulo: 'Gordura localizada', grad: 'from-indigo-100 to-white' },
+              { tipo: 'tratamento', titulo: 'Celulite', grad: 'from-cyan-100 to-white' },
+              { tipo: 'tratamento', titulo: 'Queda de cabelo', grad: 'from-rose-100 to-white' },
+              { tipo: 'tratamento', titulo: 'Estrias', grad: 'from-teal-100 to-white' },
+              { tipo: 'tratamento', titulo: 'Rejuvenescimento facial', grad: 'from-sky-100 to-white' },
+            ];
+
+            const onCard = (c) => {
+              if (c.tipo === 'procedimento') { setProcedimento(c.titulo); setTratamento(''); }
+              else { setTratamento(c.titulo); setProcedimento(''); }
+              setTimeout(() => document.getElementById('mapa-interativo')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0);
+            };
+
+            return (
+              <>
+                {/* Mobile: scroll horizontal */}
+                <div className="md:hidden -mx-4 px-4 overflow-x-auto pb-2 snap-x snap-mandatory">
+                  <div className="flex gap-3 min-w-max">
+                    {CARDS.map((c, i) => (
+                      <div key={i} className="w-64 flex-shrink-0 snap-center">
+                        <div className={`relative h-40 rounded-2xl bg-gradient-to-br ${c.grad} border shadow-sm overflow-hidden group`}
+                          role="button" tabIndex={0}
+                          onClick={() => onCard(c)} onKeyDown={(e)=>{ if(e.key==='Enter') onCard(c); }}>
+                          <div className="absolute inset-0 flex items-center justify-center text-5xl opacity-20">✨</div>
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
+                          <div className="absolute bottom-0 left-0 right-0 p-3">
+                            <p className="font-semibold text-gray-900 drop-shadow-sm">{c.titulo}</p>
+                            <Button size="sm" variant="outline" className="mt-2 bg-white/80 hover:bg-white" onClick={(e)=>{e.stopPropagation(); onCard(c);}}>Ver no mapa</Button>
+                          </div>
                         </div>
                       </div>
-                    </Popup>
-                  </Marker>
-                ) : null
-              ))}
-
-              {centralizarEm && <CentralizarMapa center={centralizarEm} />}
-            </MapContainer>
-
-            {/* Botão flutuante */}
-            <div className="absolute bottom-4 right-4 z-[1000]">
-              <Button onClick={handleUsarMinhaLocalizacao} className="shadow-lg bg-white text-[#2C2C2C] hover:bg-gray-100 border-2 border-[#F7D426]">
-                <Navigation className="w-4 h-4 mr-2 text-[#F7D426]" /> Minha localização
-              </Button>
-            </div>
-          </div>
-
-          {/* Lista de Anúncios à direita */}
-          <div className="lg:col-span-1">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="font-bold text-lg text-gray-900">Anúncios ({anunciosFiltrados.length})</h2>
-            </div>
-            {isLoadingAnuncios ? (
-              <div className="space-y-3">
-                {[...Array(6)].map((_,i)=> (<div key={i} className="h-36 rounded-xl bg-gray-100 animate-pulse" />))}
-              </div>
-            ) : anunciosFiltrados.length === 0 ? (
-              <div className="text-center py-12">
-                <Sparkles className="w-10 h-10 text-gray-400 mx-auto mb-2" />
-                <p className="text-gray-700 font-semibold">Sem anúncios nesta busca</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {anunciosOrdenados.map((anuncio) => {
-                  const isSponsored = !!anuncio.em_destaque || !!anuncio.impulsionado || ['ouro','diamante','platina'].includes(anuncio.plano);
-                  return (
-                    <CardAnuncio key={anuncio.id} anuncio={anuncio} destaque={isSponsored} />
-                  );
-                })}
-              </div>
-            )}
-
-            {/* Placeholders de anúncios populares */}
-            <div className="mt-6">
-              <h3 className="font-bold text-lg text-gray-900 mb-3">Buscas populares (convite)</h3>
-              <div className="space-y-3">
-                {placeholderAds.slice(0,20).map((ph) => (
-                  <div key={ph.id} className="border rounded-xl p-4 bg-white shadow-sm hover:shadow-md transition-all">
-                    <div className="flex items-center justify-between gap-2 mb-1 text-xs text-gray-600">
-                      <span className="inline-flex items-center gap-1">
-                        <Badge variant="outline" className="mr-2">{ph.perfil}</Badge>
-                        {ph.tipo === 'procedimento' ? 'Procedimento' : 'Tratamento'}
-                      </span>
-                      <span className="inline-flex items-center gap-1"><MapPin className="w-3 h-3" /> {ph.cidade} - {ph.estado}</span>
-                    </div>
-                    <p className="font-semibold text-gray-900">{ph.titulo}</p>
-                    <p className="text-sm text-gray-600 mb-2">{ph.subtitulo}</p>
-                    <div className="flex flex-wrap gap-1 mb-3">
-                      {ph.amenidades.map((a,i)=> (<span key={i} className="text-[11px] bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full border">{a}</span>))}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white"
-                        onClick={() => {
-                          const base='https://wa.me/5521980343873';
-                          const msg = encodeURIComponent(`Olá! Quero realizar ${ph.titulo} em ${ph.cidade}-${ph.estado}. Podem me ajudar com opções e valores?`);
-                          window.open(`${base}?text=${msg}`, '_blank');
-                        }}
-                      >Quero realizar</Button>
-                      <Button size="sm" variant="outline" onClick={() => {
-                        if (ph.tipo === 'procedimento') { setProcedimento(ph.titulo); setTratamento(''); }
-                        else { setTratamento(ph.titulo); setProcedimento(''); }
-                        setTimeout(()=> document.getElementById('mapa-interativo')?.scrollIntoView({behavior:'smooth'}), 0);
-                      }}>Ver no mapa</Button>
-                    </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
+                </div>
+
+                {/* Desktop: grid responsiva */}
+                <div className="hidden md:grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                  {CARDS.map((c, i) => (
+                    <div key={i} className={`relative h-44 rounded-2xl bg-gradient-to-br ${c.grad} border shadow-sm overflow-hidden group cursor-pointer`}
+                      onClick={() => onCard(c)}>
+                      <div className="absolute inset-0 flex items-center justify-center text-6xl opacity-10">✨</div>
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
+                      <div className="absolute bottom-0 left-0 right-0 p-3">
+                        <p className="font-semibold text-gray-900 drop-shadow-sm">{c.titulo}</p>
+                        <Button size="sm" variant="outline" className="mt-2 bg-white/80 hover:bg-white" onClick={(e)=>{e.stopPropagation(); onCard(c);}}>Ver no mapa</Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            );
+          })()}
+        </div>
+
+        {/* Seção de Anúncios — SEMPRE abaixo do mapa e institucional */}
+        <div className="mt-2">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl md:text-2xl font-bold text-gray-900">Anúncios ({anunciosFiltrados.length})</h2>
+            <p className="text-sm text-gray-500">Resultados filtrados pelo mapa</p>
           </div>
+          {isLoadingAnuncios ? (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[...Array(6)].map((_,i)=> (<div key={i} className="h-44 rounded-xl bg-gray-100 animate-pulse" />))}
+            </div>
+          ) : anunciosFiltrados.length === 0 ? (
+            <div className="text-center py-12">
+              <Sparkles className="w-10 h-10 text-gray-400 mx-auto mb-2" />
+              <p className="text-gray-700 font-semibold">Sem anúncios nesta busca</p>
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {anunciosOrdenados.map((anuncio) => {
+                const isSponsored = !!anuncio.em_destaque || !!anuncio.impulsionado || ['ouro','diamante','platina'].includes(anuncio.plano);
+                return (
+                  <CardAnuncio key={anuncio.id} anuncio={anuncio} destaque={isSponsored} />
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
 
