@@ -1,35 +1,35 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import CardAnuncio from "../components/anuncios/CardAnuncio";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Target, Calendar, Clock, ShieldCheck, Save, MapPin, DollarSign, User } from "lucide-react";
-import { createPageUrl } from "@/utils";
-
-const SUGESTOES_METAS = [
-  "Rejuvenescimento", "Redução de manchas", "Melhorar textura da pele", "Reduzir gordura localizada", "Ganhar tônus", "Relaxamento / bem-estar"
-];
-
-const dias = [
-  { v: "dom", l: "Domingo" }, { v: "seg", l: "Segunda" }, { v: "ter", l: "Terça" }, { v: "qua", l: "Quarta" }, { v: "qui", l: "Quinta" }, { v: "sex", l: "Sexta" }, { v: "sab", l: "Sábado" }
-];
+import { Badge } from "@/components/ui/badge";
+import { Send, Sparkles, ShieldCheck } from "lucide-react";
 
 export default function PlannerWellness() {
-  const qc = useQueryClient();
   const [user, setUser] = useState(null);
-  useEffect(() => { (async()=>{ try { setUser(await base44.auth.me()); } catch{} })(); }, []);
-  const email = user?.email || "";
-  const isProf = user?.tipo_usuario === "profissional" || user?.role === "admin";
+  const [loading, setLoading] = useState(true);
 
-  // Chat Planner (sem IA)
-  const [chatStep, setChatStep] = useState(1);
+  useEffect(() => {
+    (async () => {
+      try {
+        const u = await base44.auth.me();
+        setUser(u);
+      } catch {
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  // Chat state
+  const [step, setStep] = useState(1);
+  const [messages, setMessages] = useState([
+    { from: "bot", text: "Olá! Eu sou seu assistente do Planner de Wellness." },
+    { from: "bot", text: "Vamos começar com algumas perguntas rápidas para entendermos seu momento." },
+  ]);
+
+  // Answers
   const [ansPrev, setAnsPrev] = useState(null); // 'sim' | 'nao'
   const [ansLastWhen, setAnsLastWhen] = useState("");
   const [ansLastName, setAnsLastName] = useState("");
@@ -38,654 +38,346 @@ export default function PlannerWellness() {
   const [ansWants, setAnsWants] = useState(null); // 'sim' | 'nao'
   const [ansGoal, setAnsGoal] = useState("");
   const [ansBudget, setAnsBudget] = useState("");
-  const [saveDone, setSaveDone] = useState(false);
+  const [completed, setCompleted] = useState(false);
 
-  const detectItemType = (txt) => {
-    const t = (txt||'').toLowerCase();
-    const procedimentos = ['botox','toxina','preenchimento','skinbooster','fios','laser','peeling','ipl','radiofrequ', 'microagulhamento'];
-    const tratamentos = ['estrias','acne','melasma','manchas','flacidez','queda de cabelo','rosácea','olheiras','gordura localizada','celulite'];
-    if (procedimentos.some(k=> t.includes(k))) return 'procedimento';
-    if (tratamentos.some(k=> t.includes(k))) return 'tratamento';
-    return 'procedimento';
-  }
+  // Input state (for free text steps)
+  const [input, setInput] = useState("");
+  const inputRef = useRef(null);
+  const scrollRef = useRef(null);
 
-  const { data: meta = null } = useQuery({
-    queryKey: ["wellness-meta", email],
-    queryFn: async () => {
-      if (!email) return null;
-      const list = await base44.entities.WellnessMeta.filter({ user_email: email }, "-created_date", 1);
-      return list?.[0] || null;
-    },
-    enabled: !!email,
-    initialData: null
-  });
-
-  const { data: planner = null } = useQuery({
-    queryKey: ["wellness-planner", email],
-    queryFn: async () => {
-      if (!email) return null;
-      const list = await base44.entities.WellnessPlanner.filter({ user_email: email }, "-created_date", 1);
-      return list?.[0] || null;
-    },
-    enabled: !!email,
-    initialData: null
-  });
-
-  const [objetivos, setObjetivos] = useState("");
-  const [metas, setMetas] = useState([]);
-  const [compartilhar, setCompartilhar] = useState(true);
   useEffect(() => {
-    if (meta) {
-      setObjetivos(meta.objetivos || "");
-      setMetas(Array.isArray(meta.metas) ? meta.metas : []);
-      setCompartilhar(meta.compartilhar_com_profissionais ?? true);
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+  }, [messages]);
+
+  // Keyword detection (sem IA) usando listas conhecidas
+  const detectItemType = (txt) => {
+    const q = (txt || "").toLowerCase();
+    // Procedimentos
+    const procedimentos = [
+      "botox","toxina botulinica","toxina botulínica","preenchimento","ácido hialurônico","acido hialuronico",
+      "bioestimulador","skinbooster","microagulhamento","peeling","peeling químico","laser","laser co2","depilação a laser","depilacao a laser","fios de sustentação","fios de pdo"
+    ];
+    // Tratamentos
+    const tratamentos = [
+      "rejuvenescimento facial","rugas","linhas de expressão","melasma","acne","cicatriz de acne","flacidez facial",
+      "gordura localizada","celulite","queda de cabelo","calvície","estrias","manchas na pele","olheiras","poros dilatados"
+    ];
+    if (procedimentos.some(k => q.includes(k))) return "procedimento";
+    if (tratamentos.some(k => q.includes(k))) return "tratamento";
+    return "procedimento"; // padrão
+  };
+
+  const pushBot = (text) => setMessages((m) => [...m, { from: "bot", text }]);
+  const pushUser = (text) => setMessages((m) => [...m, { from: "user", text }]);
+
+  // Step handlers
+  useEffect(() => {
+    if (step === 1) {
+      pushBot("Você já realizou procedimentos ou tratamentos estéticos antes?");
     }
-  }, [meta]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step]);
 
-  const PROCEDURES = ["Botox","Preenchimento","Laser","Limpeza de pele","Tratamento para manchas","Depilação a laser","Rejuvenescimento facial"];
-  const [selectedProcs, setSelectedProcs] = useState([]);
-  const [budgets, setBudgets] = useState({});
-  const [customBudgets, setCustomBudgets] = useState({});
-  const [prefCity, setPrefCity] = useState("");
-  const [maxDist, setMaxDist] = useState("");
-  const [prefType, setPrefType] = useState("indiferente");
-  const [matches, setMatches] = useState([]);
-  const [loadingMatch, setLoadingMatch] = useState(false);
-  const [userLoc, setUserLoc] = useState(null);
-  // Wizard (novo fluxo 6 etapas)
-  const [objetivo, setObjetivo] = useState(""); // rosto | corpo | cabelo | pele | intimo
-  const [dor, setDor] = useState("");
-  const [experiencia, setExperiencia] = useState(""); // nunca | uma | regular
-  const [conhecimento, setConhecimento] = useState(""); // sim | pouco | nao
-  const [investimento, setInvestimento] = useState(""); // ate300 | 300-700 | 700-1500 | 1500-3000 | 3000+
-  const [step, setStep] = useState(1);
-
-  useEffect(()=>{
-    if (planner) {
-      setSelectedProcs((planner.procedures||[]).map(p=>p.nome));
-      const b = {}; const c = {};
-      (planner.procedures||[]).forEach(p=>{ b[p.nome]=p.faixa||''; if (p.valor_custom) c[p.nome]=p.valor_custom; });
-      setBudgets(b); setCustomBudgets(c);
-      setPrefCity(planner.cidade||"");
-      setMaxDist(planner.distancia_km? String(planner.distancia_km):"");
-      setPrefType(planner.preferencia||"indiferente");
-    }
-  }, [planner]);
-
-  const upsertMeta = useMutation({
-    mutationFn: async () => {
-      if (meta?.id) {
-        return base44.entities.WellnessMeta.update(meta.id, {
-          objetivos, metas, compartilhar_com_profissionais: compartilhar
-        });
-      }
-      return base44.entities.WellnessMeta.create({ user_email: email, objetivos, metas, compartilhar_com_profissionais: compartilhar });
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["wellness-meta", email] })
-  });
-
-  // Métricas do paciente
-  const { data: ags = [] } = useQuery({
-    queryKey: ["meus-agendamentos", email],
-    queryFn: async () => email ? await base44.entities.Agendamento.filter({ cliente_email: email }, "-created_date", 100) : [],
-    enabled: !!email,
-    initialData: []
-  });
-  const { data: procs = [] } = useQuery({
-    queryKey: ["meus-procedimentos", email],
-    queryFn: async () => email ? await base44.entities.AtendimentoPontos.filter({ cliente_email: email, status: "concluido" }, "-created_date", 200) : [],
-    enabled: !!email,
-    initialData: []
-  });
-
-  // Disponibilidade do profissional (opcional)
-  const { data: disp = null } = useQuery({
-    queryKey: ["minha-disponibilidade", email],
-    queryFn: async () => {
-      if (!isProf || !email) return null;
-      const list = await base44.entities.DisponibilidadeProfissional.filter({ user_email: email }, "-created_date", 1);
-      return list?.[0] || null;
-    },
-    enabled: isProf && !!email,
-    initialData: null
-  });
-  const [slots, setSlots] = useState([]);
-  useEffect(() => { if (disp) setSlots(disp.slots || []); }, [disp]);
-
-  const upsertDisp = useMutation({
-    mutationFn: async () => {
-      if (!isProf) return null;
-      if (disp?.id) return base44.entities.DisponibilidadeProfissional.update(disp.id, { slots });
-      return base44.entities.DisponibilidadeProfissional.create({ user_email: email, slots });
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["minha-disponibilidade", email] })
-  });
-
-  const addSlot = () => setSlots((s)=> [...s, { dia_semana: "seg", inicio: "09:00", fim: "18:00" }]);
-
-  const upsertPlanner = useMutation({
-    mutationFn: async (payload) => {
-      if (!email) return null;
-      if (planner?.id) return base44.entities.WellnessPlanner.update(planner.id, payload);
-      return base44.entities.WellnessPlanner.create(payload);
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["wellness-planner", email] })
-  });
-
-  const mapBudgetToFaixas = (code, custom) => {
-    switch (code) {
-      case 'ate300': return ['$', '$$'];
-      case '300-600': return ['$$'];
-      case '600-1000': return ['$$$'];
-      case '1000+': return ['$$$', '$$$$', '$$$$$'];
-      case 'custom': {
-        const v = Number(custom||0);
-        if (v<=200) return ['$'];
-        if (v<=500) return ['$$'];
-        if (v<=3000) return ['$$$'];
-        if (v<=5000) return ['$$$$'];
-        return ['$$$$$'];
-      }
-      default: return [];
+  const handlePrev = (val) => {
+    setAnsPrev(val);
+    pushUser(val === "sim" ? "Sim" : "Não");
+    if (val === "sim") {
+      setStep(2);
+      setTimeout(() => pushBot("Quanto tempo faz desde o último procedimento ou tratamento?"), 200);
+    } else {
+      setStep(5);
+      setTimeout(() => pushBot("Você tem vontade de realizar algum outro procedimento ou tratamento estético?"), 200);
     }
   };
 
-  const haversine = (lat1, lon1, lat2, lon2) => {
-    const R=6371; const dLat=(lat2-lat1)*Math.PI/180; const dLon=(lon2-lon1)*Math.PI/180;
-    const a=Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
-    return 2*R*Math.asin(Math.sqrt(a));
-  };
+  const handleSendText = () => {
+    const txt = input.trim();
+    if (!txt) return;
 
-  const generateMatches = async () => {
-    setLoadingMatch(true);
-    try {
-      const anuncios = await base44.entities.Anuncio.filter({ status: 'ativo' }, '-created_date', 500);
-      const procSet = new Set(selectedProcs.map(p=>p.toLowerCase()));
-      const recs = [];
-      anuncios.forEach(a=>{
-        const texto = `${a.titulo||''} ${(a.descricao||'')}`.toLowerCase();
-        const tags = (a.tags||[]).map(t=> (t||'').toLowerCase());
-        const procs = (a.procedimentos_servicos||[]).map(p=>(p||'').toLowerCase());
-        const matchProc = [...procSet].some(p=> texto.includes(p) || tags.includes(p) || procs.includes(p));
-        if (!matchProc) return;
-        // price compatibility
-        const anyFaixaOk = [...procSet].some(p=>{
-          const code = budgets[p]||''; const custom = customBudgets[p]||null;
-          const faixas = mapBudgetToFaixas(code, custom);
-          return faixas.includes(a.faixa_preco);
-        });
-        if (!anyFaixaOk) return;
-        // city / distance
-        if (prefCity && a.cidade && !a.cidade.toLowerCase().includes(prefCity.toLowerCase())) return;
-        let dist = null;
-        if (userLoc && a.latitude && a.longitude) {
-          dist = haversine(userLoc.lat, userLoc.lng, a.latitude, a.longitude);
-          if (maxDist && Number(maxDist)>0 && dist > Number(maxDist)) return;
-        }
-        const stars = a.estrelas_estabelecimento || 0;
-        const pops = a.visualizacoes || 0;
-        const priceScore = 1; // matched
-        const distScore = dist==null ? 0.5 : (dist<=5?1: dist<=10?0.8: dist<=20?0.6: 0.3);
-        const score = priceScore*3 + distScore + stars*0.2 + Math.min(pops/100,1)*0.5;
-        recs.push({ a, score, dist });
-      });
-      recs.sort((x,y)=> y.score - x.score);
-      setMatches(recs.slice(0,24).map(r=>r.a));
-    } finally { setLoadingMatch(false); }
-  };
+    if (step === 2) {
+      setAnsLastWhen(txt);
+      pushUser(txt);
+      setStep(3);
+      setTimeout(() => pushBot("Qual foi o procedimento ou tratamento realizado?"), 200);
+      setInput("");
+      return;
+    }
 
-  const salvarERecomendar = async () => {
-    const payload = {
-      user_email: email,
-      procedures: selectedProcs.map(p=>({ nome: p, faixa: budgets[p]||'', valor_custom: customBudgets[p]||null })),
-      cidade: prefCity || undefined,
-      distancia_km: maxDist? Number(maxDist): undefined,
-      preferencia: prefType
-    };
-    await upsertPlanner.mutateAsync(payload);
-    await generateMatches();
-    document.getElementById('recomendacoes-planner')?.scrollIntoView({ behavior: 'smooth' });
-  };
+    if (step === 3) {
+      setAnsLastName(txt);
+      const t = detectItemType(txt);
+      setAnsLastType(t);
+      pushUser(txt);
+      setStep(4);
+      setTimeout(() => pushBot("Você teve um resultado satisfatório?"), 200);
+      setInput("");
+      return;
+    }
 
-  const pedirLocalizacao = () => {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition((pos)=> setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude }));
-  };
+    if (step === 6) {
+      setAnsGoal(txt);
+      pushUser(txt);
+      setStep(7);
+      setTimeout(() => pushBot("Quanto você está disposto(a) a investir? (valor livre)"), 200);
+      setInput("");
+      return;
+    }
 
-  const removeSlot = (idx) => setSlots((s)=> s.filter((_,i)=> i!==idx));
-  const setSlot = (idx, field, val) => setSlots((s)=> s.map((sl,i)=> i===idx? { ...sl, [field]: val } : sl));
-
-  const totalAg = ags.length;
-  const totalProc = procs.length;
-
-  // Profissionais: agregados do planner
-  function ProfInsightsInner() {
-    const [stats, setStats] = useState({ top: [], dist: [] });
-    useEffect(()=>{ (async()=>{
-      try {
-        const all = await base44.entities.WellnessPlanner.list('-created_date', 1000);
-        const procCount = {};
-        const budgetCount = {};
-        (all||[]).forEach(w=>{
-          (w.procedures||[]).forEach(p=>{
-            procCount[p.nome] = (procCount[p.nome]||0)+1;
-            const k = `${p.nome}|${p.faixa||'custom'}`;
-            budgetCount[k] = (budgetCount[k]||0)+1;
+    if (step === 7) {
+      setAnsBudget(txt);
+      pushUser(txt);
+      setInput("");
+      // Salvar no perfil (apenas quando completa)
+      (async () => {
+        try {
+          await base44.auth.updateMe({
+            plannerWellness: {
+              realizou_procedimentos: ansPrev,
+              tempo_desde_ultimo: ansPrev === "sim" ? ansLastWhen : "",
+              item_identificado: ansPrev === "sim" ? { nome: ansLastName, tipo: ansLastType } : null,
+              resultado_satisfatorio: ansPrev === "sim" ? ansSatisf : null,
+              objetivo_estetico: txt ? (ansGoal || txt) : ansGoal,
+              orcamento_estimado: txt,
+              completed_at: new Date().toISOString(),
+            },
           });
-        });
-        const top = Object.entries(procCount).sort((a,b)=> b[1]-a[1]).slice(0,5);
-        const focus = top[0]?.[0];
-        const dist = Object.entries(budgetCount)
-          .filter(([k])=> k.startsWith((focus||'')+"|"))
-          .map(([k,v])=> ({ faixa: k.split('|')[1], v }))
-          .sort((a,b)=> b.v-a.v);
-        setStats({ top, dist });
-      } catch {}
-    })(); }, []);
+          setCompleted(true);
+          setStep(8);
+          setTimeout(() => {
+            pushBot("Prontinho! Suas respostas foram salvas.");
+            pushBot("Veja abaixo o resumo do seu Planner e, se desejar, já pode agendar uma consulta de telemedicina.");
+          }, 200);
+        } catch {
+          // mesmo que falhe, concluímos o fluxo
+          setCompleted(true);
+          setStep(8);
+          pushBot("Fluxo concluído.");
+        }
+      })();
+      return;
+    }
+  };
+
+  const handleSatisf = (val) => {
+    setAnsSatisf(val);
+    pushUser(val === "sim" ? "Sim" : "Não");
+    setStep(5);
+    setTimeout(() => pushBot("Você tem vontade de realizar algum outro procedimento ou tratamento estético?"), 200);
+  };
+
+  const handleWants = (val) => {
+    setAnsWants(val);
+    pushUser(val === "sim" ? "Sim" : "Não");
+    if (val === "nao") {
+      // Encerrar sem salvar
+      setStep(0);
+      setTimeout(() => pushBot("Obrigado por utilizar o Planner de Wellness."), 200);
+    } else {
+      setStep(6);
+      setTimeout(() => pushBot("Qual é o seu objetivo ou meta estética?"), 200);
+    }
+  };
+
+  if (loading) {
     return (
-      <div className="grid md:grid-cols-2 gap-4">
-        <div>
-          <h4 className="font-semibold">Mais procurados</h4>
-          <ul className="text-sm mt-2 space-y-1">
-            {stats.top.map(([nome, v])=> <li key={nome} className="flex items-center justify-between"><span>{nome}</span><span className="text-gray-500">{v}</span></li>)}
-          </ul>
-        </div>
-        <div>
-          <h4 className="font-semibold">Faixa de investimento — foco</h4>
-          <ul className="text-sm mt-2 space-y-1">
-            {stats.dist.map((d)=> <li key={d.faixa} className="flex items-center justify-between"><span>{d.faixa}</span><span className="text-gray-500">{d.v}</span></li>)}
-          </ul>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-gray-600">Carregando...</div>
       </div>
     );
   }
-  const ProfInsights = ProfInsightsInner;
 
-   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white p-6">
-      <div className="max-w-5xl mx-auto space-y-8">
-        <div className="flex items-center gap-3">
-          <ShieldCheck className="w-6 h-6 text-blue-700" />
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Planner de Wellness</h1>
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+      {/* Header minimalista */}
+      <div className="border-b bg-white/80 backdrop-blur sticky top-0 z-30">
+        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-2">
+          <ShieldCheck className="w-5 h-5 text-emerald-700" />
+          <h1 className="text-xl font-bold text-gray-900">Planner de Wellness</h1>
+          <Badge className="ml-auto bg-emerald-100 text-emerald-800">Beta</Badge>
+        </div>
+      </div>
+
+      {/* Área principal - Chat */}
+      <div className="max-w-3xl mx-auto px-4 py-6">
+        <div className="rounded-2xl border bg-white shadow-sm overflow-hidden">
+          {/* Chat viewport */}
+          <div ref={scrollRef} className="h-[60vh] sm:h-[70vh] overflow-y-auto p-4 space-y-3">
+            {messages.map((m, i) => (
+              <div key={i} className={`flex ${m.from === "user" ? "justify-end" : "justify-start"}`}>
+                <div
+                  className={`${m.from === "user" ? "bg-emerald-600 text-white rounded-2xl rounded-tr-sm" : "bg-gray-100 text-gray-900 rounded-2xl rounded-tl-sm"} px-3 py-2 max-w-[80%] shadow-sm animate-in fade-in slide-in-from-${m.from === "user" ? "right" : "left"}-2`}
+                >
+                  {m.text}
+                </div>
+              </div>
+            ))}
+
+            {/* Perguntas progressivas */}
+            {step === 1 && (
+              <div className="flex gap-2 animate-in fade-in slide-in-from-left-2">
+                <Button onClick={() => handlePrev("sim")} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full">Sim</Button>
+                <Button variant="outline" onClick={() => handlePrev("nao")} className="rounded-full">Não</Button>
+              </div>
+            )}
+
+            {step === 2 && (
+              <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2">
+                <Input
+                  ref={inputRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Ex.: 3 meses, 1 ano, 2 semanas"
+                  className="max-w-xs"
+                />
+                <Button onClick={handleSendText} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                  <Send className="w-4 h-4 mr-1" /> Enviar
+                </Button>
+              </div>
+            )}
+
+            {step === 3 && (
+              <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2">
+                <Input
+                  ref={inputRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Ex.: Toxina botulínica (botox), peeling químico, microagulhamento"
+                  className="max-w-md"
+                />
+                <Button onClick={handleSendText} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                  <Send className="w-4 h-4 mr-1" /> Enviar
+                </Button>
+              </div>
+            )}
+
+            {step === 4 && (
+              <div className="flex gap-2 animate-in fade-in slide-in-from-left-2">
+                <Button onClick={() => handleSatisf("sim")} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full">Sim</Button>
+                <Button variant="outline" onClick={() => handleSatisf("nao")} className="rounded-full">Não</Button>
+              </div>
+            )}
+
+            {step === 5 && (
+              <div className="flex gap-2 animate-in fade-in slide-in-from-left-2">
+                <Button onClick={() => handleWants("sim")} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full">Sim</Button>
+                <Button variant="outline" onClick={() => handleWants("nao")} className="rounded-full">Não</Button>
+              </div>
+            )}
+
+            {step === 6 && (
+              <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2">
+                <Input
+                  ref={inputRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Ex.: melhorar a pele, tratar melasma, reduzir gordura abdominal"
+                  className="max-w-md"
+                />
+                <Button onClick={handleSendText} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                  <Send className="w-4 h-4 mr-1" /> Enviar
+                </Button>
+              </div>
+            )}
+
+            {step === 7 && (
+              <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2">
+                <Input
+                  ref={inputRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Ex.: 500 reais, 2000, até 3000"
+                  className="max-w-xs"
+                />
+                <Button onClick={handleSendText} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                  <Sparkles className="w-4 h-4 mr-1" /> Concluir e salvar
+                </Button>
+              </div>
+            )}
+
+            {step === 0 && (
+              <div className="flex gap-2 animate-in fade-in slide-in-from-left-2">
+                <Button variant="outline" onClick={() => {
+                  // reset
+                  setStep(1);
+                  setAnsPrev(null); setAnsLastWhen(""); setAnsLastName(""); setAnsLastType(""); setAnsSatisf(null); setAnsWants(null); setAnsGoal(""); setAnsBudget("");
+                  setMessages([
+                    { from: "bot", text: "Olá! Eu sou seu assistente do Planner de Wellness." },
+                    { from: "bot", text: "Vamos começar com algumas perguntas rápidas para entendermos seu momento." },
+                  ]);
+                }}>Reiniciar</Button>
+              </div>
+            )}
+          </div>
+
+          {/* Resumo + Telemedicina quando concluído */}
+          {completed && step === 8 && (
+            <div className="border-t p-4 bg-emerald-50">
+              <p className="text-sm font-semibold text-emerald-900 mb-2">Resumo do seu Planner</p>
+              <div className="grid sm:grid-cols-2 gap-3 text-sm">
+                <div className="p-3 rounded-lg bg-white border">
+                  <p className="text-gray-700">Já realizou procedimentos?</p>
+                  <p className="font-semibold">{ansPrev || "—"}</p>
+                </div>
+                {ansPrev === "sim" && (
+                  <div className="p-3 rounded-lg bg-white border">
+                    <p className="text-gray-700">Último realizado</p>
+                    <p className="font-semibold">{ansLastName} {ansLastType ? `(${ansLastType})` : ""}</p>
+                    <p className="text-xs text-gray-500">há {ansLastWhen} • Satisfatório: {ansSatisf || "—"}</p>
+                  </div>
+                )}
+                <div className="p-3 rounded-lg bg-white border">
+                  <p className="text-gray-700">Objetivo</p>
+                  <p className="font-semibold">{ansGoal || "—"}</p>
+                </div>
+                <div className="p-3 rounded-lg bg-white border">
+                  <p className="text-gray-700">Orçamento</p>
+                  <p className="font-semibold">{ansBudget || "—"}</p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2 mt-3">
+                <Button
+                  onClick={() => {
+                    const section = document.getElementById("planner-resumo");
+                    if (section) section.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                >
+                  Meu Planner
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    const nome = user?.full_name || "";
+                    const msg = encodeURIComponent(`Olá, tudo bem? Me chamo ${nome} e desejo agendar uma consulta de Telemedicina com base no meu Planner de Wellness.`);
+                    window.open(`https://wa.me/5521980343873?text=${msg}`, "_blank");
+                  }}
+                >
+                  Agendar consulta de telemedicina
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
 
-        <Card className="border-2 border-blue-200 bg-blue-50">
-          <CardContent className="p-5 space-y-2 text-blue-900">
-            <p className="text-sm"><strong>O que é:</strong> seu espaço pessoal para definir metas de saúde/estética, organizar rotinas de autocuidado e acompanhar sua evolução.</p>
-            <p className="text-sm"><strong>Para pacientes:</strong> ajuda a planejar tratamentos, registrar objetivos e compartilhar com profissionais quando desejar.</p>
-            <p className="text-sm"><strong>Para profissionais:</strong> permite visualizar (se autorizado) as metas do paciente e ajustar protocolos e agendas.</p>
-            <p className="text-sm"><strong>Para patrocinadores:</strong> oferece visão de interesses e rotinas (de forma agregada) para ações mais relevantes.</p>
-          </CardContent>
-        </Card>
-
-        {/* Chat Planner (sem IA) */}
-        <Card className="border-2 border-emerald-200">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-emerald-700"><User className="w-5 h-5"/> Meu Planner (chat)</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Passos do chat */}
-            {chatStep === 1 && (
-              <div className="space-y-3">
-                <p className="text-sm text-gray-800">Você já realizou procedimentos ou tratamentos estéticos antes?</p>
-                <div className="flex gap-2">
-                  <Button onClick={()=>{ setAnsPrev('sim'); setChatStep(2); }} className="bg-emerald-600 hover:bg-emerald-700 text-white">Sim</Button>
-                  <Button variant="outline" onClick={()=>{ setAnsPrev('nao'); setChatStep(5); }}>Não</Button>
-                </div>
-              </div>
-            )}
-
-            {chatStep === 2 && (
-              <div className="space-y-3">
-                <p className="text-sm text-gray-800">Quanto tempo desde o último procedimento/tratamento? (dias, semanas, meses, anos)</p>
-                <div className="flex gap-2">
-                  <Input value={ansLastWhen} onChange={(e)=>setAnsLastWhen(e.target.value)} placeholder="Ex.: 3 meses" className="max-w-xs" />
-                  <Button onClick={()=> setChatStep(3)} disabled={!ansLastWhen}>Enviar</Button>
-                </div>
-              </div>
-            )}
-
-            {chatStep === 3 && (
-              <div className="space-y-3">
-                <p className="text-sm text-gray-800">Qual foi o tratamento ou procedimento realizado?</p>
-                <div className="flex gap-2">
-                  <Input value={ansLastName} onChange={(e)=> setAnsLastName(e.target.value)} placeholder="Ex.: Toxina botulínica (botox)" className="max-w-md" />
-                  <Button onClick={()=>{ const tp = detectItemType(ansLastName); setAnsLastType(tp); setChatStep(4); }} disabled={!ansLastName}>Enviar</Button>
-                </div>
-              </div>
-            )}
-
-            {chatStep === 4 && (
-              <div className="space-y-3">
-                <p className="text-sm text-gray-800">Teve um resultado satisfatório?</p>
-                <div className="flex gap-2">
-                  <Button onClick={()=>{ setAnsSatisf('sim'); setChatStep(5); }} className="bg-emerald-600 hover:bg-emerald-700 text-white">Sim</Button>
-                  <Button variant="outline" onClick={()=>{ setAnsSatisf('nao'); setChatStep(5); }}>Não</Button>
-                </div>
-              </div>
-            )}
-
-            {chatStep === 5 && (
-              <div className="space-y-3">
-                <p className="text-sm text-gray-800">Você tem vontade de realizar algum outro procedimento ou tratamento estético e com qual objetivo?</p>
-                <div className="flex gap-2">
-                  <Button onClick={()=>{ setAnsWants('sim'); setChatStep(6); }} className="bg-emerald-600 hover:bg-emerald-700 text-white">Sim</Button>
-                  <Button variant="outline" onClick={()=>{ setAnsWants('nao'); setSaveDone(false); setChatStep(0); }}>Não</Button>
-                </div>
-              </div>
-            )}
-
-            {chatStep === 0 && (
-              <div className="space-y-3">
-                <div className="max-w-md rounded-2xl bg-white border p-3 shadow text-gray-800">
-                  Obrigado por utilizar o Planner de Wellness.
-                </div>
-                <div>
-                  <Button variant="outline" onClick={()=>{ setChatStep(1); setAnsPrev(null); setAnsLastWhen(""); setAnsLastName(""); setAnsLastType(""); setAnsSatisf(null); setAnsWants(null); setAnsGoal(""); setAnsBudget(""); }}>Reiniciar</Button>
-                </div>
-              </div>
-            )}
-
-            {chatStep === 6 && (
-              <div className="space-y-3">
-                <p className="text-sm text-gray-800">Qual é o seu objetivo/meta?</p>
-                <div className="flex gap-2">
-                  <Input value={ansGoal} onChange={(e)=> setAnsGoal(e.target.value)} placeholder="Ex.: reduzir manchas, melhorar flacidez" className="max-w-md" />
-                  <Button onClick={()=> setChatStep(7)} disabled={!ansGoal}>Enviar</Button>
-                </div>
-              </div>
-            )}
-
-            {chatStep === 7 && (
-              <div className="space-y-3">
-                <p className="text-sm text-gray-800">Quanto está disposto(a) a investir em sua autoestima com tratamentos estéticos? (valor livre)</p>
-                <div className="flex gap-2">
-                  <Input value={ansBudget} onChange={(e)=> setAnsBudget(e.target.value)} placeholder="Ex.: R$ 800" className="max-w-xs" />
-                  <Button onClick={async ()=>{
-                    const payload = {
-                      plannerWellness: {
-                        realizou_procedimentos: ansPrev,
-                        tempo_desde_ultimo: ansPrev==='sim' ? ansLastWhen : '',
-                        item_identificado: ansPrev==='sim' ? { nome: ansLastName, tipo: ansLastType } : null,
-                        resultado_satisfatorio: ansPrev==='sim' ? ansSatisf : null,
-                        objetivo_estetico: ansGoal,
-                        orcamento_estimado: ansBudget,
-                        completed_at: new Date().toISOString()
-                      }
-                    };
-                    try {
-                      await base44.auth.updateMe(payload);
-                      setSaveDone(true);
-                      setChatStep(8);
-                    } catch {}
-                  }} disabled={!ansBudget}>Concluir e salvar</Button>
-                </div>
-              </div>
-            )}
-
-            {chatStep === 8 && saveDone && (
-              <div className="space-y-4">
-                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded">
-                  <p className="text-sm text-emerald-900 font-semibold">Resumo do seu Planner</p>
-                  <ul className="text-sm text-emerald-900 mt-1 list-disc list-inside">
-                    <li>Experiência prévia: {ansPrev}</li>
-                    {ansPrev==='sim' && <li>Último: {ansLastName} ({ansLastType}), há {ansLastWhen} — Satisfatório: {ansSatisf}</li>}
-                    <li>Objetivo: {ansGoal}</li>
-                    <li>Investimento: {ansBudget}</li>
-                  </ul>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button onClick={()=>{
-                    const nome = user?.full_name || '';
-                    const msg = encodeURIComponent(`Olá, tudo bem? Me chamo ${nome} e desejo agendar uma consulta de Telemedicina com base no meu planner de wellness.`);
-                    window.open(`https://wa.me/5521980343873?text=${msg}`, '_blank');
-                  }} className="bg-green-600 hover:bg-green-700 text-white">Agendar Telemedicina (WhatsApp)</Button>
-                  <Button variant="outline" onClick={()=>{ setChatStep(1); setSaveDone(false); setAnsPrev(null); setAnsLastWhen(""); setAnsLastName(""); setAnsLastType(""); setAnsSatisf(null); setAnsWants(null); setAnsGoal(""); setAnsBudget(""); }}>Recomeçar</Button>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Planner (Paciente) - Passos (novo fluxo 6 etapas) */}
-        {!isProf && (
-          <Card className="border-2 border-emerald-200">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-emerald-700"><Target className="w-5 h-5"/> Wellness Planner</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-5">
-              {/* Marketing copy */}
-              <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3 text-emerald-900 text-sm">
-                <p className="font-semibold">Seu plano de autoestima começa aqui.</p>
-                <p>O Wellness Planner analisa seus objetivos estéticos e mostra tratamentos, profissionais e valores médios para você se planejar com segurança.</p>
-              </div>
-
-              {/* Progresso */}
-              <div>
-                <div className="flex items-center justify-between text-sm"><span>Etapa {step} de 6</span><button className="text-blue-600 underline" onClick={pedirLocalizacao}>Usar minha localização</button></div>
-                <Progress value={(step/6)*100} className="h-2" />
-              </div>
-
-              {/* Etapa 1 — Objetivo estético */}
-              {step===1 && (
-                <div className="space-y-3 animate-in fade-in">
-                  <p className="text-sm text-gray-700">O que você gostaria de melhorar?</p>
-                  <div className="flex flex-wrap gap-2">
-                    {["rosto","corpo","cabelo","pele","intimo"].map(op=> (
-                      <button key={op} onClick={()=> setObjetivo(op)} className={`px-3 py-1 rounded-full border text-sm ${objetivo===op? 'bg-emerald-600 text-white border-emerald-600' : 'hover:bg-emerald-50'}`}>{op}</button>
-                    ))}
-                  </div>
-                </div>
+        {/* Âncora simples para "Meu Planner" */}
+        {completed && (
+          <div id="planner-resumo" className="mt-6 p-4 rounded-2xl border bg-white shadow-sm">
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Meu Planner</h3>
+            <ul className="text-sm text-gray-800 space-y-1">
+              <li>• Já realizou procedimentos: <strong>{ansPrev || "—"}</strong></li>
+              {ansPrev === "sim" && (
+                <li>• Tempo desde o último: <strong>{ansLastWhen}</strong></li>
               )}
-
-              {/* Etapa 2 — Dor estética principal */}
-              {step===2 && (
-                <div className="space-y-3 animate-in fade-in">
-                  <p className="text-sm text-gray-700">Qual dessas situações mais afeta sua autoestima hoje?</p>
-                  <div className="flex flex-wrap gap-2">
-                    {(
-                      objetivo==="cabelo" ? ["queda de cabelo","calvície","afinamento capilar","oleosidade capilar","caspa","fortalecimento capilar"] :
-                      objetivo==="corpo" ? ["gordura localizada","celulite","flacidez corporal","estrias","retenção de líquidos","inchaço corporal","modelagem corporal"] :
-                      ["rugas","linhas de expressão","manchas na pele","melasma","olheiras","poros dilatados","pele oleosa","pele seca","pele envelhecida","flacidez facial","rejuvenescimento facial"]
-                    ).map(op=> (
-                      <button key={op} onClick={()=> setDor(op)} className={`px-3 py-1 rounded-full border text-sm ${dor===op? 'bg-emerald-600 text-white border-emerald-600' : 'hover:bg-emerald-50'}`}>{op}</button>
-                    ))}
-                  </div>
-                </div>
+              {ansPrev === "sim" && (
+                <li>• Procedimento/Tratamento: <strong>{ansLastName}</strong> {ansLastType ? `(${ansLastType})` : ""}</li>
               )}
-
-              {/* Etapa 3 — Experiência anterior */}
-              {step===3 && (
-                <div className="space-y-3 animate-in fade-in">
-                  <p className="text-sm text-gray-700">Você já realizou procedimentos estéticos antes?</p>
-                  <div className="flex flex-wrap gap-2">
-                    {[
-                      {k:"nunca", l:"nunca fiz"},
-                      {k:"uma", l:"fiz uma vez"},
-                      {k:"regular", l:"faço regularmente"}
-                    ].map(op=> (
-                      <button key={op.k} onClick={()=> setExperiencia(op.k)} className={`px-3 py-1 rounded-full border text-sm ${experiencia===op.k? 'bg-emerald-600 text-white border-emerald-600' : 'hover:bg-emerald-50'}`}>{op.l}</button>
-                    ))}
-                  </div>
-                </div>
+              {ansPrev === "sim" && (
+                <li>• Resultado satisfatório: <strong>{ansSatisf || "—"}</strong></li>
               )}
-
-              {/* Etapa 4 — Conhecimento de segurança */}
-              {step===4 && (
-                <div className="space-y-3 animate-in fade-in">
-                  <p className="text-sm text-gray-700">Você conhece a importância da segurança técnica nos procedimentos estéticos?</p>
-                  <div className="flex flex-wrap gap-2">
-                    {[
-                      {k:"sim", l:"sim"},
-                      {k:"pouco", l:"pouco"},
-                      {k:"nao", l:"não"}
-                    ].map(op=> (
-                      <button key={op.k} onClick={()=> setConhecimento(op.k)} className={`px-3 py-1 rounded-full border text-sm ${conhecimento===op.k? 'bg-emerald-600 text-white border-emerald-600' : 'hover:bg-emerald-50'}`}>{op.l}</button>
-                    ))}
-                  </div>
-                  <div className="text-xs text-emerald-900 bg-emerald-50 border border-emerald-200 rounded p-2">
-                    Sempre procure profissionais habilitados pelos conselhos da saúde.
-                  </div>
-                </div>
-              )}
-
-              {/* Etapa 5 — Faixa de investimento */}
-              {step===5 && (
-                <div className="space-y-3 animate-in fade-in">
-                  <p className="text-sm text-gray-700">Quanto você estaria disposto(a) a investir em você?</p>
-                  <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-2">
-                    {[
-                      {k:"ate300", l:"até 300"},
-                      {k:"300-700", l:"300 a 700"},
-                      {k:"700-1500", l:"700 a 1500"},
-                      {k:"1500-3000", l:"1500 a 3000"},
-                      {k:"3000+", l:"3000+"}
-                    ].map(op=> (
-                      <button key={op.k} onClick={()=> setInvestimento(op.k)} className={`px-3 py-2 rounded-lg border text-sm text-left ${investimento===op.k? 'bg-emerald-600 text-white border-emerald-600' : 'hover:bg-emerald-50'}`}>{op.l}</button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Etapa 6 — Resultado */}
-              {step===6 && (
-                <div className="space-y-4 animate-in fade-in">
-                  <p className="text-sm text-gray-700">Resultado do seu plano:</p>
-                  <div className="grid md:grid-cols-3 gap-3">
-                    <div className="p-3 rounded border bg-white shadow-sm">
-                      <p className="text-xs text-gray-500">Tratamentos recomendados</p>
-                      <p className="font-semibold">
-                        {dor || objetivo || 'Defina sua dor/objetivo'}
-                      </p>
-                    </div>
-                    <div className="p-3 rounded border bg-white shadow-sm">
-                      <p className="text-xs text-gray-500">Profissionais próximos</p>
-                      <p className="font-semibold">Ver no mapa</p>
-                    </div>
-                    <div className="p-3 rounded border bg-white shadow-sm">
-                      <p className="text-xs text-gray-500">Faixa média de preço</p>
-                      <p className="font-semibold">
-                        {investimento==="ate300"? "R$ até 300" : investimento==="300-700"? "R$ 300–700" : investimento==="700-1500"? "R$ 700–1500" : investimento==="1500-3000"? "R$ 1500–3000" : investimento==="3000+"? "R$ 3000+" : "—"}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex justify-end">
-                    <Button className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={()=>{
-                      const map = {
-                        "estrias": {type:'tratamento', value:'estrias'},
-                        "gordura localizada": {type:'tratamento', value:'gordura localizada'},
-                        "celulite": {type:'tratamento', value:'celulite'},
-                        "flacidez corporal": {type:'tratamento', value:'flacidez corporal'},
-                        "flacidez facial": {type:'tratamento', value:'flacidez facial'},
-                        "manchas na pele": {type:'tratamento', value:'manchas na pele'},
-                        "melasma": {type:'tratamento', value:'melasma'},
-                        "olheiras": {type:'procedimento', value:'preenchimento de olheiras'},
-                        "rugas": {type:'procedimento', value:'toxina botulínica'},
-                        "linhas de expressão": {type:'procedimento', value:'toxina botulínica'},
-                        "queda de cabelo": {type:'tratamento', value:'queda de cabelo'}
-                      };
-                      const sel = map[dor?.toLowerCase?.()||""] || (objetivo==="cabelo"? {type:'tratamento', value:'queda de cabelo'} : {type:'procedimento', value:'harmonização facial'});
-                      const qs = `${sel.type}=${encodeURIComponent(sel.value)}`;
-                      window.location.href = `${createPageUrl('Mapa')}?${qs}`;
-                    }}>Ver recomendações no mapa</Button>
-                  </div>
-                </div>
-              )}
-
-              {/* Navegação */}
-              <div className="flex justify-between pt-2">
-                <Button variant="outline" disabled={step===1} onClick={()=> setStep(s=> Math.max(1, s-1))}>Voltar</Button>
-                <Button onClick={()=> setStep(s=> Math.min(6, s+1))}>{step<6? 'Avançar' : 'Concluir'}</Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Métricas rápidas */}
-        <div className="grid sm:grid-cols-2 gap-4">
-          <Card className="border-2 border-emerald-200">
-            <CardHeader><CardTitle className="flex items-center gap-2 text-emerald-700"><Calendar className="w-5 h-5"/> Meus Agendamentos</CardTitle></CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold">{totalAg}</p>
-              <p className="text-xs text-gray-500 mt-1">Total registrados na plataforma</p>
-            </CardContent>
-          </Card>
-          <Card className="border-2 border-purple-200">
-            <CardHeader><CardTitle className="flex items-center gap-2 text-purple-700"><Target className="w-5 h-5"/> Procedimentos Realizados</CardTitle></CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold">{totalProc}</p>
-              <p className="text-xs text-gray-500 mt-1">Atendimentos concluídos</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Metas do Paciente */}
-        <Card className="border-2 border-blue-200">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-blue-700"><Target className="w-5 h-5"/> Minhas Metas e Objetivos</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex flex-wrap gap-2">
-              {SUGESTOES_METAS.map((m)=>{
-                const checked = metas.includes(m);
-                return (
-                  <button key={m} onClick={()=> setMetas((prev)=> checked ? prev.filter(x=>x!==m) : [...prev, m])} className={`px-3 py-1 rounded-full border text-sm ${checked? 'bg-blue-600 text-white border-blue-600' : 'hover:bg-blue-50'}`}>{m}</button>
-                );
-              })}
-            </div>
-            <div>
-              <label className="text-sm font-medium text-gray-700">Objetivos (livre)</label>
-              <Textarea rows={4} value={objetivos} onChange={(e)=> setObjetivos(e.target.value)} placeholder="Descreva seus objetivos estéticos (ex: melhorar tonicidade facial, reduzir manchas, etc.)" />
-            </div>
-            <div className="flex items-center gap-2">
-              <Checkbox id="compartilhar" checked={compartilhar} onCheckedChange={setCompartilhar} />
-              <label htmlFor="compartilhar" className="text-sm text-gray-700 cursor-pointer">Permitir que profissionais que me atenderem vejam minhas metas</label>
-            </div>
-            <Button onClick={()=> upsertMeta.mutate()} className="bg-blue-600 hover:bg-blue-700 text-white"><Save className="w-4 h-4 mr-2"/>Salvar Metas</Button>
-          </CardContent>
-        </Card>
-
-        {/* Inteligência do Planner (Profissionais) */}
-        {isProf && (
-          <Card className="border-2 border-emerald-200">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-emerald-700"><Target className="w-5 h-5"/> Inteligência do Planner — Visão de Mercado</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ProfInsights />
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Disponibilidade do Profissional (opcional) */}
-        {isProf && (
-          <Card className="border-2 border-amber-200">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-amber-700"><Clock className="w-5 h-5"/> Meus Horários de Disponibilidade</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {slots.map((sl, idx)=> (
-                <div key={idx} className="grid grid-cols-12 gap-2 items-center">
-                  <div className="col-span-4">
-                    <Select value={sl.dia_semana} onValueChange={(v)=> setSlot(idx, 'dia_semana', v)}>
-                      <SelectTrigger><SelectValue placeholder="Dia"/></SelectTrigger>
-                      <SelectContent>
-                        {dias.map(d=> <SelectItem key={d.v} value={d.v}>{d.l}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="col-span-3"><Input type="time" value={sl.inicio} onChange={(e)=> setSlot(idx,'inicio', e.target.value)} /></div>
-                  <div className="col-span-3"><Input type="time" value={sl.fim} onChange={(e)=> setSlot(idx,'fim', e.target.value)} /></div>
-                  <div className="col-span-2 text-right"><Button variant="destructive" size="icon" onClick={()=> removeSlot(idx)}><Trash2 className="w-4 h-4"/></Button></div>
-                </div>
-              ))}
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={addSlot}><Plus className="w-4 h-4 mr-2"/>Adicionar faixa</Button>
-                <Button onClick={()=> upsertDisp.mutate()} className="bg-amber-600 hover:bg-amber-700 text-white"><Save className="w-4 h-4 mr-2"/>Salvar disponibilidade</Button>
-              </div>
-              <p className="text-xs text-gray-600">Observação: ao expor serviços, aceite-os apenas após o agendamento confirmado na agenda.</p>
-            </CardContent>
-          </Card>
+              <li>• Objetivo estético: <strong>{ansGoal || "—"}</strong></li>
+              <li>• Orçamento estimado: <strong>{ansBudget || "—"}</strong></li>
+            </ul>
+          </div>
         )}
       </div>
     </div>
