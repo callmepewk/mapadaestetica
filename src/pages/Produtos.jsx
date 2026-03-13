@@ -811,7 +811,36 @@ export default function Produtos() {
                       <div className="mt-10">
                         <h3 className="text-xl font-bold text-gray-900 mb-4">Serviços</h3>
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                          {servicosApenas.slice(0, 6).map((produto) => {
+                          {servicosApenas.slice(0, 6).map((produto) => (
+                            <Card key={produto.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 border-none group">
+                              <div className="relative h-48 bg-gray-100 overflow-hidden">
+                                {produto.imagens && produto.imagens.length > 0 ? (
+                                  <ImageWithLoader src={produto.imagens[0]} alt={produto.nome} className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-6xl text-gray-400">💼</div>
+                                )}
+                              </div>
+                              <CardContent className="p-4">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Badge variant="outline" className="bg-blue-50 text-blue-800 border-blue-200">{produto.categoria}</Badge>
+                                </div>
+                                <h3 className="font-bold text-lg mb-2 line-clamp-2">{produto.nome}</h3>
+                                <p className="text-sm text-gray-600 mb-4 line-clamp-3">{produto.descricao}</p>
+                                <div className="flex items-center justify-between pt-3 border-t">
+                                  <span className="text-lg font-bold text-blue-600">{produto.preco_promocional || produto.preco ? `R$ ${(produto.preco_promocional || produto.preco).toFixed(2)}` : (produto.preco_texto || 'Consultar')}</span>
+                                  <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white" onClick={() => handleContratar(produto)}>
+                                    <Plus className="w-4 h-4 mr-1" /> Contratar
+                                  </Button>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
             )}
 
             {/* Info Cards */}
