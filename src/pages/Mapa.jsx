@@ -1571,6 +1571,98 @@ tratamentos: {
             <h2 className="text-xl md:text-2xl font-bold text-gray-900">Anúncios ({anunciosFiltrados.length})</h2>
             <p className="text-sm text-gray-500">Resultados filtrados pelo mapa</p>
           </div>
+
+          {/* Cards interativos (10 procedimentos + 10 tratamentos) com imagem e integração em tempo real ao mapa */}
+          {(() => {
+            const FEATURED_CARDS = [
+              // Procedimentos
+              { tipo: 'procedimento', titulo: 'Botox' },
+              { tipo: 'procedimento', titulo: 'Preenchimento facial' },
+              { tipo: 'procedimento', titulo: 'Bioestimulador de colágeno' },
+              { tipo: 'procedimento', titulo: 'Depilação a laser' },
+              { tipo: 'procedimento', titulo: 'Laser facial' },
+              { tipo: 'procedimento', titulo: 'Ultrassom microfocado (HIFU)' },
+              { tipo: 'procedimento', titulo: 'Criolipólise' },
+              { tipo: 'procedimento', titulo: 'Microagulhamento' },
+              { tipo: 'procedimento', titulo: 'Peeling químico' },
+              { tipo: 'procedimento', titulo: 'Fios de sustentação' },
+              // Tratamentos
+              { tipo: 'tratamento', titulo: 'Rugas' },
+              { tipo: 'tratamento', titulo: 'Melasma' },
+              { tipo: 'tratamento', titulo: 'Acne' },
+              { tipo: 'tratamento', titulo: 'Cicatriz de acne' },
+              { tipo: 'tratamento', titulo: 'Flacidez' },
+              { tipo: 'tratamento', titulo: 'Gordura localizada' },
+              { tipo: 'tratamento', titulo: 'Celulite' },
+              { tipo: 'tratamento', titulo: 'Queda de cabelo' },
+              { tipo: 'tratamento', titulo: 'Estrias' },
+              { tipo: 'tratamento', titulo: 'Rejuvenescimento facial' },
+            ];
+
+            const getImg = () =>
+              // Placeholder único e elegante; sobreposto por gradiente e badge "IA"
+              'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=1200&auto=format&fit=crop';
+
+            const focusFirstPin = (term) => {
+              const q = (term || '').toLowerCase();
+              const a = (anuncios || []).find(x =>
+                (x.titulo||'').toLowerCase().includes(q) ||
+                (x.categoria||'').toLowerCase().includes(q) ||
+                (x.procedimentos_servicos||[]).some(p => (p||'').toLowerCase().includes(q)) ||
+                (x.tags||[]).some(t => (t||'').toLowerCase().includes(q))
+              );
+              if (a && a.latitude && a.longitude) {
+                setCentralizarEm({ lat: a.latitude, lng: a.longitude });
+              }
+            };
+
+            const onCardClick = (c) => {
+              if (c.tipo === 'procedimento') { setProcedimento(c.titulo); setTratamento(''); }
+              else { setTratamento(c.titulo); setProcedimento(''); }
+              focusFirstPin(c.titulo);
+              setTimeout(() => document.getElementById('mapa-interativo')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0);
+            };
+
+            return (
+              <>
+                {/* Mobile: scroll horizontal */}
+                <div className="md:hidden -mx-4 px-4 overflow-x-auto pb-3 snap-x snap-mandatory">
+                  <div className="flex gap-3 min-w-max">
+                    {FEATURED_CARDS.map((c, i) => (
+                      <div key={i} className="w-72 flex-shrink-0 snap-center" onClick={() => onCardClick(c)} role="button" tabIndex={0}
+                           onKeyDown={(e)=>{ if(e.key==='Enter') onCardClick(c); }}>
+                        <div className="relative h-44 rounded-2xl overflow-hidden shadow-sm group">
+                          <img src={getImg()} alt={c.titulo} className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-black/0" />
+                          <div className="absolute top-2 left-2"><span className="text-[11px] px-2 py-0.5 rounded-full bg-white/80 border">Imagem IA</span></div>
+                          <div className="absolute bottom-0 left-0 right-0 p-3">
+                            <p className="font-semibold text-white drop-shadow">{c.titulo}</p>
+                            <Button size="sm" variant="outline" className="mt-2 bg-white/80 hover:bg-white" onClick={(e)=>{ e.stopPropagation(); onCardClick(c); }}>Ver no mapa</Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Desktop: grid responsiva */}
+                <div className="hidden md:grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
+                  {FEATURED_CARDS.map((c, i) => (
+                    <div key={i} className="relative h-48 rounded-2xl overflow-hidden shadow-sm group cursor-pointer" onClick={() => onCardClick(c)}>
+                      <img src={getImg()} alt={c.titulo} className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-black/0" />
+                      <div className="absolute top-2 left-2"><span className="text-[11px] px-2 py-0.5 rounded-full bg-white/80 border">Imagem IA</span></div>
+                      <div className="absolute bottom-0 left-0 right-0 p-3">
+                        <p className="font-semibold text-white drop-shadow">{c.titulo}</p>
+                        <Button size="sm" variant="outline" className="mt-2 bg-white/80 hover:bg-white" onClick={(e)=>{ e.stopPropagation(); onCardClick(c); }}>Ver no mapa</Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            );
+          })()}
+
           {isLoadingAnuncios ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {[...Array(6)].map((_,i)=> (<div key={i} className="h-44 rounded-xl bg-gray-100 animate-pulse" />))}
