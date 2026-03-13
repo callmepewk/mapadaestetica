@@ -395,17 +395,15 @@ export default function PlannerWellness() {
                   <Input value={ansBudget} onChange={(e)=> setAnsBudget(e.target.value)} placeholder="Ex.: R$ 800" className="max-w-xs" />
                   <Button onClick={async ()=>{
                     const payload = {
-                      wellness_planner: {
-                        has_prev_experience: ansPrev,
-                        last_time: ansPrev==='sim' ? ansLastWhen : '',
-                        last_item: ansPrev==='sim' ? { name: ansLastName, type: ansLastType } : null,
-                        result_satisfied: ansPrev==='sim' ? ansSatisf : null,
-                        wants_other: ansWants,
-                        objective: ansGoal,
-                        investment_text: ansBudget,
+                      plannerWellness: {
+                        realizou_procedimentos: ansPrev,
+                        tempo_desde_ultimo: ansPrev==='sim' ? ansLastWhen : '',
+                        item_identificado: ansPrev==='sim' ? { nome: ansLastName, tipo: ansLastType } : null,
+                        resultado_satisfatorio: ansPrev==='sim' ? ansSatisf : null,
+                        objetivo_estetico: ansGoal,
+                        orcamento_estimado: ansBudget,
                         completed_at: new Date().toISOString()
-                      },
-                      wellness_completed: true
+                      }
                     };
                     try {
                       await base44.auth.updateMe(payload);
