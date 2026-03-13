@@ -1224,30 +1224,6 @@ tratamentos: {
         </div>
       </div>
 
-      {/* Explicação institucional */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="bg-white rounded-2xl border shadow-sm p-6 md:p-8">
-          <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 mb-3">Como funciona o Mapa da Estética</h2>
-          <p className="text-gray-600 mb-6">Conectamos você aos melhores profissionais e estabelecimentos próximos, com busca por procedimento e comparação clara.</p>
-          <div className="grid md:grid-cols-3 gap-4">
-            <div className="p-4 rounded-xl bg-gray-50 border">
-              <div className="text-3xl mb-2">🔎</div>
-              <h4 className="font-semibold mb-1">1) Busque por procedimento</h4>
-              <p className="text-sm text-gray-600">Ex.: Botox, Preenchimento, Laser, Microagulhamento, Peeling...</p>
-            </div>
-            <div className="p-4 rounded-xl bg-gray-50 border">
-              <div className="text-3xl mb-2">📍</div>
-              <h4 className="font-semibold mb-1">2) Vemos sua região</h4>
-              <p className="text-sm text-gray-600">Com sua permissão, detectamos sua localização e trazemos opções próximas.</p>
-            </div>
-            <div className="p-4 rounded-xl bg-gray-50 border">
-              <div className="text-3xl mb-2">🤝</div>
-              <h4 className="font-semibold mb-1">3) Contrate com segurança</h4>
-              <p className="text-sm text-gray-600">Veja avaliações, verificação profissional e fale direto por WhatsApp.</p>
-            </div>
-          </div>
-        </div>
-      </div>
 
 
       {/* Banner de busca manual quando sem permissão de localização */}
