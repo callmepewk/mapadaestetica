@@ -130,15 +130,8 @@ export default function Blog() {
   const [uploadingImagemCapa, setUploadingImagemCapa] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
 
-  // Estados para IA (Added)
-  const [mostrarModalIA, setMostrarModalIA] = useState(false);
-  const [gerandoPostIA, setGerandoPostIA] = useState(false);
-  const [gerandoImagemIA, setGerandoImagemIA] = useState(false); // Added
-  const [dadosIA, setDadosIA] = useState({
-    tema: "",
-    categoria: "Estética Facial",
-    publico: "profissional"
-  });
+  // Estados para geração de imagem
+  const [gerandoImagemIA, setGerandoImagemIA] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -267,88 +260,7 @@ export default function Blog() {
     }
   };
 
-  // IA Generation handler - ATUALIZADO COM GERAÇÃO DE IMAGEM
-  const handleGerarPostIA = async () => {
-    if (!dadosIA.tema || !dadosIA.categoria) {
-      alert("Preencha tema e categoria!");
-      return;
-    }
 
-    setGerandoPostIA(true);
-    setGerandoImagemIA(false); // Reset image generation state for combined operation
-
-    try {
-      const prompt = `Você é o Dr da Beleza, especialista em conteúdo para estética.
-
-TEMA: ${dadosIA.tema}
-CATEGORIA: ${dadosIA.categoria}
-PÚBLICO: ${dadosIA.publico === 'profissional' ? 'Profissionais de estética' : 'Público geral interessado em estética'}
-
-TAREFA: Crie um artigo COMPLETO para blog sobre este tema.
-
-O artigo deve ter:
-- Título atrativo e profissional (máx 80 caracteres)
-- Resumo/subtítulo chamativo (máx 200 caracteres)
-- Conteúdo completo e detalhado (600-800 palavras)
-- Tempo de leitura estimado (em minutos)
-- Tom ${dadosIA.publico === 'profissional' ? 'técnico mas acessível' : 'educativo e acessível'}
-
-Retorne no formato JSON:
-{
-  "titulo": "...",
-  "resumo": "...",
-  "conteudo": "...",
-  "tempo_leitura": número
-}`;
-
-      const resultado = await base44.integrations.Core.InvokeLLM({
-        prompt: prompt,
-        add_context_from_internet: true,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            titulo: { type: "string" },
-            resumo: { type: "string" },
-            conteudo: { type: "string" },
-            tempo_leitura: { type: "number" }
-          }
-        }
-      });
-
-      // Gerar imagem de capa automaticamente
-      setGerandoImagemIA(true);
-      const promptImagem = `Professional elegant cover image for a beauty blog article about "${dadosIA.tema}".
-Category: ${dadosIA.categoria}.
-High quality, aesthetic, modern, luxurious beauty and wellness theme.
-Soft pastel colors, elegant composition, professional photography style.
-No text or watermarks.`;
-
-      const { url: imagemUrl } = await base44.integrations.Core.GenerateImage({
-        prompt: promptImagem
-      });
-
-      setDadosPost({
-        ...dadosPost,
-        titulo: resultado.titulo,
-        resumo: resultado.resumo,
-        conteudo: resultado.conteudo,
-        tempo_leitura: resultado.tempo_leitura,
-        categoria: dadosIA.categoria,
-        tipo: dadosIA.publico,
-        imagem_capa: imagemUrl
-      });
-
-      setMostrarModalIA(false);
-      setMostrarModalCriarPost(true);
-      alert("✨ Post e imagem gerados com IA! Revise e publique.");
-    } catch (error) {
-      console.error("Erro ao gerar post:", error);
-      alert("Erro ao gerar post com IA. Tente novamente.");
-    } finally {
-      setGerandoPostIA(false);
-      setGerandoImagemIA(false);
-    }
-  };
 
   // NOVA Função: Gerar Imagem com IA
   const handleGerarImagemIA = async () => {
@@ -717,13 +629,6 @@ Perfect for blog header.`;
             {podePostar() && (
               <div className="flex gap-2">
                 <Button
-                  onClick={() => setMostrarModalIA(true)}
-                  className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
-                >
-                  <Wand2 className="w-4 h-4 mr-2" />
-                  Criar com IA
-                </Button>
-                <Button
                   onClick={() => setMostrarModalCriarPost(true)}
                   className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
                 >
@@ -1085,136 +990,7 @@ Perfect for blog header.`;
         </DialogContent>
       </Dialog>
 
-      {/* ATUALIZADO: Modal Criar Post com IA */}
-      <Dialog open={mostrarModalIA} onOpenChange={setMostrarModalIA}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-2xl flex items-center gap-2">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center overflow-hidden">
-                <img
-                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/8b8866b2d_drbeleza.png"
-                  alt="Dr da Beleza"
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
-                  }}
-                />
-                <MessageCircle className="w-6 h-6 text-white hidden" />
-              </div>
-              Criar Post com Dr da Beleza
-            </DialogTitle>
-            <DialogDescription>
-              Deixe a IA criar um artigo completo COM IMAGEM para você
-            </DialogDescription>
-          </DialogHeader>
 
-          <div className="space-y-4 py-4">
-            <Alert className="bg-blue-50 border-blue-200">
-              <Sparkles className="h-4 w-4 text-blue-600" />
-              <AlertDescription className="text-blue-800 text-sm">
-                <strong>Como funciona:</strong> Preencha tema e categoria. A IA gerará título, resumo, conteúdo completo, tempo de leitura E imagem de capa automaticamente!
-              </AlertDescription>
-            </Alert>
-
-            <div>
-              <Label>Tema do Artigo *</Label>
-              <Input
-                placeholder="Ex: Benefícios do Microagulhamento para Rejuvenescimento"
-                value={dadosIA.tema}
-                onChange={(e) => setDadosIA({...dadosIA, tema: e.target.value})}
-                className="mt-1"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                💡 Seja específico para melhores resultados
-              </p>
-            </div>
-
-            <div>
-              <Label>Categoria *</Label>
-              <Select
-                value={dadosIA.categoria}
-                onValueChange={(value) => setDadosIA({...dadosIA, categoria: value})}
-              >
-                <SelectTrigger className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Estética Facial">Estética Facial</SelectItem>
-                  <SelectItem value="Estética Corporal">Estética Corporal</SelectItem>
-                  <SelectItem value="Cuidados com a Pele">Cuidados com a Pele</SelectItem>
-                  <SelectItem value="Tratamentos">Tratamentos</SelectItem>
-                  <SelectItem value="Tendências">Tendências</SelectItem>
-                  <SelectItem value="Novidades">Novidades</SelectItem>
-                  <SelectItem value="Harmonização Facial">Harmonização Facial</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label>Público-Alvo *</Label>
-              <Select
-                value={dadosIA.publico}
-                onValueChange={(value) => setDadosIA({...dadosIA, publico: value})}
-              >
-                <SelectTrigger className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="profissional">
-                    <div className="flex items-center gap-2">
-                      <Briefcase className="w-4 h-4" />
-                      Para Profissionais
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="geral">
-                    <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4" />
-                      Público Geral
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {gerandoImagemIA && (
-              <Alert className="bg-purple-50 border-purple-200">
-                <Loader2 className="h-4 w-4 text-purple-600 animate-spin" />
-                <AlertDescription className="text-purple-800 text-sm">
-                  🎨 Gerando imagem de capa profissional... Aguarde 5-10 segundos.
-                </AlertDescription>
-              </Alert>
-            )}
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setMostrarModalIA(false)}
-              disabled={gerandoPostIA || gerandoImagemIA}
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleGerarPostIA}
-              disabled={gerandoPostIA || gerandoImagemIA || !dadosIA.tema || !dadosIA.categoria}
-              className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
-            >
-              {gerandoPostIA || gerandoImagemIA ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  {gerandoImagemIA ? 'Gerando Imagem...' : 'Gerando Post...'}
-                </>
-              ) : (
-                <>
-                  <Wand2 className="w-4 h-4 mr-2" />
-                  Gerar Post Completo
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Modal Criar Post */}
       <Dialog open={mostrarModalCriarPost} onOpenChange={setMostrarModalCriarPost}>

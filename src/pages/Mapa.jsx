@@ -1018,6 +1018,59 @@ tratamentos: {
     return arr.sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
   }, [anunciosFiltrados, ordenarPor]);
 
+  // Placeholders de anúncios populares (procedimentos e tratamentos)
+  const PLACEHOLDER_PROCS = [
+    { titulo: 'Toxina botulínica (Botox)', destaque: 'Líder entre não cirúrgicos no Brasil' },
+    { titulo: 'Preenchimento com ácido hialurônico', destaque: 'Resultados imediatos e naturais' },
+    { titulo: 'Bioestimulador de colágeno', destaque: 'Radiesse / Sculptra — pele firme' },
+    { titulo: 'Depilação a laser', destaque: 'Acabe com os pelos de vez' },
+    { titulo: 'Laser para rejuvenescimento (CO2)', destaque: 'Resurfacing para nova pele' },
+    { titulo: 'Ultrassom microfocado (HIFU)', destaque: 'Lifting sem cortes (Ultraformer)' },
+    { titulo: 'Criolipólise', destaque: 'Redução de gordura sem cirurgia' },
+    { titulo: 'Microagulhamento', destaque: 'Renovação de colágeno' },
+    { titulo: 'Peeling químico', destaque: 'Textura e brilho renovados' },
+    { titulo: 'Fios de sustentação (PDO)', destaque: 'Efeito lifting imediato' },
+  ];
+  const PLACEHOLDER_TRATS = [
+    { titulo: 'Rejuvenescimento facial' },
+    { titulo: 'Rugas e linhas de expressão' },
+    { titulo: 'Melasma' },
+    { titulo: 'Acne' },
+    { titulo: 'Cicatriz de acne' },
+    { titulo: 'Flacidez facial' },
+    { titulo: 'Gordura localizada' },
+    { titulo: 'Celulite' },
+    { titulo: 'Queda de cabelo / calvície' },
+    { titulo: 'Estrias' },
+  ];
+  const CIDADES_UF = [
+    { cidade: 'São Paulo', uf: 'SP' }, { cidade: 'Rio de Janeiro', uf: 'RJ' }, { cidade: 'Belo Horizonte', uf: 'MG' },
+    { cidade: 'Curitiba', uf: 'PR' }, { cidade: 'Porto Alegre', uf: 'RS' }, { cidade: 'Salvador', uf: 'BA' },
+    { cidade: 'Fortaleza', uf: 'CE' }, { cidade: 'Recife', uf: 'PE' }, { cidade: 'Goiânia', uf: 'GO' },
+    { cidade: 'Florianópolis', uf: 'SC' }, { cidade: 'Manaus', uf: 'AM' }, { cidade: 'Belém', uf: 'PA' }
+  ];
+  const AMENIDADES = ['Estacionamento', 'Aceita Pet', 'Wi‑Fi', 'Acessível', 'Lounge', 'Música Ambiente', 'Valet'];
+  const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const pickAmenidades = () => AMENIDADES.sort(() => 0.5 - Math.random()).slice(0, 3);
+
+  const placeholderAds = useMemo(() => {
+    const build = (lista, tipo) => lista.map((item, idx) => {
+      const loc = rand(CIDADES_UF);
+      const isClinica = Math.random() < 0.5;
+      return {
+        id: `ph-${tipo}-${idx}`,
+        titulo: item.titulo,
+        subtitulo: item.destaque || 'Especialistas certificados • Resultados seguros',
+        tipo,
+        perfil: isClinica ? 'Clínica' : 'Profissional',
+        cidade: loc.cidade,
+        estado: loc.uf,
+        amenidades: pickAmenidades(),
+      };
+    });
+    return [...build(PLACEHOLDER_PROCS, 'procedimento'), ...build(PLACEHOLDER_TRATS, 'tratamento')];
+  }, []);
+
   const representativeAds = useMemo(() => {
     const map = new Map();
     for (const a of anunciosFiltrados) {
@@ -1456,6 +1509,43 @@ tratamentos: {
                 })}
               </div>
             )}
+
+            {/* Placeholders de anúncios populares */}
+            <div className="mt-6">
+              <h3 className="font-bold text-lg text-gray-900 mb-3">Buscas populares (convite)</h3>
+              <div className="space-y-3">
+                {placeholderAds.slice(0,20).map((ph) => (
+                  <div key={ph.id} className="border rounded-xl p-4 bg-white shadow-sm hover:shadow-md transition-all">
+                    <div className="flex items-center justify-between gap-2 mb-1 text-xs text-gray-600">
+                      <span className="inline-flex items-center gap-1">
+                        <Badge variant="outline" className="mr-2">{ph.perfil}</Badge>
+                        {ph.tipo === 'procedimento' ? 'Procedimento' : 'Tratamento'}
+                      </span>
+                      <span className="inline-flex items-center gap-1"><MapPin className="w-3 h-3" /> {ph.cidade} - {ph.estado}</span>
+                    </div>
+                    <p className="font-semibold text-gray-900">{ph.titulo}</p>
+                    <p className="text-sm text-gray-600 mb-2">{ph.subtitulo}</p>
+                    <div className="flex flex-wrap gap-1 mb-3">
+                      {ph.amenidades.map((a,i)=> (<span key={i} className="text-[11px] bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full border">{a}</span>))}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white"
+                        onClick={() => {
+                          const base='https://wa.me/5521980343873';
+                          const msg = encodeURIComponent(`Olá! Quero realizar ${ph.titulo} em ${ph.cidade}-${ph.estado}. Podem me ajudar com opções e valores?`);
+                          window.open(`${base}?text=${msg}`, '_blank');
+                        }}
+                      >Quero realizar</Button>
+                      <Button size="sm" variant="outline" onClick={() => {
+                        if (ph.tipo === 'procedimento') { setProcedimento(ph.titulo); setTratamento(''); }
+                        else { setTratamento(ph.titulo); setProcedimento(''); }
+                        setTimeout(()=> document.getElementById('mapa-interativo')?.scrollIntoView({behavior:'smooth'}), 0);
+                      }}>Ver no mapa</Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
