@@ -219,17 +219,8 @@ export default function Produtos() {
       }
     }
 
-    // Filtrar por tipo de busca
-    let matchTipo = true;
-    if (tipoBusca === 'servicos') {
-      matchTipo = produto.categoria === "Serviços Contratáveis" ||
-                  produto.categoria === "Serviços para Pacientes" ||
-                  produto.categoria === "Produtos para Pacientes";
-    } else if (tipoBusca === 'produtos') {
-      matchTipo = produto.categoria !== "Serviços Contratáveis" &&
-                  produto.categoria !== "Serviços para Pacientes" &&
-                  produto.categoria !== "Produtos para Pacientes";
-    }
+    // Filtrar por tipo de busca — exibir ambos (produtos e serviços)
+    const matchTipo = true;
 
     return matchCategoria && matchBusca && matchTipo && matchVis && matchPlanoFiltro && matchFaixaPontos;
   });
