@@ -372,9 +372,17 @@ export default function PlannerWellness() {
                   <Button onClick={()=>{ setAnsWants('sim'); setChatStep(6); }} className="bg-emerald-600 hover:bg-emerald-700 text-white">Sim</Button>
                   <Button variant="outline" onClick={()=>{ setAnsWants('nao'); setSaveDone(false); setChatStep(0); }}>Não</Button>
                 </div>
-                {chatStep===0 && (
-                  <div className="text-sm text-gray-600">Chat encerrado. Você pode reiniciar quando quiser.</div>
-                )}
+              </div>
+            )}
+
+            {chatStep === 0 && (
+              <div className="space-y-3">
+                <div className="max-w-md rounded-2xl bg-white border p-3 shadow text-gray-800">
+                  Obrigado por utilizar o Planner de Wellness.
+                </div>
+                <div>
+                  <Button variant="outline" onClick={()=>{ setChatStep(1); setAnsPrev(null); setAnsLastWhen(""); setAnsLastName(""); setAnsLastType(""); setAnsSatisf(null); setAnsWants(null); setAnsGoal(""); setAnsBudget(""); }}>Reiniciar</Button>
+                </div>
               </div>
             )}
 
