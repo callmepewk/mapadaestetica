@@ -45,6 +45,7 @@ import LanguageSelector from "./components/layout/LanguageSelector";
 import { I18nProvider } from "./components/i18n/I18nProvider";
 import FloatingQuickbar from "./components/layout/FloatingQuickbar";
 import ImageWithLoader from "./components/common/ImageWithLoader";
+import SponsorPopup from "./components/banners/SponsorPopup";
 
 export default function Layout({ children }) {
   const location = useLocation();
@@ -434,14 +435,21 @@ export default function Layout({ children }) {
                   {/* Contadores de Pontos e Beauty Coins */}
 
 
-                  {(isProfissional || isPatrocinador) && (
+                  {isPatrocinador ? (
+                    <Link to={createPageUrl("CriacaoBanner")} className="hidden lg:block">
+                      <Button className="bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold shadow-lg hover:shadow-xl transition-all duration-200 h-8 px-3 text-xs border-2 border-[#2C2C2C]">
+                        <PlusCircle className="w-3 h-3 mr-1" />
+                        Criar Banner
+                      </Button>
+                    </Link>
+                  ) : isProfissional ? (
                     <Link to={createPageUrl("CadastrarAnuncio")} className="hidden lg:block">
                       <Button className="bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-bold shadow-lg hover:shadow-xl transition-all duration-200 h-8 px-3 text-xs border-2 border-[#2C2C2C]">
                         <PlusCircle className="w-3 h-3 mr-1" />
                         Anunciar
                       </Button>
                     </Link>
-                  )}
+                  ) : null}
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -517,10 +525,7 @@ export default function Layout({ children }) {
                             RABI
                             {radarHasNew && <span className="ml-2 inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse" />}
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => navigate(createPageUrl("CalculadoraLaser"))}>
-                            <Calculator className="w-4 h-4 mr-2" />
-                            Calculadora Viabilidade Laser
-                          </DropdownMenuItem>
+
                         </>
                       )}
                       {/* NOVO: Dashboard Patrocinador */}
@@ -701,14 +706,25 @@ export default function Layout({ children }) {
                 </Link>
               ))}
               {isAuthenticated && (isProfissional || isPatrocinador) && (
-                <Link
-                  to={createPageUrl("CadastrarAnuncio")}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[#F7D426] text-[#2C2C2C] font-bold border-2 border-[#2C2C2C]"
-                >
-                  <PlusCircle className="w-5 h-5" />
-                  <span>Cadastrar Anúncio</span>
-                </Link>
+                isPatrocinador ? (
+                  <Link
+                    to={createPageUrl("CriacaoBanner")}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[#F7D426] text-[#2C2C2C] font-bold border-2 border-[#2C2C2C]"
+                  >
+                    <PlusCircle className="w-5 h-5" />
+                    <span>Criar Banner</span>
+                  </Link>
+                ) : (
+                  <Link
+                    to={createPageUrl("CadastrarAnuncio")}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[#F7D426] text-[#2C2C2C] font-bold border-2 border-[#2C2C2C]"
+                  >
+                    <PlusCircle className="w-5 h-5" />
+                    <span>Cadastrar Anúncio</span>
+                  </Link>
+                )
                 )}
                 <div className="border-t pt-4 mt-4">
                 <p className="text-xs text-gray-500 mb-2 px-4">🌟 Nossos Produtos</p>
@@ -852,6 +868,9 @@ export default function Layout({ children }) {
         user={user}
         onSuccess={handleTrocaTipoSuccess}
       />
+
+      {/* Popup Patrocinadores (1x por dia) */}
+      <SponsorPopup user={user} />
       </div>
     </I18nProvider>
   );

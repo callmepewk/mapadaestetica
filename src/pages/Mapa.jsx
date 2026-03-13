@@ -207,7 +207,7 @@ export default function Mapa() {
   const [cidade, setCidade] = useState("");
   const [estado, setEstado] = useState("");
   const [faixaPreco, setFaixaPreco] = useState("");
-  const [verificados, setVerificados] = useState(false);
+  const [verificados, setVerificados] = useState(true);
   const [tipoAnuncio, setTipoAnuncio] = useState("");
   const [tipoEstabelecimento, setTipoEstabelecimento] = useState("");
   const [distancia, setDistancia] = useState("999999");
@@ -503,30 +503,34 @@ export default function Mapa() {
 
 };
   const aplicarBuscaIntencao = () => {
-    const q = (busca||'').toLowerCase();
-    if (!q.trim()) return;
+    const q = (busca || '').toLowerCase();
+    if (!q.trim()) {
+      document.getElementById('mapa-interativo')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+    let novoProc = '';
+    let novoTrat = '';
+    let novaCat = '';
+
     for (const [canon, syns] of Object.entries(MAP_KEYWORDS.procedimentos)) {
-      if (syns.some(s => q.includes(s))) {
-        setProcedimento(canon);
-        setTratamento('');
-        setCategoria('');
-        return;
+      if (syns.some((s) => q.includes(s))) { novoProc = canon; break; }
+    }
+    if (!novoProc) {
+      for (const [canon, syns] of Object.entries(MAP_KEYWORDS.tratamentos)) {
+        if (syns.some((s) => q.includes(s))) { novoTrat = canon; break; }
       }
     }
-    for (const [canon, syns] of Object.entries(MAP_KEYWORDS.tratamentos)) {
-      if (syns.some(s => q.includes(s))) {
-        setTratamento(canon);
-        setProcedimento('');
-        setCategoria('');
-        return;
-      }
+    if (!novoProc && !novoTrat && (q.includes('clínica') || q.includes('clinica'))) {
+      novaCat = 'Clínica de Estética';
     }
-    // Se não casar, tenta categoria genérica
-    if (q.includes('clínica') || q.includes('clinica')) {
-      setCategoria('Clínica de Estética');
-      setProcedimento('');
-      setTratamento('');
-    }
+
+    setProcedimento(novoProc);
+    setTratamento(novoTrat);
+    setCategoria(novaCat);
+
+    setTimeout(() => {
+      document.getElementById('mapa-interativo')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 0);
   };
 
   // Filtros para Mapa (Estabelecimentos)
@@ -910,8 +914,8 @@ export default function Mapa() {
       </div>
 
       {/* Busca principal */}
-      <div className="max-w-7xl mx-auto px-4 -mt-4">
-        <div className="bg-white rounded-2xl shadow p-4 md:p-6 border -translate-y-6">
+      <div className="max-w-7xl mx-auto px-4 mt-4">
+        <div className="bg-white rounded-2xl shadow p-4 md:p-6 border">
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
             <Input
@@ -1044,6 +1048,11 @@ export default function Mapa() {
         <Card className="mb-6 border-none shadow-lg">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+              <div className="flex items-center gap-2 text-emerald-700 text-sm">
+                <span className="inline-flex items-center gap-1 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
+                  ✅ Exibindo apenas profissionais verificados
+                </span>
+              </div>
               <h3 className="font-semibold text-lg flex items-center gap-2">
                 <Filter className="w-5 h-5 text-pink-600" />
                 Filtros
@@ -1167,7 +1176,7 @@ export default function Mapa() {
 
         <div className="grid lg:grid-cols-3 gap-4">
           {/* Mapa à esquerda (maior) */}
-          <div className="lg:col-span-2 relative h-[60vh] min-h-[520px]">
+          <div id="mapa-interativo" className="lg:col-span-2 relative h-[60vh] min-h-[520px]">
             <MapContainer
               center={localizacaoUsuario ? [localizacaoUsuario.lat, localizacaoUsuario.lng] : [-15.7801, -47.9292]}
               zoom={13}
@@ -1242,16 +1251,6 @@ export default function Mapa() {
           <div className="lg:col-span-1">
             <div className="flex items-center justify-between mb-3">
               <h2 className="font-bold text-lg text-gray-900">Anúncios ({anunciosFiltrados.length})</h2>
-              <Select value={ordenarPor} onValueChange={setOrdenarPor}>
-                <SelectTrigger className="w-48 h-9">
-                  <SelectValue placeholder="Ordenar" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="recentes">Mais Recentes</SelectItem>
-                  <SelectItem value="relevancia">Relevância</SelectItem>
-                  <SelectItem value="patrocinados">Patrocinados Primeiro</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
             {isLoadingAnuncios ? (
               <div className="space-y-3">
