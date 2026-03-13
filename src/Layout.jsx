@@ -859,7 +859,7 @@ export default function Layout({ children }) {
       />
 
       {/* Floating quickbar */}
-      <FloatingQuickbar user={user} cartCount={carrinho.length} onOpenCart={()=>setMostrarCarrinho(true)} />
+      <FloatingQuickbar user={user} cartCount={carrinho.length} onOpenCart={()=>setMostrarCarrinho(true)} hidePointsCoins={location.pathname === createPageUrl("Produtos")} />
 
       {/* NOVO: Modal Seletor Tipo */}
       <SeletorTipoUsuario

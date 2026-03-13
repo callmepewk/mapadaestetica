@@ -764,22 +764,7 @@ const KEYWORDS = {
               </div>
             </div>
 
-            {/* CTA educativo: Profissionais regulamentados */}
-            <div className="mt-6 max-w-3xl mx-auto text-center px-4">
-              <p className="text-sm sm:text-base text-white mb-1 font-semibold">
-                Não sabe qual profissional pode realizar o procedimento que você deseja?
-              </p>
-              <p className="text-xs sm:text-sm text-white/90 mb-4">
-                Veja quais especialistas são autorizados de acordo com os conselhos profissionais da saúde.
-              </p>
-              <Button
-                className="h-12 px-6 bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-extrabold shadow-xl hover:shadow-2xl border-2 border-[#2C2C2C] transition-transform hover:-translate-y-0.5"
-                onClick={() => document.getElementById('profissionais-regulamentados')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-              >
-                <span className="mr-2">🔎</span>
-                Descubra qual profissional pode realizar seu procedimento
-              </Button>
-            </div>
+
           </motion.section>
 
 
@@ -1322,6 +1307,38 @@ const KEYWORDS = {
       )}
 
       {/* Blog - AMBOS */}
+      {/* CTA após sugestões */}
+      <section className="py-6 bg-white">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <p className="text-sm sm:text-base text-gray-800 mb-1 font-semibold">Não sabe qual profissional pode realizar o procedimento que você deseja?</p>
+          <p className="text-xs sm:text-sm text-gray-600 mb-4">Veja quais especialistas são autorizados de acordo com os conselhos profissionais da saúde.</p>
+          <Button
+            className="h-12 px-6 bg-[#F7D426] hover:bg-[#E5C215] text-[#2C2C2C] font-extrabold shadow-xl border-2 border-[#2C2C2C]"
+            onClick={() => document.getElementById('como-funciona')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+          >
+            <span className="mr-2">🔎</span>
+            Descubra qual profissional pode realizar seu procedimento
+          </Button>
+        </div>
+      </section>
+
+      {/* Como funciona o Mapa da Estética (acima do Blog) */}
+      <section id="como-funciona" className="py-12 sm:py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">Como funciona o Mapa da Estética</h2>
+          <p className="text-gray-700 max-w-4xl">
+            O Mapa da Estética é um mapa interativo onde você pode descobrir profissionais e estabelecimentos especializados próximos de você.
+            Cada profissional ou clínica pode anunciar seus serviços dentro da plataforma, aparecendo tanto nos resultados de busca quanto diretamente no mapa interativo.
+          </p>
+          <ul className="mt-4 grid sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm text-gray-800">
+            <li className="bg-gray-50 border rounded-lg p-3">• encontrar especialistas próximos</li>
+            <li className="bg-gray-50 border rounded-lg p-3">• visualizar avaliações</li>
+            <li className="bg-gray-50 border rounded-lg p-3">• ver os procedimentos oferecidos</li>
+            <li className="bg-gray-50 border rounded-lg p-3">• acessar localização e rotas diretamente pelo Google Maps</li>
+          </ul>
+        </div>
+      </section>
+
       <section className="py-12 sm:py-16 bg-gradient-to-br from-pink-50 to-rose-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-8 sm:mb-12">
@@ -1454,22 +1471,7 @@ const KEYWORDS = {
             </div>
             </section>
 
-      {/* Como funciona o Mapa da Estética */}
-      <section className="py-12 sm:py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">Como funciona o Mapa da Estética</h2>
-          <p className="text-gray-700 max-w-4xl">
-            O Mapa da Estética é um mapa interativo onde você pode descobrir profissionais e estabelecimentos especializados próximos de você.
-            Cada profissional ou clínica pode anunciar seus serviços dentro da plataforma, aparecendo tanto nos resultados de busca quanto diretamente no mapa interativo.
-          </p>
-          <ul className="mt-4 grid sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm text-gray-800">
-            <li className="bg-gray-50 border rounded-lg p-3">• encontrar especialistas próximos</li>
-            <li className="bg-gray-50 border rounded-lg p-3">• visualizar avaliações</li>
-            <li className="bg-gray-50 border rounded-lg p-3">• ver os procedimentos oferecidos</li>
-            <li className="bg-gray-50 border rounded-lg p-3">• acessar localização e rotas diretamente pelo Google Maps</li>
-          </ul>
-        </div>
-      </section>
+
 
       <RegulamentacaoEstetica />
 

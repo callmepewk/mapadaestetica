@@ -43,7 +43,7 @@ import { motion, AnimatePresence } from "framer-motion"; // Added AnimatePresenc
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import LoginPromptModal from "../components/home/LoginPromptModal";
-import DesignChatbot from "../components/design/DesignChatbot";
+
 import ProdutoDetalhesDialog from "../components/produtos/ProdutoDetalhesDialog";
 
 const categorias = [
@@ -78,8 +78,9 @@ export default function Produtos() {
   const [tipoBusca, setTipoBusca] = useState('produtos');
   const [mostrarLoginPrompt, setMostrarLoginPrompt] = useState(false);
   const [carrinho, setCarrinho] = useState([]);
+  const [page, setPage] = useState(1);
   const [faixaPontosFiltro, setFaixaPontosFiltro] = useState('todas');
-  const [designOpen, setDesignOpen] = useState(false);
+
   const [detalhesOpen, setDetalhesOpen] = useState(false);
   const [produtoSelecionado, setProdutoSelecionado] = useState(null);
   // Agendamento
@@ -291,7 +292,16 @@ export default function Produtos() {
       alert("Seu carrinho está vazio!");
       return;
     }
-    navigate(createPageUrl("Checkout"));
+    const phone = '5521980343873';
+    const linhas = carrinho.map((item, i) => {
+      const preco = item.preco_promocional || item.preco;
+      const precoTxt = preco ? `R$ ${preco.toFixed(2)}` : (item.preco_texto || 'Consultar');
+      return `${i+1}. ${item.nome} - ${precoTxt}`;
+    }).join('%0A');
+    const total = carrinho.reduce((sum, it) => sum + (it.preco_promocional || it.preco || 0), 0);
+    const totalTxt = total > 0 ? `%0A%0ATotal: R$ ${total.toFixed(2)}` : '';
+    const msg = encodeURIComponent(`Olá! Vim pelo Mapa da Estética e quero concluir meu pedido:%0A${linhas}${totalTxt}`);
+    window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
   };
 
   const handleContratar = (servico) => {
@@ -386,16 +396,7 @@ export default function Produtos() {
               </div>
             </div>
 
-            {/* CTA Design Profissional */}
-            <Card className="mb-6 border-2 border-purple-200 bg-purple-50">
-              <CardContent className="p-5 flex flex-col md:flex-row items-center gap-4">
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold">Design Profissional de Imagens</h3>
-                  <p className="text-sm text-gray-600">Fale com nosso engenheiro de prompt e gere imagens incríveis em 2 etapas. Recurso exclusivo para profissionais Prime/Premium e patrocinadores Platina.</p>
-                </div>
-                <Button onClick={()=>setDesignOpen(true)} className="bg-purple-600 hover:bg-purple-700 text-white">Falar com Equipe de Design</Button>
-              </CardContent>
-            </Card>
+
 
              {/* Banner Informativo - apenas para produtos (imagens bem-estar) */}
              {tipoBusca === 'produtos' && (
@@ -615,8 +616,20 @@ export default function Produtos() {
                 </div>
               </Card>
             ) : (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {produtosFiltrados.map((produto) => {
+              {/* Produtos com paginação (6 por página) */}
+              {(() => {
+                const isServico = (p) => p.categoria === "Serviços Contratáveis" || p.categoria === "Serviços para Pacientes" || p.categoria === "Produtos para Pacientes";
+                const produtosApenas = produtosFiltrados.filter(p => !isServico(p));
+                const servicosApenas = produtosFiltrados.filter(isServico);
+                const itemsPerPage = 6;
+                const totalPages = Math.max(1, Math.ceil(produtosApenas.length / itemsPerPage));
+                const start = ((page || 1) - 1) * itemsPerPage;
+                const current = produtosApenas.slice(start, start + itemsPerPage);
+                return (
+                  <>
+                    {current.length > 0 && (
+                      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {current.map((produto) => {
                   const basePrice = produto.preco_promocional || produto.preco;
                   let descontoPlano = 0;
                   if (isProfissional && produto.descontos_por_plano && user?.plano_ativo) {
@@ -745,8 +758,13 @@ export default function Produtos() {
                             onClick={() => {
                               if (isExclusivoClube) {
                                 window.open('https://clubdabeleza.com/plans', '_blank');
-                              } else if (produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes") {
-                                handleAgendar(produto);
+                              } else if (produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes" || produto.categoria === "Produtos para Pacientes") {
+                                const base = 'https://wa.me/5521980343873';
+                                const nomeUser = user?.full_name || '';
+                                const preco = produto.preco_promocional || produto.preco;
+                                const precoTxt = preco ? ` - Preço: R$ ${preco.toFixed(2)}` : ' - Preço: a combinar via WhatsApp';
+                                const msg = encodeURIComponent(`Olá! Me chamo ${nomeUser} e desejo contratar o serviço "${produto.nome}"${precoTxt}`);
+                                window.open(`${base}?text=${msg}`, '_blank');
                               } else {
                                 handleAdicionarAoCarrinho(produto);
                               }
@@ -785,9 +803,24 @@ export default function Produtos() {
                         )}
                       </CardContent>
                     </Card>
-                  );
-                })}
-              </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                    {/* Paginação */}
+                    {totalPages > 1 && (
+                      <div className="flex items-center justify-center gap-3 mt-6">
+                        <Button variant="outline" disabled={(page||1)===1} onClick={() => setPage((p)=>Math.max(1,(p||1)-1))}>Anterior</Button>
+                        <span className="text-sm text-gray-600">Página {page||1} de {totalPages}</span>
+                        <Button variant="outline" disabled={(page||1)>=totalPages} onClick={() => setPage((p)=>Math.min(totalPages,(p||1)+1))}>Próxima</Button>
+                      </div>
+                    )}
+                    {/* Serviços abaixo dos produtos */}
+                    {servicosApenas.length > 0 && (
+                      <div className="mt-10">
+                        <h3 className="text-xl font-bold text-gray-900 mb-4">Serviços</h3>
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                          {servicosApenas.slice(0, 6).map((produto) => {
             )}
 
             {/* Info Cards */}
@@ -974,8 +1007,7 @@ export default function Produtos() {
         pageName="produtos"
       />
 
-      {/* Chatbot de Design */}
-      <DesignChatbot open={designOpen} onClose={()=>setDesignOpen(false)} user={user} />
+
 
       {/* Modal de Detalhes do Produto */}
       <ProdutoDetalhesDialog open={detalhesOpen} onClose={()=>setDetalhesOpen(false)} produto={produtoSelecionado} />

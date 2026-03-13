@@ -73,7 +73,7 @@ export default function SobreNos() {
   };
 
   const handleSaberMaisLaserCode = () => {
-    const mensagem = "Olá, gostaria de saber mais sobre o aplicativo LaserCode Pro!";
+    const mensagem = "Olá, gostaria de saber mais sobre o aplicativo LaserSafe!";
     const whatsapp = "5531972595643";
     window.open(`https://wa.me/${whatsapp}?text=${encodeURIComponent(mensagem)}`, '_blank');
   };
@@ -485,18 +485,18 @@ export default function SobreNos() {
                 </CardContent>
               </Card>
 
-              {/* LaserCode Pro */}
+              {/* LaserSafe */}
               <Card className="border-2 border-blue-300 shadow-xl hover:shadow-2xl transition-all overflow-hidden">
                 <div className="h-48 bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center p-6">
                   <div className="text-center">
                     <div className="text-6xl mb-2">🔬</div>
-                    <p className="font-bold text-2xl text-blue-900">LaserCode Pro</p>
+                    <p className="font-bold text-2xl text-blue-900">LaserSafe</p>
                   </div>
                 </div>
                 <CardContent className="p-6">
                   <div className="mb-4">
                     <Badge className="bg-blue-100 text-blue-800 mb-3">Para Profissionais</Badge>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-3">LaserCode Pro</h3>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-3">LaserSafe</h3>
                     <p className="text-gray-600 mb-4">
                       Aplicativo profissional para gestão de tratamentos a laser. 
                       Calcule parâmetros, registre sessões e acompanhe resultados com precisão científica.
@@ -529,7 +529,7 @@ export default function SobreNos() {
                     className="block w-full"
                   >
                     <Button className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white">
-                      Acessar LaserCode Pro
+                      Acessar LaserSafe
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </Button>
                   </a>

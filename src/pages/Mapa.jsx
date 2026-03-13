@@ -1295,19 +1295,7 @@ export default function Mapa() {
         </div>
       </div>
 
-      {/* Lista agregada por procedimento/tratamento */}
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <h2 className="font-bold text-xl text-gray-900 mb-3">Resultados por procedimento/tratamento ({representativeAds.length})</h2>
-        {representativeAds.length === 0 ? (
-          <div className="text-center py-10 text-gray-600">Nenhum resultado relacionado à busca.</div>
-        ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {representativeAds.map((anuncio) => (
-              <CardAnuncio key={anuncio.id} anuncio={anuncio} destaque={!!(anuncio.em_destaque || anuncio.impulsionado)} />
-            ))}
-          </div>
-        )}
-      </div>
+
 
       {/* Info sobre Clube da Beleza */}
       <div className="bg-gradient-to-r from-purple-50 to-pink-50 py-6 px-4">

@@ -37,12 +37,20 @@ const dimensoesPorPlano = {
   cobre: {
     largura: 728,
     altura: 90,
-    descricao: "Banner Leaderboard (728x90px)",
+    descricao: "Banner Cabeçalho Compacto (728x90px)",
     limite: 1,
-    diasExibicao: 10,
-    posicoes: ["home_rodape"]
+    diasExibicao: 30,
+    posicoes: ["home_rodape", "blog"]
   },
-  prata: {
+  diamante: {
+    largura: 1400,
+    altura: 350,
+    descricao: "Banner Destaque (1400x350px)",
+    limite: 5,
+    diasExibicao: 60,
+    posicoes: ["home_topo", "home_meio", "produtos", "mapa"]
+  }
+};
     largura: 970,
     altura: 250,
     descricao: "Banner Billboard (970x250px)",
@@ -152,7 +160,8 @@ export default function CriacaoBanner() {
 
         setUser(userData);
 
-        const plano = isAdmin ? 'platina' : userData.plano_patrocinador;
+        const planoBase = userData.plano_patrocinador;
+        const plano = isAdmin ? 'diamante' : (planoBase === 'cobre' || planoBase === 'diamante' ? planoBase : 'cobre');
         const dimensoes = dimensoesPorPlano[plano];
 
         setFormData(prev => ({
@@ -524,88 +533,7 @@ Dimensions: ${dimensoesPorPlano[formData.plano_patrocinador].largura}x${dimensoe
           </p>
         </div>
 
-        {/* Dr. Beleza - Banner Completo com IA */}
-        <Card className="mb-6 border-2 border-cyan-300 bg-gradient-to-br from-cyan-50 to-blue-50">
-          <CardContent className="p-6">
-            <div className="flex items-start gap-4 mb-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
-                <img
-                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/690153e49c59659beac8bfe7/8b8866b2d_drbeleza.png"
-                  alt="Dr. Beleza"
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.nextSibling.style.display = 'flex';
-                  }}
-                />
-                <MessageCircle className="w-8 h-8 text-white hidden" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-bold text-gray-900 mb-2">
-                  🤖 Dr. Beleza - Assistente de Criação
-                </h3>
-                <p className="text-sm text-gray-600">
-                  Deixe a IA criar seu banner completo ou ajudar em seções específicas!
-                </p>
-              </div>
-            </div>
 
-            <div className="grid md:grid-cols-3 gap-3">
-              <Button
-                type="button"
-                onClick={handleGerarBannerCompleto}
-                disabled={gerandoIA || gerandoImagem}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-              >
-                {(gerandoIA || gerandoImagem) ? (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                ) : (
-                  <Wand2 className="w-4 h-4 mr-2" />
-                )}
-                Gerar Banner Completo
-              </Button>
-              
-              <Button
-                type="button"
-                onClick={handleAjudaTitulo}
-                disabled={gerandoIA}
-                variant="outline"
-                className="border-2 border-blue-300 text-blue-700"
-              >
-                {gerandoIA ? (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                ) : (
-                  <Sparkles className="w-4 h-4 mr-2" />
-                )}
-                Ajuda: Título
-              </Button>
-              
-              <Button
-                type="button"
-                onClick={handleAjudaDescricao}
-                disabled={gerandoIA}
-                variant="outline"
-                className="border-2 border-green-300 text-green-700"
-              >
-                {gerandoIA ? (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                ) : (
-                  <Sparkles className="w-4 h-4 mr-2" />
-                )}
-                Ajuda: Descrição
-              </Button>
-            </div>
-
-            {gerandoImagem && (
-              <Alert className="mt-4 bg-blue-50 border-blue-200">
-                <Loader2 className="h-4 w-4 text-blue-600 animate-spin" />
-                <AlertDescription className="text-blue-800 text-sm">
-                  ⏳ Gerando imagem profissional... Isso pode levar até 10 segundos.
-                </AlertDescription>
-              </Alert>
-            )}
-          </CardContent>
-        </Card>
 
         {/* Plano e Restrições */}
         <Card className="mb-4 sm:mb-6 border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50">
@@ -732,20 +660,7 @@ Dimensions: ${dimensoesPorPlano[formData.plano_patrocinador].largura}x${dimensoe
               </div>
 
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <Label className="text-sm sm:text-base">Descrição</Label>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={handleAjudaDescricao}
-                    disabled={gerandoIA}
-                    className="text-xs border-green-300 text-green-700"
-                  >
-                    <Sparkles className="w-3 h-3 mr-1" />
-                    IA
-                  </Button>
-                </div>
+                <Label className="text-sm sm:text-base">Descrição</Label>
                 <Textarea
                   value={formData.descricao}
                   onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
@@ -812,37 +727,7 @@ Dimensions: ${dimensoesPorPlano[formData.plano_patrocinador].largura}x${dimensoe
                 </Select>
               </div>
 
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm sm:text-base">Tempo de Exibição (segundos)</Label>
-                  <Input
-                    type="number"
-                    min="3"
-                    max="5"
-                    value={formData.tempo_exibicao_segundos}
-                    onChange={(e) => setFormData({ ...formData, tempo_exibicao_segundos: Math.min(5, parseInt(e.target.value) || 5) })}
-                    className="mt-1.5 h-10 sm:h-11 text-sm sm:text-base"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Máximo: 5 segundos</p>
-                </div>
 
-                <div>
-                  <Label className="text-sm sm:text-base">Frequência de Exibição</Label>
-                  <Select
-                    value={formData.frequencia_exibicao}
-                    onValueChange={(value) => setFormData({ ...formData, frequencia_exibicao: value })}
-                  >
-                    <SelectTrigger className="mt-1.5 h-10 sm:h-11 text-sm sm:text-base">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="sempre">Sempre que possível</SelectItem>
-                      <SelectItem value="uma_vez_por_sessao">Uma vez por sessão</SelectItem>
-                      <SelectItem value="uma_vez_por_dia">Uma vez por dia</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
 
               <Alert className="bg-blue-50 border-blue-200">
                 <AlertCircle className="h-4 w-4 text-blue-600" />
@@ -872,20 +757,7 @@ Dimensions: ${dimensoesPorPlano[formData.plano_patrocinador].largura}x${dimensoe
                   <Label className="text-sm sm:text-base">
                     Mídia do Banner * ({dimensoes?.largura}x{dimensoes?.altura}px)
                   </Label>
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={handleGerarImagem}
-                    disabled={gerandoImagem}
-                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-xs"
-                  >
-                    {gerandoImagem ? (
-                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                    ) : (
-                      <ImageIcon className="w-3 h-3 mr-1" />
-                    )}
-                    Gerar Imagem com IA
-                  </Button>
+
                 </div>
                 
                 {formData.tipo_midia === "imagem" && formData.imagem_banner ? (
