@@ -28,6 +28,27 @@ export default function PlannerWellness() {
   const email = user?.email || "";
   const isProf = user?.tipo_usuario === "profissional" || user?.role === "admin";
 
+  // Chat Planner (sem IA)
+  const [chatStep, setChatStep] = useState(1);
+  const [ansPrev, setAnsPrev] = useState(null); // 'sim' | 'nao'
+  const [ansLastWhen, setAnsLastWhen] = useState("");
+  const [ansLastName, setAnsLastName] = useState("");
+  const [ansLastType, setAnsLastType] = useState(""); // 'procedimento' | 'tratamento'
+  const [ansSatisf, setAnsSatisf] = useState(null); // 'sim' | 'nao'
+  const [ansWants, setAnsWants] = useState(null); // 'sim' | 'nao'
+  const [ansGoal, setAnsGoal] = useState("");
+  const [ansBudget, setAnsBudget] = useState("");
+  const [saveDone, setSaveDone] = useState(false);
+
+  const detectItemType = (txt) => {
+    const t = (txt||'').toLowerCase();
+    const procedimentos = ['botox','toxina','preenchimento','skinbooster','fios','laser','peeling','ipl','radiofrequ', 'microagulhamento'];
+    const tratamentos = ['estrias','acne','melasma','manchas','flacidez','queda de cabelo','rosácea','olheiras','gordura localizada','celulite'];
+    if (procedimentos.some(k=> t.includes(k))) return 'procedimento';
+    if (tratamentos.some(k=> t.includes(k))) return 'tratamento';
+    return 'procedimento';
+  }
+
   const { data: meta = null } = useQuery({
     queryKey: ["wellness-meta", email],
     queryFn: async () => {
@@ -294,6 +315,129 @@ export default function PlannerWellness() {
             <p className="text-sm"><strong>Para pacientes:</strong> ajuda a planejar tratamentos, registrar objetivos e compartilhar com profissionais quando desejar.</p>
             <p className="text-sm"><strong>Para profissionais:</strong> permite visualizar (se autorizado) as metas do paciente e ajustar protocolos e agendas.</p>
             <p className="text-sm"><strong>Para patrocinadores:</strong> oferece visão de interesses e rotinas (de forma agregada) para ações mais relevantes.</p>
+          </CardContent>
+        </Card>
+
+        {/* Chat Planner (sem IA) */}
+        <Card className="border-2 border-emerald-200">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-emerald-700"><User className="w-5 h-5"/> Meu Planner (chat)</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Passos do chat */}
+            {chatStep === 1 && (
+              <div className="space-y-3">
+                <p className="text-sm text-gray-800">Você já realizou procedimentos ou tratamentos estéticos antes?</p>
+                <div className="flex gap-2">
+                  <Button onClick={()=>{ setAnsPrev('sim'); setChatStep(2); }} className="bg-emerald-600 hover:bg-emerald-700 text-white">Sim</Button>
+                  <Button variant="outline" onClick={()=>{ setAnsPrev('nao'); setChatStep(5); }}>Não</Button>
+                </div>
+              </div>
+            )}
+
+            {chatStep === 2 && (
+              <div className="space-y-3">
+                <p className="text-sm text-gray-800">Quanto tempo desde o último procedimento/tratamento? (dias, semanas, meses, anos)</p>
+                <div className="flex gap-2">
+                  <Input value={ansLastWhen} onChange={(e)=>setAnsLastWhen(e.target.value)} placeholder="Ex.: 3 meses" className="max-w-xs" />
+                  <Button onClick={()=> setChatStep(3)} disabled={!ansLastWhen}>Enviar</Button>
+                </div>
+              </div>
+            )}
+
+            {chatStep === 3 && (
+              <div className="space-y-3">
+                <p className="text-sm text-gray-800">Qual foi o tratamento ou procedimento realizado?</p>
+                <div className="flex gap-2">
+                  <Input value={ansLastName} onChange={(e)=> setAnsLastName(e.target.value)} placeholder="Ex.: Toxina botulínica (botox)" className="max-w-md" />
+                  <Button onClick={()=>{ const tp = detectItemType(ansLastName); setAnsLastType(tp); setChatStep(4); }} disabled={!ansLastName}>Enviar</Button>
+                </div>
+              </div>
+            )}
+
+            {chatStep === 4 && (
+              <div className="space-y-3">
+                <p className="text-sm text-gray-800">Teve um resultado satisfatório?</p>
+                <div className="flex gap-2">
+                  <Button onClick={()=>{ setAnsSatisf('sim'); setChatStep(5); }} className="bg-emerald-600 hover:bg-emerald-700 text-white">Sim</Button>
+                  <Button variant="outline" onClick={()=>{ setAnsSatisf('nao'); setChatStep(5); }}>Não</Button>
+                </div>
+              </div>
+            )}
+
+            {chatStep === 5 && (
+              <div className="space-y-3">
+                <p className="text-sm text-gray-800">Você tem vontade de realizar algum outro procedimento ou tratamento estético e com qual objetivo?</p>
+                <div className="flex gap-2">
+                  <Button onClick={()=>{ setAnsWants('sim'); setChatStep(6); }} className="bg-emerald-600 hover:bg-emerald-700 text-white">Sim</Button>
+                  <Button variant="outline" onClick={()=>{ setAnsWants('nao'); setSaveDone(false); setChatStep(0); }}>Não</Button>
+                </div>
+                {chatStep===0 && (
+                  <div className="text-sm text-gray-600">Chat encerrado. Você pode reiniciar quando quiser.</div>
+                )}
+              </div>
+            )}
+
+            {chatStep === 6 && (
+              <div className="space-y-3">
+                <p className="text-sm text-gray-800">Qual é o seu objetivo/meta?</p>
+                <div className="flex gap-2">
+                  <Input value={ansGoal} onChange={(e)=> setAnsGoal(e.target.value)} placeholder="Ex.: reduzir manchas, melhorar flacidez" className="max-w-md" />
+                  <Button onClick={()=> setChatStep(7)} disabled={!ansGoal}>Enviar</Button>
+                </div>
+              </div>
+            )}
+
+            {chatStep === 7 && (
+              <div className="space-y-3">
+                <p className="text-sm text-gray-800">Quanto está disposto(a) a investir em sua autoestima com tratamentos estéticos? (valor livre)</p>
+                <div className="flex gap-2">
+                  <Input value={ansBudget} onChange={(e)=> setAnsBudget(e.target.value)} placeholder="Ex.: R$ 800" className="max-w-xs" />
+                  <Button onClick={async ()=>{
+                    const payload = {
+                      wellness_planner: {
+                        has_prev_experience: ansPrev,
+                        last_time: ansPrev==='sim' ? ansLastWhen : '',
+                        last_item: ansPrev==='sim' ? { name: ansLastName, type: ansLastType } : null,
+                        result_satisfied: ansPrev==='sim' ? ansSatisf : null,
+                        wants_other: ansWants,
+                        objective: ansGoal,
+                        investment_text: ansBudget,
+                        completed_at: new Date().toISOString()
+                      },
+                      wellness_completed: true
+                    };
+                    try {
+                      await base44.auth.updateMe(payload);
+                      setSaveDone(true);
+                      setChatStep(8);
+                    } catch {}
+                  }} disabled={!ansBudget}>Concluir e salvar</Button>
+                </div>
+              </div>
+            )}
+
+            {chatStep === 8 && saveDone && (
+              <div className="space-y-4">
+                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded">
+                  <p className="text-sm text-emerald-900 font-semibold">Resumo do seu Planner</p>
+                  <ul className="text-sm text-emerald-900 mt-1 list-disc list-inside">
+                    <li>Experiência prévia: {ansPrev}</li>
+                    {ansPrev==='sim' && <li>Último: {ansLastName} ({ansLastType}), há {ansLastWhen} — Satisfatório: {ansSatisf}</li>}
+                    <li>Objetivo: {ansGoal}</li>
+                    <li>Investimento: {ansBudget}</li>
+                  </ul>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Button onClick={()=>{
+                    const nome = user?.full_name || '';
+                    const msg = encodeURIComponent(`Olá, tudo bem? Me chamo ${nome} e desejo agendar uma consulta de Telemedicina com base no meu planner de wellness.`);
+                    window.open(`https://wa.me/5521980343873?text=${msg}`, '_blank');
+                  }} className="bg-green-600 hover:bg-green-700 text-white">Agendar Telemedicina (WhatsApp)</Button>
+                  <Button variant="outline" onClick={()=>{ setChatStep(1); setSaveDone(false); setAnsPrev(null); setAnsLastWhen(""); setAnsLastName(""); setAnsLastType(""); setAnsSatisf(null); setAnsWants(null); setAnsGoal(""); setAnsBudget(""); }}>Recomeçar</Button>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
