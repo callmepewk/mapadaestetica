@@ -50,39 +50,7 @@ const dimensoesPorPlano = {
     diasExibicao: 60,
     posicoes: ["home_topo", "home_meio", "produtos", "mapa"]
   }
-};
-    largura: 970,
-    altura: 250,
-    descricao: "Banner Billboard (970x250px)",
-    limite: 5,
-    diasExibicao: 15,
-    posicoes: ["home_topo", "home_rodape", "sidebar"]
-  },
-  ouro: {
-    largura: 1200,
-    altura: 300,
-    descricao: "Banner Premium (1200x300px)",
-    limite: 10,
-    diasExibicao: 20,
-    posicoes: ["home_topo", "home_meio", "home_rodape", "sidebar", "blog", "produtos"]
-  },
-  diamante: {
-    largura: 1400,
-    altura: 350,
-    descricao: "Banner Destaque (1400x350px)",
-    limite: 15,
-    diasExibicao: 25,
-    posicoes: ["home_topo", "home_meio", "home_rodape", "sidebar", "blog", "produtos", "mapa"]
-  },
-  platina: {
-    largura: 1920,
-    altura: 400,
-    descricao: "Banner Full Width (1920x400px)",
-    limite: 999,
-    diasExibicao: 30,
-    posicoes: ["home_topo", "home_meio", "home_rodape", "sidebar", "blog", "produtos", "mapa"]
-  }
-};
+
 
 const posicoesDisponiveis = [
   { valor: "home_topo", label: "🏠 Home - Topo" },
