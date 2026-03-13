@@ -996,33 +996,6 @@ export default function Mapa() {
         </div>
       </div>
 
-      {/* Produtos para você */}
-      <div className="max-w-7xl mx-auto px-4 pb-2">
-        <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-2xl border shadow-sm p-6 md:p-8">
-          <div className="flex items-center justify-between gap-4 flex-wrap mb-4">
-            <div>
-              <h3 className="text-xl md:text-2xl font-bold text-gray-900">Produtos para você</h3>
-              <p className="text-sm text-gray-600">Seleção de itens e serviços em destaque perto de você</p>
-            </div>
-            <Button onClick={() => window.location.href = createPageUrl('Produtos')} variant="outline">Ver todos</Button>
-          </div>
-          <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {(produtos||[]).slice(0,8).map((p)=> (
-              <div key={p.id} className="bg-white rounded-xl border overflow-hidden hover:shadow-lg transition-all">
-                {Array.isArray(p.imagens) && p.imagens[0] ? (
-                  <img src={p.imagens[0]} alt={p.nome} className="w-full h-32 object-cover" />
-                ) : (
-                  <div className="w-full h-32 bg-gray-100 flex items-center justify-center text-gray-400">sem imagem</div>
-                )}
-                <div className="p-3">
-                  <p className="font-semibold text-gray-900 line-clamp-2 mb-1">{p.nome}</p>
-                  <p className="text-sm text-gray-600">{p.preco_texto || (p.preco ? `R$ ${Number(p.preco).toFixed(2)}` : 'Consultar')}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
 
       {/* Banner de busca manual quando sem permissão de localização */}
       {permissaoNegada && (
@@ -1283,6 +1256,41 @@ export default function Mapa() {
                 })}
               </div>
             )}
+          </div>
+        </div>
+      </div>
+
+      {/* Produtos para você (movido para depois do mapa e anúncios) */}
+      <div className="max-w-7xl mx-auto px-4 pb-2">
+        <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-2xl border shadow-sm p-6 md:p-8">
+          <div className="flex items-center justify-between gap-4 flex-wrap mb-4">
+            <div>
+              <h3 className="text-xl md:text-2xl font-bold text-gray-900">Produtos para você</h3>
+              <p className="text-sm text-gray-600">Seleção de itens e serviços em destaque perto de você</p>
+            </div>
+            <Button onClick={() => window.location.href = createPageUrl('Produtos')} variant="outline">Ver todos</Button>
+          </div>
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {(produtos||[]).slice(0,8).map((p)=> (
+              <div
+                key={p.id}
+                className="bg-white rounded-xl border overflow-hidden hover:shadow-lg transition-all cursor-pointer"
+                onClick={() => { window.location.href = createPageUrl('Produtos'); }}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === 'Enter') window.location.href = createPageUrl('Produtos'); }}
+              >
+                {Array.isArray(p.imagens) && p.imagens[0] ? (
+                  <img src={p.imagens[0]} alt={p.nome} className="w-full h-32 object-cover" />
+                ) : (
+                  <div className="w-full h-32 bg-gray-100 flex items-center justify-center text-gray-400">sem imagem</div>
+                )}
+                <div className="p-3">
+                  <p className="font-semibold text-gray-900 line-clamp-2 mb-1">{p.nome}</p>
+                  <p className="text-sm text-gray-600">{p.preco_texto || (p.preco ? `R$ ${Number(p.preco).toFixed(2)}` : 'Consultar')}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

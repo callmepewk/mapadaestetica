@@ -167,7 +167,7 @@ export default function Produtos() {
 
   const produtosFiltrados = todosProdutos.filter(produto => {
     const isExclusivo = !!(produto.requer_assinatura || produto.mostrar_tag_clube || produto.beauty_club_exclusivo);
-    const matchPlanoFiltro = planoFiltro === 'todos' || (produto.plano_minimo || 'free') === planoFiltro;
+    const matchPlanoFiltro = true;
 
     // Gating por Beauty Club quando aplicável
     if (isExclusivo && produto.beauty_club_minimo) {
@@ -300,7 +300,7 @@ export default function Produtos() {
       return;
     }
     if (servico.preco === 0 || !servico.preco || servico.requer_assinatura) {
-      navigate(createPageUrl("SobreNos"));
+      window.open('https://clubdabeleza.com/plans', '_blank');
       return;
     }
     handleAdicionarAoCarrinho(servico);
@@ -453,14 +453,14 @@ export default function Produtos() {
                   className="border-2"
                 />
 
-                <Select value={categoriaFiltro} onValueChange={setCategoriaFiltro}>
+                <Select value={tipoBusca} onValueChange={setTipoBusca}>
                   <SelectTrigger className="border-2">
-                    <SelectValue placeholder="Todas as categorias" />
+                    <SelectValue placeholder="Tipo de itens" />
                   </SelectTrigger>
                   <SelectContent>
-                    {categoriasParaFiltro.map((cat) => (
-                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                    ))}
+                    <SelectItem value="todos">Todos</SelectItem>
+                    <SelectItem value="produtos">Produtos</SelectItem>
+                    <SelectItem value="servicos">Serviços</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -487,20 +487,7 @@ export default function Produtos() {
                  </SelectContent>
                 </Select>
 
-                <Select value={planoFiltro} onValueChange={setPlanoFiltro}>
-                  <SelectTrigger className="border-2">
-                    <SelectValue placeholder="Plano mínimo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="todos">Todos Planos</SelectItem>
-                    <SelectItem value="free">Free</SelectItem>
-                    <SelectItem value="lite">Lite</SelectItem>
-                    <SelectItem value="basico">Básico</SelectItem>
-                    <SelectItem value="pro">Pro</SelectItem>
-                    <SelectItem value="prime">Prime</SelectItem>
-                    <SelectItem value="premium">Premium</SelectItem>
-                  </SelectContent>
-                </Select>
+
                 </div>
 
                 {/* Faixa de pontos */}
@@ -521,6 +508,10 @@ export default function Produtos() {
                       <SelectItem value="20000-50000">20.000–50.000</SelectItem>
                     </SelectContent>
                   </Select>
+                  <div className="mt-2 text-xs text-gray-600 space-y-1">
+                    <p><strong>O que é isso?</strong> Este filtro mostra itens resgatáveis por pontos. A faixa representa o <em>número de pontos necessários</em> para trocar pelo item.</p>
+                    <p>Exemplos: 0–100 = exige até 100 pontos para resgate; 1.000–2.000 = exige entre 1.000 e 2.000 pontos. Itens sem pontos definidos não aparecem quando uma faixa é selecionada.</p>
+                  </div>
                 </div>
 
                 {/* Debug info para admin */}
@@ -753,9 +744,9 @@ export default function Produtos() {
                             size="sm"
                             onClick={() => {
                               if (isExclusivoClube) {
-                                navigate(createPageUrl("SobreNos"));
+                                window.open('https://clubdabeleza.com/plans', '_blank');
                               } else if (produto.categoria === "Serviços Contratáveis" || produto.categoria === "Serviços para Pacientes") {
-                               handleAgendar(produto);
+                                handleAgendar(produto);
                               } else {
                                 handleAdicionarAoCarrinho(produto);
                               }
