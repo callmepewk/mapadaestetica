@@ -1,12 +1,11 @@
-# 🗺️ Mapa da Estética
+# Mapa da Estética
 
 Plataforma digital de mapeamento, conexão e inteligência de mercado para o setor de estética e saúde integrativa.
 
 🌐 Produção: https://mapa-da-estetica.base44.app
 
 ---
-
-# 🎯 1. Visão Estratégica
+1. Visão Estratégica
 
 O Mapa da Estética é uma infraestrutura digital criada para:
 
@@ -24,7 +23,7 @@ A plataforma é projetada para escalar como:
 
 ---
 
-# 🏗️ 2. Arquitetura Técnica
+# 2. Arquitetura Técnica
 
 ## Stack Principal
 
@@ -50,7 +49,7 @@ Frontend desacoplado com:
 
 ---
 
-# 📂 3. Estrutura de Código
+#  3. Estrutura de Código
 
 
 src/
@@ -70,7 +69,7 @@ Arquitetura baseada em:
 
 ---
 
-# 👥 4. Perfis de Usuário
+# 4. Perfis de Usuário
 
 - Visitante
 - Profissional cadastrado
@@ -79,7 +78,7 @@ Arquitetura baseada em:
 
 ---
 
-# 🌍 5. Funcionalidades Atuais
+#  5. Funcionalidades Atuais
 
 - Cadastro de profissionais
 - Visualização de perfis
@@ -89,7 +88,7 @@ Arquitetura baseada em:
 
 ---
 
-# 📈 6. Direcionamento de Escala
+#  6. Direcionamento de Escala
 
 Curto Prazo:
 
@@ -112,7 +111,7 @@ Longo Prazo:
 
 ---
 
-# 🔐 7. Segurança
+#  7. Segurança
 
 - Controle de sessão
 - Restrição por perfil
@@ -121,7 +120,7 @@ Longo Prazo:
 
 ---
 
-# 🚀 8. Deploy
+#  8. Deploy
 
 Hospedagem atual via Base44.
 
@@ -130,7 +129,7 @@ Infraestrutura gerenciada.
 
 ---
 
-# 🗄️ 9. Evolução de Infraestrutura
+#  9. Evolução de Infraestrutura
 
 Atualmente:
 
@@ -146,7 +145,7 @@ Futuro:
 
 ---
 
-# 📊 10. Governança Técnica
+#  10. Governança Técnica
 
 Modelo preparado para:
 
