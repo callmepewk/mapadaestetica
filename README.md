@@ -1,162 +1,163 @@
-# Mapa da Estética
+# Mapa da Estética — Digital Platform for Aesthetic Market Intelligence
 
-Plataforma digital de mapeamento, conexão e inteligência de mercado para o setor de estética e saúde integrativa.
+## Overview
 
-🌐 Produção: https://mapa-da-estetica.base44.app
+Mapa da Estética is a digital platform designed to map, structure, and connect the aesthetic and integrative health ecosystem.  
 
----
-1. Visão Estratégica
+It functions as a scalable infrastructure for professional discovery, market organization, and data centralization, enabling both users and businesses to interact within a unified environment.
 
-O Mapa da Estética é uma infraestrutura digital criada para:
+The platform is built with a long-term vision of evolving into a data-driven ecosystem, combining directory services, marketplace capabilities, and market intelligence.
 
-- Mapear profissionais e clínicas
-- Centralizar informações do setor
-- Conectar usuários e especialistas
-- Servir como base de dados estratégica do ecossistema estético
-
-A plataforma é projetada para escalar como:
-
-- Diretório inteligente
-- Marketplace de serviços
-- Hub de conteúdo
-- Plataforma de dados setoriais
+Production environment: https://mapa-da-estetica.base44.app
 
 ---
 
-# 2. Arquitetura Técnica
+## Strategic Vision
 
-## Stack Principal
+The platform was designed to support:
 
-- React
-- Vite
-- TailwindCSS
-- Context API
-- Integração Base44
-- Estrutura modular de componentes
-- Arquitetura SPA (Single Page Application)
+- Mapping of professionals and clinics  
+- Centralization of sector information  
+- Connection between users and specialists  
+- Creation of a structured and scalable market database  
 
----
+It is positioned to evolve into:
 
-## Modelo Arquitetural
-
-Frontend desacoplado com:
-
-- Camada de UI
-- Camada de estado global
-- Camada de integração API
-- Sistema de autenticação
-- Controle de acesso por perfil
+- Intelligent service directory  
+- Service marketplace  
+- Content and knowledge hub  
+- Market intelligence platform  
 
 ---
 
-#  3. Estrutura de Código
+## Technical Architecture
 
+### Core Stack
 
-src/
-├── api/
-├── components/
-├── hooks/
-├── lib/
-├── pages/
-└── utils/
-
-
-Arquitetura baseada em:
-
-- Componentização granular
-- Separação de responsabilidades
-- Modularização por domínio
+- React  
+- Vite  
+- TailwindCSS  
+- Context API  
+- Base44 integration  
+- Modular component architecture  
+- Single Page Application (SPA)  
 
 ---
 
-# 4. Perfis de Usuário
+### Architectural Model
 
-- Visitante
-- Profissional cadastrado
-- Administrador
-- Usuário premium (futuro)
+The system follows a decoupled frontend architecture composed of:
 
----
+- UI Layer  
+- Global State Management  
+- API Integration Layer  
+- Authentication System  
+- Role-based Access Control  
 
-#  5. Funcionalidades Atuais
-
-- Cadastro de profissionais
-- Visualização de perfis
-- Página institucional
-- Sistema de navegação modular
-- Painel administrativo básico
+This structure ensures scalability, maintainability, and flexibility for future integrations.
 
 ---
 
-#  6. Direcionamento de Escala
 
-Curto Prazo:
+The architecture is based on:
 
-- Otimização SEO
-- Indexação por região
-- Sistema de planos
-
-Médio Prazo:
-
-- Integração com marketplace
-- Sistema de avaliações
-- Dashboard analítico
-
-Longo Prazo:
-
-- Banco de dados setorial
-- API pública
-- Inteligência de mercado
-- Relatórios estratégicos
+- Granular componentization  
+- Clear separation of concerns  
+- Domain-oriented modularization  
 
 ---
 
-#  7. Segurança
+## User Roles
 
-- Controle de sessão
-- Restrição por perfil
-- Estrutura preparada para feature flags
-- Ambiente gerenciado via Base44
-
----
-
-#  8. Deploy
-
-Hospedagem atual via Base44.
-
-Deploy automatizado.
-Infraestrutura gerenciada.
+- Visitor  
+- Registered Professional  
+- Administrator  
+- Premium User (planned)  
 
 ---
 
-#  9. Evolução de Infraestrutura
+## Current Features
 
-Atualmente:
-
-- Ambiente gerenciado
-- Escalabilidade sob demanda
-
-Futuro:
-
-- Banco externo (Supabase/PostgreSQL dedicado)
-- CDN (Cloudflare)
-- Separação API / Frontend
-- Arquitetura híbrida
+- Professional registration system  
+- Profile visualization  
+- Institutional pages  
+- Modular navigation system  
+- Basic administrative panel  
 
 ---
 
-#  10. Governança Técnica
+## Scalability Roadmap
 
-Modelo preparado para:
+### Short Term
 
-- Versionamento Git
-- Migração para VPS futura
-- Modularização de serviços
-- Integração com outros sistemas do ecossistema
+- SEO optimization  
+- Regional indexing  
+- Subscription plans  
+
+### Mid Term
+
+- Marketplace integration  
+- Review and rating system  
+- Analytical dashboard  
+
+### Long Term
+
+- Sector-specific database  
+- Public API  
+- Market intelligence layer  
+- Strategic reporting tools  
 
 ---
 
-# 🛡️ 11. Licença
+## Security
 
-Projeto privado.
-Uso restrito ao ecossistema Mapa da Estética.
+- Session management  
+- Role-based access restrictions  
+- Feature-ready structure for feature flags  
+- Managed environment via Base44  
+
+---
+
+## Infrastructure & Deployment
+
+Current setup:
+
+- Managed hosting via Base44  
+- Automated deployment pipeline  
+- On-demand scalability  
+
+Future evolution:
+
+- Dedicated database (Supabase / PostgreSQL)  
+- CDN integration (Cloudflare)  
+- Backend/API separation  
+- Hybrid architecture  
+
+---
+
+## Technical Governance
+
+The platform is structured to support:
+
+- Version control via Git  
+- Future migration to VPS infrastructure  
+- Service modularization  
+- Integration with ecosystem products  
+
+---
+
+## Why This Project Matters
+
+Mapa da Estética represents the design and implementation of a scalable digital infrastructure for a fragmented market.  
+
+It demonstrates the ability to build platforms that go beyond simple applications, focusing on ecosystem creation, data structuring, and long-term market intelligence.
+
+---
+
+## Author
+
+Pedro Henrique Brezolin de Freitas  
+Chief Technology Officer (CTO)  
+
+Specialized in scalable systems, platform architecture, and AI-driven solutions
+
