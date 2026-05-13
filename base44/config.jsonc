@@ -1,0 +1,9 @@
+{
+  "name": "Mapa da Est\u00e9tica ",
+  "site": {
+    "installCommand": "npm install",
+    "buildCommand": "npm run build",
+    "serveCommand": "npm run dev",
+    "outputDirectory": "./dist"
+  }
+}
