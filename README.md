@@ -1,163 +1,220 @@
-# Mapa da Estética — Digital Platform for Aesthetic Market Intelligence
-
-## Overview
-
-Mapa da Estética is a digital platform designed to map, structure, and connect the aesthetic and integrative health ecosystem.  
-
-It functions as a scalable infrastructure for professional discovery, market organization, and data centralization, enabling both users and businesses to interact within a unified environment.
-
-The platform is built with a long-term vision of evolving into a data-driven ecosystem, combining directory services, marketplace capabilities, and market intelligence.
-
-Production environment: https://mapa-da-estetica.base44.app
+# **Mapa da Estética — Plataforma Digital de Inteligência de Mercado Estético**
 
 ---
 
-## Strategic Vision
+## **1. Visão Geral**
 
-The platform was designed to support:
+O **Mapa da Estética** é uma plataforma digital desenvolvida com o objetivo de mapear, estruturar e conectar o ecossistema da estética e da saúde integrativa no Brasil.
 
-- Mapping of professionals and clinics  
-- Centralization of sector information  
-- Connection between users and specialists  
-- Creation of a structured and scalable market database  
+A solução atua como uma infraestrutura digital escalável para:
 
-It is positioned to evolve into:
+* descoberta de profissionais
+* organização de mercado
+* centralização de dados setoriais
+* conexão entre usuários e prestadores de serviços
 
-- Intelligent service directory  
-- Service marketplace  
-- Content and knowledge hub  
-- Market intelligence platform  
+A plataforma foi concebida com visão de longo prazo, visando evolução para um ecossistema orientado por dados, integrando diretórios, marketplace e inteligência de mercado.
 
----
-
-## Technical Architecture
-
-### Core Stack
-
-- React  
-- Vite  
-- TailwindCSS  
-- Context API  
-- Base44 integration  
-- Modular component architecture  
-- Single Page Application (SPA)  
+Ambiente de produção:
+[https://mapa-da-estetica.base44.app](https://mapa-da-estetica.base44.app)
 
 ---
 
-### Architectural Model
+## **2. Titularidade e Direitos Autorais**
 
-The system follows a decoupled frontend architecture composed of:
+Este software constitui **obra intelectual protegida**, nos termos da legislação brasileira aplicável, especialmente:
 
-- UI Layer  
-- Global State Management  
-- API Integration Layer  
-- Authentication System  
-- Role-based Access Control  
+* Lei nº 9.609/1998
+* Lei nº 9.610/1998
 
-This structure ensures scalability, maintainability, and flexibility for future integrations.
+### **Declaração de autoria**
+
+A autoria integral do sistema, incluindo:
+
+* arquitetura de software
+* lógica de funcionamento
+* estrutura de dados
+* desenvolvimento técnico
+* organização de componentes
+* integração de sistemas
+
+é de titularidade de:
+
+**Pedro Henrique Brezolin de Freitas**
+
+---
+
+### **Condições de uso**
+
+Não há, até a presente data:
+
+* cessão de direitos autorais
+* licenciamento formal do sistema
+* autorização para exploração comercial por terceiros
+
+Qualquer utilização, reprodução, modificação ou exploração econômica sem autorização expressa do autor constitui:
+
+- violação de direitos autorais
+- passível de responsabilização civil e judicial
+
+---
+
+## **3. Visão Estratégica**
+
+A plataforma foi projetada para suportar:
+
+* mapeamento de profissionais e clínicas
+* centralização de informações do setor
+* conexão entre usuários e especialistas
+* construção de base de dados estruturada e escalável
+
+Evolução prevista:
+
+* diretório inteligente de serviços
+* marketplace especializado
+* hub de conteúdo e conhecimento
+* plataforma de inteligência de mercado
+
+---
+
+## **4. Arquitetura Técnica**
+
+### **Stack Principal**
+
+* React
+* Vite
+* TailwindCSS
+* Context API
+* Integração com Base44
+* Arquitetura modular baseada em componentes
+* Aplicação Single Page (SPA)
+
+---
+
+### **Modelo Arquitetural**
+
+O sistema segue arquitetura frontend desacoplada, composta por:
+
+* Camada de Interface (UI Layer)
+* Gerenciamento de Estado Global
+* Camada de Integração com APIs
+* Sistema de Autenticação
+* Controle de Acesso baseado em Papéis (RBAC)
+
+---
+
+### **Princípios Arquiteturais**
+
+* Componentização granular
+* Separação clara de responsabilidades
+* Modularização orientada a domínio
+
+---
+
+## **5. Perfis de Usuário**
+
+* Visitante
+* Profissional cadastrado
+* Administrador
+* Usuário Premium (em desenvolvimento)
+
+---
+
+## **6. Funcionalidades Atuais**
+
+* Sistema de cadastro de profissionais
+* Visualização de perfis
+* Páginas institucionais
+* Navegação modular
+* Painel administrativo básico
+
+---
+
+## **7. Roadmap de Escalabilidade**
+
+### **Curto Prazo**
+
+* Otimização para SEO
+* Indexação regional
+* Planos de assinatura
+
+### **Médio Prazo**
+
+* Integração com marketplace
+* Sistema de avaliações
+* Dashboard analítico
+
+### **Longo Prazo**
+
+* Base de dados setorial robusta
+* API pública
+* Camada de inteligência de mercado
+* Ferramentas estratégicas de análise
+
+---
+
+## **8. Segurança**
+
+* Gerenciamento de sessão
+* Controle de acesso por perfil
+* Estrutura preparada para feature flags
+* Ambiente gerenciado via Base44
+
+---
+
+## **9. Infraestrutura e Deploy**
+
+### **Configuração Atual**
+
+* Hospedagem gerenciada via Base44
+* Pipeline de deploy automatizado
+* Escalabilidade sob demanda
+
+### **Evolução Planejada**
+
+* Banco de dados dedicado (PostgreSQL / Supabase)
+* Integração com CDN (Cloudflare)
+* Separação backend/API
+* Arquitetura híbrida
+
+---
+
+## **10. Governança Técnica**
+
+A plataforma foi estruturada para suportar:
+
+* controle de versão via Git
+* rastreabilidade de alterações
+* manutenção evolutiva
+* integração com outros produtos do ecossistema
+
+---
+
+## **11. Relevância do Projeto**
+
+O Mapa da Estética representa a construção de uma infraestrutura digital escalável voltada a um mercado fragmentado.
+
+O projeto demonstra:
+
+* capacidade de estruturação de sistemas complexos
+* organização de dados setoriais
+* criação de ecossistemas digitais
+* visão de longo prazo orientada a inteligência de mercado
+
+---
+
+## **12. Autor**
+
+**Pedro Henrique Brezolin de Freitas**
+Chief Technology Officer (CTO)
+
+Especialista em:
+
+* arquitetura de sistemas escaláveis
+* desenvolvimento de plataformas digitais
+* soluções orientadas a dados e inteligência artificial
 
 ---
 
 
-The architecture is based on:
-
-- Granular componentization  
-- Clear separation of concerns  
-- Domain-oriented modularization  
-
----
-
-## User Roles
-
-- Visitor  
-- Registered Professional  
-- Administrator  
-- Premium User (planned)  
-
----
-
-## Current Features
-
-- Professional registration system  
-- Profile visualization  
-- Institutional pages  
-- Modular navigation system  
-- Basic administrative panel  
-
----
-
-## Scalability Roadmap
-
-### Short Term
-
-- SEO optimization  
-- Regional indexing  
-- Subscription plans  
-
-### Mid Term
-
-- Marketplace integration  
-- Review and rating system  
-- Analytical dashboard  
-
-### Long Term
-
-- Sector-specific database  
-- Public API  
-- Market intelligence layer  
-- Strategic reporting tools  
-
----
-
-## Security
-
-- Session management  
-- Role-based access restrictions  
-- Feature-ready structure for feature flags  
-- Managed environment via Base44  
-
----
-
-## Infrastructure & Deployment
-
-Current setup:
-
-- Managed hosting via Base44  
-- Automated deployment pipeline  
-- On-demand scalability  
-
-Future evolution:
-
-- Dedicated database (Supabase / PostgreSQL)  
-- CDN integration (Cloudflare)  
-- Backend/API separation  
-- Hybrid architecture  
-
----
-
-## Technical Governance
-
-The platform is structured to support:
-
-- Version control via Git  
-- Future migration to VPS infrastructure  
-- Service modularization  
-- Integration with ecosystem products  
-
----
-
-## Why This Project Matters
-
-Mapa da Estética represents the design and implementation of a scalable digital infrastructure for a fragmented market.  
-
-It demonstrates the ability to build platforms that go beyond simple applications, focusing on ecosystem creation, data structuring, and long-term market intelligence.
-
----
-
-## Author
-
-Pedro Henrique Brezolin de Freitas  
-Chief Technology Officer (CTO)  
-
-Specialized in scalable systems, platform architecture, and AI-driven solutions
 
