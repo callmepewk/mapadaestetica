@@ -181,17 +181,6 @@ export default function DetalhesAnuncio() {
     setTimeout(() => setCompartilhando(false), 2000);
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando anúncio...</p>
-        </div>
-      </div>
-    );
-  }
-
   // SE NÃO TEM USUÁRIO, MOSTRAR MODAL DE LOGIN
   // This logic is now handled by individual actions (curtir, compartilhar)
   // and removed from the main render flow for better user experience.
@@ -278,6 +267,17 @@ export default function DetalhesAnuncio() {
     script.text = JSON.stringify(ld);
     document.head.appendChild(script);
   }, [anuncio]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando anúncio...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (erro || !anuncio) {
     return (

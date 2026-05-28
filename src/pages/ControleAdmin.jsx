@@ -3110,10 +3110,10 @@ Incompletos: ${todosUsuariosFiltrados.filter(u => !u.cadastro_completo).length}
                               <SelectItem value="vip">VIP</SelectItem>
                             </SelectContent>
                           </Select>
-                          <Button size="sm" onClick={handleBulkClubeAplicar} disabled={atualizandoClube} className="bg-purple-600 hover:bg-purple-700">
+                          <Button size="sm" onClick={async()=>{if(!selecionadosProfissionais.length)return;setAtualizandoClube(true);try{await Promise.all(selecionadosProfissionais.map(id=>base44.entities.User.update(id,{plano_clube_beleza:planoClubeBulk,exibir_selo_clube:true})));queryClient.invalidateQueries({ queryKey:['usuarios-profissionais'] });queryClient.invalidateQueries({ queryKey:['todos-usuarios'] });setSelecionadosProfissionais([]);setSucesso('Clube da Beleza aplicado aos selecionados!');setTimeout(()=>setSucesso(null),3000);}catch(e){setErro('Falha ao aplicar Clube da Beleza em massa.');setTimeout(()=>setErro(null),3000);}finally{setAtualizandoClube(false);}}} disabled={atualizandoClube} className="bg-purple-600 hover:bg-purple-700">
                             Aplicar Clube + Selo
                           </Button>
-                          <Button size="sm" variant="outline" onClick={handleBulkClubeRemover} disabled={atualizandoClube} className="border-red-300 text-red-700">
+                          <Button size="sm" variant="outline" onClick={async()=>{if(!selecionadosProfissionais.length)return;setAtualizandoClube(true);try{await Promise.all(selecionadosProfissionais.map(id=>base44.entities.User.update(id,{plano_clube_beleza:'nenhum',exibir_selo_clube:false})));queryClient.invalidateQueries({ queryKey:['usuarios-profissionais'] });queryClient.invalidateQueries({ queryKey:['todos-usuarios'] });setSelecionadosProfissionais([]);setSucesso('Clube da Beleza removido dos selecionados!');setTimeout(()=>setSucesso(null),3000);}catch(e){setErro('Falha ao remover Clube da Beleza em massa.');setTimeout(()=>setErro(null),3000);}finally{setAtualizandoClube(false);}}} disabled={atualizandoClube} className="border-red-300 text-red-700">
                             Remover Clube/Selo
                           </Button>
                         </div>
