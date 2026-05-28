@@ -1,0 +1,37 @@
+{
+  "name": "TermoBusca",
+  "type": "object",
+  "properties": {
+    "termo": {
+      "type": "string",
+      "description": "Consulta popular/t\u00e9cnica/marca/dor"
+    },
+    "tipo": {
+      "type": "string",
+      "enum": [
+        "popular",
+        "tecnico",
+        "marca",
+        "dor"
+      ]
+    },
+    "procedimento_id": {
+      "type": "string",
+      "description": "ID do ProcedimentoMestre relacionado"
+    },
+    "peso": {
+      "type": "number",
+      "default": 1,
+      "description": "Peso/relev\u00e2ncia do termo"
+    },
+    "ativo": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "termo",
+    "tipo",
+    "procedimento_id"
+  ]
+}

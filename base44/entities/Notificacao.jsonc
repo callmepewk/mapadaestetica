@@ -1,0 +1,56 @@
+{
+  "name": "Notificacao",
+  "type": "object",
+  "properties": {
+    "usuario_email": {
+      "type": "string",
+      "description": "Email do usu\u00e1rio que receber\u00e1 a notifica\u00e7\u00e3o"
+    },
+    "tipo": {
+      "type": "string",
+      "enum": [
+        "nova_pergunta",
+        "pergunta_respondida",
+        "verificacao_disponibilidade",
+        "comunicado_oficial"
+      ],
+      "description": "Tipo da notifica\u00e7\u00e3o"
+    },
+    "titulo": {
+      "type": "string",
+      "description": "T\u00edtulo da notifica\u00e7\u00e3o"
+    },
+    "mensagem": {
+      "type": "string",
+      "description": "Mensagem da notifica\u00e7\u00e3o"
+    },
+    "anuncio_id": {
+      "type": "string",
+      "description": "ID do an\u00fancio relacionado"
+    },
+    "pergunta_id": {
+      "type": "string",
+      "description": "ID da pergunta relacionada"
+    },
+    "lida": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se a notifica\u00e7\u00e3o foi lida"
+    },
+    "data_leitura": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data que foi lida"
+    },
+    "link_acao": {
+      "type": "string",
+      "description": "Link para a\u00e7\u00e3o relacionada"
+    }
+  },
+  "required": [
+    "usuario_email",
+    "tipo",
+    "titulo",
+    "mensagem"
+  ]
+}

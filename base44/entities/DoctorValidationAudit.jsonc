@@ -1,0 +1,53 @@
+{
+  "name": "DoctorValidationAudit",
+  "type": "object",
+  "properties": {
+    "anuncio_id": {
+      "type": "string",
+      "description": "ID do an\u00fancio validado"
+    },
+    "profissional_nome": {
+      "type": "string"
+    },
+    "profissional_cidade": {
+      "type": "string"
+    },
+    "profissional_estado": {
+      "type": "string"
+    },
+    "matched_doctor_id": {
+      "type": "string",
+      "description": "ID do registro Doctor correspondente"
+    },
+    "matched_doctor_nome": {
+      "type": "string"
+    },
+    "matched_doctor_crm": {
+      "type": "string"
+    },
+    "matched_doctor_uf": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "valido",
+        "inconsistente",
+        "nao_encontrado"
+      ],
+      "default": "nao_encontrado"
+    },
+    "motivo": {
+      "type": "string"
+    },
+    "run_id": {
+      "type": "string",
+      "description": "PipelineRun relacionado (opcional)"
+    }
+  },
+  "required": [
+    "anuncio_id",
+    "profissional_nome",
+    "status"
+  ]
+}

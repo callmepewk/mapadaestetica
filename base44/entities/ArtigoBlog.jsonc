@@ -1,0 +1,117 @@
+{
+  "name": "ArtigoBlog",
+  "type": "object",
+  "properties": {
+    "titulo": {
+      "type": "string",
+      "description": "T\u00edtulo do artigo"
+    },
+    "resumo": {
+      "type": "string",
+      "description": "Resumo do artigo"
+    },
+    "conteudo": {
+      "type": "string",
+      "description": "Conte\u00fado completo do artigo"
+    },
+    "categoria": {
+      "type": "string",
+      "enum": [
+        "Est\u00e9tica Facial",
+        "Est\u00e9tica Corporal",
+        "Cuidados com a Pele",
+        "Tratamentos",
+        "Tend\u00eancias",
+        "Novidades",
+        "Harmoniza\u00e7\u00e3o Facial"
+      ],
+      "description": "Categoria do artigo"
+    },
+    "tipo": {
+      "type": "string",
+      "enum": [
+        "profissional",
+        "geral"
+      ],
+      "description": "Tipo do artigo - para profissionais ou p\u00fablico geral"
+    },
+    "link_externo": {
+      "type": "string",
+      "description": "URL externa para onde o artigo redireciona (artigos gerais)"
+    },
+    "tempo_leitura": {
+      "type": "number",
+      "description": "Tempo de leitura em minutos"
+    },
+    "imagem_capa": {
+      "type": "string",
+      "description": "URL da imagem de capa"
+    },
+    "visualizacoes": {
+      "type": "number",
+      "default": 0,
+      "description": "N\u00famero de visualiza\u00e7\u00f5es"
+    },
+    "curtidas": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Array com emails dos usu\u00e1rios que curtiram"
+    },
+    "total_curtidas": {
+      "type": "number",
+      "default": 0,
+      "description": "Total de curtidas"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "rascunho",
+        "publicado",
+        "programado"
+      ],
+      "default": "publicado"
+    },
+    "data_publicacao": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data e hora de publica\u00e7\u00e3o"
+    },
+    "links_patrocinador": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "titulo": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "whatsapp",
+              "instagram",
+              "facebook",
+              "site",
+              "loja",
+              "outro"
+            ]
+          }
+        }
+      },
+      "default": [],
+      "description": "Links do patrocinador"
+    }
+  },
+  "required": [
+    "titulo",
+    "resumo",
+    "categoria",
+    "tempo_leitura",
+    "tipo"
+  ]
+}

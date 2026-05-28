@@ -1,0 +1,29 @@
+{
+  "name": "ProfessionalCategory",
+  "type": "object",
+  "properties": {
+    "nome": {
+      "type": "string"
+    },
+    "conselho": {
+      "type": "string",
+      "description": "Conselho regulador (ex.: CFM, CFO, CFBM, COFEN, CREFITO, etc.)"
+    },
+    "escopo": {
+      "type": "string",
+      "description": "Escopo geral de atua\u00e7\u00e3o"
+    },
+    "procedimentos_permitidos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    }
+  },
+  "required": [
+    "nome",
+    "conselho",
+    "escopo"
+  ]
+}

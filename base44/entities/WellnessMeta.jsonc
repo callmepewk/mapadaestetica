@@ -1,0 +1,33 @@
+{
+  "name": "WellnessMeta",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string"
+    },
+    "metas": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "objetivos": {
+      "type": "string"
+    },
+    "areas_prioritarias": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "compartilhar_com_profissionais": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "user_email"
+  ]
+}

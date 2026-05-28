@@ -1,0 +1,33 @@
+{
+  "name": "RadarUsage",
+  "type": "object",
+  "properties": {
+    "usuario_email": {
+      "type": "string"
+    },
+    "tipo": {
+      "type": "string",
+      "enum": [
+        "tendencias",
+        "frequencia"
+      ]
+    },
+    "mes": {
+      "type": "string",
+      "description": "YYYY-MM"
+    },
+    "acessos": {
+      "type": "number",
+      "default": 0
+    },
+    "relatorios": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "usuario_email",
+    "tipo",
+    "mes"
+  ]
+}

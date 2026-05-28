@@ -1,0 +1,53 @@
+{
+  "name": "SolicitacaoInclusaoLoja",
+  "type": "object",
+  "properties": {
+    "produto_id": {
+      "type": "string",
+      "description": "ID do Produto/Servi\u00e7o"
+    },
+    "produto_nome": {
+      "type": "string"
+    },
+    "solicitante_email": {
+      "type": "string"
+    },
+    "destinos": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "produtos",
+          "loja_pontos"
+        ]
+      },
+      "default": []
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pendente",
+        "aprovado",
+        "rejeitado"
+      ],
+      "default": "pendente"
+    },
+    "preco_referencia": {
+      "type": "number",
+      "description": "Pre\u00e7o em R$ do item no momento da solicita\u00e7\u00e3o"
+    },
+    "pontos_sugeridos": {
+      "type": "number",
+      "description": "Sugest\u00e3o auto: 1 real = 1 ponto"
+    },
+    "observacoes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "produto_id",
+    "produto_nome",
+    "solicitante_email",
+    "destinos"
+  ]
+}

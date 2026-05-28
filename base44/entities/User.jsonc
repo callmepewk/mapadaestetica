@@ -1,0 +1,47 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "profissao": {
+      "type": "string",
+      "enum": [
+        "medico",
+        "dermatologista",
+        "biomedico_esteta",
+        "dentista_harmonizador",
+        "enfermeiro_esteta",
+        "farmaceutico_esteta",
+        "fisioterapeuta_dermatofuncional",
+        "esteticista",
+        "cosmetologo",
+        "terapeuta_capilar",
+        "especialista_micropigmentacao",
+        "especialista_lash_design",
+        "especialista_depilacao",
+        "massoterapeuta",
+        "designer_sobrancelhas",
+        "tecnico_estetica",
+        "outra"
+      ],
+      "description": "Profiss\u00e3o principal do profissional de est\u00e9tica"
+    },
+    "profissao_outro": {
+      "type": "string",
+      "description": "Campo livre quando a profiss\u00e3o for 'outra'"
+    },
+    "tempo_formacao_anos": {
+      "type": "number",
+      "default": 0,
+      "description": "Tempo de forma\u00e7\u00e3o (anos)"
+    },
+    "estabelecimento_principal": {
+      "type": "string",
+      "description": "Nome do local principal de atendimento (cl\u00ednica/consult\u00f3rio)"
+    }
+  },
+  "required": [
+    "profissao",
+    "profissao_outro",
+    "estabelecimento_principal"
+  ]
+}

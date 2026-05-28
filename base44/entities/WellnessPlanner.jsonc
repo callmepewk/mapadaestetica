@@ -1,0 +1,57 @@
+{
+  "name": "WellnessPlanner",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email do usu\u00e1rio (paciente)"
+    },
+    "procedures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string"
+          },
+          "faixa": {
+            "type": "string",
+            "enum": [
+              "ate300",
+              "300-600",
+              "600-1000",
+              "1000+",
+              "custom"
+            ]
+          },
+          "valor_custom": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "nome"
+        ]
+      },
+      "default": []
+    },
+    "cidade": {
+      "type": "string"
+    },
+    "distancia_km": {
+      "type": "number"
+    },
+    "preferencia": {
+      "type": "string",
+      "enum": [
+        "profissional",
+        "clinica",
+        "indiferente"
+      ],
+      "default": "indiferente"
+    }
+  },
+  "required": [
+    "user_email",
+    "procedures"
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "name": "AtendimentoPontos",
+  "type": "object",
+  "properties": {
+    "profissional_email": {
+      "type": "string",
+      "description": "Email do profissional que realizou o atendimento"
+    },
+    "cliente_nome": {
+      "type": "string"
+    },
+    "cliente_email": {
+      "type": "string"
+    },
+    "origem": {
+      "type": "string",
+      "enum": [
+        "beautybanking",
+        "manual"
+      ],
+      "default": "beautybanking"
+    },
+    "tratamento_id": {
+      "type": "string",
+      "description": "ID interno do tratamento do hub"
+    },
+    "tratamento_nome": {
+      "type": "string"
+    },
+    "pontos_cobrados": {
+      "type": "number",
+      "description": "Pontos usados pelo cliente"
+    },
+    "valor_equivalente": {
+      "type": "number",
+      "description": "Valor em R$ repassado ao profissional (informativo)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "iniciado",
+        "concluido",
+        "cancelado"
+      ],
+      "default": "concluido"
+    },
+    "observacoes": {
+      "type": "string"
+    },
+    "data_atendimento": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "profissional_email",
+    "tratamento_nome",
+    "pontos_cobrados",
+    "status"
+  ]
+}

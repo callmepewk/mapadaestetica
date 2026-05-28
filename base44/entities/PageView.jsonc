@@ -1,0 +1,26 @@
+{
+  "name": "PageView",
+  "type": "object",
+  "properties": {
+    "route": {
+      "type": "string",
+      "description": "P\u00e1gina/rota (ex: Inicio)"
+    },
+    "referrer": {
+      "type": "string"
+    },
+    "user_agent": {
+      "type": "string"
+    },
+    "user_email": {
+      "type": "string"
+    },
+    "session_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "route",
+    "session_id"
+  ]
+}

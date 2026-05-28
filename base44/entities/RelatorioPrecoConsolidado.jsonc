@@ -1,0 +1,113 @@
+{
+  "name": "RelatorioPrecoConsolidado",
+  "type": "object",
+  "properties": {
+    "mes_referencia": {
+      "type": "string",
+      "description": "M\u00eas de refer\u00eancia no formato YYYY-MM"
+    },
+    "procedimento": {
+      "type": "string",
+      "description": "Nome do procedimento/servi\u00e7o"
+    },
+    "categoria": {
+      "type": "string",
+      "description": "Categoria do servi\u00e7o"
+    },
+    "cidade": {
+      "type": "string",
+      "description": "Cidade (opcional para relat\u00f3rios por cidade)"
+    },
+    "estado": {
+      "type": "string",
+      "description": "Estado (opcional para relat\u00f3rios por estado)"
+    },
+    "quantidade_registros": {
+      "type": "number",
+      "description": "Quantidade de registros analisados"
+    },
+    "valor_minimo": {
+      "type": "number",
+      "description": "Valor m\u00ednimo encontrado"
+    },
+    "valor_maximo": {
+      "type": "number",
+      "description": "Valor m\u00e1ximo encontrado"
+    },
+    "valor_medio": {
+      "type": "number",
+      "description": "Valor m\u00e9dio calculado"
+    },
+    "valor_total": {
+      "type": "number",
+      "description": "Soma total dos valores"
+    },
+    "faixa_preco_predominante": {
+      "type": "string",
+      "enum": [
+        "$",
+        "$$",
+        "$$$",
+        "$$$$",
+        "$$$$$"
+      ],
+      "description": "Faixa de pre\u00e7o mais comum"
+    },
+    "distribuicao_faixas": {
+      "type": "object",
+      "properties": {
+        "economico": {
+          "type": "number",
+          "description": "Quantidade na faixa $"
+        },
+        "moderado": {
+          "type": "number",
+          "description": "Quantidade na faixa $$"
+        },
+        "medio_alto": {
+          "type": "number",
+          "description": "Quantidade na faixa $$$"
+        },
+        "alto": {
+          "type": "number",
+          "description": "Quantidade na faixa $$$$"
+        },
+        "premium": {
+          "type": "number",
+          "description": "Quantidade na faixa $$$$$"
+        }
+      },
+      "description": "Distribui\u00e7\u00e3o por faixas de pre\u00e7o"
+    },
+    "profissionais_analisados": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Lista de emails dos profissionais inclu\u00eddos no relat\u00f3rio"
+    },
+    "tipo_relatorio": {
+      "type": "string",
+      "enum": [
+        "geral",
+        "por_cidade",
+        "por_estado",
+        "por_categoria"
+      ],
+      "description": "Tipo do relat\u00f3rio consolidado"
+    },
+    "data_geracao": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data e hora de gera\u00e7\u00e3o do relat\u00f3rio"
+    }
+  },
+  "required": [
+    "mes_referencia",
+    "procedimento",
+    "categoria",
+    "quantidade_registros",
+    "valor_medio",
+    "tipo_relatorio"
+  ]
+}

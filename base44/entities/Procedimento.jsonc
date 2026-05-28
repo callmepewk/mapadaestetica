@@ -1,0 +1,50 @@
+{
+  "name": "Procedimento",
+  "type": "object",
+  "properties": {
+    "nome": {
+      "type": "string"
+    },
+    "categoria": {
+      "type": "string",
+      "description": "Categoria da est\u00e9tica (1 de 17)"
+    },
+    "profissionais_habilitados": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "invasividade": {
+      "type": "string",
+      "enum": [
+        "leve",
+        "moderada",
+        "alta"
+      ]
+    },
+    "regioes_corpo": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "tecnologias": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "descricao": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "nome",
+    "categoria",
+    "invasividade"
+  ]
+}

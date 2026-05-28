@@ -197,28 +197,6 @@ export default function DetalhesAnuncio() {
   // and removed from the main render flow for better user experience.
   // If the user is not logged in, they can still view the ad but actions are restricted.
 
-  if (erro || !anuncio) {
-    return (
-      <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
-        <Card className="p-12 text-center max-w-md mx-4">
-          <div className="text-6xl mb-4">😕</div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">
-            {erro || "Anúncio não encontrado"}
-          </h3>
-          <p className="text-gray-600 mb-6">
-            Este anúncio não existe ou foi removido.
-          </p>
-          <Button
-            onClick={() => navigate(createPageUrl("Anuncios"))}
-            className="bg-gradient-to-r from-pink-600 to-rose-600"
-          >
-            Voltar para Anúncios
-          </Button>
-        </Card>
-      </div>
-    );
-  }
-
   // SEO & Open Graph & Structured Data
   useEffect(() => {
     if (!anuncio) return;
@@ -300,6 +278,28 @@ export default function DetalhesAnuncio() {
     script.text = JSON.stringify(ld);
     document.head.appendChild(script);
   }, [anuncio]);
+
+  if (erro || !anuncio) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
+        <Card className="p-12 text-center max-w-md mx-4">
+          <div className="text-6xl mb-4">😕</div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">
+            {erro || "Anúncio não encontrado"}
+          </h3>
+          <p className="text-gray-600 mb-6">
+            Este anúncio não existe ou foi removido.
+          </p>
+          <Button
+            onClick={() => navigate(createPageUrl("Anuncios"))}
+            className="bg-gradient-to-r from-pink-600 to-rose-600"
+          >
+            Voltar para Anúncios
+          </Button>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">

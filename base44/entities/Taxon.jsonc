@@ -1,0 +1,29 @@
+{
+  "name": "Taxon",
+  "type": "object",
+  "properties": {
+    "nivel": {
+      "type": "number",
+      "enum": [
+        1,
+        2,
+        3
+      ],
+      "description": "N\u00edvel da taxonomia (1-3)"
+    },
+    "nome": {
+      "type": "string"
+    },
+    "parent_id": {
+      "type": "string",
+      "description": "ID do Taxon pai (null para n\u00edvel 1)"
+    },
+    "descricao": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "nivel",
+    "nome"
+  ]
+}

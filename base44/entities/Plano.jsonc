@@ -1,0 +1,56 @@
+{
+  "name": "Plano",
+  "type": "object",
+  "properties": {
+    "nome": {
+      "type": "string",
+      "enum": [
+        "LIGHT",
+        "GOLD",
+        "VIP"
+      ],
+      "description": "Nome do plano"
+    },
+    "tipo": {
+      "type": "string",
+      "enum": [
+        "light",
+        "gold",
+        "vip"
+      ]
+    },
+    "preco_mensal": {
+      "type": "number",
+      "description": "Pre\u00e7o mensal do plano"
+    },
+    "beneficios": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Lista de benef\u00edcios"
+    },
+    "cor_cartao": {
+      "type": "string",
+      "description": "Cor do cart\u00e3o do plano"
+    },
+    "pontos_mensais": {
+      "type": "number",
+      "description": "Pontos creditados mensalmente"
+    },
+    "desconto_rede": {
+      "type": "string",
+      "description": "Percentual de desconto na rede parceira"
+    },
+    "destaque": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "nome",
+    "tipo",
+    "preco_mensal",
+    "beneficios"
+  ]
+}

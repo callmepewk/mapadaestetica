@@ -15,7 +15,7 @@ export const translations = {
       myPlan: "Meu Plano",
       myAds: "Meus Anúncios",
       createAd: "Cadastrar Anúncio",
-      beautyCl ub: "Clube da Beleza",
+      beautyClub: "Clube da Beleza",
       clubePlus: "Clube +",
       drBeleza: "Dr. Beleza",
       reports: "Relatórios",
@@ -257,7 +257,7 @@ export const translations = {
       published: "Publicado",
       aiAssistant: "Assistente IA",
       generateWithAI: "Gerar com IA",
-      external Sources: "Fontes Externas"
+      externalSources: "Fontes Externas"
     },
 
     // Anúncios
@@ -356,7 +356,7 @@ export const translations = {
       currentPlan: "Plano Atual",
       upgradePlan: "Fazer Upgrade",
       pointsAccumulated: "Pontos Acumulados",
-      beautyCo ins: "Beauty Coins",
+      beautyCoins: "Beauty Coins",
       referralProgram: "Programa de Indicação",
       myReferrals: "Minhas Indicações",
       referralLink: "Link de Indicação",
@@ -464,7 +464,7 @@ export const translations = {
       clear: "Limpar Carrinho",
       confirmClear: "Tem certeza que deseja limpar todo o carrinho?",
       proceedToCheckout: "Finalizar Compra",
-      continueShop ping: "Continuar Comprando",
+      continueShopping: "Continuar Comprando",
       itemAdded: "Item adicionado ao carrinho!",
       itemRemoved: "Item removido do carrinho"
     }

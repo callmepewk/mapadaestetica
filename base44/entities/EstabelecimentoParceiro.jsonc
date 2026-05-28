@@ -1,0 +1,92 @@
+{
+  "name": "EstabelecimentoParceiro",
+  "type": "object",
+  "properties": {
+    "nome": {
+      "type": "string",
+      "description": "Nome do estabelecimento"
+    },
+    "categoria": {
+      "type": "string",
+      "enum": [
+        "Sal\u00e3o de Beleza",
+        "Cl\u00ednica de Est\u00e9tica",
+        "Spa",
+        "Barbearia",
+        "Centro de Est\u00e9tica",
+        "Consult\u00f3rio",
+        "Personal Trainer",
+        "Outros"
+      ],
+      "description": "Categoria do estabelecimento"
+    },
+    "endereco": {
+      "type": "string",
+      "description": "Endere\u00e7o completo"
+    },
+    "cidade": {
+      "type": "string",
+      "description": "Cidade"
+    },
+    "estado": {
+      "type": "string",
+      "description": "Estado"
+    },
+    "latitude": {
+      "type": "number",
+      "description": "Latitude para localiza\u00e7\u00e3o no mapa"
+    },
+    "longitude": {
+      "type": "number",
+      "description": "Longitude para localiza\u00e7\u00e3o no mapa"
+    },
+    "telefone": {
+      "type": "string",
+      "description": "Telefone de contato"
+    },
+    "whatsapp": {
+      "type": "string",
+      "description": "WhatsApp"
+    },
+    "foto": {
+      "type": "string",
+      "description": "URL da foto do estabelecimento"
+    },
+    "horario_funcionamento": {
+      "type": "string",
+      "description": "Hor\u00e1rio de funcionamento"
+    },
+    "plano_desconto": {
+      "type": "string",
+      "enum": [
+        "light",
+        "gold",
+        "vip"
+      ],
+      "description": "Plano do Clube da Beleza e desconto"
+    },
+    "desconto_percentual": {
+      "type": "number",
+      "description": "Percentual de desconto oferecido"
+    },
+    "descricao": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o do estabelecimento"
+    },
+    "servicos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Lista de servi\u00e7os oferecidos"
+    }
+  },
+  "required": [
+    "nome",
+    "categoria",
+    "cidade",
+    "estado",
+    "latitude",
+    "longitude"
+  ]
+}

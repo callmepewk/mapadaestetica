@@ -1,0 +1,53 @@
+{
+  "name": "ProcedimentoCatalogo",
+  "type": "object",
+  "properties": {
+    "nome": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "string",
+      "description": "identificador can\u00f4nico em min\u00fasculas"
+    },
+    "categoria": {
+      "type": "string",
+      "enum": [
+        "facial",
+        "corporal",
+        "capilar",
+        "intimo",
+        "dermatologico",
+        "injetavel",
+        "outro"
+      ]
+    },
+    "invasividade": {
+      "type": "string",
+      "enum": [
+        "leve",
+        "moderada",
+        "alta"
+      ],
+      "default": "leve"
+    },
+    "sinonimos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "tecnologias_relacionadas": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    }
+  },
+  "required": [
+    "nome",
+    "slug",
+    "categoria"
+  ]
+}

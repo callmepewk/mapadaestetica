@@ -1,0 +1,56 @@
+{
+  "name": "Agendamento",
+  "type": "object",
+  "properties": {
+    "produto_id": {
+      "type": "string",
+      "description": "Relaciona com Produto.id"
+    },
+    "produto_nome": {
+      "type": "string"
+    },
+    "cliente_email": {
+      "type": "string"
+    },
+    "data_hora": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "reservado",
+        "pago",
+        "cancelado"
+      ],
+      "default": "reservado"
+    },
+    "valor_total": {
+      "type": "number"
+    },
+    "valor_deposito": {
+      "type": "number"
+    },
+    "deposito_confirmado": {
+      "type": "boolean",
+      "default": false
+    },
+    "endereco": {
+      "type": "string"
+    },
+    "cidade": {
+      "type": "string"
+    },
+    "estado": {
+      "type": "string"
+    },
+    "observacoes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "produto_id",
+    "data_hora",
+    "valor_deposito"
+  ]
+}

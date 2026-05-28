@@ -1,0 +1,77 @@
+{
+  "name": "PipelineRun",
+  "type": "object",
+  "properties": {
+    "uf": {
+      "type": "string"
+    },
+    "modo": {
+      "type": "string",
+      "enum": [
+        "simulado",
+        "producao"
+      ],
+      "default": "simulado"
+    },
+    "file_url": {
+      "type": "string",
+      "description": "Arquivo de origem (upload) opcional"
+    },
+    "total_registros": {
+      "type": "number",
+      "default": 0
+    },
+    "novos_registros": {
+      "type": "number",
+      "default": 0
+    },
+    "atualizados": {
+      "type": "number",
+      "default": 0
+    },
+    "erros": {
+      "type": "number",
+      "default": 0
+    },
+    "inicio_execucao": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "fim_execucao": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "tempo_execucao_ms": {
+      "type": "number",
+      "default": 0
+    },
+    "logs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "ts": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "info",
+              "warn",
+              "error"
+            ]
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "default": []
+    }
+  },
+  "required": [
+    "uf",
+    "inicio_execucao"
+  ]
+}

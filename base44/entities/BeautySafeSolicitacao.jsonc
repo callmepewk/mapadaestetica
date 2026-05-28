@@ -1,0 +1,43 @@
+{
+  "name": "BeautySafeSolicitacao",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email do solicitante"
+    },
+    "canal": {
+      "type": "string",
+      "enum": [
+        "whatsapp"
+      ],
+      "default": "whatsapp"
+    },
+    "whatsapp_to": {
+      "type": "string",
+      "default": "+5521980343873",
+      "description": "Destino do contato"
+    },
+    "mensagem": {
+      "type": "string",
+      "description": "Mensagem enviada/observa\u00e7\u00f5es"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pendente",
+        "contatado",
+        "concluido",
+        "cancelado"
+      ],
+      "default": "pendente"
+    },
+    "origem_pagina": {
+      "type": "string",
+      "description": "P\u00e1gina onde foi gerada a solicita\u00e7\u00e3o"
+    }
+  },
+  "required": [
+    "canal"
+  ]
+}

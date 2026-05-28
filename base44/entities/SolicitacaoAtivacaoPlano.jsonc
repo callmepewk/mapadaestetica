@@ -1,0 +1,86 @@
+{
+  "name": "SolicitacaoAtivacaoPlano",
+  "type": "object",
+  "properties": {
+    "usuario_email": {
+      "type": "string",
+      "description": "Email do usu\u00e1rio"
+    },
+    "usuario_nome": {
+      "type": "string",
+      "description": "Nome do usu\u00e1rio"
+    },
+    "plano_solicitado": {
+      "type": "string",
+      "enum": [
+        "prata",
+        "ouro",
+        "diamante",
+        "platina",
+        "cobre"
+      ],
+      "description": "Plano que o usu\u00e1rio quer ativar"
+    },
+    "tipo_plano": {
+      "type": "string",
+      "enum": [
+        "profissional",
+        "patrocinador",
+        "clube_beleza"
+      ],
+      "default": "profissional",
+      "description": "Tipo do plano (profissional, patrocinador ou clube da beleza)"
+    },
+    "valor_mensal": {
+      "type": "number",
+      "description": "Valor mensal do plano"
+    },
+    "link_mercadopago": {
+      "type": "string",
+      "description": "Link do Mercado Pago usado"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "aguardando_confirmacao",
+        "confirmado_usuario",
+        "pagamento_aprovado_mp",
+        "pagamento_pendente_mp",
+        "pagamento_rejeitado_mp",
+        "ativado_admin",
+        "cancelado"
+      ],
+      "default": "aguardando_confirmacao",
+      "description": "Status da solicita\u00e7\u00e3o"
+    },
+    "data_solicitacao": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data da solicita\u00e7\u00e3o"
+    },
+    "data_confirmacao_usuario": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data que o usu\u00e1rio confirmou o pagamento"
+    },
+    "data_pagamento_mp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data que o Mercado Pago retornou o status"
+    },
+    "data_ativacao": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data que o plano foi ativado pelo admin"
+    },
+    "observacoes": {
+      "type": "string",
+      "description": "Observa\u00e7\u00f5es do suporte"
+    }
+  },
+  "required": [
+    "usuario_email",
+    "usuario_nome",
+    "plano_solicitado"
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "name": "TratamentoCatalogo",
+  "type": "object",
+  "properties": {
+    "nome": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "area": {
+      "type": "string",
+      "enum": [
+        "pele",
+        "corpo",
+        "capilar",
+        "intimo",
+        "outros"
+      ]
+    },
+    "sinonimos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "procedimentos_relacionados": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    }
+  },
+  "required": [
+    "nome",
+    "slug",
+    "area"
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "name": "ProcedimentoMestre",
+  "type": "object",
+  "properties": {
+    "id_codigo": {
+      "type": "string",
+      "description": "ID curto e est\u00e1vel (ex: PROC-001)"
+    },
+    "nome_tecnico": {
+      "type": "string"
+    },
+    "nivel_1": {
+      "type": "string",
+      "enum": [
+        "Facial",
+        "Corporal",
+        "Capilar",
+        "\u00cdntima"
+      ]
+    },
+    "nivel_2_objetivo": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Objetivos cl\u00ednicos (ex: Rejuvenescimento, Gordura Localizada)"
+    },
+    "nivel_3_tecnologia": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tecnologias/ativos (ex: Toxina Botul\u00ednica, HIFU)"
+    },
+    "anatomia_alvo": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "categorias_dor_paciente": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Dores do paciente (ex: Rosto cansado, Barriga/Gordurinha)"
+    },
+    "marcas_associadas": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "descricao": {
+      "type": "string"
+    },
+    "ativo": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "id_codigo",
+    "nome_tecnico",
+    "nivel_1"
+  ]
+}

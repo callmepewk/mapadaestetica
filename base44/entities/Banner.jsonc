@@ -1,0 +1,242 @@
+{
+  "name": "Banner",
+  "type": "object",
+  "properties": {
+    "titulo": {
+      "type": "string",
+      "description": "T\u00edtulo do banner"
+    },
+    "descricao": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o do banner"
+    },
+    "plano_patrocinador": {
+      "type": "string",
+      "enum": [
+        "cobre",
+        "prata",
+        "ouro",
+        "diamante",
+        "platina"
+      ],
+      "description": "Plano do patrocinador"
+    },
+    "imagem_banner": {
+      "type": "string",
+      "description": "URL da imagem do banner"
+    },
+    "video_banner": {
+      "type": "string",
+      "description": "URL do v\u00eddeo do banner (m\u00e1x 30 segundos)"
+    },
+    "tipo_midia": {
+      "type": "string",
+      "enum": [
+        "imagem",
+        "video"
+      ],
+      "default": "imagem",
+      "description": "Tipo de m\u00eddia - imagem ou v\u00eddeo"
+    },
+    "dimensoes_banner": {
+      "type": "object",
+      "properties": {
+        "largura": {
+          "type": "number"
+        },
+        "altura": {
+          "type": "number"
+        }
+      },
+      "description": "Dimens\u00f5es do banner baseadas no plano"
+    },
+    "logo_empresa": {
+      "type": "string",
+      "description": "URL do logo da empresa"
+    },
+    "nome_empresa": {
+      "type": "string",
+      "description": "Nome da empresa patrocinadora"
+    },
+    "links": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "titulo": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "site",
+              "loja",
+              "instagram",
+              "facebook",
+              "whatsapp",
+              "outro"
+            ]
+          }
+        }
+      },
+      "default": [],
+      "description": "Links da empresa"
+    },
+    "posicao": {
+      "type": "string",
+      "enum": [
+        "home_topo",
+        "home_meio",
+        "home_rodape",
+        "sidebar",
+        "blog",
+        "produtos",
+        "mapa"
+      ],
+      "description": "Posi\u00e7\u00e3o onde o banner ser\u00e1 exibido"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ativo",
+        "pausado",
+        "expirado"
+      ],
+      "default": "ativo",
+      "description": "Status do banner"
+    },
+    "data_inicio": {
+      "type": "string",
+      "format": "date",
+      "description": "Data de in\u00edcio da campanha"
+    },
+    "data_fim": {
+      "type": "string",
+      "format": "date",
+      "description": "Data de t\u00e9rmino da campanha"
+    },
+    "tempo_exibicao_segundos": {
+      "type": "number",
+      "default": 5,
+      "description": "Tempo que o banner fica vis\u00edvel antes de rotacionar (m\u00e1x 5s)"
+    },
+    "dias_exibicao_mes": {
+      "type": "number",
+      "description": "Quantidade de dias de exibi\u00e7\u00e3o por m\u00eas conforme plano"
+    },
+    "frequencia_exibicao": {
+      "type": "string",
+      "enum": [
+        "sempre",
+        "uma_vez_por_sessao",
+        "uma_vez_por_dia"
+      ],
+      "default": "sempre",
+      "description": "Frequ\u00eancia de exibi\u00e7\u00e3o para o mesmo usu\u00e1rio"
+    },
+    "metricas": {
+      "type": "object",
+      "properties": {
+        "visualizacoes": {
+          "type": "number",
+          "default": 0
+        },
+        "cliques": {
+          "type": "number",
+          "default": 0
+        },
+        "tempo_medio_visualizacao": {
+          "type": "number",
+          "default": 0,
+          "description": "Em segundos"
+        },
+        "compartilhamentos": {
+          "type": "number",
+          "default": 0
+        },
+        "conversoes_produtos": {
+          "type": "number",
+          "default": 0,
+          "description": "Compras originadas do banner"
+        },
+        "banners_fechados": {
+          "type": "number",
+          "default": 0,
+          "description": "Quantas vezes o banner foi fechado pelo usu\u00e1rio"
+        },
+        "banners_pulados": {
+          "type": "number",
+          "default": 0,
+          "description": "Quantas vezes o usu\u00e1rio pulou para o pr\u00f3ximo banner"
+        }
+      },
+      "default": {
+        "visualizacoes": 0,
+        "cliques": 0,
+        "tempo_medio_visualizacao": 0,
+        "compartilhamentos": 0,
+        "conversoes_produtos": 0,
+        "banners_fechados": 0,
+        "banners_pulados": 0
+      }
+    },
+    "historico_metricas": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "string",
+            "format": "date"
+          },
+          "visualizacoes": {
+            "type": "number"
+          },
+          "cliques": {
+            "type": "number"
+          },
+          "conversoes": {
+            "type": "number"
+          }
+        }
+      },
+      "default": [],
+      "description": "Hist\u00f3rico di\u00e1rio de m\u00e9tricas"
+    },
+    "limite_banners": {
+      "type": "number",
+      "description": "Quantidade m\u00e1xima de banners rotativos conforme plano"
+    },
+    "prioridade": {
+      "type": "number",
+      "default": 0,
+      "description": "Prioridade de exibi\u00e7\u00e3o (planos maiores t\u00eam maior prioridade)"
+    },
+    "dias_exibidos_mes_atual": {
+      "type": "number",
+      "default": 0,
+      "description": "Contador de dias que o banner j\u00e1 foi exibido no m\u00eas atual"
+    },
+    "mes_referencia": {
+      "type": "string",
+      "description": "M\u00eas de refer\u00eancia para resetar contador (formato YYYY-MM)"
+    },
+    "cor_tema": {
+      "type": "string",
+      "description": "Cor hex da campanha para tema global (ex: #F7D426)"
+    },
+    "aplicar_tema_global": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se verdadeiro, aplica esta cor como tema para todos os usu\u00e1rios"
+    }
+  },
+  "required": [
+    "titulo",
+    "plano_patrocinador",
+    "nome_empresa"
+  ]
+}

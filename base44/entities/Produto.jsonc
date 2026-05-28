@@ -1,0 +1,345 @@
+{
+  "name": "Produto",
+  "type": "object",
+  "properties": {
+    "tipo": {
+      "type": "string",
+      "enum": [
+        "produto",
+        "servico"
+      ],
+      "default": "produto",
+      "description": "Tipo: produto ou servi\u00e7o"
+    },
+    "nome": {
+      "type": "string",
+      "description": "Nome do produto ou servi\u00e7o"
+    },
+    "descricao": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o detalhada"
+    },
+    "categoria": {
+      "type": "string",
+      "enum": [
+        "Cuidados com a Pele",
+        "Maquiagem",
+        "Cabelos",
+        "Perfumaria",
+        "Suplementos",
+        "Equipamentos",
+        "Acess\u00f3rios",
+        "Servi\u00e7os para Pacientes",
+        "Servi\u00e7os Contrat\u00e1veis",
+        "Produtos para Pacientes",
+        "IA",
+        "Servi\u00e7os",
+        "Servi\u00e7os de IA",
+        "M\u00eddia e Marketing",
+        "Outros"
+      ],
+      "description": "Categoria do produto/servi\u00e7o"
+    },
+    "preco": {
+      "type": "number",
+      "description": "Pre\u00e7o do produto"
+    },
+    "preco_promocional": {
+      "type": "number",
+      "description": "Pre\u00e7o em promo\u00e7\u00e3o"
+    },
+    "preco_texto": {
+      "type": "string",
+      "description": "Texto alternativo do pre\u00e7o (ex: Consultar, A partir de X)"
+    },
+    "link_pagamento": {
+      "type": "string",
+      "description": "Link do Mercado Pago para pagamento"
+    },
+    "pontos_ganhos": {
+      "type": "number",
+      "default": 0,
+      "description": "Pontos que o cliente ganha ao comprar"
+    },
+    "pontos_necessarios": {
+      "type": "number",
+      "description": "Pontos necess\u00e1rios para resgatar"
+    },
+    "estoque": {
+      "type": "number",
+      "default": 0,
+      "description": "Quantidade em estoque (apenas para produtos)"
+    },
+    "imagens": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "URLs das imagens do produto/servi\u00e7o"
+    },
+    "marca": {
+      "type": "string",
+      "description": "Marca do produto"
+    },
+    "tipo_laser": {
+      "type": "string",
+      "description": "Tipo de laser (ex: Alexandrite, Nd:YAG, CO2, Diodo, etc.)"
+    },
+    "modelo": {
+      "type": "string",
+      "description": "Modelo do equipamento (ex: GentleMax Pro, Soprano ICE, etc.)"
+    },
+    "em_destaque": {
+      "type": "boolean",
+      "default": false
+    },
+    "requer_assinatura": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se \u00e9 exclusivo do Clube da Beleza"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pendente",
+        "ativo",
+        "inativo",
+        "esgotado",
+        "rejeitado"
+      ],
+      "default": "pendente"
+    },
+    "avaliacoes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "usuario": {
+            "type": "string"
+          },
+          "nota": {
+            "type": "number"
+          },
+          "comentario": {
+            "type": "string"
+          },
+          "data": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Avalia\u00e7\u00f5es dos clientes"
+    },
+    "media_avaliacoes": {
+      "type": "number",
+      "default": 0
+    },
+    "mostrar_tag_clube": {
+      "type": "boolean",
+      "default": false,
+      "description": "Exibir tag do Clube da Beleza no card"
+    },
+    "tipo_oferta": {
+      "type": "string",
+      "enum": [
+        "unidade",
+        "lote",
+        "sob_demanda",
+        "dropshipping"
+      ],
+      "default": "unidade",
+      "description": "Formato de oferta"
+    },
+    "lote_minimo": {
+      "type": "number",
+      "description": "Quantidade m\u00ednima por lote"
+    },
+    "aceitar_chat": {
+      "type": "boolean",
+      "default": true,
+      "description": "Se o fornecedor aceita chat para este produto"
+    },
+    "aceitar_orcamento": {
+      "type": "boolean",
+      "default": false,
+      "description": "Permite solicitar or\u00e7amento quando sob_demanda"
+    },
+    "fornecedor_nome": {
+      "type": "string",
+      "description": "Nome p\u00fablico do fornecedor"
+    },
+    "fornecedor_tipo": {
+      "type": "string",
+      "enum": [
+        "fornecedor",
+        "distribuidor",
+        "fabricante",
+        "revenda"
+      ],
+      "description": "Classifica\u00e7\u00e3o do fornecedor"
+    },
+    "plano_minimo": {
+      "type": "string",
+      "enum": [
+        "free",
+        "lite",
+        "basico",
+        "pro",
+        "prime",
+        "premium"
+      ],
+      "default": "free",
+      "description": "Plano m\u00ednimo de profissional que pode visualizar o item"
+    },
+    "beauty_club_exclusivo": {
+      "type": "boolean",
+      "default": false,
+      "description": "Exclusivo do Beauty Club"
+    },
+    "beauty_club_minimo": {
+      "type": "string",
+      "enum": [
+        "basic",
+        "pro",
+        "exclusive"
+      ]
+    },
+    "endereco": {
+      "type": "string",
+      "description": "Endere\u00e7o completo"
+    },
+    "bairro": {
+      "type": "string"
+    },
+    "cidade": {
+      "type": "string"
+    },
+    "estado": {
+      "type": "string"
+    },
+    "cep": {
+      "type": "string"
+    },
+    "latitude": {
+      "type": "number"
+    },
+    "longitude": {
+      "type": "number"
+    },
+    "programa_12_meses": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se \u00e9 um programa cont\u00ednuo de 12 meses"
+    },
+    "programa_tipo": {
+      "type": "string",
+      "enum": [
+        "spa_da_pele",
+        "beauty_pass"
+      ],
+      "description": "Tipo de programa (Spa da Pele ou Beauty Pass)"
+    },
+    "finalidade": {
+      "type": "string",
+      "description": "Objetivo/finalidade cl\u00ednica do programa"
+    },
+    "valor_programa": {
+      "type": "number",
+      "description": "Valor total do programa"
+    },
+    "quantidade_sessoes": {
+      "type": "number",
+      "description": "Quantidade de sess\u00f5es"
+    },
+    "tempo_dias": {
+      "type": "number",
+      "description": "Tempo total estimado em dias"
+    },
+    "tempo_meses": {
+      "type": "number",
+      "description": "Tempo total estimado em meses"
+    },
+    "tratamentos_inclusos_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs de ProcedimentoMestre inclu\u00eddos"
+    },
+    "tratamentos_inclusos_nomes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Nomes dos tratamentos para exibi\u00e7\u00e3o"
+    },
+    "dropshipping_prazo_envio_dias": {
+      "type": "number",
+      "description": "Prazo de envio (dropshipping) em dias"
+    },
+    "dropshipping_margem_intermediario": {
+      "type": "number",
+      "description": "Margem/comiss\u00e3o do intermedi\u00e1rio"
+    },
+    "descontos_por_plano": {
+      "type": "object",
+      "properties": {
+        "free": {
+          "type": "number",
+          "default": 0
+        },
+        "lite": {
+          "type": "number",
+          "default": 0
+        },
+        "basico": {
+          "type": "number",
+          "default": 0
+        },
+        "pro": {
+          "type": "number",
+          "default": 0
+        },
+        "prime": {
+          "type": "number",
+          "default": 0
+        },
+        "premium": {
+          "type": "number",
+          "default": 0
+        }
+      },
+      "description": "Percentual de desconto por plano de profissional (0-100%)"
+    },
+    "visibilidade_por_plano": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "free",
+          "lite",
+          "basico",
+          "pro",
+          "prime",
+          "premium"
+        ]
+      },
+      "default": [],
+      "description": "Se definido, somente estes planos de profissionais ver\u00e3o o item"
+    },
+    "especialidades_alvo": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Especialidades do p\u00fablico-alvo (ex: Dermatologia, Biomedicina, etc.)"
+    }
+  },
+  "required": [
+    "tipo",
+    "nome",
+    "descricao",
+    "categoria"
+  ]
+}

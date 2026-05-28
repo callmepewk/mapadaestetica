@@ -1,0 +1,79 @@
+{
+  "name": "ComentarioBlog",
+  "type": "object",
+  "properties": {
+    "artigo_id": {
+      "type": "string",
+      "description": "ID do artigo"
+    },
+    "usuario_nome": {
+      "type": "string",
+      "description": "Nome do usu\u00e1rio"
+    },
+    "usuario_email": {
+      "type": "string",
+      "description": "Email do usu\u00e1rio"
+    },
+    "usuario_foto": {
+      "type": "string",
+      "description": "Foto do usu\u00e1rio"
+    },
+    "comentario": {
+      "type": "string",
+      "description": "Texto do coment\u00e1rio"
+    },
+    "comentario_pai_id": {
+      "type": "string",
+      "description": "ID do coment\u00e1rio pai (para respostas)"
+    },
+    "curtidas_usuarios": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Emails dos usu\u00e1rios que curtiram"
+    },
+    "total_curtidas": {
+      "type": "number",
+      "default": 0,
+      "description": "Total de curtidas"
+    },
+    "denuncias": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "usuario_email": {
+            "type": "string"
+          },
+          "motivo": {
+            "type": "string"
+          },
+          "data": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "default": [],
+      "description": "Den\u00fancias recebidas"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ativo",
+        "pendente",
+        "deletado",
+        "suspenso"
+      ],
+      "default": "ativo"
+    }
+  },
+  "required": [
+    "artigo_id",
+    "usuario_nome",
+    "usuario_email",
+    "comentario"
+  ]
+}

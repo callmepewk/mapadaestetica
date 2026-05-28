@@ -1,0 +1,121 @@
+{
+  "name": "PedidoProduto",
+  "type": "object",
+  "properties": {
+    "usuario_email": {
+      "type": "string",
+      "description": "Email do usu\u00e1rio comprador"
+    },
+    "produto_id": {
+      "type": "string",
+      "description": "ID do produto"
+    },
+    "produto_nome": {
+      "type": "string",
+      "description": "Nome do produto"
+    },
+    "tipo": {
+      "type": "string",
+      "enum": [
+        "produto",
+        "servico"
+      ],
+      "description": "Tipo do item"
+    },
+    "quantidade": {
+      "type": "number",
+      "default": 1
+    },
+    "valor_total": {
+      "type": "number",
+      "description": "Valor total do pedido"
+    },
+    "status_pedido": {
+      "type": "string",
+      "enum": [
+        "aguardando_pagamento",
+        "pago",
+        "processando",
+        "enviado",
+        "em_transito",
+        "entregue",
+        "cancelado"
+      ],
+      "default": "aguardando_pagamento"
+    },
+    "codigo_rastreio": {
+      "type": "string",
+      "description": "C\u00f3digo de rastreamento"
+    },
+    "transportadora": {
+      "type": "string",
+      "description": "Nome da transportadora"
+    },
+    "endereco_entrega": {
+      "type": "object",
+      "properties": {
+        "rua": {
+          "type": "string"
+        },
+        "numero": {
+          "type": "string"
+        },
+        "complemento": {
+          "type": "string"
+        },
+        "bairro": {
+          "type": "string"
+        },
+        "cidade": {
+          "type": "string"
+        },
+        "estado": {
+          "type": "string"
+        },
+        "cep": {
+          "type": "string"
+        }
+      }
+    },
+    "data_compra": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "data_envio": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "data_entrega": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "historico_rastreio": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string"
+          },
+          "localizacao": {
+            "type": "string"
+          },
+          "descricao": {
+            "type": "string"
+          }
+        }
+      },
+      "default": []
+    }
+  },
+  "required": [
+    "usuario_email",
+    "produto_id",
+    "produto_nome",
+    "valor_total"
+  ]
+}

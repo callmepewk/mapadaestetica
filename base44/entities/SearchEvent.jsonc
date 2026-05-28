@@ -1,0 +1,43 @@
+{
+  "name": "SearchEvent",
+  "type": "object",
+  "properties": {
+    "query": {
+      "type": "string"
+    },
+    "page": {
+      "type": "string",
+      "description": "P\u00e1gina onde ocorreu a busca"
+    },
+    "user_email": {
+      "type": "string"
+    },
+    "session_id": {
+      "type": "string"
+    },
+    "cidade": {
+      "type": "string",
+      "description": "Cidade do usu\u00e1rio no momento da busca"
+    },
+    "estado": {
+      "type": "string",
+      "description": "Estado/UF do usu\u00e1rio"
+    },
+    "pais": {
+      "type": "string",
+      "description": "Pa\u00eds do usu\u00e1rio"
+    },
+    "latitude": {
+      "type": "number",
+      "description": "Latitude aproximada"
+    },
+    "longitude": {
+      "type": "number",
+      "description": "Longitude aproximada"
+    }
+  },
+  "required": [
+    "query",
+    "session_id"
+  ]
+}

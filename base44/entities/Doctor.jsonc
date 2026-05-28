@@ -1,0 +1,78 @@
+{
+  "name": "Doctor",
+  "type": "object",
+  "properties": {
+    "id_nacional": {
+      "type": "string",
+      "description": "ID nacional \u00fanico se existir"
+    },
+    "nome_completo": {
+      "type": "string"
+    },
+    "crm": {
+      "type": "string"
+    },
+    "uf_crm": {
+      "type": "string",
+      "description": "UF do CRM"
+    },
+    "situacao": {
+      "type": "string",
+      "enum": [
+        "ativo",
+        "inativo",
+        "suspenso",
+        "cancelado"
+      ],
+      "default": "ativo"
+    },
+    "especialidade": {
+      "type": "string"
+    },
+    "data_inscricao": {
+      "type": "string",
+      "format": "date"
+    },
+    "municipio": {
+      "type": "string"
+    },
+    "ultima_atualizacao": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "fonte": {
+      "type": "string",
+      "description": "Fonte do dado (cfm, simulado, upload)"
+    },
+    "hash_registro": {
+      "type": "string"
+    },
+    "version": {
+      "type": "number",
+      "default": 1
+    },
+    "source_run_id": {
+      "type": "string",
+      "description": "ID do PipelineRun que gerou/atualizou este registro"
+    },
+    "status_validacao": {
+      "type": "string",
+      "enum": [
+        "pendente",
+        "valido",
+        "inconsistente"
+      ],
+      "default": "pendente"
+    },
+    "inconsistencia_motivo": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "nome_completo",
+    "crm",
+    "uf_crm",
+    "situacao",
+    "hash_registro"
+  ]
+}

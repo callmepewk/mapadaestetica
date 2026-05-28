@@ -1,0 +1,29 @@
+{
+  "name": "DesignIAUso",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string"
+    },
+    "mes_referencia": {
+      "type": "string",
+      "description": "YYYY-MM"
+    },
+    "usos_convertidos": {
+      "type": "number",
+      "default": 0
+    },
+    "usos_imagens": {
+      "type": "number",
+      "default": 0
+    },
+    "ultimo_uso": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "user_email",
+    "mes_referencia"
+  ]
+}

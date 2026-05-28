@@ -1,0 +1,82 @@
+{
+  "name": "Evento",
+  "type": "object",
+  "properties": {
+    "titulo": {
+      "type": "string"
+    },
+    "descricao": {
+      "type": "string"
+    },
+    "data_hora": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data e hora do evento (ISO)"
+    },
+    "publico_alvo": {
+      "type": "string",
+      "enum": [
+        "todos",
+        "pacientes",
+        "profissionais"
+      ],
+      "default": "todos"
+    },
+    "preco_tipo": {
+      "type": "string",
+      "enum": [
+        "gratis",
+        "pago"
+      ],
+      "default": "gratis"
+    },
+    "preco_valor": {
+      "type": "number",
+      "description": "Valor do ingresso quando pago"
+    },
+    "endereco": {
+      "type": "string"
+    },
+    "bairro": {
+      "type": "string"
+    },
+    "cidade": {
+      "type": "string"
+    },
+    "estado": {
+      "type": "string"
+    },
+    "latitude": {
+      "type": "number"
+    },
+    "longitude": {
+      "type": "number"
+    },
+    "imagem_url": {
+      "type": "string"
+    },
+    "organizador_nome": {
+      "type": "string"
+    },
+    "organizador_contato": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ativo",
+        "inativo"
+      ],
+      "default": "ativo"
+    }
+  },
+  "required": [
+    "titulo",
+    "descricao",
+    "data_hora",
+    "publico_alvo",
+    "preco_tipo",
+    "cidade",
+    "estado"
+  ]
+}

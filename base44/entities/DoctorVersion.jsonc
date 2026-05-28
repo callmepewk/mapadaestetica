@@ -1,0 +1,70 @@
+{
+  "name": "DoctorVersion",
+  "type": "object",
+  "properties": {
+    "doctor_id": {
+      "type": "string"
+    },
+    "crm": {
+      "type": "string"
+    },
+    "uf_crm": {
+      "type": "string"
+    },
+    "hash_anterior": {
+      "type": "string"
+    },
+    "hash_novo": {
+      "type": "string"
+    },
+    "change_type": {
+      "type": "string",
+      "enum": [
+        "create",
+        "update",
+        "delete"
+      ]
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "snapshot": {
+      "type": "object",
+      "properties": {
+        "id_nacional": {
+          "type": "string"
+        },
+        "nome_completo": {
+          "type": "string"
+        },
+        "situacao": {
+          "type": "string"
+        },
+        "especialidade": {
+          "type": "string"
+        },
+        "data_inscricao": {
+          "type": "string",
+          "format": "date"
+        },
+        "municipio": {
+          "type": "string"
+        },
+        "ultima_atualizacao": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "fonte": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "required": [
+    "doctor_id",
+    "crm",
+    "uf_crm",
+    "hash_novo",
+    "change_type"
+  ]
+}

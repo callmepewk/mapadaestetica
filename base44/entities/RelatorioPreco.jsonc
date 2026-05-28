@@ -1,0 +1,61 @@
+{
+  "name": "RelatorioPreco",
+  "type": "object",
+  "properties": {
+    "anuncio_id": {
+      "type": "string",
+      "description": "ID do an\u00fancio relacionado"
+    },
+    "profissional_nome": {
+      "type": "string",
+      "description": "Nome do profissional"
+    },
+    "profissional_email": {
+      "type": "string",
+      "description": "Email do profissional"
+    },
+    "categoria": {
+      "type": "string",
+      "description": "Categoria do servi\u00e7o"
+    },
+    "procedimento": {
+      "type": "string",
+      "description": "Nome do procedimento/servi\u00e7o"
+    },
+    "valor_medio": {
+      "type": "number",
+      "description": "Valor m\u00e9dio cobrado pelo servi\u00e7o espec\u00edfico"
+    },
+    "faixa_preco": {
+      "type": "string",
+      "enum": [
+        "$",
+        "$$",
+        "$$$",
+        "$$$$",
+        "$$$$$"
+      ],
+      "description": "Faixa de pre\u00e7o: $ (at\u00e9 R$500), $$ (R$500-1000), $$$ (R$1000-2000), $$$$ (R$2000-5000), $$$$$ (acima de R$5000)"
+    },
+    "cidade": {
+      "type": "string",
+      "description": "Cidade"
+    },
+    "estado": {
+      "type": "string",
+      "description": "Estado"
+    },
+    "data_coleta": {
+      "type": "string",
+      "format": "date",
+      "description": "Data da coleta do pre\u00e7o"
+    }
+  },
+  "required": [
+    "profissional_nome",
+    "profissional_email",
+    "categoria",
+    "procedimento",
+    "faixa_preco"
+  ]
+}

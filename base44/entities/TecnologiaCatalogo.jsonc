@@ -1,0 +1,44 @@
+{
+  "name": "TecnologiaCatalogo",
+  "type": "object",
+  "properties": {
+    "nome": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "grupo": {
+      "type": "string",
+      "enum": [
+        "laser",
+        "energia",
+        "estimulo",
+        "perfuracao",
+        "corporal"
+      ]
+    },
+    "subtipo": {
+      "type": "string"
+    },
+    "aplicacoes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "sinonimos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    }
+  },
+  "required": [
+    "nome",
+    "slug",
+    "grupo"
+  ]
+}

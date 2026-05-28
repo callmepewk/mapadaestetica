@@ -1,0 +1,49 @@
+{
+  "name": "DisponibilidadeProfissional",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string"
+    },
+    "slots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "dia_semana": {
+            "type": "string",
+            "enum": [
+              "dom",
+              "seg",
+              "ter",
+              "qua",
+              "qui",
+              "sex",
+              "sab"
+            ]
+          },
+          "inicio": {
+            "type": "string",
+            "description": "HH:mm"
+          },
+          "fim": {
+            "type": "string",
+            "description": "HH:mm"
+          }
+        },
+        "required": [
+          "dia_semana",
+          "inicio",
+          "fim"
+        ]
+      },
+      "default": []
+    },
+    "observacoes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_email"
+  ]
+}

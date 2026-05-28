@@ -1,0 +1,33 @@
+{
+  "name": "DoctorInstituteInfo",
+  "type": "object",
+  "properties": {
+    "doctor_id": {
+      "type": "string",
+      "description": "Relaciona com Doctor.id (opcional)"
+    },
+    "crm": {
+      "type": "string"
+    },
+    "uf_crm": {
+      "type": "string"
+    },
+    "instituto": {
+      "type": "string",
+      "description": "Nome do instituto/fonte (ex: SBCP, AMB, etc.)"
+    },
+    "dados": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Payload estruturado extra\u00eddo"
+    },
+    "arquivo_origem": {
+      "type": "string",
+      "description": "URL do arquivo enviado"
+    }
+  },
+  "required": [
+    "instituto",
+    "dados"
+  ]
+}

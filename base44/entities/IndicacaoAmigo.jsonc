@@ -1,0 +1,82 @@
+{
+  "name": "IndicacaoAmigo",
+  "type": "object",
+  "properties": {
+    "usuario_indicador_email": {
+      "type": "string",
+      "description": "Email do usu\u00e1rio que indicou"
+    },
+    "usuario_indicado_email": {
+      "type": "string",
+      "description": "Email do usu\u00e1rio indicado"
+    },
+    "link_usado": {
+      "type": "string",
+      "description": "Link exclusivo usado"
+    },
+    "codigo_indicacao": {
+      "type": "string",
+      "description": "C\u00f3digo \u00fanico de indica\u00e7\u00e3o"
+    },
+    "ip_acesso": {
+      "type": "string",
+      "description": "IP do acesso inicial"
+    },
+    "data_acesso": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data/hora do primeiro acesso"
+    },
+    "cadastro_completo": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se completou o cadastro"
+    },
+    "data_cadastro": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data/hora de conclus\u00e3o do cadastro"
+    },
+    "tempo_permanencia_minutos": {
+      "type": "number",
+      "default": 0,
+      "description": "Tempo total de perman\u00eancia no site em minutos"
+    },
+    "sessao_ativa": {
+      "type": "boolean",
+      "default": true,
+      "description": "Se a sess\u00e3o ainda est\u00e1 ativa para tracking"
+    },
+    "validado": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se a indica\u00e7\u00e3o foi validada (15 min + cadastro completo)"
+    },
+    "data_validacao": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data/hora da valida\u00e7\u00e3o"
+    },
+    "pontos_creditados": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se os pontos j\u00e1 foram creditados ao indicador"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pendente",
+        "em_andamento",
+        "validado",
+        "invalido"
+      ],
+      "default": "pendente",
+      "description": "Status da indica\u00e7\u00e3o"
+    }
+  },
+  "required": [
+    "usuario_indicador_email",
+    "codigo_indicacao",
+    "ip_acesso"
+  ]
+}

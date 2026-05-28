@@ -1,0 +1,25 @@
+{
+  "name": "ChatMensagem",
+  "type": "object",
+  "properties": {
+    "pedido_id": {
+      "type": "string",
+      "description": "Relaciona com PedidoProduto.id"
+    },
+    "remetente_email": {
+      "type": "string"
+    },
+    "texto": {
+      "type": "string"
+    },
+    "lida": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "pedido_id",
+    "remetente_email",
+    "texto"
+  ]
+}

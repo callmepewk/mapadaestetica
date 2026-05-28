@@ -1,0 +1,662 @@
+{
+  "name": "Anuncio",
+  "type": "object",
+  "properties": {
+    "tipo_anuncio": {
+      "type": "string",
+      "enum": [
+        "servico",
+        "procedimento",
+        "tecnica",
+        "consultorio",
+        "clinica",
+        "promocao",
+        "venda_produto",
+        "venda_aparelho",
+        "aluguel_produto",
+        "aluguel_aparelho",
+        "troca_produto",
+        "troca_aparelho",
+        "venda_moveis",
+        "troca_moveis",
+        "evento",
+        "ia",
+        "servicos",
+        "servicos_ia",
+        "midia_marketing",
+        "inauguracao",
+        "reinauguracao",
+        "lancamento_produto",
+        "lancamento_servico",
+        "lancamento_tratamento"
+      ],
+      "description": "Tipo do an\u00fancio"
+    },
+    "titulo": {
+      "type": "string",
+      "description": "T\u00edtulo do an\u00fancio"
+    },
+    "descricao": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o detalhada do servi\u00e7o"
+    },
+    "categoria": {
+      "type": "string",
+      "enum": [
+        "Est\u00e9tica Facial - Tratamentos B\u00e1sicos",
+        "Est\u00e9tica Facial - Rejuvenescimento",
+        "Est\u00e9tica Facial - Tratamento de Condi\u00e7\u00f5es",
+        "Est\u00e9tica Facial - Harmoniza\u00e7\u00e3o",
+        "Est\u00e9tica Corporal - Redu\u00e7\u00e3o de Medidas",
+        "Est\u00e9tica Corporal - Celulite e Estrias",
+        "Est\u00e9tica Corporal - Flacidez e Contorno",
+        "Depila\u00e7\u00e3o",
+        "Drenagem Linf\u00e1tica",
+        "Est\u00e9tica Capilar e Tricologia",
+        "Transplante Capilar",
+        "Manicure e Pedicure",
+        "Podologia",
+        "Micropigmenta\u00e7\u00e3o e Design de Sobrancelhas",
+        "Micropigmenta\u00e7\u00e3o - Olhos e L\u00e1bios",
+        "Extens\u00e3o e Alongamento de C\u00edlios",
+        "Medicina Est\u00e9tica",
+        "Dermatologia",
+        "Cirurgia Pl\u00e1stica",
+        "Fisioterapia Dermato Funcional",
+        "Nutri\u00e7\u00e3o Est\u00e9tica",
+        "Psicologia e Coaching de Imagem",
+        "Pilates e Fitness",
+        "Acupuntura Est\u00e9tica",
+        "Terapias Integrativas e Complementares",
+        "Biomedicina Est\u00e9tica",
+        "Enfermagem Est\u00e9tica",
+        "Farm\u00e1cia Est\u00e9tica",
+        "Odontologia Est\u00e9tica",
+        "Massoterapia",
+        "Barbearia",
+        "Tatuagem e Piercing",
+        "Spa e Bem-Estar",
+        "Longevidade e Medicina Integrativa",
+        "Cl\u00ednicas e Consult\u00f3rios",
+        "Sal\u00f5es de Beleza",
+        "Equipamentos - Venda",
+        "Equipamentos - Loca\u00e7\u00e3o",
+        "Equipamentos - Seminovos",
+        "Cosm\u00e9ticos e Produtos",
+        "Injet\u00e1veis e Preenchedores",
+        "Nutrac\u00eauticos e Suplementos",
+        "M\u00f3veis e Decora\u00e7\u00e3o para Cl\u00ednicas",
+        "Softwares de Gest\u00e3o",
+        "Uniformes e Vestu\u00e1rio Profissional",
+        "Roupas de Compress\u00e3o P\u00f3s-Cir\u00fargica",
+        "Alimenta\u00e7\u00e3o Saud\u00e1vel e Fitness",
+        "Educa\u00e7\u00e3o - Cursos e Workshops",
+        "Eventos - Congressos e Feiras",
+        "Consultoria e Assessoria",
+        "Franquias",
+        "Turismo de Sa\u00fade",
+        "Seguros e Financiamentos",
+        "Marketing e Design",
+        "Outros"
+      ],
+      "description": "Categoria principal do servi\u00e7o"
+    },
+    "categorias_secundarias": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Categorias adicionais selecionadas"
+    },
+    "subcategoria": {
+      "type": "string",
+      "description": "Subcategoria espec\u00edfica"
+    },
+    "categoria_clinica": {
+      "type": "string",
+      "description": "Nome espec\u00edfico do servi\u00e7o cl\u00ednico"
+    },
+    "procedimentos_servicos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Lista completa de procedimentos oferecidos"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Hashtags para melhor exposi\u00e7\u00e3o"
+    },
+    "faixa_preco": {
+      "type": "string",
+      "enum": [
+        "$",
+        "$$",
+        "$$$",
+        "$$$$",
+        "$$$$$"
+      ],
+      "description": "Faixa de pre\u00e7o"
+    },
+    "forma_cobranca": {
+      "type": "string",
+      "enum": [
+        "dinheiro",
+        "pontos",
+        "beauty_coins"
+      ],
+      "default": "dinheiro",
+      "description": "Forma de cobran\u00e7a do an\u00fancio"
+    },
+    "exibir_para": {
+      "type": "string",
+      "enum": [
+        "todos",
+        "visitantes",
+        "profissionais"
+      ],
+      "default": "todos",
+      "description": "P\u00fablico que ver\u00e1 o an\u00fancio"
+    },
+    "ocultar_apos_venda": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se verdadeiro, oculta o an\u00fancio ap\u00f3s a venda"
+    },
+    "tipo_estabelecimento": {
+      "type": "string",
+      "enum": [
+        "Consult\u00f3rio",
+        "Cl\u00ednica",
+        "Centro Cl\u00ednico",
+        "Centro de Especialidade",
+        "Cl\u00ednica de Luxo"
+      ],
+      "description": "Tipo e porte do estabelecimento"
+    },
+    "estrelas_estabelecimento": {
+      "type": "number",
+      "enum": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "description": "Classifica\u00e7\u00e3o do estabelecimento em estrelas"
+    },
+    "profissional": {
+      "type": "string",
+      "description": "Nome do profissional"
+    },
+    "profissao": {
+      "type": "string",
+      "description": "Profiss\u00e3o do profissional no momento da cria\u00e7\u00e3o"
+    },
+    "estabelecimento_principal": {
+      "type": "string",
+      "description": "Local principal de atendimento (c\u00f3pia do perfil)"
+    },
+    "tempo_formacao_anos": {
+      "type": "number",
+      "description": "Tempo de forma\u00e7\u00e3o do profissional em anos"
+    },
+    "telefone": {
+      "type": "string",
+      "description": "Telefone de contato"
+    },
+    "whatsapp": {
+      "type": "string",
+      "description": "WhatsApp para contato"
+    },
+    "email": {
+      "type": "string",
+      "description": "Email de contato"
+    },
+    "instagram": {
+      "type": "string",
+      "description": "Perfil do Instagram"
+    },
+    "facebook": {
+      "type": "string",
+      "description": "Perfil do Facebook"
+    },
+    "site": {
+      "type": "string",
+      "description": "Site pr\u00f3prio"
+    },
+    "rua": {
+      "type": "string",
+      "description": "Rua do endere\u00e7o"
+    },
+    "numero": {
+      "type": "string",
+      "description": "N\u00famero do endere\u00e7o"
+    },
+    "complemento": {
+      "type": "string",
+      "description": "Complemento do endere\u00e7o"
+    },
+    "observacoes_endereco": {
+      "type": "string",
+      "description": "Observa\u00e7\u00f5es sobre o endere\u00e7o"
+    },
+    "endereco": {
+      "type": "string",
+      "description": "Endere\u00e7o completo (preenchido automaticamente)"
+    },
+    "bairro": {
+      "type": "string",
+      "description": "Bairro"
+    },
+    "cidade": {
+      "type": "string",
+      "description": "Cidade"
+    },
+    "estado": {
+      "type": "string",
+      "description": "Estado"
+    },
+    "cep": {
+      "type": "string",
+      "description": "CEP"
+    },
+    "compartilhar_localizacao_exata": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se deseja compartilhar a localiza\u00e7\u00e3o exata (lat/long)"
+    },
+    "latitude": {
+      "type": "number",
+      "description": "Latitude da localiza\u00e7\u00e3o"
+    },
+    "longitude": {
+      "type": "number",
+      "description": "Longitude da localiza\u00e7\u00e3o"
+    },
+    "imagem_principal": {
+      "type": "string",
+      "description": "URL da imagem principal"
+    },
+    "video_principal": {
+      "type": "string",
+      "description": "URL do v\u00eddeo principal (m\u00e1x 30 segundos)"
+    },
+    "tipo_midia_principal": {
+      "type": "string",
+      "enum": [
+        "imagem",
+        "video"
+      ],
+      "default": "imagem",
+      "description": "Tipo de m\u00eddia principal - imagem ou v\u00eddeo"
+    },
+    "imagens_galeria": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "URLs das imagens da galeria"
+    },
+    "videos_galeria": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "URLs dos v\u00eddeos da galeria (m\u00e1x 30s cada)"
+    },
+    "logo": {
+      "type": "string",
+      "description": "URL do logo/foto do profissional"
+    },
+    "video_url": {
+      "type": "string",
+      "description": "URL do v\u00eddeo de apresenta\u00e7\u00e3o"
+    },
+    "horario_funcionamento": {
+      "type": "string",
+      "description": "Hor\u00e1rio de funcionamento"
+    },
+    "status_funcionamento": {
+      "type": "string",
+      "enum": [
+        "Aberto Agora",
+        "Fechado",
+        "Sempre Aberto",
+        "N/D"
+      ],
+      "default": "N/D"
+    },
+    "amenidades": {
+      "type": "object",
+      "properties": {
+        "estacionamento": {
+          "type": "boolean",
+          "default": false
+        },
+        "estacionamento_valet": {
+          "type": "boolean",
+          "default": false
+        },
+        "aceita_pet": {
+          "type": "boolean",
+          "default": false
+        },
+        "lounge": {
+          "type": "boolean",
+          "default": false
+        },
+        "lounge_bar": {
+          "type": "boolean",
+          "default": false
+        },
+        "musica_ambiente": {
+          "type": "boolean",
+          "default": false
+        },
+        "seguranca": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "description": "Amenidades do estabelecimento"
+    },
+    "icone_mapa": {
+      "type": "string",
+      "default": "\ud83d\udccd",
+      "description": "Emoji/\u00edcone que representa o an\u00fancio no mapa"
+    },
+    "verificacao_autoridade": {
+      "type": "object",
+      "properties": {
+        "licenca_sanitaria": {
+          "type": "object",
+          "properties": {
+            "possui": {
+              "type": "boolean",
+              "default": false
+            },
+            "documento_url": {
+              "type": "string"
+            },
+            "verificado": {
+              "type": "boolean",
+              "default": false
+            },
+            "data_verificacao": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        },
+        "alvara_funcionamento": {
+          "type": "object",
+          "properties": {
+            "possui": {
+              "type": "boolean",
+              "default": false
+            },
+            "documento_url": {
+              "type": "string"
+            },
+            "verificado": {
+              "type": "boolean",
+              "default": false
+            },
+            "data_verificacao": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        },
+        "registro_profissional": {
+          "type": "object",
+          "properties": {
+            "possui": {
+              "type": "boolean",
+              "default": false
+            },
+            "documento_url": {
+              "type": "string"
+            },
+            "verificado": {
+              "type": "boolean",
+              "default": false
+            },
+            "data_verificacao": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        }
+      },
+      "description": "Documenta\u00e7\u00e3o de verifica\u00e7\u00e3o de autoridade"
+    },
+    "profissional_verificado": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se todos os 3 documentos foram verificados"
+    },
+    "profissional_especializado": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se o profissional tem forma\u00e7\u00e3o e especializa\u00e7\u00e3o cadastradas"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pendente",
+        "ativo",
+        "em_destaque",
+        "expirado",
+        "rejeitado",
+        "programado"
+      ],
+      "default": "pendente",
+      "description": "Status do an\u00fancio"
+    },
+    "data_programada": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data e hora programada para publica\u00e7\u00e3o"
+    },
+    "plano": {
+      "type": "string",
+      "enum": [
+        "cobre",
+        "prata",
+        "ouro",
+        "diamante",
+        "platina"
+      ],
+      "default": "cobre",
+      "description": "Plano contratado"
+    },
+    "dias_exposicao": {
+      "type": "number",
+      "description": "Dias de exposi\u00e7\u00e3o do an\u00fancio"
+    },
+    "visualizacoes": {
+      "type": "number",
+      "default": 0,
+      "description": "N\u00famero de visualiza\u00e7\u00f5es"
+    },
+    "curtidas": {
+      "type": "number",
+      "default": 0,
+      "description": "N\u00famero de curtidas"
+    },
+    "usuarios_curtiram": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Emails dos usu\u00e1rios que curtiram"
+    },
+    "data_expiracao": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data de expira\u00e7\u00e3o do an\u00fancio"
+    },
+    "servicos_oferecidos": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string"
+          },
+          "duracao": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Lista de servi\u00e7os oferecidos (sem pre\u00e7o)"
+    },
+    "em_destaque": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se o an\u00fancio est\u00e1 em destaque"
+    },
+    "impulsionado": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se o an\u00fancio foi impulsionado"
+    },
+    "data_impulsionamento": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data do \u00faltimo impulsionamento"
+    },
+    "comentarios": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "usuario_nome": {
+            "type": "string"
+          },
+          "usuario_email": {
+            "type": "string"
+          },
+          "comentario": {
+            "type": "string"
+          },
+          "data": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "curtidas": {
+            "type": "number",
+            "default": 0
+          },
+          "usuarios_curtiram": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          },
+          "fixado": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      }
+    },
+    "perguntas": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "usuario_nome": {
+            "type": "string"
+          },
+          "usuario_email": {
+            "type": "string"
+          },
+          "pergunta": {
+            "type": "string"
+          },
+          "tipo_pergunta": {
+            "type": "string",
+            "enum": [
+              "disponibilidade_produto",
+              "disponibilidade_oferta",
+              "outra"
+            ]
+          },
+          "data_pergunta": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "respondida": {
+            "type": "boolean",
+            "default": false
+          },
+          "resposta": {
+            "type": "string",
+            "enum": [
+              "sim",
+              "nao",
+              ""
+            ]
+          },
+          "data_resposta": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "notificacao_enviada": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      },
+      "default": [],
+      "description": "Perguntas dos usu\u00e1rios"
+    },
+    "ultima_verificacao_disponibilidade": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u00daltima vez que foi verificada disponibilidade (para vendas/alugu\u00e9is/trocas)"
+    },
+    "proxima_verificacao_disponibilidade": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Pr\u00f3xima data para verificar disponibilidade"
+    },
+    "exibir_selo_clube": {
+      "type": "boolean",
+      "default": false,
+      "description": "Exibir selo do Clube da Beleza no card"
+    },
+    "pontos_ganhos": {
+      "type": "number",
+      "description": "Pontos que o cliente ganha ao contratar este an\u00fancio/servi\u00e7o"
+    },
+    "beauty_coins_recompensa": {
+      "type": "number",
+      "description": "Beauty Coins de recompensa definidos pelo profissional"
+    }
+  },
+  "required": [
+    "tipo_anuncio",
+    "titulo",
+    "descricao",
+    "categoria",
+    "profissional",
+    "cidade",
+    "estado"
+  ]
+}

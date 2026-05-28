@@ -1,0 +1,26 @@
+{
+  "name": "BeautySafeClick",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string"
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "cta_whatsapp",
+        "banner_click",
+        "solicitar"
+      ]
+    },
+    "page": {
+      "type": "string"
+    },
+    "details": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "action"
+  ]
+}
